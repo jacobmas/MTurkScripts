@@ -12,12 +12,25 @@
 (function() {
     'use strict';
 
+    var button = document.createElement("input");
+    button.type="button";
+    button.value="Fill N/A";
+    var sub_button = document.getElementById('submitButton');
+    button.style.margin='5px';
+    button.style.marginRight='20px';
+    sub_button.insertAdjacentElement('beforebegin',button);
     var the_inputs=document.getElementsByClassName('form-control');
-    for(var i=0; i < the_inputs.length; i++)
+    button.onclick = function()
     {
-//        console.log("the_inputs[\""+curr_var+"\"]="+the_inputs[curr_var]);
-        the_inputs[i].value="N/A";
-    }
+        for(var i=0; i < the_inputs.length; i++)
+        {
+            //        console.log("the_inputs[\""+curr_var+"\"]="+the_inputs[curr_var]);
+            if(the_inputs[i].value==="")
+            {
+                the_inputs[i].value="N/A";
+            }
+        }
+    };
        // console.log(document.readyState);
 
 //    document.onreadystatechange=function() {
