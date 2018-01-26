@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Find Dealer
+// @name         FindDealer
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  try to take over the world!
@@ -14,14 +14,39 @@
 // @grant GM_setClipboard
 // ==/UserScript==
 
+
 (function() {
+
     'use strict';
-    var bob=document.getElementsByClassName("dcsLogin");
-    console.log("bob="+bob.length);
+    var my_func=function(dealer_name)
+    {
+        GM_setClipboard(dealer_name,"text");
+          GM_setValue("dealer_name",dealer_name);
+    };
     var dealer_name=GM_getValue("dealer_name","");
-    if(bob!==null && bob.length>0) { dealer_name="Dealer Car Search"; GM_setClipboard(dealer_name,"text"); return; }
+    var bob=document.getElementsByName("copyright");
+    if(bob!== null && bob.length>0 && bob[0].tagName === "META")
+    {
+        console.log("meta");
+        if(bob[0].content.match("AutoCorner")!== null)
+        {
+            console.log("match");
+            dealer_name="AutoCorner";
+            my_func(dealer_name);
+            return;
+        }
+        else
+        {
+            console.log(bob[0].content);
+        }
+    }
+
+    bob=document.getElementsByClassName("dcsLogin");
+    console.log("bob="+bob.length);
+  
+    if(bob!==null && bob.length>0) { dealer_name="Dealer Car Search"; my_func(dealer_name); return; }
     bob=document.getElementById("revoLink");
-    if(bob !== null) { dealer_name="AutoRevo"; GM_setClipboard(dealer_name,"text"); }
+    if(bob !== null) { dealer_name="AutoRevo"; my_func(dealer_name); }
     bob=document.getElementsByClassName("link");
     if(bob!== null && bob[0] !== null && bob[0]!==undefined && bob[0].href!== null && bob[0].href.match("dealer.com")!==null) { dealer_name="dealer.com"; }
 //    if(dealer_name!=="") alert(dealer_name);
@@ -31,7 +56,7 @@
         console.log("bob3="+bob.length);
  //       alert("MOO");
         dealer_name="Dealer Inspire";
-        GM_setClipboard(dealer_name,"text");
+        my_func(dealer_name);
         return;
     }
     GM_setValue("dealer_name",dealer_name);
