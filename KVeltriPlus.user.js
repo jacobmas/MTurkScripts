@@ -75,6 +75,25 @@
         document.getElementById("previous_year_"+last_val).value=(my_re.exec(split_str[3]))[0];
     };
 
+    var find_graduation=function(str_list) {
+        var i;
+        var my_re2=/\d{4}/g;
+        var grad_year_list;
+        var grad_year = -1;
+        for(i=0; i < str_list.length; i++) {
+            if(str_list[i].indexOf("Dates attended or expected graduation") === 0)
+            {
+                grad_year_list=str_list[i].match(my_re2);
+                if(grad_year_list.length>0) {
+                    grad_year=grad_year_list[grad_year_list.length-1];
+                }
+                break;
+            }
+        }
+        if(grad_year=== -1) { return ""; }
+        return grad_year;
+    };
+
     var law_paste_func=function(e) {
         // cancel paste
         e.preventDefault();
@@ -82,12 +101,12 @@
         var text = e.clipboardData.getData("text/plain");
         var split_str=text.split("\n");
         var last_val=this.id.substr(this.id.length-1);
-        console.log("last_val="+last_val);
+       // console.log("last_val="+last_val);
         var my_re=/\d{4}/;
         var my_re2=/\d{4}/g;
         var arr_pos = split_str.length -1;
          var grad_year;
-         while(arr_pos >= 0)
+      /*   while(arr_pos >= 0)
          {
              grad_year=split_str[arr_pos].match(my_re2);
              if(!(grad_year === null || grad_year.length>2))
@@ -95,11 +114,13 @@
                  break;
              }
              arr_pos-=1;
-         }
+         } */
 
 
         document.getElementById("law_school").value=split_str[0];
-        document.getElementById("graduation_year").value=grad_year[grad_year.length-1];
+        document.getElementById("graduation_year").value=find_graduation(split_str);
+
+           // grad_year[grad_year.length-1];
 
     };
      var undergrad_paste_func=function(e) {
@@ -114,7 +135,7 @@
          var my_re2=/\d{4}/g;
         var arr_pos = split_str.length -1;
          var grad_year;
-         while(arr_pos >= 0)
+      /*   while(arr_pos >= 0)
          {
              grad_year=split_str[arr_pos].match(my_re2);
              if(!(grad_year === null || grad_year.length>2))
@@ -122,10 +143,10 @@
                  break;
              }
              arr_pos-=1;
-         }
+         } */
 
         document.getElementById("undergrad_school").value=split_str[0];
-        document.getElementById("undergrad_graduation_year").value=grad_year[grad_year.length-1];
+        document.getElementById("undergrad_graduation_year").value=find_graduation(split_str);
 
     };
     document.getElementById("web_url").addEventListener("paste",url_paste_func);
