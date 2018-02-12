@@ -29,13 +29,17 @@
         var get_Exp = function(e) {
             e.preventDefault();
             //var edSec=document.getElementsByClassName("education-section")[0];
-            var expProfiles=expSec.getElementsByClassName("pv-profile-section__card-item");
+            var expProfiles=expSec.getElementsByTagName("li");//ClassName("pv-profile-section__card-item");
             var i,l;
-            var clip_str="";
+            var clip_str=window.location.href+"\n";
             var temp_str;
             var match_arr;
             var num_needed;
-            for(i=0; i <=3 ; i++) {
+            var i_len;
+            i_len = expProfiles.length > 4 ? 4 : expProfiles.length;
+            for(i=0; i < i_len; i++) {
+                if(expProfiles[i].className.match("artdeco") !== null)
+                    continue;
                 var sum_info=expProfiles[i].getElementsByClassName("pv-entity__summary-info")[0];
                 temp_str=sum_info.innerText;
                 clip_str=clip_str+temp_str;//+"\n";
