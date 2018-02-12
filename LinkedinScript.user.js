@@ -37,9 +37,14 @@
             var num_needed;
             var i_len;
             i_len = expProfiles.length > 4 ? 4 : expProfiles.length;
-            for(i=0; i < i_len; i++) {
-                if(expProfiles[i].className.match("artdeco") !== null)
-                    continue;
+            var i_count=0;
+            for(i=0; i < expProfiles.length; i++) {
+                if(expProfiles[i].className.match("artdeco") !== null) {
+                    continue; }
+                else {
+                    i_count+=1;
+                    if(i_count>4) { break; }
+                }
                 var sum_info=expProfiles[i].getElementsByClassName("pv-entity__summary-info")[0];
                 temp_str=sum_info.innerText;
                 clip_str=clip_str+temp_str;//+"\n";
