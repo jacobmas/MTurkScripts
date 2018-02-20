@@ -36,7 +36,7 @@
             document.getElementById("current_firm").value=split_str[2].substr(12);
             document.getElementById("current_title").value=split_str[1];
             temp_re=my_re.exec(split_str[3]);
-            if(temp_re.length>0)
+            if(temp_re!==null && temp_re.length>0)
                 document.getElementById("current_year").value=temp_re[0];
         }
         for(curr_pos=1; (curr_pos+1)*4+1 <= split_str.length && curr_pos <= 3; curr_pos++)
