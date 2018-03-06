@@ -26,9 +26,11 @@
         return re.test(String(email).toLowerCase());
     }
     function validatePhone(phone) {
-        var re=/[A-Za-z\-\(\)]*/g;
+        var re=/[A-Za-z\-\(\)\./]*/g;
         var new_str=phone.replace(re,"");
+        console.log(new_str);
         var new_re=/^[\d]{10-11}/;
+        console.log(new_re.test(new_str));
         return new_re.test(new_str);
     }
 
@@ -39,15 +41,15 @@
         {
             //console.log("Found comma");
             split_str=text.split(/,\s*/);
-            if(split_str.length > 0) lname=split_str[0];
-            if(split_str.length > 1) fname=split_str[1];
+            if(split_str.length > 0) lname=split_str[0].trim();
+            if(split_str.length > 1) fname=split_str[1].trim();
         }
         else {
                         //console.log("Found no comma");
 
             split_str=text.split(/\s+/);
-            if(split_str.length > 0) fname=split_str[0];
-            if(split_str.length > 1) lname=split_str[1];
+            if(split_str.length > 0) fname=split_str[0].trim();
+            if(split_str.length > 1) lname=split_str[1].trim();
         }
         var last_val=e.target.id.substr(e.target.id.length-1);
         document.getElementById("fname_"+last_val).value=fname;
