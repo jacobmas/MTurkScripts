@@ -94,7 +94,7 @@
         var split_lines=text.split("\n");
         var fname="",lname="";
         var i=1;
-        var curr_line;
+        var curr_line, second_part_line, second_arr;
         var has_pasted_title=false;
         var last_val=e.target.id.substr(e.target.id.length-1);
         if(split_lines.length>0 && split_lines[0].trim().length > 0)
@@ -105,13 +105,17 @@
         for(i=1; i < split_lines.length; i++)
         {
             curr_line=split_lines[i].trim();
-            if(validateEmail(curr_line))
+
+            second_arr=curr_line.split(":");
+            console.log("curr_line="+curr_line+", second_arr.length="+second_arr.length);
+            second_part_line=second_arr[second_arr.length-1].trim();
+            if(validateEmail(second_part_line))
             {
-                document.getElementById("email_"+last_val).value=curr_line;
+                document.getElementById("email_"+last_val).value=second_part_line;
             }
-            else if(validatePhone(curr_line))
+            else if(validatePhone(second_part_line))
             {
-                document.getElementById("phone_"+last_val).value=curr_line;
+                document.getElementById("phone_"+last_val).value=second_part_line;
             }
             else if(curr_line.length>0 && !has_pasted_title)
             {
