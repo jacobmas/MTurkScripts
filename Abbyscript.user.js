@@ -29,7 +29,7 @@
         var re=/[A-Za-z\-\(\)\./]*/g;
         var new_str=phone.replace(re,"");
        // console.log(new_str);
-        var new_re=/^\d{1,10}/;
+        var new_re=/^\d{3,11}/;
        // console.log(new_re.test(new_str.substr(0,10)));
         return new_re.test(new_str);
     }
