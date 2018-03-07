@@ -28,28 +28,52 @@
     function validatePhone(phone) {
         var re=/[A-Za-z\-\(\)\./]*/g;
         var new_str=phone.replace(re,"");
-        console.log(new_str);
-        var new_re=/^[\d]{10-11}/;
-        console.log(new_re.test(new_str));
+       // console.log(new_str);
+        var new_re=/^\d{1,10}/;
+       // console.log(new_re.test(new_str.substr(0,10)));
         return new_re.test(new_str);
     }
 
     var name_paste_func=function(e,text) {
         // cancel paste
         var split_str,fname,lname;
+        var appell={"Mr.":0,"Mrs.":0,"Ms.":0,"Miss":0,"Dr.":0};
         if(text.indexOf(",") !== -1)
         {
             //console.log("Found comma");
             split_str=text.split(/,\s*/);
-            if(split_str.length > 0) lname=split_str[0].trim();
-            if(split_str.length > 1) fname=split_str[1].trim();
+            if(split_str.length >= 3 && split_str[0] in appell) {
+                fname=split_str[1].trim();
+                lname=split_str[2].trim();
+            }
+            else
+            {
+
+                if(split_str.length > 0) lname=split_str[0].trim();
+                if(split_str.length > 1) fname=split_str[1].trim();
+            }
         }
         else {
                         //console.log("Found no comma");
 
             split_str=text.split(/\s+/);
-            if(split_str.length > 0) fname=split_str[0].trim();
-            if(split_str.length > 1) lname=split_str[1].trim();
+         //    console.log("split_str.length="+split_str.length);
+            if(split_str.length >= 3)
+            {
+                if(split_str[0] in appell)
+                {
+                   // console.log("MOO");
+                    fname=split_str[1].trim();
+                    lname=split_str[2].trim();
+                }
+               // console.log("split_str[0]="+split_str[0]);
+            }
+
+            else
+            {
+                if(split_str.length > 0) fname=split_str[0].trim();
+                if(split_str.length > 1) lname=split_str[1].trim();
+            }
         }
         var last_val=e.target.id.substr(e.target.id.length-1);
         document.getElementById("fname_"+last_val).value=fname;
@@ -81,7 +105,7 @@
             {
                 document.getElementById("phone_"+last_val).value=curr_line;
             }
-            else
+            else if(curr_line.length>0)
             {
                 document.getElementById("title_"+last_val).value=curr_line;
             }
@@ -89,12 +113,53 @@
 
     };
 
+    
+
+    function column_paste_func(e)
+    {
+        e.preventDefault();
+        for(var i1 in e)
+        {
+            console.log("e["+i1+"]="+e[i1]);
+        }
+       // if (e.ctrlKey  &&   e.code === "KeyB") {
+            console.log("Pasty wasty");
+            if(window.clipboardData) { console.log("MOO"); }
+            var text = e.clipboardData.getData("text/plain");
+            var split_lines=text.split("\n");
+            var clip_str="";
+            var i,j;
+            var max_line=split_lines.length<=8 ? split_lines.length : 8;
+            for(i=0; i < max_line; i++)
+            {
+                var tab_split=split_lines[i].split("\t");
+                clip_str="";
+                for(j=0; j < tab_split.length; j++)
+                {
+                    clip_str=clip_str+tab_split[j];
+                    if(j<tab_split.length-1) { clip_str=clip_str+"\n"; }
+                }
+                var targ_obj=document.getElementById("fname_"+(i+1).toString());
+                var evt = new Event("myevent",{});
+
+                evt.clipboardData=new DataTransfer();
+                evt.clipboardData.setData("text/plain",clip_str);
+                targ_obj.dispatchEvent(evt);
+                data_paste_func(evt);
+            }
+
+        //}
+    }
+
     var i;
     for(i=1; i<=8; i++) {
   //      console.log("fname_"+i+"\t"+document.getElementById("fname_"+i));
         if(document.getElementById("fname_"+i) !== null)
         {
-            document.getElementById("fname_"+i).addEventListener("paste",data_paste_func);
+            document.getElementById("lname_"+i).addEventListener("paste",data_paste_func);
+            document.getElementById("fname_"+i).addEventListener("paste", function(e) {
+                //console.log("window.clipboardData="+window.clipboardData);
+                column_paste_func(e); } );
         }
 
     }
