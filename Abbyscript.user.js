@@ -40,7 +40,7 @@
         var appell={"Mr.":0,"Mrs.":0,"Ms.":0,"Miss":0,"Dr.":0};
         if(text.indexOf(",") !== -1)
         {
-            //console.log("Found comma");
+            console.log("Found comma");
             split_str=text.split(/,\s*/);
             if(split_str.length >= 3 && split_str[0] in appell) {
                 fname=split_str[1].trim();
@@ -54,7 +54,7 @@
             }
         }
         else {
-                        //console.log("Found no comma");
+                       console.log("Found no comma");
 
             split_str=text.split(/\s+/);
          //    console.log("split_str.length="+split_str.length);
@@ -62,15 +62,21 @@
             {
                 if(split_str[0] in appell)
                 {
-                   // console.log("MOO");
+                    console.log("MOO");
                     fname=split_str[1].trim();
                     lname=split_str[2].trim();
                 }
+                else
+                {
+                    console.log("SHROO");
+                    fname=split_str[0].trim();
+                    lname=split_str[1].trim();
+                }
                // console.log("split_str[0]="+split_str[0]);
             }
-
             else
             {
+                console.log("TOO, "+split_str.length);
                 if(split_str.length > 0) fname=split_str[0].trim();
                 if(split_str.length > 1) lname=split_str[1].trim();
             }
@@ -90,8 +96,9 @@
         var i=1;
         var curr_line;
         var last_val=e.target.id.substr(e.target.id.length-1);
-        if(split_lines.length>0)
+        if(split_lines.length>0 && split_lines[0].trim().length > 0)
         {
+        //    console.log("Hello");
             name_paste_func(e,split_lines[0]);
         }
         for(i=1; i < split_lines.length; i++)
@@ -118,28 +125,28 @@
     function column_paste_func(e)
     {
         e.preventDefault();
-        for(var i1 in e)
-        {
-            console.log("e["+i1+"]="+e[i1]);
-        }
+        var last_val=e.target.id.substr(e.target.id.length-1);
+        console.log("last_val="+last_val);
        // if (e.ctrlKey  &&   e.code === "KeyB") {
-            console.log("Pasty wasty");
-            if(window.clipboardData) { console.log("MOO"); }
+            //console.log("Pasty wasty");
+           // if(window.clipboardData) { console.log("MOO"); }
             var text = e.clipboardData.getData("text/plain");
             var split_lines=text.split("\n");
             var clip_str="";
             var i,j;
-            var max_line=split_lines.length<=8 ? split_lines.length : 8;
+            var max_line=split_lines.length<=8+1-last_val ? split_lines.length : 8+1-last_val;
             for(i=0; i < max_line; i++)
             {
                 var tab_split=split_lines[i].split("\t");
                 clip_str="";
+               // console.log("tab_splitlen="+tab_split.length);
                 for(j=0; j < tab_split.length; j++)
                 {
                     clip_str=clip_str+tab_split[j];
                     if(j<tab_split.length-1) { clip_str=clip_str+"\n"; }
                 }
-                var targ_obj=document.getElementById("fname_"+(i+1).toString());
+                //console.log(typeof last_val);
+                var targ_obj=document.getElementById("fname_"+(i+parseInt(last_val)).toString());
                 var evt = new Event("myevent",{});
 
                 evt.clipboardData=new DataTransfer();
