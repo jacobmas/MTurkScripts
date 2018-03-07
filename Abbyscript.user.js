@@ -37,12 +37,12 @@
     var name_paste_func=function(e,text) {
         // cancel paste
         var split_str,fname,lname;
-        var appell={"Mr.":0,"Mrs.":0,"Ms.":0,"Miss":0,"Dr.":0};
+        var appell={"mr.":0,"mrs.":0,"ms.":0,"miss":0,"dr.":0};
         if(text.indexOf(",") !== -1)
         {
             console.log("Found comma");
             split_str=text.split(/,\s*/);
-            if(split_str.length >= 3 && split_str[0] in appell) {
+            if(split_str.length >= 3 && split_str[0].toLowerCase() in appell) {
                 fname=split_str[1].trim();
                 lname=split_str[2].trim();
             }
@@ -60,7 +60,7 @@
          //    console.log("split_str.length="+split_str.length);
             if(split_str.length >= 3)
             {
-                if(split_str[0] in appell)
+                if(split_str[0].toLowerCase() in appell)
                 {
                     console.log("MOO");
                     fname=split_str[1].trim();
@@ -95,6 +95,7 @@
         var fname="",lname="";
         var i=1;
         var curr_line;
+        var has_pasted_title=false;
         var last_val=e.target.id.substr(e.target.id.length-1);
         if(split_lines.length>0 && split_lines[0].trim().length > 0)
         {
@@ -112,8 +113,9 @@
             {
                 document.getElementById("phone_"+last_val).value=curr_line;
             }
-            else if(curr_line.length>0)
+            else if(curr_line.length>0 && !has_pasted_title)
             {
+                has_pasted_title=true;
                 document.getElementById("title_"+last_val).value=curr_line;
             }
         }
