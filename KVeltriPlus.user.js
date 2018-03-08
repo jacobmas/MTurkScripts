@@ -149,6 +149,22 @@
         document.getElementById("undergrad_graduation_year").value=find_graduation(split_str);
 
     };
+    /* Education paste to make it a bit quicker */
+    var ed_paste_func=function(e) {
+        // cancel paste
+        e.preventDefault();
+        // get text representation of clipboard
+        var text = e.clipboardData.getData("text/plain");
+        var split_str=text.split("\n");
+        if(split_str.length>=4)
+        {
+            document.getElementById("law_school").value=split_str[0];
+            document.getElementById("graduation_year").value=split_str[1];
+            document.getElementById("undergrad_school").value=split_str[2];
+            document.getElementById("undergrad_graduation_year").value=split_str[3];
+        }
+
+    };
     document.getElementById("web_url").addEventListener("paste",url_paste_func);
     document.getElementById("current_firm").addEventListener("paste",current_paste_func);
     var i;
@@ -156,6 +172,9 @@
         document.getElementById("previous_co_"+i).addEventListener("paste",prev_paste_func);
     }
     document.getElementById("law_school").addEventListener("paste",law_paste_func);
+    /* paste other side for this */
+    document.getElementById("graduation_year").addEventListener("paste",ed_paste_func);
+
     document.getElementById("undergrad_school").addEventListener("paste",undergrad_paste_func);
     var button = document.createElement("input");
     button.type="button";
@@ -180,26 +199,5 @@
         }
     };
     document.getElementById("mturk_form").onsubmit=function() { return check_validity(); };
-       // console.log(document.readyState);
 
-//    document.onreadystatechange=function() {
-  //      function iframeRef( frameRef ) {
-    //        return frameRef.contentWindow  ? frameRef.contentWindow.document : frameRef.contentDocument;
- //       }
-
-        //var inside = iframeRef( document.getElementsByClassName('embed-responsive-item')[0] );
-    // Your code here...
-
-       // var inside = document.getElementById('mturk_form');
-      //  var the_inputs=inside.getElementsByClassName('form-control');
-    //var the_inputs=the_form.getElementsByTagName('input');
-
-//    console.log("docs="+JSON.stringify(docs));
-    //    for(var curr_var in the_inputs)
-     //   {
-         //   console.log("the_inputs[\""+curr_var+"\"]="+the_inputs[curr_var]);
-      //  }
-//    console.log("\ndocs[\"parentNode\"]="+docs.parentNode.id);
-
-//    };
 })();
