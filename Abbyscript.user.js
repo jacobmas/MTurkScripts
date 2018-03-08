@@ -206,14 +206,20 @@
             clip_str="";
             if(tab_split.length==1)
             {
+                console.log("tab split=1");
                 var temp_match=split_lines[i].match(/,/g);
                 if(temp_match!==null && temp_match.length>1)
                 {
                     tab_split=split_lines[i].split(",");
                 }
-                else if((temp_match=split_lines[i].match(/[·]/g)) && temp_match!==null && temp_match.length>1)
+                else
                 {
-                    tab_split=split_lines[i].split("·");
+                    temp_match=split_lines[i].match(/[·]/g);
+                    if( temp_match!==null && temp_match.length>=1)
+                    {
+
+                        tab_split=split_lines[i].split("·");
+                    }
                 }
             }
             // console.log("tab_splitlen="+tab_split.length);
