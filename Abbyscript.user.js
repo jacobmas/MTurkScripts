@@ -163,11 +163,17 @@
             {
                 document.getElementById("email_"+last_val).value=second_part_line;
             }
-            else if(validatePhone(second_part_line))
+            else if(validatePhone(second_part_line)
+                     )
             {
                 document.getElementById("phone_"+last_val).value=second_part_line;
             }
-            else if(curr_line.trim().length>0 && !has_pasted_title)
+            else if(second_part_line.length>10 &&
+                    second_part_line.substr(0,10)==="Phone Icon" && validatePhone(second_part_line.substr(11)))
+            {
+                document.getElementById("phone_"+last_val).value=second_part_line.substr(11);
+            }
+            else if(curr_line.trim().length>0 && curr_line.indexOf("Title:")===-1 && !has_pasted_title)
             {
                 has_pasted_title=true;
                 document.getElementById("title_"+last_val).value=curr_line.trim();
@@ -186,6 +192,7 @@
        
         var text = e.clipboardData.getData("text/plain");
         var split_lines=text.split("\n");
+        var curr_no=0;
         var clip_str="";
         var temp_str="";
         var i,j;
@@ -194,6 +201,7 @@
         console.log("y="+y);
         for(i=0; i < max_line; i++)
         {
+
             var tab_split=split_lines[i].split("\t");
             clip_str="";
             if(tab_split.length==1)
@@ -202,6 +210,10 @@
                 if(temp_match!==null && temp_match.length>1)
                 {
                     tab_split=split_lines[i].split(",");
+                }
+                else if((temp_match=split_lines[i].match(/[·]/g)) && temp_match!==null && temp_match.length>1)
+                {
+                    tab_split=split_lines[i].split("·");
                 }
             }
             // console.log("tab_splitlen="+tab_split.length);
@@ -226,13 +238,14 @@
                 if(j<tab_split.length-1) { clip_str=clip_str+"\n"; }
             }
             //console.log(typeof last_val);
-            var targ_obj=document.getElementById("fname_"+(i+parseInt(last_val)).toString());
+            var targ_obj=document.getElementById("fname_"+(curr_no+parseInt(last_val)).toString());
             var evt = new Event("myevent",{});
 
             evt.clipboardData=new DataTransfer();
             evt.clipboardData.setData("text/plain",clip_str);
             targ_obj.dispatchEvent(evt);
             data_paste_func(evt);
+            if(split_lines[i].trim().length>0) curr_no++;
         }
 
        
