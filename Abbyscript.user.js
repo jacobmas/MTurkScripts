@@ -170,6 +170,14 @@
         {
             var tab_split=split_lines[i].split("\t");
             clip_str="";
+            if(tab_split.length==1)
+            {
+                var temp_match=split_lines[i].match(/,/g);
+                if(temp_match.length>1)
+                {
+                    tab_split=split_lines[i].split(",");
+                }
+            }
             // console.log("tab_splitlen="+tab_split.length);
             var j_begin=0;
             if(tab_split.length>1 &&  tab_split[0].indexOf(" ")==-1)
