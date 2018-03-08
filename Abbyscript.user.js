@@ -119,16 +119,21 @@
         var text = e.clipboardData.getData("text/plain");
         var split_lines=text.split("\n");
         var fname="",lname="";
-        var i=1;
+        var i=0,j=0;
         var curr_line, second_part_line, second_arr;
         var has_pasted_title=false;
         var last_val=e.target.id.substr(e.target.id.length-1);
-        if(split_lines.length>0 && split_lines[0].trim().length > 0)
+        for(j=0; j < split_lines.length; j++)
+        {
+            if(split_lines.length>0 && split_lines[j].trim().length > 0)
+                break;
+        }
+        if(split_lines.length>0 && split_lines[j].trim().length > 0)
         {
         //    console.log("Hello");
-            name_paste_func(e,split_lines[0]);
+            name_paste_func(e,split_lines[j]);
         }
-        for(i=1; i < split_lines.length; i++)
+        for(i=j+1; i < split_lines.length; i++)
         {
             curr_line=split_lines[i].trim();
 
@@ -143,10 +148,10 @@
             {
                 document.getElementById("phone_"+last_val).value=second_part_line;
             }
-            else if(curr_line.length>0 && !has_pasted_title)
+            else if(curr_line.trim().length>0 && !has_pasted_title)
             {
                 has_pasted_title=true;
-                document.getElementById("title_"+last_val).value=curr_line;
+                document.getElementById("title_"+last_val).value=curr_line.trim();
             }
         }
 
