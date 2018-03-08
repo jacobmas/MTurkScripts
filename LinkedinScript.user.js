@@ -21,20 +21,50 @@
         console.log("LOADING\n");
         var the_secs=document.getElementsByTagName("section");
         var j;
-        for(j=0; j < the_secs.length; j++)
+        /*for(j=0; j < the_secs.length; j++)
         {
             console.log("the_secs["+j+"].className="+the_secs[j].className);
-        }
+        }*/
         var expSec=document.getElementsByClassName("experience-section")[0];
         function stripNonAlphaUpper(to_strip)
         {
             var my_re=/[^A-Za-z]/;
             return to_strip.replace(my_re,"").toUpperCase();
         }
+        /* Strip stuff to find BA */
         function stripStuffUpper(to_strip)
         {
-            var my_re=/[\(\)\.\"]/g;
+            var my_re=/[\(\)\.\"\s]/g;
             return to_strip.replace(my_re,"").toUpperCase();
+        }
+        function arrayMatchStrippedString(string, the_arr)
+        {
+            var i;
+            var stripped=stripStuffUpper(string);
+            console.log("stripped="+stripped);
+            for(i=0; i < the_arr.length; i++)
+            {
+                if(stripped.indexOf(the_arr[i]) !== -1)
+                {
+                    console.log("Matched at "+i+", "+the_arr[i]);
+                    return true;
+                }
+            }
+            console.log("NO matches");
+            return false;
+        }
+        function year_toString(year)
+        {
+            if(year>0)
+                return year.toString();
+            return "";
+        }
+        function findlastyear(to_find)
+        {
+            var my_re=/\d{4}/g;
+            var the_matches=to_find.match(my_re);
+            if(the_matches!==null) return parseInt(the_matches[the_matches.length-1]);
+            return 0;
         }
         var get_Exp=function(e) {
             e.preventDefault();
@@ -80,55 +110,61 @@
             GM_setClipboard(clip_str);
         };
 
-        expSec.addEventListener("click", get_Exp);
+        if(expSec !== null) expSec.addEventListener("click", get_Exp);
         var edSec= document.getElementsByClassName("education-section")[0];
         var get_Ed = function(e) {
             e.preventDefault();
-            var edProfiles=e.target.getElementsByTagName("li");//ClassName("pv-profile-section__card-item");
-            var i,l;
+            var edProfiles=edSec.getElementsByTagName("li");//ClassName("pv-profile-section__card-item");
+            var i,j,k,l;
             var clip_str="";
-            var lawdegrees={"LLB":1,"JD":1};
-            var bachelorsdegrees={"BS":1,"BA":1,"BSM":1,"BSN":1,"BE":1};
+            var lawdegrees=["LLB","JD","JURIS"];
+            var undergraddegrees=["BS","BA","BSM","BSN","BE","BCom"];
             var temp_str;
             var match_arr;
             var num_needed;
             var i_len;
-            var max_law_year=0;
+            var max_law_year=-1;
             var max_law_school="";
-            var max_undergrad_year=0;
+            var max_undergrad_year=-1;
             var max_undergrad_school="";
             var i_count=0;
+            console.log("edProfiles.length="+edProfiles.length);
             for(i=0; i < edProfiles.length; i++) {
                 if(edProfiles[i].className.match("artdeco") !== null) {
                     continue; }
-                else {
-                    i_count+=1;
-                    if(i_count>4) { break; }
-                }
                 var school_name=edProfiles[i].getElementsByClassName("pv-entity__school-name")[0].innerText;
-                var sum_info=expProfiles[i].getElementsByClassName("pv-entity__summary-info")[0];
-                var degree_comma_item=sum_info.getElementsByClassName("pv-entity__comma_item")[0];
-                var times=sum_info.getElementsByTagName("time");
-                temp_str=sum_info.innerText;
-                clip_str=clip_str+temp_str;//+"\n";
-                match_arr=temp_str.match(/\n/g);
-                if(match_arr === null)
-                {
-                    num_needed=4;
-                }
-                else if(match_arr.length>=4)
-                {
-                    num_needed=0;
-                }
+                var sum_info=edProfiles[i].getElementsByClassName("pv-entity__summary-info")[0];
+                var times,last_time;
+
+                console.log("sum_info="+sum_info.innerText);
+                var degree_comma_item=sum_info.getElementsByClassName("pv-entity__degree-name");
+                if(degree_comma_item !== null && degree_comma_item.length != null && degree_comma_item.length>0)
+                    degree_comma_item = degree_comma_item[0].innerText.substr(11);
                 else
+                    degree_comma_item="";
+                console.log("degree_comma_item="+degree_comma_item);
+                var dates=sum_info.getElementsByClassName("pv-entity__dates");
+                if(dates !== null && dates.length !== null && dates.length>0)
+                    last_time=findlastyear(dates[0].innerText);
+                else
+                    last_time=0;
+                console.log("last_time="+last_time);
+                if(last_time > max_law_year &&
+                   arrayMatchStrippedString(degree_comma_item,lawdegrees))
                 {
-                    num_needed=4-match_arr.length;
+                    max_law_year=last_time;
+                    max_law_school=school_name;
                 }
-                for(j=0; j < num_needed; j++)
-                    clip_str=clip_str+"\n";
-
-
+                else if(last_time > max_undergrad_year &&
+                        arrayMatchStrippedString(degree_comma_item,undergraddegrees))
+                {
+                    max_undergrad_year=last_time;
+                    max_undergrad_school=school_name;
+                }
             }
+
+            clip_str=max_law_school+"\n"+year_toString(max_law_year)+"\n"+max_undergrad_school+"\n";
+            clip_str=clip_str+year_toString(max_undergrad_year);
             console.log("clip_str="+clip_str);
             GM_setClipboard(clip_str);
         };
