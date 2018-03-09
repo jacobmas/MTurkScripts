@@ -14,7 +14,7 @@
 
 (function() {
     'use strict';
-
+    var iter=0;
     var panel_primary=document.getElementsByClassName("panel-primary")[0];
     var panel_body=panel_primary.getElementsByClassName("panel-body")[0];
     panel_primary.removeChild(panel_body);
@@ -24,10 +24,25 @@
     var no_flip_button = document.createElement("input");
     var true_label=document.createElement("label");
     var false_label=document.createElement("label");
+    var column_label=document.createElement("label");
+    var col_select=document.createElement("select");
+    col_select.id="col_select";
+    col_select.name="col_select";
+    var temp_opt;
+    for(i=0; i <= 4; i++)
+    {
+        temp_opt=document.createElement("option");
+        temp_opt.value=i;
+        temp_opt.innerHTML=i;
+        if(i==0) temp_opt.selected=true;
+        col_select.appendChild(temp_opt);
+    }
     true_label.innerHTML="Flip";
     true_label.style.margin="2px 5px";
     false_label.innerHTML="Don't Flip";
     false_label.style.margin="2px 5px 2px 10px";
+    column_label.innerHTML="Begin Col";
+    column_label.style.margin="2px 10px 2px 10px";
     flip_button.style.margin="2px 5px";
     flip_button.setAttribute("type","radio");
     flip_button.setAttribute("name","is_flipped");
@@ -43,6 +58,8 @@
     panel_primary.insertBefore(true_label,flip_button);
     panel_primary.appendChild(false_label);
     panel_primary.appendChild(no_flip_button);
+    panel_primary.appendChild(column_label);
+    panel_primary.appendChild(col_select);
 
     var url=document.getElementById("url");
     url.required=true;
@@ -66,7 +83,7 @@
         var appell={"mr.":0,"mrs.":0,"ms.":0,"miss":0,"dr.":0};
         if(text.indexOf(",") !== -1)
         {
-            console.log("Found comma");
+         //   console.log("Found comma");
             split_str=text.split(/,\s*/);
             if(split_str.length >= 3 && split_str[0].toLowerCase() in appell) {
                 fname=split_str[1].trim();
@@ -80,7 +97,7 @@
             }
         }
         else {
-                       console.log("Found no comma");
+                    
 
             split_str=text.split(/\s+/);
          //    console.log("split_str.length="+split_str.length);
@@ -88,13 +105,13 @@
             {
                 if(split_str[0].toLowerCase() in appell)
                 {
-                    console.log("MOO");
+                
                     fname=split_str[1].trim();
                     lname=split_str[2].trim();
                 }
                 else
                 {
-                    console.log("SHROO");
+                  
                     fname=split_str[0].trim();
                     lname=split_str[1].trim();
                 }
@@ -102,7 +119,7 @@
             }
             else
             {
-                console.log("TOO, "+split_str.length);
+             
                 if(split_str.length > 0) fname=split_str[0].trim();
                 if(split_str.length > 1) lname=split_str[1].trim();
             }
@@ -119,34 +136,47 @@
         var text = e.clipboardData.getData("text/plain");
         var split_lines=text.split("\n");
         var fname="",lname="";
-        var i=1;
+        var i=0,j=0;
         var curr_line, second_part_line, second_arr;
         var has_pasted_title=false;
         var last_val=e.target.id.substr(e.target.id.length-1);
-        if(split_lines.length>0 && split_lines[0].trim().length > 0)
+        if(split_lines===null)
+            return;
+        for(j=0; j < split_lines.length; j++)
+        {
+            if(split_lines.length>0 && split_lines[j].trim().length > 0)
+                break;
+        }
+        if(split_lines.length>0 && j<split_lines.length&& split_lines[j].trim().length > 0)
         {
         //    console.log("Hello");
-            name_paste_func(e,split_lines[0]);
+            name_paste_func(e,split_lines[j]);
         }
-        for(i=1; i < split_lines.length; i++)
+        for(i=j+1; i < split_lines.length; i++)
         {
             curr_line=split_lines[i].trim();
 
             second_arr=curr_line.split(":");
-            console.log("curr_line="+curr_line+", second_arr.length="+second_arr.length);
+          //  console.log("curr_line="+curr_line+", second_arr.length="+second_arr.length);
             second_part_line=second_arr[second_arr.length-1].trim();
             if(validateEmail(second_part_line))
             {
                 document.getElementById("email_"+last_val).value=second_part_line;
             }
-            else if(validatePhone(second_part_line))
+            else if(validatePhone(second_part_line)
+                     )
             {
                 document.getElementById("phone_"+last_val).value=second_part_line;
             }
-            else if(curr_line.length>0 && !has_pasted_title)
+            else if(second_part_line.length>10 &&
+                    second_part_line.substr(0,10)==="Phone Icon" && validatePhone(second_part_line.substr(11)))
+            {
+                document.getElementById("phone_"+last_val).value=second_part_line.substr(11);
+            }
+            else if(curr_line.trim().length>0 && curr_line.indexOf("Title:")===-1 && !has_pasted_title)
             {
                 has_pasted_title=true;
-                document.getElementById("title_"+last_val).value=curr_line;
+                document.getElementById("title_"+last_val).value=curr_line.trim();
             }
         }
 
@@ -158,39 +188,60 @@
     {
         e.preventDefault();
         var last_val=e.target.id.substr(e.target.id.length-1);
-        console.log("last_val="+last_val);
+       // console.log("last_val="+last_val);
        
         var text = e.clipboardData.getData("text/plain");
         var split_lines=text.split("\n");
+        var curr_no=0;
         var clip_str="";
         var temp_str="";
         var i,j;
         var max_line=split_lines.length<=8+1-last_val ? split_lines.length : 8+1-last_val;
+        var y=parseInt(document.getElementById("col_select").value);
+        console.log("y="+y);
         for(i=0; i < max_line; i++)
         {
+
             var tab_split=split_lines[i].split("\t");
             clip_str="";
             if(tab_split.length==1)
             {
+                console.log("tab split=1");
                 var temp_match=split_lines[i].match(/,/g);
-                if(temp_match.length>1)
+                if(temp_match!==null && temp_match.length>1)
                 {
                     tab_split=split_lines[i].split(",");
                 }
+                else if((temp_match=split_lines[i].match(/[·]|(\s–\s)|(\s-\s)/g)) && temp_match !== null && temp_match.length >= 1)
+                {
+                    console.log("TROO");
+                    tab_split=split_lines[i].split(/[·]|(\s–\s)|(\s-\s)/);
+
+                }
+                else
+                {
+                    temp_match=split_lines[i].match(/[·]/g);
+                    if( temp_match!==null && temp_match.length>=1)
+                    {
+                        console.log("MOO");
+                        tab_split=split_lines[i].split(/[·]/);
+                    }
+
+                }
             }
             // console.log("tab_splitlen="+tab_split.length);
-            var j_begin=0;
-            if(tab_split.length>1 &&  tab_split[0].indexOf(" ")==-1)
+            var j_begin=y;
+            if(tab_split.length>y+1 &&  tab_split[y+0].indexOf(" ")==-1)
             {
-                j_begin=2;
+                j_begin=y+2;
                 if(document.getElementById("flipped_true").checked)
                 {
-                    clip_str=tab_split[1]+" "+tab_split[0];
+                    clip_str=tab_split[y+1]+" "+tab_split[y+0];
                 }
                 else {
-                    clip_str=tab_split[0]+" "+tab_split[1];
+                    clip_str=tab_split[y+0]+" "+tab_split[y+1];
                 }
-                if(tab_split.length>2) clip_str=clip_str+"\n";
+                if(tab_split.length>2+y) clip_str=clip_str+"\n";
             }
             for(j=j_begin; j < tab_split.length; j++)
             {
@@ -200,13 +251,14 @@
                 if(j<tab_split.length-1) { clip_str=clip_str+"\n"; }
             }
             //console.log(typeof last_val);
-            var targ_obj=document.getElementById("fname_"+(i+parseInt(last_val)).toString());
+            var targ_obj=document.getElementById("fname_"+(curr_no+parseInt(last_val)).toString());
             var evt = new Event("myevent",{});
 
             evt.clipboardData=new DataTransfer();
             evt.clipboardData.setData("text/plain",clip_str);
             targ_obj.dispatchEvent(evt);
             data_paste_func(evt);
+            if(split_lines[i].trim().length>0) curr_no++;
         }
 
        
