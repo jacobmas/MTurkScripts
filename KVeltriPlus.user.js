@@ -6,7 +6,8 @@
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
-// @grant        none
+// @include file://*
+// @grant        GM_setClipboard
 // ==/UserScript==
 
 (function() {
@@ -48,6 +49,9 @@
             {
                 document.getElementById("previous_year_"+curr_pos).value=temp_re[0];
             }
+        }
+        if(curr_pos*4 < split_str.length)
+        {
         }
     };
     var current_paste_func=function(e) {
@@ -199,5 +203,21 @@
         }
     };
     document.getElementById("mturk_form").onsubmit=function() { return check_validity(); };
+
+    /* Fix the table to allow easier copying */
+    var workContent=document.getElementById("workContent");
+    var workTable =workContent.getElementsByTagName("table");
+    var lawyer_name=workTable.rows[1].cells[1].innerText;
+    var split_law=lawyer_name.split(" ");
+    var new_lawyer_name="";
+    if(split_law.length >= 2) {
+        new_lawyer_name=split_law[0]+" "+split_law[split_law.length-1];
+    }
+    else
+    {
+        new_lawyer_name = lawyer_name;
+    }
+    GM_setClipboard(new_lawyer_name,"text");
+
 
 })();
