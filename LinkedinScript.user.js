@@ -41,13 +41,19 @@
         {
             var i;
             var stripped=stripStuffUpper(string);
+            var pos;
             console.log("stripped="+stripped);
             for(i=0; i < the_arr.length; i++)
             {
-                if(stripped.indexOf(the_arr[i]) !== -1)
+                pos=stripped.indexOf(the_arr[i]);
+                if(pos !== -1)
                 {
-                    console.log("Matched at "+i+", "+the_arr[i]);
-                    return true;
+                    if(the_arr[i]!=='BA' || !((pos >= 1 && stripped.substr(pos-1,3) === 'MBA') ||  (
+                    stripped.length >= pos+5 && stripped.substr(pos,5)==='BANKI' )))
+                    {
+                        console.log("Matched at "+i+", "+the_arr[i]);
+                        return true;
+                    }
                 }
             }
             console.log("NO matches");
@@ -118,7 +124,7 @@
             var i,j,k,l;
             var clip_str="";
             var lawdegrees=["LLB","JD","JURIS"];
-            var undergraddegrees=["BS","BA","BSM","BSN","BE","BCom"];
+            var undergraddegrees=["BS","BA","BSM","BSN","BE","BCom","AB"];
             var temp_str;
             var match_arr;
             var num_needed;
@@ -150,7 +156,8 @@
                     last_time=0;
                 console.log("last_time="+last_time);
                 if(last_time > max_law_year &&
-                   arrayMatchStrippedString(degree_comma_item,lawdegrees))
+                   (arrayMatchStrippedString(degree_comma_item,lawdegrees) || school_name.indexOf("LAW SCHOOL")!==-1 ||
+                   school_name.toUpperCase().indexOf("SCHOOL OF LAW") !== -1))
                 {
                     max_law_year=last_time;
                     max_law_school=school_name;

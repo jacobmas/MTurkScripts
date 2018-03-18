@@ -206,12 +206,15 @@
 
     /* Fix the table to allow easier copying */
     var workContent=document.getElementById("workContent");
-    var workTable =workContent.getElementsByTagName("table");
+    var workTable =workContent.getElementsByTagName("table")[0];
     var lawyer_name=workTable.rows[1].cells[1].innerText;
     var split_law=lawyer_name.split(" ");
+    var suffixes={"Jr":0,"II":0,"III":0,"IV":0};
     var new_lawyer_name="";
+    var last_pos=split_law.length-1;
     if(split_law.length >= 2) {
-        new_lawyer_name=split_law[0]+" "+split_law[split_law.length-1];
+        if(split_law[last_pos] in suffixes && last_pos>=2) { last_pos-=last_pos-1; }
+        new_lawyer_name=split_law[0]+" "+split_law[last_pos];
     }
     else
     {
