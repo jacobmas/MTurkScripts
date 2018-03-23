@@ -28,7 +28,7 @@
         return new_re.test(new_str);
     }
     function matchPhone(phone) {
-        var re=/(?\d{3}[\d\-\(\)\s\./]*\d{4}/;
+        var re=/\(?\d{3}[\d\-\(\)\s\./]*\d{4}/;
         var replace_re=/[\-\(\)\s\./]*/g;
 
         var result=phone.match(re);
@@ -75,14 +75,25 @@
         }
     }
 
+    function clear_most_form(add_num)
+    {
+        document.getElementsByName("officeName")[add_num].value="";
+        document.getElementsByName("addressLine1")[add_num].value="";
+        document.getElementsByName("addressLine2")[add_num].value="";
+        document.getElementsByName("city")[add_num].value="";
+        document.getElementsByName("state")[add_num].value="";
+        document.getElementsByName("zip")[add_num].value="";
 
+    }
+
+/* Paste address with some help from external script */
     function paste_address(text, add_num)
     {
         // cancel paste
         //e.preventDefault();
         // get text representation of clipboard
         //var text = e.clipboardData.getData("text/plain");
-
+        text=text.replace(/\s+\|\s+/g,"\n");
         console.log("text="+text+"\nadd_num="+add_num);
 
         var split_text=text.split("\n");
@@ -102,14 +113,15 @@
             console.log("possible_phone="+possible_phone+"\tvalidation="+validatePhone(possible_phone));
             if(validatePhone(possible_phone))
             {
+                text=text.replace(split_text[i],"");
                 if(!is_fax)
                 {
-                    document.getElementsByName("phoneNumber")[add_num].value=possible_phone;
+                    document.getElementsByName("phoneNumber")[add_num].value=matchPhone(possible_phone);
                     is_fax=true;
                 }
                 else
                 {
-                    document.getElementsByName("faxNumber")[add_num].value=possible_phone;
+                    document.getElementsByName("faxNumber")[add_num].value=matchPhone(possible_phone);
                 }
             }
             else if(validateEmail(possible_phone))
@@ -120,9 +132,23 @@
 
 
         }
+        var floor;
+        /* Delete anything about a floor number */
+        var floor_expression=/,?\s*(\d)+((th)|(st)|(rd)|(nd))\s*(F|f)loor/;
 
+        var floor_match=text.match(floor_expression);
+        if(floor_match!==null && floor_match.length>0)
+        {
+            console.log("Floor matched");
+            floor=floor_match[0].replace(/,\s+/,"");
+            text=text.replace(floor_expression,"");
+        }
+
+        console.log("Text=\n"+text);
 
         var parsed = parseAddress.parseLocation(text);
+
+
         var add1Str=""+parsed.number;
         if(parsed.prefix !== undefined) add1Str=add1Str+" "+parsed.prefix;
         if(parsed.street !== undefined) add1Str=add1Str+" "+parsed.street;
@@ -132,6 +158,11 @@
         document.getElementsByName("addressLine1")[add_num].value=add1Str;
         if(parsed.sec_unit_type !== undefined) {
             document.getElementsByName("addressLine2")[add_num].value=parsed.sec_unit_type+" "+parsed.sec_unit_num;
+        }
+        else if(floor!== undefined)
+        {
+            console.log("floor defined");
+            document.getElementsByName("addressLine2")[add_num].value=floor;
         }
         else
         {
@@ -145,51 +176,13 @@
 
     }
 
-
-
-
-
-    var well=document.getElementsByClassName("well")[0];
-    var wellparent=well.parentNode;
-  /*  var button = document.createElement("input");
-    button.type="button";
-    button.value="Load Address";
-        button.style.margin='5px';
-    button.style.marginRight='20px';
-    wellparent.insertBefore(button, well.nextSibling);*/
-    var btnAdd=document.getElementById("btnAdd");
-
-    var i;
-    var addLines1=document.getElementsByName("addressLine1");
-    var officeName=document.getElementsByName("officeName");
-    var city = document.getElementsByName("city");
-    console.log(addLines1.length);
-    for(i=0; i < addLines1.length; i++)
-    {
-        addLines1[i].onpaste=function(e) {
-            e.preventDefault();
-            var text=e.clipboardData.getData("text/plain");
-            paste_address(text,i-1);
-        };
-        officeName[i].onpaste=function(e) {
-                e.preventDefault();
-                var text=e.clipboardData.getData("text/plain");
-                paste_office(text,i-1);
-            };
-        city[i].onpaste=function(e) {
-                e.preventDefault();
-                var text=e.clipboardData.getData("text/plain");
-                paste_city(text,i-1);
-            };
-    }
-
-    btnAdd.addEventListener("click", function() {
+    function addBtnClickFunc(total_addresses) {
         var i;
         var addLines1=document.getElementsByName("addressLine1");
         var officeName=document.getElementsByName("officeName");
         var city = document.getElementsByName("city");
         console.log(addLines1.length);
-        for(i=0; i < addLines1.length; i++)
+        for(i=total_addresses; i < addLines1.length; i++)
         {
             addLines1[i].onpaste=function(e) {
                 e.preventDefault();
@@ -207,9 +200,86 @@
                 paste_city(text,i-1);
             };
         }
+       // total_addresses++;
 
+    }
+
+
+
+    var well=document.getElementsByClassName("well")[0];
+    var url=well.firstChild.href;
+    //alert('URL='+url);
+    var wellparent=well.parentNode;
+  /*  var button = document.createElement("input");
+    button.type="button";
+    button.value="Load Address";
+        button.style.margin='5px';
+    button.style.marginRight='20px';
+    wellparent.insertBefore(button, well.nextSibling);*/
+    var btnAdd=document.getElementById("btnAdd");
+
+    var i;
+    var addLines1=document.getElementsByName("addressLine1");
+    var officeName=document.getElementsByName("officeName");
+    var city = document.getElementsByName("city");
+    console.log(addLines1.length);
+    var total_addresses=0;
+
+    document.getElementsByName("officeURL")[0].value=url;
+    GM_setClipboard(url);
+    addBtnClickFunc(total_addresses);
+    total_addresses++;
+
+  /*  for(i=0; i < addLines1.length; i++)
+    {
+        addLines1[i].onpaste=function(e) {
+            e.preventDefault();
+            var text=e.clipboardData.getData("text/plain");
+            paste_address(text,i-1);
+        };
+        officeName[i].onpaste=function(e) {
+                e.preventDefault();
+                var text=e.clipboardData.getData("text/plain");
+                paste_office(text,i-1);
+            };
+        city[i].onpaste=function(e) {
+                e.preventDefault();
+                var text=e.clipboardData.getData("text/plain");
+                paste_city(text,i-1);
+            };
+    }*/
+    btnAdd.addEventListener("click", function() {
+        addBtnClickFunc(total_addresses);
+        clear_most_form(total_addresses);
+       total_addresses++;
     });
 
+   /* btnAdd.addEventListener("click", function() {
+        var i;
+        var addLines1=document.getElementsByName("addressLine1");
+        var officeName=document.getElementsByName("officeName");
+        var city = document.getElementsByName("city");
+        console.log(addLines1.length);
+        for(i=total_addresses; i < addLines1.length; i++)
+        {
+            addLines1[i].onpaste=function(e) {
+                e.preventDefault();
+                var text=e.clipboardData.getData("text/plain");
+                paste_address(text,i-1);
+            };
+            officeName[i].onpaste=function(e) {
+                e.preventDefault();
+                var text=e.clipboardData.getData("text/plain");
+                paste_office(text,i-1);
+            };
+            city[i].onpaste=function(e) {
+                e.preventDefault();
+                var text=e.clipboardData.getData("text/plain");
+                paste_city(text,i-1);
+            };
+        }
+        total_addresses++;
 
+    });*/
 
 })();
