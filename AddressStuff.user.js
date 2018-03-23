@@ -20,21 +20,22 @@
         return re.test(String(email).toLowerCase());
     }
      function validatePhone(phone) {
-        var re=/[\-\(\)\s\./]*/g;
-        var new_str=phone.replace(re,"");
+        //var re=/[\-\(\)\s\./]*/g;
+         var re=/((\(?\d{3}[\-\(\)\s\./]*)|[^\d])\d{3}[\-\(\)\s\./]\d{4}/;
+        //var new_str=phone.replace(re,"");
        // console.log(new_str);
-        var new_re=/^\d{7,11}/;
+        var new_re=/\d{7,11}/;
        // console.log(new_re.test(new_str.substr(0,10)));
-        return new_re.test(new_str);
+        return re.test(phone);
     }
     function matchPhone(phone) {
-        var re=/\(?\d{3}[\d\-\(\)\s\./]*\d{4}/;
+        var re=/((\(?\d{3}[\-\(\)\s\./]*)|[^\d])\d{3}[\-\(\)\s\./]\d{4}/;
         var replace_re=/[\-\(\)\s\./]*/g;
 
         var result=phone.match(re);
         if(result !== null && result.length>0)
         {
-            return result;
+            return result[0];
         }
         return null;
        /* var new_str=phone.replace(re,"");
@@ -50,12 +51,12 @@
         first_ind=text.indexOf("\n");
         if(first_ind !== -1)
         {
-            document.getElementsByName("officeName")[add_num].value=text.substring(0,first_ind);
+            document.getElementsByName("officeName")[add_num].value=text.substring(0,first_ind).replace(/\s+:/,"");
             paste_address(text.substring(first_ind+1),add_num);
         }
         else
         {
-            document.getElementsByName("officeName")[add_num].value=text;
+            document.getElementsByName("officeName")[add_num].value=text.replace(/\s+:/,"");
         }
     }
     function paste_city(text, add_num)
@@ -149,11 +150,14 @@
         var parsed = parseAddress.parseLocation(text);
 
 
-        var add1Str=""+parsed.number;
+        var add1Str="";
+        if(parsed.number !== undefined) add1Str=add1Str+parsed.number;
         if(parsed.prefix !== undefined) add1Str=add1Str+" "+parsed.prefix;
         if(parsed.street !== undefined) add1Str=add1Str+" "+parsed.street;
         if(parsed.type !== undefined) add1Str=add1Str+" " + parsed.type;
         if(parsed.suffix !== undefined) add1Str=add1Str+" "+parsed.suffix;
+
+        add1Str=add1Str.trim();
 
         document.getElementsByName("addressLine1")[add_num].value=add1Str;
         if(parsed.sec_unit_type !== undefined) {
