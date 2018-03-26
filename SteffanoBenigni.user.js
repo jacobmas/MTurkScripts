@@ -58,9 +58,11 @@
 
         //compnameXX, roleXX, startYearEXX, endYearEXX, locationXX
         i_len = expProfiles.length > 4 ? 4 : expProfiles.length;
+
+        var expMax = expProfiles.length > 15 ? 15 : expProfiles.length;
         var i_count=0;
         var i_str="";
-        for(i=0; i < expProfiles.length; i++) {
+        for(i=0; i < expMax; i++) {
             if(i_count<9) i_str="0"+(i_count+1).toString();
             else i_str=(i_count+1).toString();
             if(expProfiles[i].className.match("artdeco") !== null) {
