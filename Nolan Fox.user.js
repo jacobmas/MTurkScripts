@@ -20,6 +20,7 @@
 (function() {
     'use strict';
 
+    var country_suffixes=['au','br','ca','es','fr','in','il','uk'];
     function has_marketer(header, slp)
     {
         if(header.indexOf("marketing") !== -1 || slp.indexOf("marketing") !== -1)
@@ -184,6 +185,8 @@
         }
     }
 
+
+
     function parse_domain(t_url)
     {
         var new_url=t_url.replace(/^https:\/\//,"").replace(/^www\./,"").replace(/\/.*$/,"");
@@ -191,7 +194,7 @@
         var split_dots=new_url.split(".");
         var split_len=split_dots.length;
         var ret="";
-        if(split_len>=3&&split_dots[split_len-2]==="co")
+        if(split_len>=3&&country_suffixes.includes(split_dots[split_len-1]))
         {
             ret=split_dots[split_len-3]+"."+split_dots[split_len-2]+"."+split_dots[split_len-1];
         }
