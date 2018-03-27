@@ -20,6 +20,14 @@
 (function() {
     'use strict';
 
+    function has_marketer(header, slp)
+    {
+        if(header.indexOf("marketing") !== -1 || slp.indexOf("marketing") !== -1)
+        {
+            return true;
+        }
+        return false;
+    }
     function bing1_response(response,data) {
         // console.log(JSON.stringify(response));
         var doc = new DOMParser()
@@ -100,18 +108,36 @@
         var i;
         var my_match;
         var g1_success=false;
-        var t_url="", t_header_search="";
+        var t_url="", t_header_search="", t_slp;
         for(i=0; i < g_stuff.length; i++)
         {
             t_url=g_stuff[i].getElementsByTagName("cite")[0].innerText; // url of query
             t_header_search=g_stuff[i].getElementsByClassName("r")[0].innerText; // basic description
+            t_slp=g_stuff[i].getElementsByClassName("slp");
+
+
 
             my_match=t_url.match(/https:\/\/.*linkedin\.com\/in\//);
 
             if(my_match !== null && my_match.length>0)
             {
-                g1_success=true;
-                break;
+
+
+                var t_slp_str="";
+                if(t_slp !== undefined && t_slp.length>0)
+                {
+                    t_slp_str=t_slp[0].innerText;
+                }
+                if(has_marketer(t_header_search.toLowerCase(), t_slp_str.toLowerCase()))
+                {
+                    g1_success=true;
+                    break;
+                }
+                else
+                {
+                    g1_success=true;
+                    break;
+                }
             }
             //console.log(temp1);
         }
@@ -137,7 +163,7 @@
                         lname=name_split[name_split.length-2];
                     data.fname=fname;
                     data.lname=lname;
-                    var search_str=data.orgname+" company";//+my_query.streetadd;//
+                    var search_str=data.orgname+" company";// + "OR " + data.orgname;//+my_query.streetadd;//
 
 
                     var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
@@ -158,6 +184,30 @@
         }
     }
 
+    function parse_domain(t_url)
+    {
+        var new_url=t_url.replace(/^https:\/\//,"").replace(/^www\./,"").replace(/\/.*$/,"");
+        new_url=new_url.replace(/ ›.*$/,"");
+        var split_dots=new_url.split(".");
+        var split_len=split_dots.length;
+        var ret="";
+        if(split_len>=3&&split_dots[split_len-2]==="co")
+        {
+            ret=split_dots[split_len-3]+"."+split_dots[split_len-2]+"."+split_dots[split_len-1];
+        }
+        else
+        {
+            ret=split_dots[split_len-2]+"."+split_dots[split_len-1];
+        }
+        return ret;
+    /*    var x_match=new_url.match(/\./g);
+        while(x_match!== null && x_match.length>=2)
+        {
+            new_url=new_url.replace(/^[^\.]*\./,"");
+            x_match=new_url.match(/\./g);
+        }*/
+    }
+
     function domain_response(response, data) {
         // console.log(JSON.stringify(response));
         var doc = new DOMParser()
@@ -171,17 +221,15 @@
         var t_url="crunchbase.com", t_header_search="";
         i=0;
         while(t_url.indexOf("crunchbase.com") !== -1 || t_url.indexOf("linkedin.com") !== -1 ||
-              t_url.indexOf("bloomberg.com") !== -1 || t_url.indexOf("wikipedia.org") !== -1) {
+              t_url.indexOf("bloomberg.com") !== -1 || t_url.indexOf("wikipedia.org") !== -1 ||
+              t_url.indexOf("facebook.com") !== -1 || t_url.indexOf("glassdoor.com") !== -1 ||
+             t_url.indexOf("pitchbook.com") !== -1 || t_url.indexOf("fortune.com") !== -1
+             )
+              {
             t_url=g_stuff[i].getElementsByTagName("cite")[0].innerText; // url of query
             i++;
         }
-        var new_url=t_url.replace(/^https:\/\//,"").replace(/^www\./,"").replace(/\/.*$/,"");
-        var x_match=new_url.match(/\./g);
-        while(x_match!== null && x_match.length>=2)
-        {
-            new_url=new_url.replace(/^[^\.]*\./,"");
-            x_match=new_url.match(/\./g);
-        }
+        var new_url=parse_domain(t_url);
         if(new_url!==null && new_url.length>0) {
             data.domain_name=new_url;
             console.log(data.domain_name);
@@ -344,7 +392,7 @@
         
 
 
-        var search_str=orgname + " marketing Linkedin";
+        var search_str=orgname + " marketing site:linkedin.com";
 
 
 
@@ -357,11 +405,13 @@
 
         GM_xmlhttpRequest({
             method: 'GET',
-            url:    search_URIBing,
-
+            //url:    search_URIBing,
+            url:    search_URI,
             onload: function(response) {
+                google1_response(response, data);
+            //    bing1_response(response, data);
 
-                bing1_response(response, data); }
+            }
 
         });
 
