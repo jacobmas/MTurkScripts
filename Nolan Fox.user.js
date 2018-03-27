@@ -158,6 +158,29 @@
         }
     }
 
+    function parse_domain(t_url)
+    {
+        var new_url=t_url.replace(/^https:\/\//,"").replace(/^www\./,"").replace(/\/.*$/,"");
+        var split_dots=new_url.split(".");
+        var split_len=split_dots.length;
+        var ret="";
+        if(split_len>=3&&split_dots[split_len-2]==="co")
+        {
+            ret=split_dots[split_len-3]+"."+split_dots[split_len-2]+"."+split_dots[split_len-1];
+        }
+        else
+        {
+            ret=split_dots[split_len-2]+"."+split_dots[split_len-1];
+        }
+        return ret;
+    /*    var x_match=new_url.match(/\./g);
+        while(x_match!== null && x_match.length>=2)
+        {
+            new_url=new_url.replace(/^[^\.]*\./,"");
+            x_match=new_url.match(/\./g);
+        }*/
+    }
+
     function domain_response(response, data) {
         // console.log(JSON.stringify(response));
         var doc = new DOMParser()
@@ -175,13 +198,7 @@
             t_url=g_stuff[i].getElementsByTagName("cite")[0].innerText; // url of query
             i++;
         }
-        var new_url=t_url.replace(/^https:\/\//,"").replace(/^www\./,"").replace(/\/.*$/,"");
-        var x_match=new_url.match(/\./g);
-        while(x_match!== null && x_match.length>=2)
-        {
-            new_url=new_url.replace(/^[^\.]*\./,"");
-            x_match=new_url.match(/\./g);
-        }
+        var new_url=parse_domain(t_url);
         if(new_url!==null && new_url.length>0) {
             data.domain_name=new_url;
             console.log(data.domain_name);
@@ -357,10 +374,10 @@
 
         GM_xmlhttpRequest({
             method: 'GET',
-            url:    search_URIBing,
-
+            //url:    search_URIBing,
+            url:    search_URI,
             onload: function(response) {
-
+                google1_response(response, data);
                 bing1_response(response, data); }
 
         });
