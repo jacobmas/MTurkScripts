@@ -186,7 +186,27 @@
             GM_xmlhttpRequest({
                 method: 'GET',
                 url:    access_URI,
+                onerror: function(response) {
+                    document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>URL Load Error</strong>";
+                    return;
 
+
+
+                },
+                onabort: function(response) {
+                    document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>URL Load Error</strong>";
+                    return;
+
+
+
+                },
+                ontimeout: function(response) {
+                    document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>URL Load Error</strong>";
+                    return;
+
+
+
+                },
                 onload: function(response) {
                     var doc = new DOMParser()
                     .parseFromString(response.responseText, "text/html");
