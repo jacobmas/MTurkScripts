@@ -193,8 +193,9 @@
 
 
 
-                    my_query.company_name=doc.title;
-                    var temp_split=my_query.company_name.split(/ [|\-] /g);
+                    my_query.company_name=doc.title.replace(/^Welcome to/,"");
+                    var temp_split=my_query.company_name.split(/ [\|\-] /g);
+
                     if(temp_split!==null && temp_split.length>=2)
                     {
                         console.log("temp_split.length="+temp_split.length);
