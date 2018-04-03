@@ -262,7 +262,7 @@
         {
             b_url=b_algo[i].getElementsByTagName("cite")[0].innerText; // url of query
             b_header_search=b_algo[i].firstChild.innerText; // basic description
-             var x=b_url.match(/https:\/\/.*\.linkedin\.com\/in\//);
+             var x=b_url.match(/https:\/\/.*\.linkedin\.com\/company\//);
             if(x!==undefined && x!== null && x.length>0)
             {
                 console.log("b_url="+b_url+"\nb_header="+b_header_search);
