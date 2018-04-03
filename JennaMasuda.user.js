@@ -28,7 +28,7 @@
     var state_list=["AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY",
                     "LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH",
                     "OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VT","VA","VI","WA","WV","WI","WY"];
-    var prov_list=["ON","QC"];
+    var province_list=["BC","MB","NB","NL","NS","NT","NU","ON","QC"];
     /* Parses the address, deals with Canada */
     function parseAddressStuff(address)
     {
@@ -42,15 +42,28 @@
                 document.getElementsByName("City")[0].value=add_split[len-3];
                 document.getElementsByName("State")[0].value=add_split[len-2].substr(0,2);
                 document.getElementsByName("Zip/Postal Code")[0].value=add_split[len-2].substr(3);
-                document.getElementsByName("Country")[0].value="US";
+                document.getElementsByName("Country")[0].value="Canada";
                 //alert("CANADATIME");
                 return true;
             }
             else
             {
+                var my_re=/,\s([\w\s]+)\s([A-Z][A-Z])\s([A-Z]\d[A-Z]\s\d[A-Z]\d)$/;
+                var my_match=address.match(my_re);
+                console.log(address);
+                if(my_match !== null && my_match !== undefined && my_match.length>3)
+                {
+                    console.log("IS IN FACT CANADA");
+                    document.getElementsByName("City")[0].value=my_match[1];
+                    document.getElementsByName("State")[0].value=my_match[2];
+                    document.getElementsByName("Zip/Postal Code")[0].value=my_match[3];
+                    document.getElementsByName("Country")[0].value="Canada";
+                    return true;
+                }
                 console.log("NOT CANADA\n\n");
             }
-            return false;
+            /* debugging */
+            return true;
 
         }
         else
@@ -69,6 +82,7 @@
         var city=document.getElementsByName("City")[0].value;
         var state=document.getElementsByName("State")[0].value;
         var zip=document.getElementsByName("Zip/Postal Code")[0].value;
+        var country=document.getElementsByName("Country")[0].value;
 
 
 
@@ -76,13 +90,14 @@
            zip==="undefined" || city.length<1)
         {
             document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>BAD ADDRESS</strong>";
-            GM_setValue("returnHit",false);
+            //GM_setValue("returnHit",false);
             return;
         }
-        else if(!state_list.includes(state))
+        else if(!((country==="US" && state_list.includes(state))  ||
+                  (country==="Canada" && province_list.includes(state))))
         {
             document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>BAD STATE</strong>";
-            GM_setValue("returnHit",true);
+            //GM_setValue("returnHit",true);
             return;
         }
         else if(document.getElementsByName("LinkedIn Address")[0].value==="Does not exist")
