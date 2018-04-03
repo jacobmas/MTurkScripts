@@ -289,7 +289,7 @@
             search_str=search_str+"\""+fname+"."+lname+"@"+data.domain_name+"\"";
             search_str=search_str+" OR \""+fname.substr(0,1)+lname+"@"+data.domain_name+"\"";
             search_str=search_str+" OR \""+fname+"@"+data.domain_name+"\"";
-            search_str=search_str+" OR \""+fname+"_"+lname+"@"+data.domain_name+"\"";
+            search_str=search_str+" OR \""+fname+lname+"@"+data.domain_name+"\"";
 
 
             var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
