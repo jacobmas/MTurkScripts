@@ -111,14 +111,14 @@ var panel_prim=document.getElementsByClassName("panel-primary")[0];
         GM_setValue("url",url);*/
         GM_addValueChangeListener("profile_var", function() {
             insertValues();
-           // document.getElementById("submitButton").click();
+           document.getElementById("submitButton").click();
 
 
         });
         document.getElementsByName("p1")[0].addEventListener("click", function()
                                                              {
             insertValues();
-           // document.getElementById("submitButton").click();
+           //document.getElementById("submitButton").click();
         });
     }
     else if(window.location.href.indexOf("linkedin.com") !== -1){
@@ -130,13 +130,13 @@ var panel_prim=document.getElementsByClassName("panel-primary")[0];
 
         /* Load the script on pressing 'v', run by clicking in the Experience section */
         window.addEventListener("keydown",function(e) {
-            if(e.key !== "v") {
+            if(e.key !== "c") {
                 return;
             }
-            console.log("LOADING\n");
+            console.log("LOADING, e.key="+e.key+"\n");
             get_Exp();
 
-            console.log(JSON.stringify(profile_var));
+          //  console.log(JSON.stringify(profile_var));
             /* Set the profile var */
             GM_setValue("profile_var", JSON.stringify(profile_var));
 
