@@ -307,6 +307,7 @@
                 url:    access_URI,
                 onerror: function(response) {
                     document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>URL Load Error</strong>";
+                    GM_setValue("returnHit",true);
                     return;
 
 
@@ -314,6 +315,7 @@
                 },
                 onabort: function(response) {
                     document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>URL Load Error</strong>";
+                    GM_setValue("returnHit",true);
                     return;
 
 
@@ -321,6 +323,7 @@
                 },
                 ontimeout: function(response) {
                     document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>URL Load Error</strong>";
+                    GM_setValue("returnHit",true);
                     return;
 
 
