@@ -42,7 +42,7 @@
                 document.getElementsByName("State")[0].value=add_split[len-2].substr(0,2);
                 document.getElementsByName("Zip/Postal Code")[0].value=add_split[len-2].substr(3);
                 document.getElementsByName("Country")[0].value="US";
-                alert("CANADATIME");
+                //alert("CANADATIME");
                 return true;
             }
             return false;
@@ -104,13 +104,22 @@
         var t_url="", t_header_search="";
         for(i=0; i < g_stuff.length; i++)
         {
-            t_url=g_stuff[i].getElementsByTagName("cite")[0].innerText; // url of query
-            t_header_search=g_stuff[i].getElementsByClassName("r")[0].innerText; // basic description
-            if(t_url.indexOf("https://www.linkedin.com/company/")===0)
+            try
             {
-                g1_success=true;
+                t_url=g_stuff[i].getElementsByTagName("cite")[0].innerText; // url of query
+                t_header_search=g_stuff[i].getElementsByClassName("r")[0].innerText; // basic description
+                if(t_url.indexOf("https://www.linkedin.com/company/")===0)
+                {
+                    g1_success=true;
+                    break;
+                }
+            }
+            catch(error)
+            {
+                console.log("ERROR");
                 break;
             }
+            
             //console.log(temp1);
         }
         if(g1_success)
@@ -135,26 +144,126 @@
 
             });
         }
+                else
+        {
+            console.log("g1 Fail");
+            var access_URI="http://"+my_query.domain;
+
+            /* Try the page */
+            GM_xmlhttpRequest({
+                method: 'GET',
+                url:    access_URI,
+                onerror: function(response) {
+                    document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>URL Load Error</strong>";
+                    GM_setValue("returnHit",true);
+                    return;
+
+
+
+                },
+                onabort: function(response) {
+                    document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>URL Load Error</strong>";
+                                        GM_setValue("returnHit",true);
+
+                    return;
+
+
+
+                },
+                ontimeout: function(response) {
+                    document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>URL Load Error</strong>";
+                                       GM_setValue("returnHit",true);
+
+                    return;
+
+
+
+                },
+                onload: function(response) {
+                    var doc = new DOMParser()
+                    .parseFromString(response.responseText, "text/html");
+
+
+
+                    my_query.company_name=doc.title.replace(/^Welcome to/,"");
+                    var temp_split=my_query.company_name.split(/ [\|\-] /g);
+
+                    if(temp_split!==null && temp_split.length>=2)
+                    {
+                        console.log("temp_split.length="+temp_split.length);
+                        console.log("temp_split="+temp_split);
+                        if(temp_split[0].trim().indexOf("Home Page") !== -1 || temp_split[0].trim()==="Home" ||
+                          (temp_split[0].trim().length > 2 * temp_split[1].trim().length && temp_split[0].trim().indexOf("Home")!==-1))
+
+                        {
+                            my_query.company_name=temp_split[1].trim();
+                        }
+                        else
+                        {
+                            my_query.company_name=temp_split[0].trim();
+                        }
+                    }
+                    /*my_query.company_name=my_query.company_name.replace(/( \| )|( - )/g," ");
+                    my_query.company_name=my_query.company_name.replace(/( \|)|( -)/g," ");
+                    my_query.company_name=my_query.company_name.replace(/(\| )|(- )/g," ");
+
+                    my_query.company_name=my_query.company_name.replace("Home Page","");
+                    my_query.company_name=my_query.company_name.replace("Home","");*/
+                    if(my_query.company_name.toLowerCase().indexOf(my_query.domain)!==-1 || my_query.company_name==="Coming Soon" || my_query.company_name==="")
+                    {
+                        document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>DEFUNCT site</strong>";
+                        return;
+                    }
+
+                    document.getElementsByName("Company Name")[0].value=my_query.company_name;
+                    /* Query for individual dude */
+                    var search_str=my_query.company_name+" "+my_query.fname+" "+my_query.lname+" Linkedin";
+                    var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);
+                    GM_xmlhttpRequest({
+                        method: 'GET',
+                        url:    search_URI,
+
+                        onload: function(response) {
+
+                            google2_response(response, my_query); },
+                        onerror: function(response) { GM_setValue("returnHit",true); },
+                        ontimeout: function(response) { GM_setValue("returnHit",true); },
+                        onabort: function(response) { GM_setValue("returnHit",true); }
+
+
+                    });
+                }
+
+            });
+        }
     }
 
     /* Get company name */
     function bing1_response(response,my_query) {
+        console.log("bing1");
         // console.log(JSON.stringify(response));
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-
+        //console.log(response.responseText);
         var search=doc.getElementById("b_content");
 
         var b_algo=search.getElementsByClassName("b_algo");
         var i, b1_success=false, b_url="", b_header_search;
-        for(i=0; i < b_algo.length; i++)
+
+       // var b_algoheader=search.getElementsByClassName("b_algoheader");
+        for(i=0; i < b_algo.length && !b1_success; i++)
         {
             b_url=b_algo[i].getElementsByTagName("cite")[0].innerText; // url of query
             b_header_search=b_algo[i].firstChild.firstChild.innerText; // basic description
             if(b_url.indexOf("https://www.linkedin.com/company/")===0)
             {
+
                 b1_success=true;
                 break;
+            }
+            else
+            {
+                console.log("b_url="+b_url);
             }
 
         }
@@ -165,6 +274,7 @@
             if(t_split!== null && t_split.length>0) company_name=t_split[0].trim();
             document.getElementsByName("Company Name")[0].value=company_name;
             my_query.company_name=company_name;
+            console.log("my_query.company_name="+my_query.company_name);
             /* Query for individual dude */
             var search_str=company_name+" "+my_query.fname+" "+my_query.lname+" Linkedin";
             var search_URI='https://www.bing.com/search?q='+encodeURIComponent(search_str);
@@ -180,6 +290,7 @@
         }
         else
         {
+            console.log("b1 Fail");
             var access_URI="http://"+my_query.domain;
 
             /* Try the page */
@@ -283,7 +394,8 @@
         {
             t_url=g_stuff[i].getElementsByTagName("cite")[0].innerText; // url of query
             t_header_search=g_stuff[i].getElementsByClassName("r")[0].innerText; // basic description
-            if(t_url.indexOf("https://www.linkedin.com/in/")===0)
+            var x=t_url.match(/https:\/\/.*\.linkedin\.com\/in\//);
+            if(x !== undefined && x!== null && x.length>0)
             {
                 g1_success=true;
                 break;
@@ -299,26 +411,99 @@
             console.log("Google 2 no exist");
             document.getElementsByName("LinkedIn Address")[0].value="Does not exist";
             document.getElementsByName("LinkedIn Address")[0].type="text";
+            GM_setValue("returnHit",true);
             return;
         }
         var search_str=my_query.company_name+" "+ my_query.streetadd;//+" address";;//+my_query.streetadd;//
 
 
-        //var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
+        var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
         var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
 
         GM_xmlhttpRequest({
             method: 'GET',
-            url:    search_URIBing,
+            url:    search_URI,
 
             onload: function(response) {
                 console.log("Beginning Bing3\nURI="+search_URIBing);
                 //google3_response(response, my_query);
-                bing3_response(response, my_query);
+                google2_5_response(response, my_query);
             }
 
         });
         
+    }
+
+        /* Do phone and address */
+    function google2_5_response(response,my_query) {
+
+        //console.log(response.responseText);
+        var doc = new DOMParser()
+        .parseFromString(response.responseText, "text/html");
+
+        var phoneAddress;
+
+        var field_names=doc.getElementsByClassName("w8qArf");
+        var result_names=doc.getElementsByClassName("LrzXr");
+
+
+        var i;
+        var added_stuff=0;
+        console.log("field_names.length="+field_names.length);
+        document.getElementsByName("Country")[0].value="US";
+        for(i=0; i < field_names.length; i++) {
+            if(field_names[i].firstChild.innerText==="Address")
+            {
+                /* parse the address of equivalent in result names */
+                try
+                {
+                    if(parseAddressStuff(field_names[i].nextSibling.innerText))
+                        added_stuff+=1;
+                }
+                catch(error)
+                {
+                    console.log("Error:" + error);
+                }
+            }
+            else if(field_names[i].firstChild.innerText==="Phone")
+            {
+                document.getElementsByName("Corporate Phone")[0].value=field_names[i].nextSibling.innerText;
+                added_stuff+=1;
+            }
+        }
+
+        var other=doc.getElementsByClassName("Z0lcw");
+        if(other!==null && other.length>0)
+        {
+            console.log(other[0].innerText);
+        }
+        if(field_names.length>0 && added_stuff>=2)
+        {
+            setTimeout(function() { document.getElementById("submitButton").click(); }, 1000);
+
+        }
+        else {
+
+
+            var web_url=document.getElementsByName("web_url")[0];
+            web_url.nextSibling.nextSibling.nextSibling.nextSibling.innerHTML="Corporate Phone: FAIL1";
+            var search_str=my_query.company_name+" address";
+
+            var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
+           // var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
+
+            GM_xmlhttpRequest({
+                method: 'GET',
+                url:    search_URI,
+
+                onload: function(response) {
+                    console.log("Beginning Google3\nURI="+search_URI);
+                     google3_response(response, my_query);
+                               }
+
+            });
+        }
+
     }
 
     function bing2_response(response,my_query) {
@@ -549,13 +734,24 @@
     /* To check yellowpages */
     function google4_response(response,my_query) {
 
+
         //console.log(response.responseText);
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
 
         var search=doc.getElementById("search");
         var g_stuff=search.getElementsByClassName("g");
-        var web_url=g_stuff[0].getElementsByTagName("cite")[0].innerHTML;
+        var web_url;
+
+        try
+        {
+            web_url=g_stuff[0].getElementsByTagName("cite")[0].innerHTML;
+        }
+        catch(error)
+        {
+            console.log(error);
+            GM_setValue("returnHit",true);
+        }
 
         GM_xmlhttpRequest({
             method: 'GET',
@@ -711,18 +907,18 @@
         var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);
 
         var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str);
-            //console.log(search_URI);
+        console.log(search_URIBing);
 
         document.getElementsByName("City")[0].addEventListener("paste",paste_city);
 
 
         GM_xmlhttpRequest({
             method: 'GET',
-            url:    search_URIBing,
+            url:    search_URI,
 
             onload: function(response) {
 
-                bing1_response(response, my_query); }
+                google1_response(response, my_query); }
 
         });
         
