@@ -123,7 +123,7 @@
             document.getElementsByName("Company Name")[0].value=company_name;
             my_query.company_name=company_name;
             /* Query for individual dude */
-            var search_str=company_name+" "+my_query.fname+" "+my_query.lname+" Linkedin";
+            var search_str=my_query.company_name+" "+my_query.fname+" "+my_query.lname+" Linkedin";
             var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);
             GM_xmlhttpRequest({
                 method: 'GET',
@@ -161,7 +161,7 @@
         if(b1_success)
         {
             /* Continue */
-            var company_name="", t_split = b_header_search.split(/( - )|(\|)|(,)/g);
+            var company_name="", t_split = b_header_search.split(/(\s-\s)|(\|)|(,)/g);
             if(t_split!== null && t_split.length>0) company_name=t_split[0].trim();
             document.getElementsByName("Company Name")[0].value=company_name;
             my_query.company_name=company_name;
@@ -269,6 +269,7 @@
     /* Get the head of the company */
     function google2_response(response,my_query) {
         //console.log(JSON.stringify(response));
+        console.log("Google2 response");
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
 
@@ -295,23 +296,25 @@
         }
         else
         {
+            console.log("Google 2 no exist");
             document.getElementsByName("LinkedIn Address")[0].value="Does not exist";
             document.getElementsByName("LinkedIn Address")[0].type="text";
+            return;
         }
         var search_str=my_query.company_name+" "+ my_query.streetadd;//+" address";;//+my_query.streetadd;//
 
 
-        var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
+        //var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
         var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
 
         GM_xmlhttpRequest({
             method: 'GET',
-            url:    search_URI,
+            url:    search_URIBing,
 
             onload: function(response) {
                 console.log("Beginning Bing3\nURI="+search_URIBing);
-                google3_response(response, my_query);
-                //bing3_response(response, my_query);
+                //google3_response(response, my_query);
+                bing3_response(response, my_query);
             }
 
         });
@@ -324,7 +327,7 @@
         .parseFromString(response.responseText, "text/html");
 
         var search=doc.getElementById("b_content");
-
+        var search_str, search_URI;
         var b_algo=search.getElementsByClassName("b_algo");
         var i, b1_success=false, b_url="", b_header_search;
         for(i=0; i < b_algo.length; i++)
@@ -346,11 +349,24 @@
         {
             document.getElementsByName("LinkedIn Address")[0].value="Does not exist";
             document.getElementsByName("LinkedIn Address")[0].type="text";
+            search_str=my_query.company_name+" "+my_query.fname+" "+my_query.lname+" Linkedin";
+            search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);
+            console.log("search_URI="+search_URI);
+            GM_xmlhttpRequest({
+                method: 'GET',
+                url:    search_URI,
+
+                onload: function(response) {
+
+                    google2_response(response, my_query); return; }
+
+            });
+            return;
         }
-        var search_str=my_query.company_name+" "+ my_query.streetadd;//+" address";;//+my_query.streetadd;//
+        search_str=my_query.company_name+" "+ my_query.streetadd;//+" address";;//+my_query.streetadd;//
 
 
-        var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
+        search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
         var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
 
         GM_xmlhttpRequest({
@@ -645,6 +661,7 @@
         catch(error)
         {
             console.log("ERROR in yellowpages, " + error);
+            GM_setValue("returnHit",true);
         }
 
     }
@@ -738,7 +755,7 @@
     else
     {
         GM_setValue("returnHit",false);
-       /* GM_addValueChangeListener("returnHit", function() {
+       GM_addValueChangeListener("returnHit", function() {
                 if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
                   btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Return"
                   )
@@ -746,7 +763,7 @@
 
                     btns_secondary[0].click();
                 }
-            }); */
+            }); 
          /* Regular window at mturk */
         var btns_primary=document.getElementsByClassName("btn-primary");
         var btns_secondary=document.getElementsByClassName("btn-secondary");
@@ -758,7 +775,7 @@
         {
 
             /* Accept the HIT */
-           //btns_primary[0].click();
+           btns_primary[0].click();
         }
         else
         {
