@@ -28,6 +28,7 @@
     var state_list=["AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY",
                     "LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH",
                     "OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VT","VA","VI","WA","WV","WI","WY"];
+    var prov_list=["ON","QC"];
     /* Parses the address, deals with Canada */
     function parseAddressStuff(address)
     {
@@ -44,6 +45,10 @@
                 document.getElementsByName("Country")[0].value="US";
                 //alert("CANADATIME");
                 return true;
+            }
+            else
+            {
+                console.log("NOT CANADA\n\n");
             }
             return false;
 
@@ -240,24 +245,26 @@
 
     /* Get company name */
     function bing1_response(response,my_query) {
-        console.log("bing1");
-        // console.log(JSON.stringify(response));
+
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-        //console.log(response.responseText);
+        console.log(doc.getElementsByTagName("body")[0]);
+
+        console.log("response.url="+response.finalUrl);
         var search=doc.getElementById("b_content");
 
         var b_algo=search.getElementsByClassName("b_algo");
         var i, b1_success=false, b_url="", b_header_search;
 
+        console.log("b_algo.length="+b_algo.length);
        // var b_algoheader=search.getElementsByClassName("b_algoheader");
-        for(i=0; i < b_algo.length && !b1_success; i++)
+        for(i=0; i < b_algo.length; i++)
         {
             b_url=b_algo[i].getElementsByTagName("cite")[0].innerText; // url of query
-            b_header_search=b_algo[i].firstChild.firstChild.innerText; // basic description
+            b_header_search=b_algo[i].firstChild.innerText; // basic description
             if(b_url.indexOf("https://www.linkedin.com/company/")===0)
             {
-
+                console.log("b_url="+b_url+"\nb_header="+b_header_search);
                 b1_success=true;
                 break;
             }
@@ -277,7 +284,7 @@
             console.log("my_query.company_name="+my_query.company_name);
             /* Query for individual dude */
             var search_str=company_name+" "+my_query.fname+" "+my_query.lname+" Linkedin";
-            var search_URI='https://www.bing.com/search?q='+encodeURIComponent(search_str);
+            var search_URI='https://www.bing.com/search?q='+encodeURIComponent(search_str)+"&first=1&rdr=1";
             GM_xmlhttpRequest({
                 method: 'GET',
                 url:    search_URI,
@@ -418,16 +425,16 @@
 
 
         var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
-        var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
+        var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str)+"&first=1&rdr=1";//+"?ei=tuC2Wu9awZ3nApPrpOgB";
 
         GM_xmlhttpRequest({
             method: 'GET',
-            url:    search_URI,
+            url:    search_URIBing,
 
             onload: function(response) {
                 console.log("Beginning Bing3\nURI="+search_URIBing);
-                //google3_response(response, my_query);
-                google2_5_response(response, my_query);
+                bing3_response(response, my_query);
+                //google2_5_response(response, my_query);
             }
 
         });
@@ -515,10 +522,12 @@
         var search_str, search_URI;
         var b_algo=search.getElementsByClassName("b_algo");
         var i, b1_success=false, b_url="", b_header_search;
+        console.log("bing2-b_algo.length="+b_algo.length);
         for(i=0; i < b_algo.length; i++)
         {
+
             b_url=b_algo[i].getElementsByTagName("cite")[0].innerText; // url of query
-            b_header_search=b_algo[i].firstChild.firstChild.innerText; // basic description
+            b_header_search=b_algo[i].firstChild.innerText; // basic description
             if(b_url.indexOf("https://www.linkedin.com/in/")===0)
             {
                 b1_success=true;
@@ -552,7 +561,7 @@
 
 
         search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
-        var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
+        var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str)+"&first=1&rdr=1";//+"?ei=tuC2Wu9awZ3nApPrpOgB";
 
         GM_xmlhttpRequest({
             method: 'GET',
@@ -716,7 +725,7 @@
             var search_str=my_query.company_name+" address";
 
             var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
-            var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
+            var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str)+"&first=1&rdr=1";//+"?ei=tuC2Wu9awZ3nApPrpOgB";
 
             GM_xmlhttpRequest({
                 method: 'GET',
@@ -906,7 +915,7 @@
       
         var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);
 
-        var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str);
+        var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str)+"&first=1&rdr=1";
         console.log(search_URIBing);
 
         document.getElementsByName("City")[0].addEventListener("paste",paste_city);
@@ -914,11 +923,11 @@
 
         GM_xmlhttpRequest({
             method: 'GET',
-            url:    search_URI,
+            url:    search_URIBing,
 
             onload: function(response) {
 
-                google1_response(response, my_query); }
+                bing1_response(response, my_query); }
 
         });
         
@@ -957,7 +966,7 @@
                   )
                 {
 
-                    btns_secondary[0].click();
+                   btns_secondary[0].click();
                 }
             }); 
          /* Regular window at mturk */
