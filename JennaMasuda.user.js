@@ -76,7 +76,7 @@
            zip==="undefined" || city.length<1)
         {
             document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>BAD ADDRESS</strong>";
-            GM_setValue("returnHit",true);
+            GM_setValue("returnHit",false);
             return;
         }
         else if(!state_list.includes(state))
@@ -262,7 +262,8 @@
         {
             b_url=b_algo[i].getElementsByTagName("cite")[0].innerText; // url of query
             b_header_search=b_algo[i].firstChild.innerText; // basic description
-            if(b_url.indexOf("https://www.linkedin.com/company/")===0)
+             var x=b_url.match(/https:\/\/.*\.linkedin\.com\/in\//);
+            if(x!==undefined && x!== null && x.length>0)
             {
                 console.log("b_url="+b_url+"\nb_header="+b_header_search);
                 b1_success=true;
@@ -838,7 +839,7 @@
 
             onload: function(response) {
                 console.log("Beginning Google3\nURI="+search_URI);
-                google3_response(response, my_query);
+                google2_5_response(response, my_query);
                 //bing3_response(response, my_query);
             }
 
