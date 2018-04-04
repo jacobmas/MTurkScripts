@@ -330,6 +330,7 @@
                     if(my_query.company_name.toLowerCase().indexOf(my_query.domain)!==-1 || my_query.company_name==="Coming Soon" || my_query.company_name==="")
                     {
                         document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>DEFUNCT site</strong>";
+                        GM_setValue("returnHit",true);
                         return;
                     }
 
@@ -495,6 +496,7 @@
         if(my_query.company_name.toLowerCase().indexOf(my_query.domain)!==-1 || my_query.company_name==="Coming Soon" || my_query.company_name==="")
         {
             document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>DEFUNCT site</strong>";
+            GM_setValue("returnHit",true);
             return;
         }
 
@@ -533,13 +535,23 @@
         var t_url="", t_header_search="";
         for(i=0; i < g_stuff.length; i++)
         {
-            t_url=g_stuff[i].getElementsByTagName("cite")[0].innerText; // url of query
-            t_header_search=g_stuff[i].getElementsByClassName("r")[0].innerText; // basic description
+            try
+            {
+                t_url=g_stuff[i].getElementsByTagName("cite")[0].innerText; // url of query
+                t_header_search=g_stuff[i].getElementsByClassName("r")[0].innerText; // basic description
+
+
             var x=t_url.match(/https:\/\/.*\.linkedin\.com\/in\//);
             if(x !== undefined && x!== null && x.length>0)
             {
                 g1_success=true;
                 break;
+            }
+            }
+            catch(error)
+            {
+                console.log(error);
+                GM_setValue("returnHit",true);
             }
             //console.log(temp1);
         }
@@ -1196,6 +1208,7 @@
     }
     else
     {
+        setTimeout(function() { btns_secondary[0].click(); }, 40000);
         GM_setValue("returnHit",false);
        GM_addValueChangeListener("returnHit", function() {
                 if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
