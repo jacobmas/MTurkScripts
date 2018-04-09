@@ -28,9 +28,20 @@
     var state_list=["AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY",
                     "LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH",
                     "OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VT","VA","VI","WA","WV","WI","WY"];
-    var prov_list=["ON","QC"];
-    /* Parses the address, deals with Canada */
-    function parseAddressStuff(address)
+    var province_list=["AB","BC","MB","NB","NL","NS","NT","NU","ON","PE","QC","SK","YT"];
+
+    var address_search_queries=["{{my_query.company_name}} address",
+                                     "{{my_query.company_name}} {{my_query.streetadd}} site:yellowpages.com"];
+
+    var personal_email_domains=["aol.com","bigpond.com","frontiernet.net","gmail.com","icloud.com","me.com","pacbell.net","rogers.com","rr.com","ymail.com"];
+
+    /* returns the address query string */
+    function get_add_query_str(my_query) {
+        var basic_str=address_search_queries[my_query.add_query_no];
+        basic_str=basic_str.replace("{{my_query.company_name}}",my_query.company_name).replace("{{my_query.streetadd}}",my_query.streetadd);
+        return basic_str;
+    }
+    function parseAddressStuffBing(address)
     {
         var parsed = parseAddress.parseLocation(address);
         if(parsed.city===undefined)
@@ -42,14 +53,109 @@
                 document.getElementsByName("City")[0].value=add_split[len-3];
                 document.getElementsByName("State")[0].value=add_split[len-2].substr(0,2);
                 document.getElementsByName("Zip/Postal Code")[0].value=add_split[len-2].substr(3);
-                document.getElementsByName("Country")[0].value="US";
+                document.getElementsByName("Country")[0].value="Canada";
                 //alert("CANADATIME");
                 return true;
             }
             else
             {
+                var my_re=/,\s([\w\s]+)\s([A-Z][A-Z])\s([A-Z]\d[A-Z]\s\d[A-Z]\d)$/;
+                var my_match=address.match(my_re);
+                console.log(address);
+                if(my_match !== null && my_match !== undefined && my_match.length>3)
+                {
+                    console.log("IS IN FACT CANADA");
+                    document.getElementsByName("City")[0].value=my_match[1];
+                    document.getElementsByName("State")[0].value=my_match[2];
+                    document.getElementsByName("Zip/Postal Code")[0].value=my_match[3];
+                    document.getElementsByName("Country")[0].value="Canada";
+                    return true;
+                }
                 console.log("NOT CANADA\n\n");
             }
+            /* debugging */
+            return false;
+
+        }
+        else
+        {
+            document.getElementsByName("City")[0].value=parsed.city;
+            document.getElementsByName("State")[0].value=parsed.state;
+            document.getElementsByName("Zip/Postal Code")[0].value=parsed.zip;
+            document.getElementsByName("Country")[0].value="US";
+            return true;
+        }
+    }
+
+    /* Parses the address, deals with Canada */
+    function parseAddressStuff(address)
+    {
+        address=address.replace(/, [0-9]{1,2}[a-z]{2} [Ff]loor/,"");
+        var parsed = parseAddress.parseLocation(address);
+        var my_re;
+        var my_match;
+        console.log("Address="+address);
+        if(parsed.city===undefined)
+        {
+            var add_split=address.split(", ");
+            var len=add_split.length;
+            if(add_split[len-1].trim()==="Canada" && len>=3)
+            {
+                document.getElementsByName("City")[0].value=add_split[len-3];
+                document.getElementsByName("State")[0].value=add_split[len-2].substr(0,2);
+                document.getElementsByName("Zip/Postal Code")[0].value=add_split[len-2].substr(3);
+                document.getElementsByName("Country")[0].value="Canada";
+                //alert("CANADATIME");
+                return true;
+            }
+            else if(add_split[len-1].trim()==="Australia" && len>=2)
+            {
+                console.log("add_split[len-2]"+add_split[len-2]);
+                my_re=/^\s*([\w\s]+)\s([A-Z]{2,3})\s([\d]{4})$/;
+                my_match=add_split[len-2].trim().match(my_re);
+                if(my_match!==undefined && my_match!==null && my_match.length>3)
+                {
+                    document.getElementsByName("City")[0].value=my_match[1];
+                    document.getElementsByName("State")[0].value=my_match[2];
+                    document.getElementsByName("Zip/Postal Code")[0].value=my_match[3];
+                    document.getElementsByName("Country")[0].value="Australia";
+                    return true;
+                }
+                return false;
+            }
+            else if(add_split[len-1].trim()==="UK" && len>=2)
+            {
+                console.log("add_split[len-2]"+add_split[len-2]);
+                my_re=/^\s*([\w\s]+)\s([A-Z0-9]{2,4} [\d][A-Z]{2})$/;
+                my_match=add_split[len-2].trim().match(my_re);
+                if(my_match!==undefined && my_match!==null && my_match.length>2)
+                {
+                    document.getElementsByName("City")[0].value=my_match[1];
+                    document.getElementsByName("State")[0].value="N/A";
+                    document.getElementsByName("Zip/Postal Code")[0].value=my_match[2];
+                    document.getElementsByName("Country")[0].value="UK";
+                    return true;
+                }
+                return false;
+            }
+            else
+            {
+                my_re=/,\s([\w\s]+)\s([A-Z][A-Z])\s([A-Z]\d[A-Z]\s\d[A-Z]\d)$/;
+                my_match=address.match(my_re);
+                console.log(address);
+                if(my_match !== null && my_match !== undefined && my_match.length>3)
+                {
+                    console.log("IS IN FACT CANADA");
+                    document.getElementsByName("City")[0].value=my_match[1];
+                    document.getElementsByName("State")[0].value=my_match[2];
+                    document.getElementsByName("Zip/Postal Code")[0].value=my_match[3];
+                    document.getElementsByName("Country")[0].value="Canada";
+                    return true;
+                }
+                console.log("NOT CANADA\n\n");
+                return false;
+            }
+            /* debugging */
             return false;
 
         }
@@ -69,6 +175,7 @@
         var city=document.getElementsByName("City")[0].value;
         var state=document.getElementsByName("State")[0].value;
         var zip=document.getElementsByName("Zip/Postal Code")[0].value;
+        var country=document.getElementsByName("Country")[0].value;
 
 
 
@@ -76,10 +183,13 @@
            zip==="undefined" || city.length<1)
         {
             document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>BAD ADDRESS</strong>";
-            GM_setValue("returnHit",false);
+            GM_setValue("returnHit",true);
             return;
         }
-        else if(!state_list.includes(state))
+        else if(!((country==="US" && state_list.includes(state))  ||
+                  (country==="Canada" && province_list.includes(state)) ||
+                 (country!=="US" && country!=="Canada")
+                 ))
         {
             document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>BAD STATE</strong>";
             GM_setValue("returnHit",true);
@@ -91,8 +201,13 @@
             GM_setValue("returnHit",true);
             return;
         }
+        else if(!GM_getValue("dontaccept",false))
+        {
+            setTimeout(function() { document.getElementById("submitButton").click(); }, 1000);
+        }
         else
         {
+            console.log("Said not to accept\n");
             setTimeout(function() { document.getElementById("submitButton").click(); }, 1000);
         }
     }
@@ -195,8 +310,6 @@
 
                     if(temp_split!==null && temp_split.length>=2)
                     {
-                        console.log("temp_split.length="+temp_split.length);
-                        console.log("temp_split="+temp_split);
                         if(temp_split[0].trim().indexOf("Home Page") !== -1 || temp_split[0].trim()==="Home" ||
                           (temp_split[0].trim().length > 2 * temp_split[1].trim().length && temp_split[0].trim().indexOf("Home")!==-1))
 
@@ -217,6 +330,7 @@
                     if(my_query.company_name.toLowerCase().indexOf(my_query.domain)!==-1 || my_query.company_name==="Coming Soon" || my_query.company_name==="")
                     {
                         document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>DEFUNCT site</strong>";
+                        GM_setValue("returnHit",true);
                         return;
                     }
 
@@ -248,15 +362,15 @@
 
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-        console.log(doc.getElementsByTagName("body")[0]);
+        //console.log(doc.getElementsByTagName("body")[0]);
 
-        console.log("response.url="+response.finalUrl);
+        //console.log("response.url="+response.finalUrl);
         var search=doc.getElementById("b_content");
 
         var b_algo=search.getElementsByClassName("b_algo");
         var i, b1_success=false, b_url="", b_header_search;
 
-        console.log("b_algo.length="+b_algo.length);
+        //console.log("b_algo.length="+b_algo.length);
        // var b_algoheader=search.getElementsByClassName("b_algoheader");
         for(i=0; i < b_algo.length; i++)
         {
@@ -265,13 +379,13 @@
              var x=b_url.match(/https:\/\/.*\.linkedin\.com\/company\//);
             if(x!==undefined && x!== null && x.length>0)
             {
-                console.log("b_url="+b_url+"\nb_header="+b_header_search);
+                //console.log("b_url="+b_url+"\nb_header="+b_header_search);
                 b1_success=true;
                 break;
             }
             else
             {
-                console.log("b_url="+b_url);
+                //console.log("b_url="+b_url);
             }
 
         }
@@ -299,7 +413,7 @@
         else
         {
             console.log("b1 Fail");
-            var access_URI="http://"+my_query.domain;
+            var access_URI="http://www."+my_query.domain;
 
             /* Try the page */
             GM_xmlhttpRequest({
@@ -307,6 +421,7 @@
                 url:    access_URI,
                 onerror: function(response) {
                     document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>URL Load Error</strong>";
+                    GM_setValue("returnHit",true);
                     return;
 
 
@@ -314,6 +429,7 @@
                 },
                 onabort: function(response) {
                     document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>URL Load Error</strong>";
+                    GM_setValue("returnHit",true);
                     return;
 
 
@@ -321,69 +437,88 @@
                 },
                 ontimeout: function(response) {
                     document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>URL Load Error</strong>";
+                    GM_setValue("returnHit",true);
                     return;
 
 
 
                 },
-                onload: function(response) {
-                    var doc = new DOMParser()
-                    .parseFromString(response.responseText, "text/html");
-
-
-
-                    my_query.company_name=doc.title.replace(/^Welcome to/,"");
-                    var temp_split=my_query.company_name.split(/ [\|\-] /g);
-
-                    if(temp_split!==null && temp_split.length>=2)
-                    {
-                        console.log("temp_split.length="+temp_split.length);
-                        console.log("temp_split="+temp_split);
-                        if(temp_split[0].trim().indexOf("Home Page") !== -1 || temp_split[0].trim()==="Home" ||
-                          (temp_split[0].trim().length > 2 * temp_split[1].trim().length && temp_split[0].trim().indexOf("Home")!==-1))
-
-                        {
-                            my_query.company_name=temp_split[1].trim();
-                        }
-                        else
-                        {
-                            my_query.company_name=temp_split[0].trim();
-                        }
-                    }
-                    /*my_query.company_name=my_query.company_name.replace(/( \| )|( - )/g," ");
-                    my_query.company_name=my_query.company_name.replace(/( \|)|( -)/g," ");
-                    my_query.company_name=my_query.company_name.replace(/(\| )|(- )/g," ");
-
-                    my_query.company_name=my_query.company_name.replace("Home Page","");
-                    my_query.company_name=my_query.company_name.replace("Home","");*/
-                    if(my_query.company_name.toLowerCase().indexOf(my_query.domain)!==-1 || my_query.company_name==="Coming Soon" || my_query.company_name==="")
-                    {
-                        document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>DEFUNCT site</strong>";
-                        return;
-                    }
-
-                    document.getElementsByName("Company Name")[0].value=my_query.company_name;
-                    /* Query for individual dude */
-                    var search_str=my_query.company_name+" "+my_query.fname+" "+my_query.lname+" Linkedin";
-                    var search_URI='https://www.bing.com/search?q='+encodeURIComponent(search_str);
-                    GM_xmlhttpRequest({
-                        method: 'GET',
-                        url:    search_URI,
-
-                        onload: function(response) {
-
-                            bing2_response(response, my_query); },
-                        onerror: function(response) { GM_setValue("returnHit",true); },
-                        ontimeout: function(response) { GM_setValue("returnHit",true); },
-                        onabort: function(response) { GM_setValue("returnHit",true); }
-
-
-                    });
-                }
-
+                onload: function(response) { get_page_name(response, my_query); }
             });
         }
     }
+
+    /**
+     Try to get a name from the page itself
+    */
+    function get_page_name(response, my_query) {
+        var doc = new DOMParser()
+        .parseFromString(response.responseText, "text/html");
+
+        var description=document.getElementsByName("description");
+        my_query.company_name="";
+
+        if(description === null)
+        {
+            alert("description is null!");
+        }
+        if(description!==undefined && description.length > 0 && description[0].tagName==="meta")
+        {
+            var my_re=/^([A-Z&\+\.\!][^\s]*\s)+/;
+            var my_match=description.content.match(my_re);
+            if(my_match!==null && my_match.length>0)
+                my_query.company_name=my_match[0];
+            GM_setValue("dontaccept",true);
+
+        }
+        if(my_query.company_name==="")
+        {
+
+            my_query.company_name=doc.title.replace(/^Welcome to/,"");
+            var temp_split=my_query.company_name.split(/ [\|\-\/] /g);
+
+            if(temp_split!==null && temp_split.length>=2)
+            {
+                console.log("temp_split.length="+temp_split.length);
+                console.log("temp_split="+temp_split);
+                if(temp_split[0].trim().indexOf("Home Page") !== -1 || temp_split[0].trim()==="Home" ||
+                   (temp_split[0].trim().length > 2 * temp_split[1].trim().length && temp_split[0].trim().indexOf("Home")!==-1))
+
+                {
+                    my_query.company_name=temp_split[1].trim();
+                }
+                else
+                {
+                    my_query.company_name=temp_split[0].trim();
+                }
+            }
+        }
+        if(my_query.company_name.toLowerCase().indexOf(my_query.domain)!==-1 || my_query.company_name==="Coming Soon" || my_query.company_name==="")
+        {
+            document.getElementsByClassName("panel-heading")[0].firstChild.innerHTML="<strong>DEFUNCT site</strong>";
+            GM_setValue("returnHit",true);
+            return;
+        }
+
+        document.getElementsByName("Company Name")[0].value=my_query.company_name;
+        /* Query for individual dude */
+        var search_str=my_query.company_name+" "+my_query.fname+" "+my_query.lname+" Linkedin";
+        var search_URI='https://www.bing.com/search?q='+encodeURIComponent(search_str);
+        GM_xmlhttpRequest({
+            method: 'GET',
+            url:    search_URI,
+
+            onload: function(response) {
+
+                bing2_response(response, my_query); },
+            onerror: function(response) { GM_setValue("returnHit",true); },
+            ontimeout: function(response) { GM_setValue("returnHit",true); },
+            onabort: function(response) { GM_setValue("returnHit",true); }
+
+
+        });
+    }
+
 
     /* Get the head of the company */
     function google2_response(response,my_query) {
@@ -400,13 +535,23 @@
         var t_url="", t_header_search="";
         for(i=0; i < g_stuff.length; i++)
         {
-            t_url=g_stuff[i].getElementsByTagName("cite")[0].innerText; // url of query
-            t_header_search=g_stuff[i].getElementsByClassName("r")[0].innerText; // basic description
+            try
+            {
+                t_url=g_stuff[i].getElementsByTagName("cite")[0].innerText; // url of query
+                t_header_search=g_stuff[i].getElementsByClassName("r")[0].innerText; // basic description
+
+
             var x=t_url.match(/https:\/\/.*\.linkedin\.com\/in\//);
             if(x !== undefined && x!== null && x.length>0)
             {
                 g1_success=true;
                 break;
+            }
+            }
+            catch(error)
+            {
+                console.log(error);
+                GM_setValue("returnHit",true);
             }
             //console.log(temp1);
         }
@@ -441,6 +586,94 @@
         });
         
     }
+
+        /* Do phone and address, my_query contains add_query_no
+        */
+    function google_address_response(response,my_query) {
+
+        //console.log(response.responseText);
+        var doc = new DOMParser()
+        .parseFromString(response.responseText, "text/html");
+
+        var phoneAddress;
+
+        var field_names=doc.getElementsByClassName("w8qArf");
+        var result_names=doc.getElementsByClassName("LrzXr");
+
+
+        var i;
+        var added_stuff=0;
+        console.log("field_names.length="+field_names.length);
+        document.getElementsByName("Country")[0].value="US";
+        for(i=0; i < field_names.length; i++) {
+            if(field_names[i].firstChild.innerText==="Address")
+            {
+                /* parse the address of equivalent in result names */
+                try
+                {
+                    if(parseAddressStuff(field_names[i].nextSibling.innerText))
+                        added_stuff+=1;
+                }
+                catch(error)
+                {
+                    console.log("Error:" + error);
+                }
+            }
+            else if(field_names[i].firstChild.innerText==="Phone")
+            {
+                document.getElementsByName("Corporate Phone")[0].value=field_names[i].nextSibling.innerText;
+                added_stuff+=1;
+            }
+        }
+
+        var other=doc.getElementsByClassName("Z0lcw");
+        if(other!==null && other.length>0)
+        {
+            console.log(other[0].innerText);
+        }
+        if(field_names.length>0 && added_stuff>=2)
+        {
+            check_and_submit();
+            return;
+            //setTimeout(function() { document.getElementById("submitButton").click(); }, 1000);
+
+        }
+        else {
+
+
+            var web_url=document.getElementsByName("web_url")[0];
+            web_url.nextSibling.nextSibling.nextSibling.nextSibling.innerHTML="Corporate Phone: FAIL1";
+            var search_str=get_add_query_str(my_query);
+
+            var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
+           // var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str);//+"?ei=tuC2Wu9awZ3nApPrpOgB";
+
+            GM_xmlhttpRequest({
+                method: 'GET',
+                url:    search_URI,
+
+                onload: function(response) {
+
+                    my_query.add_query_no=my_query.add_query_no+1;
+                    console.log("Beginning response with add_query_no="+my_query.add_query_no+"\nURI="+search_URI);
+
+                    if(my_query.add_query_no===1) {
+                        google_address_response(response,my_query);
+                        return;
+                    }
+                    else
+                    {
+                        google4_response(response,my_query);
+                        return;
+                    }
+
+                }
+
+            });
+        }
+
+    }
+
 
         /* Do phone and address */
     function google2_5_response(response,my_query) {
@@ -570,7 +803,7 @@
 
             onload: function(response) {
                 console.log("Beginning Bing3\nURI="+search_URIBing);
-                //google3_response(response, my_query);
+                
                 bing3_response(response, my_query);
             }
 
@@ -838,8 +1071,10 @@
             url:    search_URI,
 
             onload: function(response) {
-                console.log("Beginning Google3\nURI="+search_URI);
-                google2_5_response(response, my_query);
+                console.log("Beginning Google_address\nURI="+search_URI);
+                my_query.add_query_no=0;
+                //google2_5_response(response, my_query);
+                google_address_response(response, my_query);
                 //bing3_response(response, my_query);
             }
 
@@ -907,11 +1142,24 @@
         var web_url=document.getElementsByName("web_url")[0];
         web_url.value="http://www."+domain;
 
-    
+        var domain_re=/[^\.]+\.[^\.]+$/;
+
+         var my_query = {fname: fname, lname: lname, domain: domain, streetadd: streetadd};
+        var domain_match=domain.match(domain_re);
+        console.log("domain_match="+domain_match[0]);
+
+//        var my_query = {fname: fname, lname: lname, domain: domain, streetadd: streetadd};
+
+        if(domain_match!==null && domain_match.length>0 && personal_email_domains.includes(domain_match[0]))
+        {
+            GM_setValue("returnHit",true);
+            return;
+        }
+   
         var search_str=domain + " Linkedin";
 
         // Put into one object/map thing
-        var my_query = {fname: fname, lname: lname, domain: domain, streetadd: streetadd};
+        
                         
       
         var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);
@@ -960,6 +1208,7 @@
     }
     else
     {
+        setTimeout(function() { btns_secondary[0].click(); }, 40000);
         GM_setValue("returnHit",false);
        GM_addValueChangeListener("returnHit", function() {
                 if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
@@ -981,7 +1230,7 @@
         {
 
             /* Accept the HIT */
-           btns_primary[0].click();
+          btns_primary[0].click();
         }
         else
         {

@@ -8,14 +8,21 @@
 // @include        https://*.mturkcontent.com/*
 // @include        http://*.amazonaws.com/*
 // @include        https://*.amazonaws.com/*
+<<<<<<< HEAD
 // @include https://worker.mturk.com/3Z4CV11E5DFBY1JRP9H7AZJUZDHFC6/*
+=======
+// @include https://worker.mturk.com/*
+>>>>>>> b8d98fe6c98b5d1342ff6a7fff00687bed5e2f3d
 // @include file://*
 // @grant  GM_getValue
 // @grant GM_setValue
 // @grant GM_addValueChangeListener
 // @grant        GM_setClipboard
 // @grant GM_xmlhttpRequest
+<<<<<<< HEAD
 // @grant GM_openInTab
+=======
+>>>>>>> b8d98fe6c98b5d1342ff6a7fff00687bed5e2f3d
 // @connect google.com
 // @connect bing.com
 // @connect yellowpages.com
@@ -25,6 +32,7 @@
 // ==/UserScript==
 
 (function() {
+<<<<<<< HEAD
     var email_re = /(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
     var url_re=/https?:\/\/[^\/]*\/?/;
     var my_query={};
@@ -615,12 +623,28 @@
 
         my_query.url=url;
         GM_setClipboard(my_query.url);
+=======
+    function bad_website()
+    {
+        document.getElementById("websiteUnavailable").checked=true;
+    }
+
+
+    function init_DQ()
+    {
+        var url=document.getElementsByClassName("dont-break-out")[0].href;
+
+>>>>>>> b8d98fe6c98b5d1342ff6a7fff00687bed5e2f3d
         console.log("url="+url);
 
 
         GM_xmlhttpRequest({
                 method: 'GET',
+<<<<<<< HEAD
                 url:    url,
+=======
+                url:    access_URI,
+>>>>>>> b8d98fe6c98b5d1342ff6a7fff00687bed5e2f3d
                 onerror: function(response) {
                     bad_website();
 
@@ -636,9 +660,13 @@
                     bad_website();
 
                 },
+<<<<<<< HEAD
                 onload: function(response) {
                     parse_website(response);
                 }
+=======
+                onload: function(response) {}
+>>>>>>> b8d98fe6c98b5d1342ff6a7fff00687bed5e2f3d
         });
 
     }
