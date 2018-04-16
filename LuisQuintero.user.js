@@ -186,6 +186,12 @@
     }
 
     function find_email(response) {
+
+        //  check for  this kind of sendmail thing
+
+        /* <a href="javascript:SendMail('blittle', 'btlaw.com');" onmouseover="javascript:self.status='blittle'+'@'+'btlaw.com';"
+        onmouseout="javascript:self.status='';"><img src="/files/ImageControl/27d34d91-19bb-42a2-b3c8-5daa7950b6b6/7483b893-e478-44a4-8fed-f49aa917d8cf/Presentation/Image/email.gif" border="0" imageon="/files/ImageControl/36497ae1-a3dc-4f6b-8a65-5f807190802a/7483b893-e478-44a4-8fed-f49aa917d8cf/Presentation/Image/email_over.gif" imageoff="/files/ImageControl/27d34d91-19bb-42a2-b3c8-5daa7950b6b6/7483b893-e478-44a4-8fed-f49aa917d8cf/Presentation/Image/email.gif" imagewayoff="/files/ImageControl/27d34d91-19bb-42a2-b3c8-5daa7950b6b6/7483b893-e478-44a4-8fed-f49aa917d8cf/Presentation/Image/email.gif"
+        // onmouseover="javascript:this.src = this.getAttribute('imageOn');" onmouseout="javascript:this.src = this.getAttribute('imageOff');"></a> */
         //console.log(JSON.stringify(response));
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
@@ -289,7 +295,7 @@
 
 
 
-        var search_str=my_query.fname+" "+my_query.lname + " "+my_query.company+" -site:facebook.com";
+        var search_str=my_query.fname+" "+my_query.lname + " "+my_query.company+" -site:facebook.com -site:issuu.com";
         // Put into one object/map thing
 
 
@@ -347,7 +353,7 @@
                   )
                 {
 
-                   setTimeout(function() { btns_secondary[0].click(); }, 2000);
+                   setTimeout(function() { btns_secondary[0].click(); }, 0);
                 }
             });
          /* Regular window at mturk */
