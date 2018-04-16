@@ -49,9 +49,17 @@
     function check_algo(b_algo, i)
     {
         var b_url, b_header_search;
-        b_url=b_algo[i].getElementsByTagName("a")[0].href; // url of query
-        b_header_search=b_algo[i].firstChild.innerText; // basic description
-        my_query.url=b_url;
+        try
+        {
+            b_url=b_algo[i].getElementsByTagName("a")[0].href; // url of query
+            b_header_search=b_algo[i].firstChild.innerText; // basic description
+            my_query.url=b_url;
+        }
+        catch(error)
+        {
+            GM_setValue("returnHit",true);
+            return;
+        }
         if(my_query.url.substring(0,4)!=="http")
         {
             my_query.url="http://"+my_query.url;
@@ -203,10 +211,19 @@
           var email_match;
         var ends_pic=/(jpg)|(png)$/;
         var examplecom=/example\.com$/;
+        var find_sendmail=/ail\(\'([^\']+)\',\s?\'([^\']+)\'\)/;
+        var match_mail;
          var links = doc.links;
+
         for(i=0; i < doc.links.length; i++)
         {
-
+            match_mail=doc.links[i].href.match(find_sendmail);
+            if(match_mail!==null && match_mail.length>=2)
+            {
+                document.getElementById("Email Address").value=match_mail[0]+"@"+match_mail[1];
+                alert("Found sendmail");
+                return true;
+            }
             if(doc.links[i].dataset.email!==undefined)
             {
                 document.getElementById("Email Address").value=doc.links[i].dataset.email+"@"+doc.links[i].dataset.emaildom;
@@ -217,6 +234,7 @@
                 document.getElementById("Email Address").value=doc.links[i].dataset.name+"@"+doc.links[i].dataset.suffix;
                 return true;
             }
+
 
             email_match=doc.links[i].textContent.match(email_re);
             if(email_match!==null && email_match.length>0)
