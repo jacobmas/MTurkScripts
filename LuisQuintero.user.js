@@ -37,6 +37,7 @@
     var email_list=[];
     var bad_urls=["app.lead411.com/","discoverthem.com/","searchherenow.com/"];
     var country_domains=[".ar",".at",".au",".br",".ch",".cn",".de",".eu",".fr",".it",".jp",".ro",".ru",".se",".tw",".uk",".uy",".vn"];
+    var first_try=true;
 
     function check_and_submit()
     {
@@ -73,7 +74,7 @@
             i=0;
             while(b_url.indexOf("crunchbase.com") !== -1 || b_url.indexOf("linkedin.com") !== -1 ||
                   b_url.indexOf("bloomberg.com") !== -1 || b_url.indexOf("chambersandpartners.com") !== -1 ||
-                b_url.indexOf("bestlawyers.com") !== -1) {
+                b_url.indexOf("bestlawyers.com") !== -1 || b_url.indexOf("wikipedia.org")!==-1 || b_url.indexOf("facebook.com")!==-1) {
                 b_url=b_algo[i].getElementsByTagName("a")[0].href; // url of query
                 i++;
             }
@@ -104,7 +105,7 @@
     }
     function domain_search(resolve,reject) {
         var google_search_str=my_query.company;
-        //if(my_query.country!=="United States" && my_query.country!=="United Kingdom") google_search_str=google_search_str+" "+my_query.country;
+        if(!first_try) google_search_str=google_search_str+" "+my_query.country;
         console.log("Searching with bing for "+google_search_str);
         var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(google_search_str)+"&first=1&rdr=1";
         var domain_URL='https://www.google.com/search?q='+encodeURIComponent(google_search_str);//+" company");
@@ -127,6 +128,14 @@
     function domain_promise_then(domain_name) {
         var search_str, search_URI, search_URIBing;
         var fname=my_query.fname, lname=my_query.lname;
+
+        if(my_query.domain_name === domain_name && !first_try)
+        {
+            /* Didn't get a new URL, quit */
+            console.log("Came up with same URL, returning");
+            GM_setValue("returnHit",true);
+            return false;
+        }
         my_query.domain_name=domain_name;
         if(fname.length>=1 && lname.length>=1)
         {
@@ -177,26 +186,32 @@
                 })
                 .catch(function(response) {
                 console.log("Failure in bing1, response="+response);
+                if(first_try)
+                {
+                    search_str=to_paste_str;
+                    search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);
+                    console.log("About to search with " + search_URI);
+                    setTimeout(function() {
+                        console.log("Beginning search");
+                        GM_xmlhttpRequest({
+                            method: 'GET',
+                            url:    search_URI,
 
-                search_str=to_paste_str;
-                search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);
-                console.log("About to search with " + search_URI);
-                setTimeout(function() {
-                    console.log("Beginning search");
-                    GM_xmlhttpRequest({
-                    method: 'GET',
-                    url:    search_URI,
+                            onload: function(response) {
+                                {
+                                    google1_response(response);
+                                }
 
-                    onload: function(response) {
-                        {
-                            google1_response(response);
-                        }
+                            }
 
-                    }
-
-                }); }, 1500);
-                //GM_setValue("returnHit",true);
-                //return false;
+                        }); }, 1500);
+                }
+                else
+                {
+                    console.log("Failed with country check");
+                    GM_setValue("returnHit",true);
+                    return false;
+                }
             });
 
         }
@@ -331,7 +346,7 @@
 
         for(i=0; i < links.length; i++)
         {
-           console.log("i="+i+", "+links[i].href);
+            //console.log("i="+i+", "+links[i].href);
             match_mail=links[i].href.match(find_sendmail);
             if(match_mail!==null && match_mail.length>=3)
             {
@@ -442,7 +457,7 @@
     {
         var text=response.responseText;
         console.log("VCF text=\n"+text);
-        var email_re=/INTERNET:(\w[^@]*@[^@]+)$/;
+        var email_re=/INTERNET:(\w[^@]*@[^@]+)\s/;
         var the_match=text.match(email_re);
         if(the_match!==null&&the_match.length>1)
         {
@@ -523,49 +538,24 @@
             check_and_submit();
             return true;
         }
+        else if(first_try)
+        {
+            first_try=false;
+            const domainPromise3 = new Promise((resolve, reject) => {
+                console.log("Beginning domain search");
+                domain_search(resolve, reject);
+            });
+            domainPromise3.then(domain_promise_then
+                              )
+                .catch(function(val) {
+                console.log("Failed crunch " + val); });
+
+        }
         else
         {
             console.log("Google search for email exactness failed");
             GM_setValue("returnHit",true);
-          /*  const domainPromise2 = new Promise((resolve, reject) => {
-                var search_str, search_URI, search_URIBing;
-                search_str=my_query.fname+" "+my_query.lname + " "+my_query.company+" site:"+my_query.domain_name;
-                // Put into one object/map thing
-                console.log("Failed to find email, new search is "+search_str);
-
-
-                search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);
-
-                search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str)+"&first=1&rdr=1";
-                console.log(search_URI);
-
-                console.log(search_URIBing);
-
-                GM_setClipboard(search_URIBing);
-
-
-
-                GM_xmlhttpRequest({
-                    method: 'GET',
-                    url:    search_URIBing,
-
-                    onload: function(response) {
-
-                        bing1_response(response, resolve, reject);
-                    }
-
-                });
-            });
-            domainPromise2.then(
-                function(response)  {
-                    console.log("Success in bing1, response="+response);
-                    check_and_submit();
-                })
-            .catch(function(response) {
-                console.log("Failure in bing1, response="+response);
-                GM_setValue("returnHit",true);
-                return false;
-            });*/
+      
         }
     }
 
@@ -678,11 +668,13 @@
     {
         var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         my_query={fname: wT.rows[1].cells[0].innerText, lname: wT.rows[1].cells[1].innerText,company: wT.rows[1].cells[2].innerText,
-                  city: wT.rows[1].cells[3].innerText, state: wT.rows[1].cells[4].innerText, country: wT.rows[1].cells[5].innerText};
+                  city: wT.rows[1].cells[3].innerText, state: wT.rows[1].cells[4].innerText, country: wT.rows[1].cells[5].innerText,
+                 domain_name: ""};
         my_query.fname=removeDiacritics(my_query.fname);
         my_query.lname=removeDiacritics(my_query.lname);
 
         console.log("my_query="+my_query);
+        first_try=true;
 
         var search_str, search_URI, search_URIBing;
 
@@ -709,7 +701,7 @@
         GM_setValue("stop",true);
      });
 
-
+    console.log("MOOOTOOOTHROO");
     if (window.location.href.indexOf("mturkcontent.com") != -1 || window.location.href.indexOf("amazonaws.com") != -1)
     {
         var submitButton=document.getElementById("submitButton");
@@ -722,6 +714,7 @@
     }
     else
     {
+        console.log("In LuisQuintero main");
         if(automate)
             setTimeout(function() { btns_secondary[0].click(); }, 40000);
         GM_setValue("returnHit",false);
