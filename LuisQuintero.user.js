@@ -29,7 +29,7 @@
 (function() {
     'use strict';
 
-    var automate=false;
+    var automate=true;
     var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%]+(\.[^<>()\[\]\\.,;:：\s@"\?]+)*)|("[^\?]+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
 
     var personal_email_domains=["aol.com","bigpond.com","frontiernet.net","gmail.com","icloud.com","mchsi.com","me.com","pacbell.net","rogers.com","rr.com","ymail.com"];
@@ -43,6 +43,7 @@
     {
 
         console.log("Checking and submitting");
+        document.getElementById("Email Address").value=document.getElementById("Email Address").value.replace("%20","").replace(/\?.*$/,"");
         if(automate)
             setTimeout(function() { document.getElementById("submitButton").click(); }, 1000);
 
@@ -142,13 +143,14 @@
             var to_paste_str="";
             email_list.push((fname+"@"+domain_name).toLowerCase());
             email_list.push((fname.substr(0,1)+lname+"@"+domain_name).toLowerCase());
+            email_list.push((fname.substr(0,1)+"."+lname+"@"+domain_name).toLowerCase());
             email_list.push((fname+"."+lname+"@"+domain_name).toLowerCase());
             to_paste_str=to_paste_str+"\"" + fname+"@"+domain_name+"\" OR \"" + fname.substr(0,1)+lname+"@"+domain_name+"\" OR \"";
             to_paste_str=to_paste_str+fname+"."+lname+"@"+domain_name+"\" OR \"";
-            to_paste_str=to_paste_str+fname+"_"+lname+"@"+domain_name+"\"";
+            to_paste_str=to_paste_str+fname.substr(0,1)+"."+lname+"@"+domain_name+"\"";
             console.log("Success! Paste str="+to_paste_str);
 
-            GM_setClipboard(to_paste_str);
+            //GM_setClipboard(to_paste_str);
 
             const domainPromise2 = new Promise((resolve, reject) => {
                 var search_str, search_URI, search_URIBing;
@@ -164,7 +166,7 @@
 
                 console.log(search_URIBing);
 
-                GM_setClipboard(search_URIBing);
+                //GM_setClipboard(search_URIBing);
 
 
 
@@ -202,7 +204,11 @@
                                     google1_response(response);
                                 }
 
-                            }
+
+                            },
+                            onerror: function(response) { console.log("error"); GM_setValue("returnHit",true); },
+                            ontimeout: function(response) { console.log("timeout"); },
+
 
                         }); }, 1500);
                 }
@@ -302,13 +308,19 @@
     function good_email(to_check)
     {
         var ends_pic=/jpg$/;
-        var loc_at=to_check.indexOf("@");
-        return loc_at!==-1 && (to_check.indexOf(my_query.lname.replace(" ","").toLowerCase()) !==-1  ||
+        try
+        {
+            var loc_at=to_check.indexOf("@");
+            to_check=to_check.split("@")[0]+"@";
+
+            return loc_at!==-1 && (to_check.indexOf(my_query.lname.replace(" ","").toLowerCase()) !==-1  ||
                                to_check.indexOf(my_query.fname.toLowerCase()) !==-1 ||
                 (loc_at>=2 && loc_at <=3 &&  to_check.indexOf(my_query.fname.toLowerCase()[0])==0&&
                  to_check.indexOf(my_query.lname.toLowerCase()[0]+"@") !==-1)
                )  && !ends_pic.test(to_check) &&
                         to_check.substring(0,4)!=="info";
+        }
+        catch(error) { console.log("Error with good_email="+error); return false; }
     }
     function invalid_email(to_check)
     {
@@ -329,6 +341,12 @@
         //console.log(JSON.stringify(response));
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
+        var j;
+        /*for(j in response)
+        {
+            console.log("response["+j+"]="+response[j]);
+        }*/
+        var finalURLMatch=response.finalUrl.match(/https?:\/\/[^\/]*/);
         var i;
         var contact_href;
         var curr_email=document.getElementById("Email Address").value;
@@ -340,12 +358,19 @@
         var examplecom=/example\.com$/;
         var find_sendmail=/ail\(\'([^\']+)\',\s?\'([^\']+)\'\)/;
         var find_mailto=/^mailto:(.*)/;
-        var test_vcf=/\.vcf$/;
+        var test_vcf=/(\.vcf$)|(vcard)/;
         var match_mail;
          var links = doc.getElementsByTagName("a");
 
         for(i=0; i < links.length; i++)
         {
+            if(finalURLMatch!==null)
+            {
+               // console.log("replacing");
+                links[i].href=links[i].href.replace(/^.*www\.mturk\.com/,finalURLMatch[0]).replace(/https:\/\/s3\.amazonaws\.com\/mturk_bulk\/hits\/\d+/,finalURLMatch[0]);
+                links[i].href=links[i].href.replace(/https:\/\/s3\.amazonaws\.com/,finalURLMatch[0]);
+            }
+
             //console.log("i="+i+", "+links[i].href);
             match_mail=links[i].href.match(find_sendmail);
             if(match_mail!==null && match_mail.length>=3)
@@ -463,13 +488,15 @@
         {
             console.log("Found Email in VCF");
             document.getElementById("Email Address").value=the_match[1];
-            resolve(the_match[1]);
+            if(good_email(the_match[1]))
+                resolve(the_match[1]);
         }
 
     }
 
 
     function google1_response(response) {
+        console.log("In google1_response");
         // console.log(JSON.stringify(response));
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
@@ -701,7 +728,7 @@
         GM_setValue("stop",true);
      });
 
-    console.log("MOOOTOOOTHROO");
+   
     if (window.location.href.indexOf("mturkcontent.com") != -1 || window.location.href.indexOf("amazonaws.com") != -1)
     {
         var submitButton=document.getElementById("submitButton");
@@ -714,7 +741,7 @@
     }
     else
     {
-        console.log("In LuisQuintero main");
+       // console.log("In LuisQuintero main");
         if(automate)
             setTimeout(function() { btns_secondary[0].click(); }, 40000);
         GM_setValue("returnHit",false);
@@ -724,7 +751,7 @@
                   )
                 {
                     if(automate)
-                        setTimeout(function() { btns_secondary[0].click(); }, 0);
+                        setTimeout(function() { btns_secondary[0].click(); }, 1000);
                 }
             });
          /* Regular window at mturk */
