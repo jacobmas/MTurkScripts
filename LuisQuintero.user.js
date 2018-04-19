@@ -75,7 +75,8 @@
             i=0;
             while(b_url.indexOf("crunchbase.com") !== -1 || b_url.indexOf("linkedin.com") !== -1 ||
                   b_url.indexOf("bloomberg.com") !== -1 || b_url.indexOf("chambersandpartners.com") !== -1 ||
-                b_url.indexOf("bestlawyers.com") !== -1 || b_url.indexOf("wikipedia.org")!==-1 || b_url.indexOf("facebook.com")!==-1) {
+                b_url.indexOf("bestlawyers.com") !== -1 || b_url.indexOf("wikipedia.org")!==-1 || b_url.indexOf("facebook.com")!==-1 ||
+                 b_url.indexOf("martindale.com")!==-1 ) {
                 b_url=b_algo[i].getElementsByTagName("a")[0].href; // url of query
                 i++;
             }
@@ -575,7 +576,8 @@
             domainPromise3.then(domain_promise_then
                               )
                 .catch(function(val) {
-                console.log("Failed crunch " + val); });
+                console.log("Failed crunch " + val); GM_setValue("returnHit",true); });
+            
 
         }
         else
@@ -699,6 +701,10 @@
                  domain_name: ""};
         my_query.fname=removeDiacritics(my_query.fname);
         my_query.lname=removeDiacritics(my_query.lname);
+        if(my_query.company.length==0){
+            my_query.company=my_query.fname+" "+my_query.lname+" lawyer";
+        }
+
 
         console.log("my_query="+my_query);
         first_try=true;
@@ -712,7 +718,7 @@
         domainPromise.then(domain_promise_then
         )
         .catch(function(val) {
-           console.log("Failed crunch " + val); });
+           console.log("Failed crunch " + val);   GM_setValue("returnHit",true); });
 
 
 
