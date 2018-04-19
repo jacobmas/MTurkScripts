@@ -576,8 +576,8 @@
             domainPromise3.then(domain_promise_then
                               )
                 .catch(function(val) {
-                console.log("Failed crunch " + val); });
-            GM_setValue("returnHit",true);
+                console.log("Failed crunch " + val); GM_setValue("returnHit",true); });
+            
 
         }
         else
@@ -718,7 +718,7 @@
         domainPromise.then(domain_promise_then
         )
         .catch(function(val) {
-           console.log("Failed crunch " + val); });
+           console.log("Failed crunch " + val);   GM_setValue("returnHit",true); });
 
 
 
