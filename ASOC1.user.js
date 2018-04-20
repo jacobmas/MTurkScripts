@@ -9,8 +9,8 @@
 // @include        http://*.amazonaws.com/*
 // @include        https://*.amazonaws.com/*
 // @include https://worker.mturk.com/*
-// @include https://*.facebook.com/*
-// @include https://*.twitter.com/*
+// @include https://*facebook.com/*
+// @include https://*twitter.com/*
 // @include file://*
 // @grant  GM_getValue
 // @grant GM_setValue
@@ -73,7 +73,7 @@
         var i;
 
         var b_url="";
-        var good_twitter_RegEx=/^https:\/\/twitter\.com\/[^\/]*$/;
+        var good_twitter_RegEx=/^https:\/\/twitter\.com\/[^\/]+$/;
 
 
         var b1_success=false, b_header_search;
@@ -113,7 +113,7 @@
     }
     function Twitter_search(resolve,reject) {
         var bing_search_str;
-        bing_search_str=my_query.district+" "+my_query.city+" "+my_query.state+" site:twitter.com";
+        bing_search_str=my_query.district+" "+my_query.city+" "+my_query.state+" Twitter";
         console.log("Searching with bing for "+bing_search_str);
         var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(bing_search_str)+"&first=1&rdr=1";
        // var domain_URL='https://www.google.com/search?q='+encodeURIComponent(google_search_str);//+" company");
@@ -146,7 +146,7 @@
 
         var b_url="";
         var FB_match="";
-        var FB_re=/https:\/\/www\.facebook\.com\/[^\/]*/;
+        var FB_re=/https:\/\/www\.facebook\.com\/.+/;
 
         var b1_success=false, b_header_search;
         try
@@ -159,7 +159,16 @@
             for(i=0; i < b_algo.length; i++)
             {
                 b_url=b_algo[i].getElementsByTagName("a")[0].href; // url of query
-                if(b_url.indexOf("facebook.com")!==-1 && b_url.indexOf("facebook.com/pages/")===-1) {
+                console.log("b_url="+b_url);
+                FB_match=b_url.match(FB_re);
+             /*   if(FB_match!==undefined && FB_match!==null && FB_match.length>0)
+                {
+                    console.log("Matched FB regex");
+                    b_url=FB_match[0];
+                    b1_success=true;
+                    break;
+                }*/
+                if(b_url.indexOf("facebook.com")!==-1 ) {
                     b1_success=true;
                     break;
                 }
@@ -170,7 +179,7 @@
             if(b1_success)
             {
                 FB_match=b_url.match(FB_re);
-                if(FB_match!==undefined && FB_match.length>0)
+                if(FB_match!==undefined && FB_match!==null && FB_match.length>0)
                 {
                     console.log("Matched FB regex");
                     b_url=FB_match[0];
@@ -183,18 +192,18 @@
             }
             else
             {
-                reject("Failed with url");
+                resolve("Failed FB with url");
             }
         }
         catch(error)
         {
-            console.log("Error");
-            reject("Failed with url");
+            console.log("Error:"+error);
+            resolve("Failed with url");
         }
     }
     function FB_search(resolve,reject) {
         var bing_search_str;
-        bing_search_str=my_query.district+" "+my_query.city+" "+my_query.state+" site:facebook.com";
+        bing_search_str=my_query.district+" "+my_query.city+" "+my_query.state+" Facebook";
         console.log("FB Searching with bing for "+bing_search_str);
         var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(bing_search_str)+"&first=1&rdr=1";
         // var domain_URL='https://www.google.com/search?q='+encodeURIComponent(google_search_str);//+" company");
@@ -212,6 +221,14 @@
 
 
         });
+    }
+    function count_slashes(url)
+    {
+        var ct=0;
+        var i;
+        for(i=0; i < url.length; i++)
+            if(url[i]==="/") ct++;
+        return ct;
     }
    function Web_response(response,resolve,reject) {
         // console.log(JSON.stringify(response));
@@ -237,9 +254,18 @@
             //g_stuff=search.getElementsByClassName("g");
           //  var t_url="crunchbase.com", t_header_search="";
             i=0;
-            while(b_url.indexOf("crunchbase.com") !== -1 || b_url.indexOf("linkedin.com") !== -1 ||
-                  b_url.indexOf("bloomberg.com") !== -1 || b_url.indexOf("facebook") !== -1 ||
-                b_url.indexOf("twitter.com") !== -1 || b_url.indexOf("manta.com")!==-1) {
+
+
+            while(i < b_algo.length && b_url.indexOf("crunchbase.com") !== -1 || b_url.indexOf("linkedin.com") !== -1 ||
+                  b_url.indexOf("bloomberg.com") !== -1 || b_url.indexOf("facebook.com") !== -1 ||
+                b_url.indexOf("twitter.com") !== -1 || b_url.indexOf("manta.com")!==-1 || b_url.indexOf("firedepartment.net")!==-1 ||
+                  b_url.indexOf("firedepartments.net") !== -1 || b_url.indexOf("www.countyoffice.org")!==-1 ||
+                b_url.indexOf("www.finduslocal.com")!==-1 || b_url.indexOf("www.buzzfile.com")!==-1 || b_url.indexOf("usfiredept.com")!==-1 ||
+                  b_url.indexOf("hometownlocator.com")!==-1 || b_url.indexOf("www.yellowpages.com")!==-1 ||
+                  b_url.indexOf("findthecompany.com")!==-1 || b_url.indexOf("www.dandb.com") !== -1 ||
+                  b_url.indexOf("citizenparticipation.org")!==-1 ||
+                  b_url.indexOf("mapcarta.com")!==-1 || b_url.indexOf("radioreference.com")!==-1 || b_url.indexOf("www.yelp.com")!==-1
+                 ) {
                 b_url=b_algo[i].getElementsByTagName("a")[0].href; // url of query
                 console.log("b_url="+b_url);
                 i++;
@@ -250,13 +276,13 @@
             }
             else
             {
-                reject("Failed with url");
+                resolve("Failed with url");
             }
         }
         catch(error)
         {
             console.log("Error");
-            reject("Failed with url");
+            resolve("Failed with url");
         }
     }
     function Web_search(resolve,reject) {
@@ -297,7 +323,8 @@
 
 
             console.log("Done with web query");
-            document.getElementById("Website").value=url;
+            if(url!=="Failed with url")
+                document.getElementById("Website").value=url;
             my_query.doneWeb=true;
             if(my_query.doneFB && my_query.doneTwitter)
             {
@@ -309,81 +336,6 @@
         .catch(function(error) { console.log("Failed with website finding,"+error); });
     }
 
-    function check_algo(b_algo, i, resolve, reject)
-    {
-        var b_url, b_header_search;
-        try
-        {
-            b_url=b_algo[i].getElementsByTagName("a")[0].href; // url of query
-            b_header_search=b_algo[i].firstChild.innerText; // basic description
-            my_query.url=b_url;
-        }
-        catch(error)
-        {
-            reject("No more domains");
-            return false;
-        }
-        if(my_query.url.substring(0,4)!=="http")
-        {
-            my_query.url="http://"+my_query.url;
-        }
-        my_query.url=my_query.url.replace(/\/$/,"");
-        //GM_openInTab(my_query.url);
-        /* Query for individual dude */
-
-        console.log("Querying "+my_query.url);
-        var search_URI=my_query.url;
-        setTimeout(function() { GM_xmlhttpRequest({
-            method: 'GET',
-            url:    search_URI,
-            onload: function(response) {
-                var found_email=find_email(response, resolve, reject);
-                var curr_email=document.getElementById("Email Address").value;
-                if(found_email && good_email(curr_email.toLowerCase()))
-                {
-                    resolve("Found email");
-                    return true;
-//                    check_and_submit();
-                }
-                else if(i < 2 && i+1 < b_algo.length)
-                {
-                    console.log("Checking search result "+(i+1));
-                    return check_algo(b_algo, i+1,resolve,reject);
-                }
-                else
-                {
-                    console.log("curr_email="+curr_email);
-                    //console.log("reject.toString="+reject);
-                    reject("Couldn't find good email");
-                }
-
-            }
-
-        });
-                              }, 500);
-
-    }
-    function bing1_response(response,resolve, reject) {
-
-        var doc = new DOMParser()
-        .parseFromString(response.responseText, "text/html");
-        //console.log(doc.getElementsByTagName("body")[0]);
-
-        //console.log("response.url="+response.finalUrl);
-        var search=doc.getElementById("b_content");
-
-        var b_algo=search.getElementsByClassName("b_algo");
-        var i, b1_success=false, b_url="", b_header_search;
-        var success=check_algo(b_algo,0,resolve,reject);
-        /*if(success)
-        {
-
-            console.log("Success="+success);
-            check_and_submit();
-        }*/
-
-    }
-
 
 
     function init_ASOC1()
@@ -391,7 +343,7 @@
         var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         var dist=wT.rows[0].cells[1].innerText;
         var promises_done=0;
-        dist=dist.replace(/Dist$/,"District").replace("Dist ","District");
+        dist=dist.replace(/Dist$/,"District").replace("Dist ","District").replace("Protec ","Protection ");
         my_query={district: dist, city: wT.rows[4].cells[1].innerText.trim(),state: wT.rows[3].cells[1].innerText.trim(),
                  doneWeb: false, doneFB: false, doneTwitter: false};
         console.log(JSON.stringify(my_query));
@@ -485,21 +437,33 @@
     function parse_Twitter()
     {
         var city=GM_getValue("city"), state=GM_getValue("state");
-
+        var header_card;
         var split_address;
         try
         {
-            split_address=document.getElementsByClassName("ProfileHeaderCard-locationText")[0].split(",");
-
-
-            if(split_address.length!==2 || split_address[0].trim()!==city || split_address[1].trim()!==state)
+            header_card=document.getElementsByClassName("ProfileHeaderCard-locationText");
+//            console.log("split_address="+header_card);
+            if(header_card[0].innerText.indexOf(",")!==-1)
             {
+                split_address=header_card[0].innerText.split(",");
+            }
+            else
+            {
+                split_address=header_card[0].innerText.split(" ");
+            }
+            console.log(split_address.length);
+            console.log(split_address[0].trim()+", "+city);
+            console.log(split_address[1].trim()+", "+state);
+
+            if(split_address.length!==2 || split_address[0].toLowerCase().trim()!==city.toLowerCase() || split_address[1].trim()!==state)
+            {
+                console.log("Incorrect address");
                 GM_setValue("FBstatus",-1);
                 return;
             }
             /* Set the likes */
             var followers_nav=document.getElementsByClassName("ProfileNav-item--followers")[0];
-            var TwitterFollowers=followersNav.getElementsByClassName("ProfileNav-value")[0].dataset.count;
+            var TwitterFollowers=followers_nav.getElementsByClassName("ProfileNav-value")[0].dataset.count;
             console.log("TwitterFollowers="+TwitterFollowers);
 
             GM_setValue("TwitterFollowers",TwitterFollowers);
@@ -542,7 +506,7 @@
         {
                         console.log("myFB.status="+my_FB.status);
 
-            setTimeout(parse_FB, 2000);
+            setTimeout(parse_FB, 5000);
         }
 
     }
@@ -552,34 +516,47 @@
     {
         console.log("Parsing FB");
         var city=GM_getValue("city"), state=GM_getValue("state");
+        var FBlikes;
         console.log("city="+city+", state="+state);
         var unofficial_elem=document.getElementById("u_0_5");
         var address;
-        if(unofficial_elem===undefined || unofficial_elem===null)
+        if(unofficial_elem!==undefined && unofficial_elem!==null)
+            console.log("unofficial_elem="+unofficial_elem.innerText.toLowerCase().indexOf("unofficial"));
+        if(unofficial_elem!==undefined && unofficial_elem!==null && unofficial_elem.innerText.toLowerCase().indexOf("unofficial")!==-1)
         {
             /* Bad page */
             console.log("Bad page");
             GM_setValue("FBstatus",-1);
             return;
         }
+        console.log("Past unofficial");
         try
         {
-            let add=document.getElementsByClassName("_2wzd")[0];
-            var parsed = parseAddress.parseLocation(add.innerText);
-            var FBlikes;
-            console.log(JSON.stringify(parsed));
-            console.log("state_map="+full_state_map[state]);
-            console.log("city.toLowerCase="+city.toLowerCase()+", parsed.city.toLowerCase()="+parsed.city.toLowerCase());
-            console.log("parsed.state=full_state_map[state]: " + (parsed.state===full_state_map[state]));
-            console.log("city.toLowerCase=parsed.city.toLowerCase: "+(parsed.city.toLowerCase()===city.toLowerCase()));
-            if(parsed.city.toLowerCase()!==city.toLowerCase() || full_state_map[state]!==parsed.state)
+            let add=document.getElementsByClassName("_2wzd");
+            if(add!==undefined && add.length>0)
             {
-                        console.log("City parse error");
+                console.log("Add="+add+", "+add.length);
+                add=add[0];
+                var parsed = parseAddress.parseLocation(add.innerText);
 
-                GM_setValue("FBstatus",-1);
-                return;
+                console.log(JSON.stringify(parsed));
+                console.log("state_map="+full_state_map[state]);
+                console.log("city.toLowerCase="+city.toLowerCase()+", parsed.city.toLowerCase()="+parsed.city.toLowerCase());
+                console.log("parsed.state=full_state_map[state]: " + (parsed.state===full_state_map[state]));
+                console.log("city.toLowerCase=parsed.city.toLowerCase: "+(parsed.city.toLowerCase()===city.toLowerCase()));
+                if(parsed.city.toLowerCase()!==city.toLowerCase() || full_state_map[state]!==parsed.state)
+                {
+                    console.log("City parse error");
+
+                    GM_setValue("FBstatus",-1);
+                    return;
+                }
+                console.log("City parse success?");
             }
-            console.log("City parse success?");
+            else
+            {
+                console.log("No address found");
+            }
             /* Set the likes */
             var community_stuff=document.getElementsByClassName("_6590")[0];
             var likes_div=community_stuff.getElementsByClassName("_4bl9")[1];
