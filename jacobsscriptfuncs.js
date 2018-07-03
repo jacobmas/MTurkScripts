@@ -15,7 +15,7 @@
         setTimeout(function() { document.getElementById("submitButton").click(); }, 0);
     }
 }
-function is_bad_url(the_url)
+function is_bad_url(the_url, bad_urls)
 {
     var i;
     
