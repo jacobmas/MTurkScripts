@@ -101,3 +101,41 @@ function my_parse_address(to_parse)
     }
     return ret_add;
 }
+function get_domain_only(the_url)
+{
+    var httpwww_re=/https?:\/\/www\./;
+    var http_re=/https?:\/\//;
+    var slash_re=/\/.*$/;
+    var ret=the_url.replace(httpwww_re,"").replace(http_re,"").replace(slash_re,"");
+    return ret;
+}
+function prefix_in_string(prefixes, to_check)
+{
+    var j;
+    for(j=0; j < prefixes.length; j++) {
+        if(to_check.indexOf(prefixes[j])===0) return true;
+    }
+    return false;
+}
+function parse_name(to_parse)
+{
+    var suffixes=["Jr","II","III","IV","CPA","CGM"];
+    var split_parse=to_parse.split(" ");
+    var last_pos=split_parse.length-1;
+    var j;
+    var caps_regex=/^[A-Z]+$/;
+    var ret={};
+    for(last_pos=split_parse.length-1; last_pos>=1; last_pos--)
+    {
+        if(!prefix_in_string(suffixes,split_parse[last_pos]) && !caps_regex.test(split_parse[last_pos])) break;
+
+    }
+    ret.lname=split_parse[last_pos];
+    ret.fname=split_parse[0];
+    if(last_pos>=2 && split_parse[1].length>=1) {
+        ret.mname=split_parse[1].substring(0,1); }
+    else {
+        ret.mname=""; }
+    return ret;
+
+}
