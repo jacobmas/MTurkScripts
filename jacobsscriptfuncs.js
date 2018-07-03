@@ -1,4 +1,4 @@
-    function check_and_submit(check_function)
+function check_and_submit(check_function, automate)
 {
     console.log("in check");
     if(!check_function())
