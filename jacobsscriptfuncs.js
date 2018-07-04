@@ -1,20 +1,4 @@
-function check_and_submit(check_function, automate)
-{
-    console.log("in check");
-    if(!check_function())
-    {
-        GM_setValue("returnHit",true);
-        console.log("bad");
-        return;
-    }
-    console.log("Checking and submitting");
 
-
-    if(automate)
-    {
-        setTimeout(function() { document.getElementById("submitButton").click(); }, 0);
-    }
-}
 function is_bad_url(the_url, bad_urls)
 {
     var i;
