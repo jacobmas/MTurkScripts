@@ -104,15 +104,21 @@ function prefix_in_string(prefixes, to_check)
 function parse_name(to_parse)
 {
     var suffixes=["Jr","II","III","IV","CPA","CGM"];
+    var prefixes=["Mr","Ms","Mrs","Dr","Rev"];
     var split_parse=to_parse.split(" ");
     var last_pos=split_parse.length-1;
+    var first_pos=0;
     var j;
     var caps_regex=/^[A-Z]+$/;
     var ret={};
     for(last_pos=split_parse.length-1; last_pos>=1; last_pos--)
     {
-        if(!prefix_in_string(suffixes,split_parse[last_pos]) && !caps_regex.test(split_parse[last_pos])) break;
+        if(!prefix_in_string(suffixes,split_parse[last_pos])) break;
 
+    }
+    for(first_pos=0; first_pos< last_pos; first_pos++)
+    {
+	if(!prefix_in_string(prefixes,split_parse[last_pos])&&split_parse[last_pos]!=="Miss") break;
     }
     ret.lname=split_parse[last_pos];
     ret.fname=split_parse[0];
