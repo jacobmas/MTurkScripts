@@ -105,6 +105,9 @@ function parse_name(to_parse)
 {
     var suffixes=["Jr","II","III","IV","CPA","CGM"];
     var prefixes=["Mr","Ms","Mrs","Dr","Rev"];
+    var paren_regex=/\([^\)]*\)/g;
+    to_parse=to_parse.replace(paren_regex,"");
+    
     var split_parse=to_parse.split(" ");
     var last_pos=split_parse.length-1;
     var first_pos=0;
