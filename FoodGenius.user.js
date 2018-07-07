@@ -50,7 +50,8 @@
                  "menuism.com","newyorkdiningclub.com","www.visit","buzzfile.com","intercreditreport.com","linkedin.com",
                  "indeed.com","yelp.de","bedandbreakfast.com",".business.site","speisekarte.menu",".gov","locality.com",
                  "citymaps.com","advrider.com","twitter.com","findmeglutenfree.com",".net","hotfrog.com","foodtrucksin.com",
-                 "ourvalleyevents.com",".pdf","locu.com","restaurantguru.com"];
+                 "ourvalleyevents.com",".pdf","locu.com","restaurantguru.com","trulia.com","chinesemenu.com","trycaviar","beyondmenu","allmenus","groupon.com",
+                 "tripadvisor.com","alohaorderonline.com","singleplatform.com","timetemperature.com","restaurant.com"];
     var country_domains=[".ar",".at",".au",".br",".ch",".cn",".de",".eu",".fr",".it",".jp",".ro",".ru",".se",".tw",".uk",".uy",".vn"];
     var first_try=true;
 
@@ -92,6 +93,8 @@
     function is_bad_url(the_url)
     {
         var i;
+        var bad_re=/https?:\/\/[^\/]*\/[^\/]*\/[^\/]*\//;
+        if(bad_re.test(the_url)) return true;
         for(i=0; i < bad_urls.length; i++)
         {
             if(the_url.indexOf(bad_urls[i])!==-1) return true;
@@ -249,13 +252,13 @@
             var loc_phone_re=/Phone: (.*)\s*Location: (.*)$/;
             var add_re=/Address: (.*)\s*Phone: ([\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/;
             var loc_match;
-            for(i=0; i < b_algo.length && i < 6; i++)
+            for(i=0; i < b_algo.length && i < 5; i++)
             {
                 b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
 
 
-                if(!is_bad_url(b_url) && i < 4)
+                if(!is_bad_url(b_url) && i < 3)
                 {
                     document.getElementById("webpage_url").value=b_url;
                     check_and_submit();
