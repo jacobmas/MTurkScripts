@@ -120,7 +120,9 @@
 
             my_match=t_url.match(/https:\/\/.*linkedin\.com\/in\//);
 
-            if(my_match !== null && my_match.length>0)
+            console.log("t_header_search="+t_header_search);
+
+            if(my_match !== null && my_match.length>0 && t_header_search.indexOf(data.marketer_name)===-1)
             {
 
 
@@ -388,9 +390,9 @@
   
     function init_NolanFox()
     {
-        var workTable=document.getElementById("workContent").getElementsByTagName("table")[0];
+        var wT=document.getElementById("workContent").getElementsByTagName("table")[0];
 
-        var orgname=workTable.rows[1].cells[1].innerText;
+        var orgname=wT.rows[1].cells[1].innerText;
         
         
 
@@ -403,8 +405,8 @@
         var search_URI='https://www.google.com/search?q='+encodeURIComponent(search_str);
         var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str);
 
-        var data={orgname: orgname};
-       
+        var data={orgname: orgname, marketer_name: wT.rows[4].cells[1].innerText.trim() };
+       console.log("data="+JSON.stringify(data));
 
         GM_xmlhttpRequest({
             method: 'GET',
