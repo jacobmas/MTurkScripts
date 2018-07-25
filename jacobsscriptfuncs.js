@@ -10,6 +10,10 @@ var state_map={"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","Cali
 function is_bad_url(the_url, bad_urls, check_function)
 {
     var i;
+    if(check_function !== undefined && check_function !== null && check_function(the_url))
+    {
+	return true;
+    }
     
     for(i=0; i < bad_urls.length; i++)
     {
