@@ -7,7 +7,7 @@ var state_map={"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","Cali
                    "Tennessee": "TN", "Texas": "TX", "Utah": "UT", "Vermont": "VT", "Virginia": "VA", "Washington": "WA", "West Virginia": "WV",
                    "Wisconsin": "WI", "Wyoming": "WY", "Ontario": "ON", "Quebec": "QC", "New Brunswick": "NB", "Alberta": "AB", "Saskatchewan": "SK",
                    "Manitoba": "MB", "British Columbia": "BC","Nova Scotia": "NS"};
-function is_bad_url(the_url, bad_urls)
+function is_bad_url(the_url, bad_urls, check_function)
 {
     var i;
     
