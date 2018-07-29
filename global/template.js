@@ -16,6 +16,8 @@
 // @grant        GM_setClipboard
 // @grant GM_xmlhttpRequest
 // @grant GM_openInTab
+// @grant GM_getResourceText
+// @grant GM_addStyle
 // @connect google.com
 // @connect bing.com
 // @connect yellowpages.com
@@ -23,6 +25,7 @@
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
+// @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
 
@@ -30,7 +33,7 @@
 (function() {
     'use strict';
 
-    var automate=false;
+    var automate=GM_getValue("automate",false);
     var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%]+(\.[^<>()\[\]\\.,;:：\s@"\?]+)*)|("[^\?]+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
 
     var phone_re=/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}/im;
@@ -49,22 +52,22 @@
     {
 	return true;
     }
-    function check_and_submit(check_function, automate)
+    function check_and_submit(check_function)
     {
-	console.log("in check");
-	if(!check_function())
-	{
+        console.log("in check");
+        if(!check_function())
+        {
             GM_setValue("returnHit",true);
             console.log("bad");
             return;
-	}
-	console.log("Checking and submitting");
+        }
+        console.log("Checking and submitting");
 
 
-	if(automate)
-	{
+        if(GM_getValue("automate"))
+        {
             setTimeout(function() { document.getElementById("submitButton").click(); }, 0);
-	}
+        }
     }
     function is_bad_name(b_name)
     {
@@ -210,39 +213,66 @@
     }
     else if(window.location.href.indexOf("mturk.com")!==-1)
     {
+
 	/* Should be MTurk itself */
-       
-        if(automate)
-        {
-            setTimeout(function() { btns_secondary[0].click(); }, 20000); }
-        GM_setValue("returnHit",false);
-       GM_addValueChangeListener("returnHit", function() {
-                if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
-                  btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Return"
-                  )
-                {
-                    if(automate) {
-                        setTimeout(function() { btns_secondary[0].click(); }, 0); }
-                }
-            });
-         /* Regular window at mturk */
-        var btns_primary=document.getElementsByClassName("btn-primary");
+        var globalCSS = GM_getResourceText("globalCSS");
+        GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
+       var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
+        if(GM_getValue("automate")===undefined) GM_setValue("automate",false);
+
+        var btn_span=document.createElement("span");
+        var btn_automate=document.createElement("button");
+
+         var btns_primary=document.getElementsByClassName("btn-primary");
         var btns_secondary=document.getElementsByClassName("btn-secondary");
+         var my_secondary_parent=pipeline.getElementsByClassName("btn-secondary")[0].parentNode;
+        btn_automate.className="btn btn-ternary m-r-sm";
+        btn_automate.innerHTML="Automate";
+        btn_span.appendChild(btn_automate);
+        pipeline.insertBefore(btn_span, my_secondary_parent);
+         GM_addStyle(globalCSS);
+        if(GM_getValue("automate"))
+        {
+            btn_automate.innerHTML="Stop";
+            /* Return automatically if still automating */
+            setTimeout(function() {
+
+                if(GM_getValue("automate")) btns_secondary[0].click();
+                }, 20000);
+        }
+        btn_automate.addEventListener("click", function(e) {
+            var auto=GM_getValue("automate");
+            if(!auto) btn_automate.innerHTML="Stop";
+            else btn_automate.innerHTML="Automate";
+            GM_setValue("automate",!auto);
+        });
+        GM_setValue("returnHit",false);
+        GM_addValueChangeListener("returnHit", function() {
+            if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
+               btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Return"
+              )
+            {
+                if(GM_getValue("automate")) {
+                    setTimeout(function() { btns_secondary[0].click(); }, 0); }
+            }
+        });
+        /* Regular window at mturk */
+
+       
         if(GM_getValue("stop") !== undefined && GM_getValue("stop") === true)
         {
         }
         else if(btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Skip" &&
-               btns_primary!==undefined && btns_primary.length>0 && btns_primary[0].innerText==="Accept")
+                btns_primary!==undefined && btns_primary.length>0 && btns_primary[0].innerText==="Accept")
         {
 
             /* Accept the HIT */
-            if(automate) {
+            if(GM_getValue("automate")) {
                 btns_primary[0].click(); }
         }
         else
         {
             /* Wait to return the hit */
-            console.log("MOO");
             var cboxdiv=document.getElementsByClassName("checkbox");
             var cbox=cboxdiv[0].firstChild.firstChild;
             if(cbox.checked===false) cbox.click();
