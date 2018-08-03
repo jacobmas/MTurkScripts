@@ -250,7 +250,6 @@ function parse_name(to_parse, console)
 		
 
     }
-    ret.fname="FUCK";
     for(first_pos=0; first_pos< last_pos; first_pos++)
     {
 	if(!prefix_in_string(prefixes,split_parse[last_pos])&&split_parse[last_pos]!=="Miss") break;
@@ -261,6 +260,8 @@ function parse_name(to_parse, console)
         ret.mname=split_parse[1].substring(0,1); }
     else {
         ret.mname=""; }
+        ret.fname="FUCK";
+
     return ret;
 
 }
