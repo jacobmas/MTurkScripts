@@ -220,7 +220,7 @@ function prefix_in_string(prefixes, to_check)
     }
     return false;
 }
-function parse_name(to_parse)
+function parse_name(to_parse, console)
 {
     console.log("Doing parse_name on "+to_parse);
     var suffixes=["Jr","II","III","IV","CPA","CGM"];
