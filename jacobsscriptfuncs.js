@@ -220,7 +220,7 @@ function prefix_in_string(prefixes, to_check)
     }
     return false;
 }
-function parse_name(to_parse, console)
+function parse_name(to_parse)
 {
     console.log("Doing parse_name on "+to_parse);
     var suffixes=["Jr","II","III","IV","CPA","CGM"];
@@ -260,7 +260,7 @@ function parse_name(to_parse, console)
         ret.mname=split_parse[1].substring(0,1); }
     else {
         ret.mname=""; }
-        ret.fname="FUCK";
+       
 
     return ret;
 
