@@ -240,8 +240,8 @@ function parse_name(to_parse)
 	{
 	    if(!(split_parse.length>0 && /[A-Z][a-z]/.test(split_parse[0]) && /^[^a-z]$/.test(split_parse[last_pos])))
 	    {
-		console.log("last_pos="+last_pos);
-		console.log( /[A-Z][a-z]/.test(split_parse[0]));
+		//console.log("last_pos="+last_pos);
+		//console.log( /[A-Z][a-z]/.test(split_parse[0]));
 	
 		break;
 	    }
