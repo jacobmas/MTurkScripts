@@ -125,7 +125,7 @@ function is_bad_url(the_url, bad_urls, check_function)
         if(the_url.indexOf(bad_urls[i])!==-1) return true;
     }
     //console.log("the_url.split(\"/\").length="+the_url.split("/").length);
-    //if(the_url.split("/").length>=5) return true;
+    if(the_url.split("/").length>=5) return true;
     return false;
 }
 
