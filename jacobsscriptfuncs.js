@@ -112,9 +112,13 @@ var state_map={"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","Cali
         });
     }
 
-function is_bad_url(the_url, bad_urls, check_function)
+function is_bad_url(the_url, bad_urls, max_depth, check_function)
 {
     var i;
+    if(max_depth===undefined)
+    {
+	max_depth=4;
+    }
     if(check_function !== undefined && check_function !== null && check_function(the_url))
     {
 	return true;
@@ -125,7 +129,7 @@ function is_bad_url(the_url, bad_urls, check_function)
         if(the_url.indexOf(bad_urls[i])!==-1) return true;
     }
     //console.log("the_url.split(\"/\").length="+the_url.split("/").length);
-    if(the_url.split("/").length>=5) return true;
+    if(max_depth!==-1 && the_url.split("/").length>max_depth) return true;
     return false;
 }
 
