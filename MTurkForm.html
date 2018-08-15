@@ -1,3 +1,4 @@
+<div style="margin: 20px 5px">
 <form name="mturk_form" method="post" id="mturk_form" action="https://www.mturk.com/mturk/externalSubmit"><input type="hidden" value="ASSIGNMENT_ID_NOT_AVAILABLE" name="assignmentId" id="assignmentId"><!-- HIT template: DataCollection-v3.0 --><!-- The following snippet enables the 'responsive' behavior on smaller screens -->
 <meta content="width=device-width,initial-scale=1" name="viewport">
 <section class="container" id="DataCollection"><!-- Instructions -->
@@ -106,4 +107,13 @@
   });
 </script><!-- Close internal javascript -->
 <div>&nbsp;</div>
-<p class="text-center"><input type="submit" id="submitButton" class="btn btn-primary" value="You must ACCEPT the HIT before you can submit the results." disabled=""></p></form>
+<p class="text-center"><input type="submit" id="submitButton"
+class="btn btn-primary" value="Submit"></p>
+<div class="row" id="resultContent" style="margin: 30px 0px 0px 0px">
+<div class="col-sm-8 col-sm-offset-2">
+  Result Goes here
+
+</div>
+</div>
+</form>
+</div>
