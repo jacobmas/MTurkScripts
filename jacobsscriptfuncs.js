@@ -133,6 +133,17 @@ function is_bad_url(the_url, bad_urls, max_depth, check_function)
     return false;
 }
 
+/** Take off annoying stuff at the end of company names */
+
+function shorten_company_name(name)
+{
+    name=name.replace(/L\.P\.$/i,"");
+    name=name.replace(/LLC\.?$/i,"");
+    name=name.replace(/Inc\.?$/i,"");
+    return name;
+
+}
+
 function my_parse_address(to_parse)
 {
     var ret_add={};
