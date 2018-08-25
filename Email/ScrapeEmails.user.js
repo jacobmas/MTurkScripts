@@ -36,7 +36,7 @@
 // VCF Do something with?
 (function() {
     'use strict';
-
+    var fb_listener;
     var automate=GM_getValue("automate",false);
     var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%]+(\.[^<>()\[\]\\.,;:：\s@"\?]+)*)|("[^\?]+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
 
@@ -53,6 +53,28 @@
     var first_try=true;
 
 
+    function DeCryptString( s )
+    {
+        var n = 0;
+        var r = "mailto:";
+        var z = 0;
+        for( var i = 0; i < s.length/2; i++)
+        {
+            z = s.substr(i*2, 1);
+            n = s.charCodeAt( i*2+1 );
+            if( n >= 8364 )
+            {
+                n = 128;
+            }
+            r += String.fromCharCode( n - z );
+        }
+        return r;
+    }
+
+    function DeCryptX( s )
+    {
+        return DeCryptString( s );
+    }
     function cfDecodeEmail(encodedString) {
         var email = "", r = parseInt(encodedString.substr(0, 2), 16), n, i;
         for (n = 2; encodedString.length - n; n += 2){
@@ -153,7 +175,8 @@
 
     function is_bad_email(to_check)
     {
-        if(to_check.indexOf("@2x.png")!==-1) return true;
+        if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1) return true;
+        else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
         return false;
     }
 
@@ -165,6 +188,7 @@
         .parseFromString(response.responseText, "text/html");
         var i,j;
         var email_val;
+        var my_match;
         var foundInsta=false, foundFB=false;
         console.log("in contact response "+response.finalUrl);
         var short_name=response.finalUrl.replace(my_query.url,"");//.replace(/[\/]+/g,"");
@@ -178,6 +202,7 @@
                 if(!is_bad_email(email_matches[j]) && email_matches[j].length>0) {
 
                    my_query.email=email_matches[j];
+                    document.getElementsByName("Email ")[0].value=my_query.email;
                    break;
                 }
             }
@@ -186,17 +211,20 @@
             console.log("Found email hop="+my_query.email);
         }
         GM_setValue("fb_result","");
-        GM_addValueChangeListener("fb_result",function() {
-            if(my_query.doneFB) return;
-            var result=arguments[2];
-            if(result.email.length>0) { my_query.email=result.email; console.log("FB: got email="+my_query.email); }
-            if(result.name.length>0) { my_query.name=result.name; console.log("FB: got name="+my_query.name); }
+        if(fb_listener===undefined)
+        {
+            fb_listener=GM_addValueChangeListener("fb_result",function() {
+                if(my_query.doneFB) return;
+                var result=arguments[2];
+                if(result.email.length>0) { my_query.email=result.email; console.log("FB: got email="+my_query.email);  }
+                if(result.name.length>0) { my_query.name=result.name; console.log("FB: got name="+my_query.name); }
 
-            my_query.doneFB=true;
-            add_and_submit();
+                my_query.doneFB=true;
+                add_and_submit();
 
-            /* Check if done */
-        });
+                /* Check if done */
+            });
+        }
         GM_setValue("insta_result","");
         GM_addValueChangeListener("insta_result",function() {
              if(my_query.doneInstagram) return;
@@ -211,7 +239,9 @@
                 });
         for(i=0; i < links.length; i++)
         {
-           // console.log(short_name+": ("+i+")="+links[i].href);
+            if(links[i].href.indexOf("amazonaws.com")===-1 && links[i].href.indexOf("mturkcontent.com")===-1)
+            {
+                console.log(short_name+": ("+i+")="+links[i].href); }
             if(links[i].href.indexOf("cdn-cgi/l/email-protection#")!==-1)
             {
                 var encoded_match=links[i].href.match(/#(.*)$/);
@@ -220,6 +250,7 @@
                     email_val=cfDecodeEmail(encoded_match[1]);
                     console.log("DECODED "+email_val);
                     my_query.email=email_val.replace(/\?.*$/,"");
+                    document.getElementsByName("Email ")[0].value=my_query.email;
                     my_query.doneEmail=true;
                 }
             }
@@ -228,13 +259,38 @@
                 email_val=links[i].href.replace(/^mailto:\s*/,"").match(email_re);
                 console.log("Found emailBlop="+email_val);
 
-                if(email_val.length>0)
+                if(email_val.length>0 && !is_bad_email(email_val))
                 {
                     console.log("set email");
                     my_query.email=email_val;
+                    document.getElementsByName("Email ")[0].value=my_query.email;
                 }
 
             }
+            if(links[i].href.indexOf("javascript:location.href")!==-1)
+            {
+                my_match=links[i].href.match(/String\.fromCharCode\(([^\)]+)\)/);
+                console.log("my_match="+JSON.stringify(my_match));
+                var match_split=my_match[1].split(",");
+                email_val="";
+                for(j=0; j < match_split.length; j++)
+                {
+                    email_val=email_val+String.fromCharCode(match_split[j].trim());
+                }
+                //email_val=String.fromCharCode(my_match[1]);
+                console.log("new email_val="+email_val);
+                my_query.email=email_val;
+                    document.getElementsByName("Email ")[0].value=my_query.email;
+            }
+              if(links[i].href.indexOf("javascript:DeCryptX(")!==-1)
+            {
+               my_match=links[i].href.match(/DeCryptX\(\'([^\)]+)\'\)/);
+                console.log("my_match="+JSON.stringify(my_match));
+                email_val=DecryptX(my_match[1]);
+                console.log("new email_val="+email_val);
+            }
+
+                //='mailto:'+String.fromCharCode(
             if(links[i].href.indexOf("facebook.com")!==-1 && links[i].href.indexOf("share.php")===-1 && links[i].href.indexOf("sharer.php")===-1&& !my_query.doneFB && !foundFB)
             {
                 foundFB=true;
@@ -272,16 +328,18 @@ console.log("Found FB url="+my_query.fb_url);
     function add_and_submit()
     {
         console.log("Doing add and submit");
-        document.getElementById("name").value=my_query.name;
-        document.getElementById("emailAddress").value=my_query.email;
-        document.getElementById("instagramAccount").value=my_query.insta_name;
-        document.getElementById("igFollowers").value=my_query.followers;
-
-        if(my_query.name.length>0 && my_query.email.length>0 && my_query.insta_name.length>0 && my_query.followers.length>0 &&
-           my_query.doneFB && my_query.doneInstagram && !my_query.submitted)
+        document.getElementsByName("First Name")[0].value=my_query.name.split(" ")[0];
+        document.getElementsByName("Email ")[0].value=my_query.email;
+        if(document.getElementsByName("First Name")[0].value.length===0)
+            {
+                document.getElementsByName("First Name")[0].value=" ";
+            }
+        if(my_query.name.length>0 && my_query.email.length>0 &&
+           my_query.doneFB && !my_query.submitted)
         {
             my_query.submitted=true;
             console.log("Done");
+
             check_and_submit(check_function,automate);
         }
     }
@@ -308,19 +366,24 @@ console.log("Found FB url="+my_query.fb_url);
 
     /* Following the finding the district stuff */
     function query_promise_then(url) {
-        GM_addValueChangeListener("insta_result",function() {
-            var result=arguments[2];
-            if(result.email.length>0) { my_query.email=result.email; console.log("IG: got email="+my_query.email); }
-            if(result.name.length>0 && result.name!==undefined && !(my_query.doneFB && my_query.name.length>0)) { my_query.name=result.name; console.log("IG: got name="+my_query.name); }
-            if(result.insta_name.length>0) { my_query.insta_name=result.insta_name; console.log("IG: got account="+my_query.insta_name); }
-            if(result.followers.length>0) { my_query.followers=result.followers; console.log("IG: followers="+my_query.followers); }
-            /* Check if done */
-           // my_query.doneInstagram=true;
-            add_and_submit();
-                });
-        if(url.indexOf("instagram.com")!==-1 && !my_query.doneInstagram)
+
+        if(fb_listener===undefined)
         {
-            GM_setValue("instagram_url",url);
+            fb_listener=GM_addValueChangeListener("fb_result",function() {
+                if(my_query.doneFB) return;
+                var result=arguments[2];
+                if(result.email.length>0) { my_query.email=result.email; console.log("FB: got email="+my_query.email);  }
+                if(result.name.length>0) { my_query.name=result.name; console.log("FB: got name="+my_query.name); }
+
+                my_query.doneFB=true;
+                add_and_submit();
+
+                /* Check if done */
+            });
+        }
+        if(url.indexOf("facebook.com")!==-1 && !my_query.doneFacebook)
+        {
+            GM_setValue("fb_url",url);
         }
 
     }
@@ -358,17 +421,17 @@ console.log("Found FB url="+my_query.fb_url);
     {
       //  GM_setValue("fb_url","http://www.facebook.com");
         //GM_setValue("instagram_url","http://www.instagram.com");
-        var url=document.getElementsByClassName("dont-break-out")[0].href;
-       //var wT=document.getElementById("workContent").getElementsByTagName("table");
+       // var url=document.getElementsByClassName("dont-break-out")[0].href;
+       var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
 
-        my_query={url:url, submitted: false, doneEmail: false, doneName: false, doneInstagram: false, fb_url: "", insta_url:"", doneFB: false,
+        my_query={url:wT.rows[0].cells[1].innerText, submitted: false, doneEmail: false, doneName: false, doneInstagram: false, fb_url: "", insta_url:"", doneFB: false,
 
-                 email:"",followers:0,insta_name:"",name:"", started_FB: false, started_Insta: false};
+                 email:"",followers:0,insta_name:"",name:" ", started_FB: false, started_Insta: false};
 
-        my_query.url=my_query.url.replace(/(https?:\/)\/https?:?\//,"$1").replace(/\/$/,"");
+        my_query.url=my_query.url.replace(/(https?:\/\/[^\/]+)\/.*$/,"$1");
         console.log("my_query.url="+my_query.url);
 
-	var search_str=get_domain_only(my_query.url)+" instagram";
+	var search_str=get_domain_only(my_query.url)+" site:facebook.com";
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response);
@@ -378,7 +441,7 @@ console.log("Found FB url="+my_query.fb_url);
         .catch(function(val) {
            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
 
-        var extensions=['','/contact','/privacy','/about/policies/','/privacy-policy','/about/','/contact.php'];
+        var extensions=['','/contact','/privacy','/includes/modules/contactinfo.php','/about/','/contact.php'];
         var i;
         var promises=[];
         var currPromise;

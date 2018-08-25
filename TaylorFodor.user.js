@@ -36,6 +36,7 @@
     var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%]+(\.[^<>()\[\]\\.,;:：\s@"\?]+)*)|("[^\?]+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
 
     var phone_re=/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}/im;
+    var new_phone_re=/Phone: ([(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/im;
     var fax_re=/Fax[:]?[\s]?([\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/im;
 
 
@@ -43,30 +44,32 @@
     var my_query = {};
     var email_list=[];
     var sch_name="School District Name", sch_domain="Domain of school district";
-    var bad_urls=["www.greatschools.org","www.schooldigger.com","www.zillow.com","www.areavibes.com","elementaryschools.org",
-                 "www.localschooldirectory.com","www.facebook.com","publicschoolsk12.com","www.century21.com","www.realtor.com",
-                 "high-schools.com","www.privateschoolreview.com","www.publicschoolreview.com","www.niche.com","www.schoolcalendars.org",
-                 "hometownlocator.com","www.trulia.com","en.wikipedia.org","usnews.com","cde.ca.gov","redfin.com",".neighborhoodscout.com",
-                 "yelp.com","apartments.com","moovitapp.com","trueschools.com","nces.ed.gov","findglocal.com","glassdoor.com",
-                 "spellingcity.com","glassdoor.co.in","wetakesection8.com","ratemyteachers.com","k12guides.com","yellowpages.com","usa.com",
-                 "publicschoolsreport.com","noodle.com","school-supply-list.com","superpages.com","insideschools.org","century21.com",
-                 "schooltree.org","alumniclass.com"];
+    var bad_urls=["facebook.com","instagram.com","twitter.com","yelp.com"];
     var country_domains=[".ar",".at",".au",".br",".ch",".cn",".de",".eu",".fr",".it",".jp",".ro",".ru",".se",".tw",".uk",".uy",".vn"];
     var sport_map1={
         "Field Hockey":["fhockey","fhock"],
         "Football":["football"],
         "Men's Basketball":["mbball"],
         "Men's Soccer":["msoc"],
-        "Men's Swimming": ["mswim"],
+        "Men's Swimming": ["mswim","swim"],
+        "Men's Water Polo": ["mwpolo"],
         "Women's Basketball":["wbball"],
         "Women's Soccer":["wsoc"],
-        "Women's Swimming":["wswim"],
+        "Women's Swimming":["wswim","swim"],
         "Women's Volleyball":["wvball","vball"],
-        "Wrestling":["wrestling"]};
+        "Wrestling":["wrestling"],
+    "Men's Wrestling":["wrestling"]};
     var sport_map1a={"Field Hockey":"fhock"};
-    var sport_map2={"Men's Basketball":"mbkb","Men's Soccer":"msoc","Football":"fball","Women's Basketball":"wbkb",
-                    "Women's Volleyball":"wvball","Men's Swimming":"mswimdive",
-                    "Women's Swimming":"wswim","Field Hockey":"fh","Women's Soccer":"wsoc"};
+    var sport_map2={"Men's Basketball":["mbkb"],
+                    "Men's Soccer":["msoc"],
+                    "Football":["fball"],
+                    "Women's Basketball":["wbkb"],
+                    "Women's Volleyball":["wvball"],
+                    "Men's Swimming":["mswimdive","mswim","swim","swimdive"],
+                    "Men's Water Polo": ["mwaterpolo"],
+                    "Women's Swimming":["wswim","wswimdive","swim","swimdive"],
+                    "Field Hockey":["fh"],
+                    "Women's Soccer":["wsoc"]};
     var first_try=true;
 
     function hex_at(str, index) {
@@ -101,7 +104,7 @@
       
            if(GM_getValue("automate"))
         {
-            setTimeout(function() { document.getElementById("submitButton").click(); }, 0);
+            setTimeout(function() { document.getElementById("submitButton").click(); }, 500);
         }
     }
     function is_bad_url(the_url)
@@ -205,6 +208,15 @@
     function setField(field, id,value)
     {
         if(value===undefined) return;
+        if(/phone/i.test(field) && /x/.test(value) && my_query.phone.length>0)
+        {
+            value=my_query.phone+" "+value;
+        }
+        if(/phone/i.test(field) && phone_re.test(value))
+        {
+            value=value.match(phone_re)[0];
+        }
+        if(/email/i.test(field) && !email_re.test(value)) value="";
         var nameVal=field+" (Coach #"+id+")";
         console.log("Setting field "+nameVal+" with "+value);
         document.getElementsByName(field+" (Coach #"+id+")")[0].value=value;
@@ -379,6 +391,23 @@
     }
 
 
+    function is_sport_index(url, additional)
+    {
+        var the_sports=sport_map2[my_query.sport];
+        if(the_sports===undefined) return false;
+      //  console.log("additional="+additional.length);
+        var i;
+        for(i=0; i < the_sports.length; i++)
+        {
+            if((additional!==undefined && additional.length>0 && url.indexOf("/sports/"+the_sports[i]+"/"+additional+"/index")!==-1) ||
+               ((additional===undefined || additional.length===0) && url.indexOf("/sports/"+the_sports[i]+"/index")!==-1)) return true;
+        }
+        //        console.log("url="+url+", "+"/sports/"+the_sports[i]+"/index"+" returning false");
+
+        return false;
+    }
+
+
 
 
     function sports_response(response,resolve,reject) {
@@ -386,27 +415,17 @@
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
         var i,j,k;
-
-
-     /*   if(doc.head.innerHTML.length<5) {
-            let new_url=response.finalUrl.replace(/(https?:\/\/[^\/]+).*$/,"$1");
-            GM_xmlhttpRequest({
-            method: 'GET',
-            url:    new_url,
-
-            onload: function(response) {
-             //   console.log("On load in crunch_response");
-            //    crunch_response(response, resolve, reject);
-
-             sports_response(response, resolve, reject);
-            },
-            onerror: function(response) { reject("Fail"); },
-            ontimeout: function(response) { reject("Fail"); }
-
-
-            });
-            return;
-        }*/
+        my_query.phone="";
+        var phone_match=doc.body.innerText.match(new_phone_re);
+        if(phone_match!==null)
+        {
+            my_query.phone=phone_match[1];
+        }
+        var cf_email=doc.getElementsByClassName("__cf_email__");
+        for(i=0; i < cf_email.length; i++)
+        {
+            cf_email[i].innerText=decryptCloudFlare(cf_email[i].dataset.cfemail);
+        }
         console.log("in domain_response");
 //        for(var i in response) console.log("i="+i+", "+response[i]);
        console.log(response.finalUrl);
@@ -414,8 +433,9 @@
         var begin_url=response.finalUrl.replace(/(https?:\/\/[^\/]+).*$/,"$1/");
         var new_url="";
         var sidearm=doc.getElementsByClassName("sidearm-table");
+
         console.log("sidearm="+sidearm.length);
-        if(my_query.try_count>0 && sidearm!==null && sidearm!==undefined && sidearm.length>0)
+        if(sidearm!==null && sidearm!==undefined && sidearm.length>0)
         {
             console.log("Found sidearm");
             if(response.finalUrl.indexOf("coaches.aspx?path=")!==-1) parse_sidearm2(sidearm[0]);
@@ -426,28 +446,30 @@
         else if(response.finalUrl.indexOf("/directory/index")!==-1 && doc.getElementById("mainbody")!==null)
         {
             console.log("Found information directory thing");
-            parse_info_directory(doc);
-            return;
+            if(parse_info_directory(doc)) return;
+
         }
-        else if(response.finalUrl.indexOf("/staff.php")!==-1)
+        if(response.finalUrl.indexOf("/staff.php")!==-1)
         {
             console.log("staff.php, doc.body.innerText="+doc.getElementById("staff-list"));
             if(doc.getElementById("staff-list")!==null)
             {
                 console.log("Found staff.php staff-list");
                 parse_staff_php(doc.getElementById("staff-list"));
+                return;
             }
             else if(doc.getElementsByClassName("staff").length>0)
             {
                 console.log("Found staff.php staff");
                 parse_php_table(doc.getElementsByClassName("staff")[0]);
+                return;
             }
-            return;
+      
         }
-        else if(response.finalUrl.indexOf("/sports/"+sport_map2[my_query.sport]+"/coaches/index")!==-1)
+        if(is_sport_index(response.finalUrl,"coaches"))
         {
             console.log("Doing sports coach indexy thing");
-            parse_sports_index(doc);
+            parse_sports_index(doc, response.finalUrl);
             return;
         }
         else if(doc.getElementsByClassName("staff_dgrd").length>0)
@@ -489,15 +511,26 @@
             parse_staff_dgrd(doc.getElementsByClassName("coaches_dgrd")[0],"coaches");
             return;
         }
-        else if(response.finalUrl.indexOf("/athletics/staff")!==-1 && response.finalUrl.indexOf("/athletics/staff.")===-1)
+        else if(response.finalUrl.indexOf("/athletics/staff")!==-1 && response.finalUrl.indexOf("/athletics/staff.")===-1
+               && response.finalUrl.indexOf("/athletics/staff-")===-1 && response.finalUrl.indexOf("/athletics/staff_")===-1
+               )
         {
             console.log("Found athletics_staff");
             parse_athletics_staff(doc);
             return;
         }
-        else if(my_query.try_count===0)
+        if(response.finalUrl.indexOf(".dbml")!==-1)
         {
-            console.log("Found nothing");
+            console.log("Found dbml");
+            if(parse_dbml(doc)) return;
+        }
+        if(response.finalUrl.indexOf("/athletics/staff-directory/")!==-1)
+        {
+            console.log("Found athletics staff directory");
+        }
+        if(my_query.try_count===0)
+        {
+            console.log("Found nothing, my_query.try_count="+my_query.try_count);
             my_query.try_count++;
             var links=doc.links;
             var has_edu=response.finalUrl.indexOf(".edu")!==-1;
@@ -511,16 +544,20 @@
                 let my_sportresult=sport_map1[my_query.sport.trim()];
               //  console.log("my_query.sport="+my_query.sport);
                // console.log("sport_map1[my_query.sport.trim()]="+sport_map1[my_query.sport.trim()]);
-                for(j=0; j < my_sportresult.length; j++)
-                {
-                    if(links[i].href.indexOf("index.aspx?path="+my_sportresult[j])!==-1 ||
-                       links[i].href.indexOf("staff.aspx?path="+my_sportresult[j])!==-1
-                      )
-                    {
-                        console.log("Found good links[i] for path=");
 
-                        new_url=begin_url+"coaches.aspx?path="+my_sportresult[j];
-                        break;
+                if(my_sportresult!==undefined) {
+                    for(j=0; j < my_sportresult.length; j++)
+                    {
+
+                       if(links[i].href.indexOf("index.aspx?path="+my_sportresult[j])!==-1 ||
+                           links[i].href.indexOf("staff.aspx?path="+my_sportresult[j])!==-1
+                          )
+                        {
+                            console.log("Found good links[i] for path="+my_sportresult[j]);
+
+                            new_url=links[i].href.replace("index.aspx","coaches.aspx").replace("staff.aspx","coaches.aspx");//+"coaches.aspx?path="+my_sportresult[j];
+                            break;
+                        }
                     }
                 }
                 if(new_url.length>0) break;
@@ -532,15 +569,24 @@
                     console.log("Found staff.php");
                     new_url=begin_url+"staff.php"; break;
                 }
-                else if(links[i].href.indexOf("/sports/"+sport_map2[my_query.sport]+"/index")!==-1)
+                else if(is_sport_index(links[i].href,""))
                 {
                     console.log("Found sports indexy thing");
-                    new_url=begin_url+"sports/"+sport_map2[my_query.sport]+"/coaches/index"; break;
+                  //  new_url=begin_url+"sports/"+sport_map2[my_query.sport]+"/coaches/index"; break;
+
+                    new_url=links[i].href;
+                    if(new_url.indexOf("coaches")===-1) new_url=new_url.replace(/\/index/,"/coaches/index");
                 }
                 else if(has_edu && !my_query.doneRedirect &&
-                        links[i].innerText.toLowerCase().indexOf("athletics")!==-1 && links[i].href.toLowerCase().indexOf(get_domain_only(begin_url.toLowerCase()))===-1)
+                        (links[i].innerText.toLowerCase().indexOf("athletics")!==-1 &&
+                        links[i].href.toLowerCase().indexOf("www."+get_domain_only2(begin_url.toLowerCase()))===-1 &&
+                       !/mailto:\s*/.test(links[i].href))
+                        ||(!my_query.doneCoaches && /coaches/i.test(links[i].innerText) && /athletics/i.test(links[i].href.toLowerCase()))
+
+                       )
                 {
                     console.log("Found new url="+links[i].href);
+                    if(/coaches/i.test(links[i].innerText)) my_query.doneCoaches=true;
                     my_query.try_count=0;
                     my_query.doneRedirect=true;
                     new_url=links[i].href;
@@ -548,13 +594,14 @@
                 }
 
             }
+            console.log("Done looping, try_count="+my_query.try_count);
             if(new_url.length===0 && !my_query.doneRedirect)
             {
 
                 new_url=response.finalUrl.replace(/\/[^\/]+\/?$/,"")
                 my_query.try_count=0;
                 my_query.doneRedirect=true;
-                console.log("Nothing found to do");
+                console.log("Nothing found to do, trying redirect");
 
             }
             if(new_url.length>0)
@@ -572,18 +619,86 @@
                     onerror: function(response) { console.log("Fail with "+new_url); },
                     ontimeout: function(response) { console.log("Fail with "+new_url); }
                 });
+                return;
             }
+            console.log("Can do nothing now");
+            var search_str=get_domain_only2(my_query.url) +" athletics -site:.edu";
+            const queryPromise = new Promise((resolve, reject) => {
+                console.log("Beginning query search");
+                query_search(search_str, resolve, reject, query_response);
+            });
+            queryPromise.then(query_promise_then)
+            .catch(function(val) {
+                console.log("Failed dist " + val);
 
-            return;
+                return; });
 
         }
         else if(my_query.try_count>0)
         {
             console.log("Truly failed");
+            let search_str=get_domain_only2(my_query.url) +" athletics -site:.edu";
+            const queryPromise = new Promise((resolve, reject) => {
+                console.log("Beginning query search");
+                query_search(search_str, resolve, reject, query_response);
+            });
+            queryPromise.then(query_promise_then)
+            .catch(function(val) {
+                console.log("Failed dist " + val);
+
+                return; });
+            return;
           //  GM_setValue("returnHit",true);
         }
 
   
+    }
+
+    function parse_dbml(doc)
+    {
+        var i,j,k;
+        var the_tab=doc.getElementsByTagName("table");
+        if(the_tab.length!==1) return false;
+        the_tab=the_tab[0];
+        var ctr=1;
+        var text;
+        var ret;
+        console.log("Doing table");
+        for(i=0; i < the_tab.rows.length; i++)
+        {
+            console.log("the_tab.rows[i].cells[0].colspan="+the_tab.rows[i].cells[0].getAttribute("colspan"));
+            if(the_tab.rows[i].cells.length>0 && the_tab.rows[i].cells[0].getAttribute("colspan")!==null &&
+              the_tab.rows[i].cells[0].getAttribute("colspan") ==="4" &&
+              is_right_sport(the_tab.rows[i].cells[0].innerText)
+              )
+            {
+                for(j=i+1; j < the_tab.rows.length; j++)
+                {
+                    console.log("parsing ("+j+")="+the_tab.rows[j].innerText);
+                    if(the_tab.rows[j].cells.length>0 && the_tab.rows[j].cells[0].getAttribute("colspan")!==null &&
+                        the_tab.rows[j].cells[0].getAttribute("colspan")==="4")
+                    {
+                        break;
+                    }
+                    text="";
+                    for(k=0; k < the_tab.rows[j].cells.length; k++)
+                    {
+                        text=text+the_tab.rows[j].cells[k].innerText+"\t";
+                    }
+                    console.log("text="+text);
+                    ret=parse_data_func(text);
+                    add_fields(ret,ctr);
+                        ctr++;
+                }
+                if(!my_query.submitted)
+                {
+                    my_query.submitted=true;
+                    check_and_submit();
+                    return true;
+                }
+                else { return true; }
+            }
+        }
     }
 
     function parse_athletics_staff(doc)
@@ -633,10 +748,11 @@
                     add_fields(curr_ret,ctr);
                     ctr++;
                 }
+
             }
         }
     }
-    function parse_sports_index(doc)
+    function parse_sports_index(doc, url)
     {
         var info=doc.getElementsByClassName("info");
         var i,j,ctr=1;
@@ -644,10 +760,172 @@
         for(i=0; i < info.length && ctr<=10; i++)
         {
             ret=parse_data_func(info[i].innerText);
+
             add_fields(ret,ctr);
             ctr++;
         }
-        check_and_submit();
+
+        if(info.length>0 && !my_query.submitted)
+        {
+            my_query.submitted=true;
+            check_and_submit();
+        }
+        else if(info.length===0 && !my_query.submitted)
+        {
+            var mainbody=doc.getElementById("mainbody");
+            if(mainbody!==null)
+            {
+                if(url.indexOf("/coaches/")!==-1)
+                {
+                    parse_sports_index_coach(doc);
+                    return;
+
+                }
+                console.log("Found mainbody");
+                let the_table=mainbody.getElementsByTagName("table")[0];
+                console.log("the_table="+the_table.rows.length);
+                for(i=0; i < the_table.rows.length; i++)
+                {
+
+                    for(j=0; j < the_table.rows[i].cells.length; j++)
+                    {
+                        console.log("("+i+","+j+": "+the_table.rows[i].cells[j].innerText);
+                        ret=parse_data_func(the_table.rows[i].cells[j].innerText);
+                        add_fields(ret,ctr);
+                        ctr++;
+                    }
+                }
+                if(!my_query.submitted)
+                {
+                    my_query.submitted=true;
+                    check_and_submit();
+                }
+            }
+            else
+            {
+                console.log("Did not find mainbody, returning");
+                GM_setValue("returnHit",true);
+            }
+        }
+
+    }
+
+    function parse_sports_index_coach(doc)
+    {
+        var i,j,x;
+        var player_info=document.getElementsByClassName("player-info");
+        var ret;
+        var tab;
+        var field_names={"Title: ": "title", "Phone: ":"phone","Email: ":"email"};
+        for(i=0; i < player_info.length; i++)
+        {
+            ret={name:"",title:"",phone:"",email:""};
+            ret.name=player_info.getElementsByClassName("name")[0].innerText;
+            tab=player_info.getElementsByTagName("table");
+            if(tab.length>0)
+            {
+                for(j=0; j < tab[0].rows.length; j++)
+                {
+                    let curr_row=tab[0].rows[j].innerText;
+                    for(x in field_names)
+                    {
+                        if(curr_row.indexOf(x)!==-1)
+                        {
+                            ret[field_names[x]]=curr_row.replace(x,"");
+                        }
+
+                    }
+                }
+            }
+        }
+        if(!my_query.submitted)
+        {
+            my_query.submitted=true;
+            check_and_submit();
+        }
+    }
+
+    function query_response(response,resolve,reject) {
+        var doc = new DOMParser()
+        .parseFromString(response.responseText, "text/html");
+        console.log("in query_response\n"+response.finalUrl);
+        my_query.try_count=0;
+        var search, b_algo, i=0, inner_a;
+        var b_url="crunchbase.com", b_name, b_factrow, b_caption;
+        var b1_success=false, b_header_search;
+        try
+        {
+
+            search=doc.getElementById("b_content");
+            b_algo=search.getElementsByClassName("b_algo");
+
+            console.log("b_algo.length="+b_algo.length);
+            for(i=0; i < 6 && i < b_algo.length; i++)
+            {
+
+                b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
+                b_url=b_algo[i].getElementsByTagName("a")[0].href.replace("m.facebook.com/","www.facebook.com/").replace(/(https?:\/\/[^\/]*\/[^\/]+)\/posts.*$/,"$1");
+                b_url=b_url.replace(/(https?:\/\/[^\/]*\/[^\/]+)\/about.*$/,"$1").replace(/(https?:\/\/[^\/]*\/[^\/]+)\/reviews.*$/,"$1");
+
+                b_caption=b_algo[i].getElementsByClassName("b_caption");
+                if(b_caption.length>0) b_caption=b_caption[0].innerText;
+                else b_caption="";
+
+                console.log("i="+i+", b_url="+b_url+", b_name="+b_name);
+
+
+
+                if(!is_bad_url(b_url,bad_urls,-1)  )
+                {
+                    console.log("Found something");
+                    b1_success=true;
+                    break;
+
+                }
+
+            }
+            if(b1_success)
+            {
+                /* Do shit */
+                console.log("Found good="+b_url);
+                resolve(b_url);
+                return;
+            }
+
+
+        }
+        catch(error)
+        {
+            console.log("Error "+error);
+            reject(error);
+            return;
+
+            //reject(JSON.stringify({error: true, errorText: error}));
+        }
+
+        console.log("Nothing found");
+        /* document.getElementsByName("no_page")[0].checked=true;
+        check_and_submit(check_function,automate);*/
+        GM_setValue("returnHit",true);
+        return;
+
+    }
+
+    function query_promise_then(url)
+    {
+        if(my_query.doneNewUrl) { console.log("Already tried new "); GM_setValue("returnHit",true); return; }
+        my_query.doneNewUrl=true;
+        my_query.url=url;
+        console.log("New query url="+my_query.url);
+        const sportsPromise = new Promise((resolve, reject) => {
+            console.log("Beginning dist search");
+           sports_search(resolve, reject);
+        });
+        sportsPromise.then(sports_promise_then
+        )
+        .catch(function(val) {
+           console.log("Failed dist " + val);
+        });
 
     }
 
@@ -657,7 +935,7 @@
         var i,j,k, x;
 
 var split_script;
-        var script_regex=/\(\'([^\),]+)\',([^\),]+),([^\),]+),\s*([\d]+),\s*([\d]+)/;
+        var script_regex=/\(\'([^,]+)\',([^\),]+),([^\),]+),\s*([\d]+),\s*([\d]+),\s*([^\),]+)\);/;
         var script_array=[];
         if(prefix==="coaches")
         {
@@ -680,7 +958,8 @@ var split_script;
         var curr_row, curr_cell;
         for(i=0; i < script_array.length; i++)
         {
-            curr_row=the_table.insertRow(script_array[i].index);
+            //console.log("script_array[i].index+1="+(parseInt(script_array[i].index)+1));
+            curr_row=the_table.insertRow(parseInt(script_array[i].index)+1);
             curr_cell=curr_row.insertCell(0);
             curr_cell.setAttribute('colspan',script_array[i].colspan);
             curr_cell.innerText=script_array[i].text;
@@ -688,11 +967,13 @@ var split_script;
             //curr_row.className=script_array[i].className;
         }
 
+
+
  //console.log(the_table.innerHTML);
 
         var typeTitle=the_table.getElementsByClassName("staff_dgrd_category");
         var begin_row_index=-1;
-        var end_row_index=the_table.length;
+        var end_row_index=the_table.rows.length;
         console.log("typeTitle.length="+typeTitle.length);
         console.log("the_table.rows.length="+the_table.rows.length);
         for(i=0; i < the_table.rows.length; i++)
@@ -718,12 +999,13 @@ var split_script;
         var curr_ret={name:"",title:"",email:"",phone:""};
         var curr_text;
         var ctr=1;
+        console.log("begin_row_index="+begin_row_index+", end_row_index="+end_row_index+", length="+the_table.rows.length);
         for(i=begin_row_index; i < end_row_index; i++)
         {
             curr_ret={};
             for(j=0; j < the_table.rows[i].cells.length; j++)
             {
-               // console.log("the_table.rows["+i+"].cells["+j+"].innerText="+the_table.rows[i].cells[j].innerText);
+               
                 if(title_map[the_table.rows[i].cells[j].className]!==undefined)
                 {
                     if(the_table.rows[i].cells[j].className.indexOf("staffEmail")!==-1 )
@@ -734,7 +1016,7 @@ var split_script;
                         {
                             curr_ret[title_map[the_table.rows[i].cells[j].className]]=decryptCloudFlare(the_table.rows[i].cells[j].dataset.cfemail);
                         }
-                        else curr_ret[title_map[the_table.rows[i].cells[j].className]]=the_table.rows[i].cells[j].innerText;
+                       else curr_ret[title_map[the_table.rows[i].cells[j].className]]=the_table.rows[i].cells[j].innerText;
                     }
                     else
                     {
@@ -747,18 +1029,35 @@ var split_script;
 
         }
 
+         if(!my_query.submitted)
+        {
+            my_query.submitted=true;
+            check_and_submit();
+            return;
+        }
+
     }
     function parse_staff_php(staffList)
     {
         var i,j;
         var dept=staffList.getElementsByClassName("staff-department");
+        if(dept.length===0) dept=staffList.getElementsByClassName("department");
         var sec_title;
         for(i=0; i < dept.length; i++)
         {
             sec_title=dept[i].getElementsByClassName("sec_title");
-            if(sec_title.length>0 && is_right_sport(sec_title[0]))
+            if(sec_title.length===0) sec_title=dept[i].getElementsByClassName("section-title");
+            //console.log("sec_title["+i+"]="+sec_title[0].innerText);
+            if(sec_title.length>0 && is_right_sport(sec_title[0].innerText))
             {
-                parse_inner_staff_php(dept[i]);
+                console.log("in here");
+                parse_inner_staff_php(dept[i])
+                if(!my_query.submitted)
+                {
+                    my_query.submitted=true;
+                    check_and_submit();
+                    return;
+                }
             }
         }
 
@@ -767,6 +1066,28 @@ var split_script;
     function parse_inner_staff_php(dept)
     {
         console.log("Parsing inner staff php");
+        var i,j;
+        var member=dept.getElementsByClassName("member");
+        var ctr=1;
+        var ret;
+        for(i=0; i < member.length; i++)
+        {
+            ret={name:"",email:"",title:"",phone:""};
+            try
+            {
+                if(member[i].getElementsByClassName("name").length>0)
+                    ret.name=member[i].getElementsByClassName("name")[0].innerText.trim();
+                if(member[i].getElementsByClassName("position").length>0)
+                    ret.title=member[i].getElementsByClassName("position")[0].innerText.trim();
+                if(member[i].getElementsByClassName("email").length>0)
+                    ret.email=member[i].getElementsByClassName("email")[0].innerText.trim();
+                 if(member[i].getElementsByClassName("phone").length>0)
+                     ret.phone=member[i].getElementsByClassName("phone")[0].innerText.trim();
+                add_fields(ret,ctr);
+                ctr++;
+            }
+            catch(e) { console.log("error "+e); }
+        }
     }
 
     /* parse pages with /information/directory/index */
@@ -775,15 +1096,18 @@ var split_script;
         var i,j;
         var mainbody=doc.getElementById("mainbody");
         var h2=mainbody.getElementsByTagName("h2");
+        if(h2.length < mainbody.getElementsByTagName("h1").length) h2=mainbody.getElementsByTagName("h1");
         for(i=0; i < h2.length; i++)
         {
             console.log("h2["+i+"]="+h2[i].innerText);
-            if(is_right_sport(h2[i].innerText)&& h2[i].nextElementSibling.tagName==="TABLE")
+            if(h2[i].innerText.length>0 && is_right_sport(h2[i].innerText)&& h2[i].nextElementSibling.tagName==="TABLE")
             {
-                parse_info_directory_table(h2[i].nextElementSibling);
-                return;
+                return parse_info_directory_table(h2[i].nextElementSibling);
+                
             }
         }
+        console.log("Info directory failed");
+        return false;
     }
     function assign_title_map(header_row)
     {
@@ -861,7 +1185,12 @@ var split_script;
             ctr++;
 
         }
-        check_and_submit();
+        if(!my_query.submitted)
+        {
+            my_query.submitted=true;
+            check_and_submit();
+            return;
+        }
     }
 
     function parse_info_directory_table(the_table)
@@ -878,13 +1207,19 @@ var split_script;
             curr_ret={};
             for(x in title_map)
             {
+
+                console.log(the_table.rows[i].cells[x].outerHTML);
                 curr_ret[title_map[x]]=the_table.rows[i].cells[x].innerText.trim();
             }
             add_fields(curr_ret,i);
 
         }
-        check_and_submit();
-        return;
+        if(!my_query.submitted)
+        {
+            my_query.submitted=true;
+            check_and_submit();
+        }
+        return true;
     }
     function parse_sidearm(sidearm)
     {
@@ -902,7 +1237,8 @@ var split_script;
             {
                 j=cat[i].rowIndex+1;
                 console.log(sidearm.rows[j].className);
-                while(sidearm.rows[j].className==="sidearm-staff-member" || sidearm.rows[j].className==="")
+                console.log("***sidearm.rows.length="+sidearm.rows.length);
+                while(j >=0 && j < sidearm.rows.length && (sidearm.rows[j].className==="sidearm-staff-member" || sidearm.rows[j].className===""))
                 {
                     var k;
                     console.log("j="+j+", "+sidearm.rows[j].cells.length);
@@ -930,10 +1266,15 @@ var split_script;
                     add_to_query(curr_name, curr_title, curr_email, curr_phone);
                     j++;
                 }
+                break;
 
             }
         }
-        check_and_submit();
+        if(!my_query.submitted)
+        {
+            my_query.submitted=true;
+            check_and_submit();
+        }
         return;
     }
     function parse_sidearm2(sidearm)
@@ -966,7 +1307,11 @@ var split_script;
             }
             add_fields(curr_ret,i);
         }
-        check_and_submit();
+        if(!my_query.submitted)
+        {
+            my_query.submitted=true;
+            check_and_submit();
+        }
     }
     function add_to_query(name, title, email, phone)
     {
@@ -978,6 +1323,7 @@ var split_script;
             document.getElementById("First Name (Coach #"+my_query.curr_pos+")").value=the_name.fname;
             document.getElementById("Last Name (Coach #"+my_query.curr_pos+")").value=the_name.lname;
             document.getElementById("Job Title (Coach #"+my_query.curr_pos+")").value=title;
+            if(!email_re.test(email)) email="";
             document.getElementById("Email Address (Coach #"+my_query.curr_pos+")").value=email;
             document.getElementById("Phone Number (Coach #"+my_query.curr_pos+")").value=phone;
         }
@@ -1123,10 +1469,27 @@ var split_script;
     }
     function is_right_sport(sports_str)
     {
-        //console.log("my_query.sport.toLowerCase()="+my_query.sport.toLowerCase()+",\n\tsports_str="+sports_str);
+
+     //   console.log("my_query.sport.toLowerCase()="+my_query.sport.toLowerCase().trim()+",\n\tsports_str="+sports_str.trim().toLowerCase());
+        if(sports_str.length===0) return false;
+sports_str=sports_str.replace(/\\\'/,"'");
+        sports_str=sports_str.replace(/^(.*) - (.*en(?:\'s)?)$/,"$2 $1");
+
+        sports_str=sports_str.replace(/^(.*) \(([^\)]+)\)$/,function(match,p1,p2)
+                                      {
+            if(p2==="m") { return "Men's "+p1; }
+            else if(p2==="w") { return "Men's "+p1; }
+            else if(/women/i.test(p2)) { return "Women's "+p1; }
+            else if(/^men/i.test(p2)) { return "Men's "+p1; }
+            return p1+" "+p2;
+        });
+        sports_str=sports_str.replace(/^((?:Men)|(?:Women))\s/i,"$1's ");
+        sports_str=sports_str.replace(/Men\'s\s*(?:and|&)\s*Women\'s\s*/i,"");
+
+         console.log("new sports_str="+sports_str);
         if((my_query.short_sport.length>0 && my_query.short_sport.trim().toLowerCase().indexOf(sports_str.toLowerCase()) === 0) ||
-           my_query.sport.trim().toLowerCase().indexOf(sports_str.toLowerCase())===0
-          || sports_str.trim().toLowerCase().indexOf(my_query.sport.toLowerCase())===0 || (
+           my_query.sport.trim().toLowerCase().indexOf(sports_str.trim().toLowerCase())===0
+          || sports_str.trim().toLowerCase().indexOf(my_query.sport.trim().toLowerCase())===0 || (
             my_query.short_sport.length>0 && sports_str.trim().toLowerCase().indexOf(my_query.short_sport.toLowerCase())===0)
           )
         {
@@ -1162,12 +1525,13 @@ var split_script;
 
             });
     }
-    function get_domain_only(the_url)
+    function get_domain_only2(the_url)
     {
         var httpwww_re=/https?:\/\/www\./;
         var http_re=/https?:\/\//;
         var slash_re=/\/.*$/;
         var ret=the_url.replace(httpwww_re,"").replace(http_re,"").replace(slash_re,"");
+        ret=ret.replace(/.*\.([^\.]+\.[^\.]+)$/,"$1");
         return ret;
     }
     /* Following the finding the district stuff */
@@ -1214,10 +1578,12 @@ var split_script;
             }
 
         }
-        my_query={url: well[0].innerText, sport: well[1].innerText, short_sport: "", curr_pos: 0, try_count: 0, doneRedirect: false};
+        my_query={url: well[0].innerText, sport: well[1].innerText, short_sport: "", curr_pos: 0, try_count: 0,
+                  doneRedirect: false, doneNewUrl: false, doneCoaches: false};
        /* if(my_query.company.length==0){
             my_query.company=my_query.fname+" "+my_query.lname+" lawyer";
         }*/
+        my_query.url=my_query.url.replace("/information/directory/home","/information/directory/index");
         if(my_query.sport==="Women's Volleyball")
         {
             my_query.short_sport="Volleyball";
@@ -1226,6 +1592,27 @@ var split_script;
         {
             my_query.sport="Field Hockey";
             my_query.short_sport="Field Hockey";
+        }
+        if(my_query.sport==="Men's Water Polo")
+        {
+            my_query.sport="Men's Water Polo";
+            my_query.short_sport="Water Polo";
+        }
+        if(my_query.sport==="Men's Swimming")
+        {
+            my_query.sport="Men's Swimming";
+            my_query.short_sport="Swimming";
+        }
+
+        if(my_query.sport==="Women's Swimming")
+        {
+            my_query.sport="Women's Swimming";
+            my_query.short_sport="Swimming";
+        }
+        if(my_query.sport==="Wrestling")
+        {
+            my_query.sport="Men's Wrestling";
+            my_query.short_sport="Wrestling";
         }
 
         console.log("my_query="+JSON.stringify(my_query));
@@ -1240,7 +1627,21 @@ var split_script;
         sportsPromise.then(sports_promise_then
         )
         .catch(function(val) {
-           console.log("Failed dist " + val);   GM_setValue("returnHit",true); });
+           console.log("Failed dist " + val);
+            var search_str=get_domain_only2(my_query.url) +" athletics -site:.edu";
+            const queryPromise = new Promise((resolve, reject) => {
+                console.log("Beginning query search");
+                query_search(search_str, resolve, reject, query_response);
+            });
+            queryPromise.then(query_promise_then)
+                .catch(function(val) {
+                console.log("Failed dist " + val);
+            });
+
+
+        });
+
+
 
 
 
