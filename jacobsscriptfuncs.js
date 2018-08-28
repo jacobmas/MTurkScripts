@@ -140,6 +140,7 @@ function shorten_company_name(name)
     name=name.replace(/L\.P\.$/i,"");
     name=name.replace(/LLC\.?$/i,"");
     name=name.replace(/Inc\.?$/i,"");
+    name=name.replace(/Incoporated$/i,"");
     return name;
 
 }
@@ -269,7 +270,14 @@ function parse_name(to_parse)
     {
 	if(!prefix_in_string(prefixes,split_parse[last_pos])&&split_parse[last_pos]!=="Miss") break;
     }
-    ret.lname=split_parse[last_pos];
+    if(last_pos>=2 && /Van|de/.test(split_parse[last_pos-1]))
+    {
+	ret.lname=split_parse[last_pos-1]+" "+split_parse[last_pos];
+    }
+    else
+    {
+	ret.lname=split_parse[last_pos];
+    }
     ret.fname=split_parse[0];
     if(last_pos>=2 && split_parse[1].length>=1) {
         ret.mname=split_parse[1].substring(0,1); }

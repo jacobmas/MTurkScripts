@@ -112,9 +112,13 @@ var state_map={"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","Cali
         });
     }
 
-function is_bad_url(the_url, bad_urls, check_function)
+function is_bad_url(the_url, bad_urls, max_depth, check_function)
 {
     var i;
+    if(max_depth===undefined)
+    {
+	max_depth=4;
+    }
     if(check_function !== undefined && check_function !== null && check_function(the_url))
     {
 	return true;
@@ -125,8 +129,20 @@ function is_bad_url(the_url, bad_urls, check_function)
         if(the_url.indexOf(bad_urls[i])!==-1) return true;
     }
     //console.log("the_url.split(\"/\").length="+the_url.split("/").length);
-    //if(the_url.split("/").length>=5) return true;
+    if(max_depth!==-1 && the_url.split("/").length>max_depth) return true;
     return false;
+}
+
+/** Take off annoying stuff at the end of company names */
+
+function shorten_company_name(name)
+{
+    name=name.replace(/L\.P\.$/i,"");
+    name=name.replace(/LLC\.?$/i,"");
+    name=name.replace(/Inc\.?$/i,"");
+    name=name.replace(/Incoporated$/i,"");
+    return name;
+
 }
 
 function my_parse_address(to_parse)
@@ -222,6 +238,7 @@ function prefix_in_string(prefixes, to_check)
 }
 function parse_name(to_parse)
 {
+    console.log("Doing parse_name on "+to_parse);
     var suffixes=["Jr","II","III","IV","CPA","CGM"];
     var prefixes=["Mr","Ms","Mrs","Dr","Rev"];
     var paren_regex=/\([^\)]*\)/g;
@@ -235,19 +252,39 @@ function parse_name(to_parse)
     var ret={};
     for(last_pos=split_parse.length-1; last_pos>=1; last_pos--)
     {
-        if(!prefix_in_string(suffixes,split_parse[last_pos])) break;
+        if(!prefix_in_string(suffixes,split_parse[last_pos]))
+	{
+	    if(!(split_parse.length>0 && /[A-Z][a-z]/.test(split_parse[0]) && /^[^a-z]+$/.test(split_parse[last_pos])))
+	    {
+		//console.log("last_pos="+last_pos);
+		//console.log( /[A-Z][a-z]/.test(split_parse[0]));
+	
+		break;
+	    }
+	}
+	
+		
 
     }
     for(first_pos=0; first_pos< last_pos; first_pos++)
     {
 	if(!prefix_in_string(prefixes,split_parse[last_pos])&&split_parse[last_pos]!=="Miss") break;
     }
-    ret.lname=split_parse[last_pos];
+    if(last_pos>=2 && /Van|de/.test(split_parse[last_pos-1]))
+    {
+	ret.lname=split_parse[last_pos-1]+" "+split_parse[last_pos];
+    }
+    else
+    {
+	ret.lname=split_parse[last_pos];
+    }
     ret.fname=split_parse[0];
     if(last_pos>=2 && split_parse[1].length>=1) {
         ret.mname=split_parse[1].substring(0,1); }
     else {
         ret.mname=""; }
+       
+
     return ret;
 
 }
