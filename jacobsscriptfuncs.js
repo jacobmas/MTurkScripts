@@ -145,6 +145,13 @@ var
         return email;
     }
 
+    function is_bad_email(to_check)
+    {
+        if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1) return true;
+        else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
+        return false;
+    }
+
 function is_bad_url(the_url, bad_urls, max_depth, check_function)
 {
     var i;
