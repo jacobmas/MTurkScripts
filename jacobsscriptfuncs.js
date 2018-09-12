@@ -8,6 +8,8 @@ var state_map={"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","Cali
                    "Wisconsin": "WI", "Wyoming": "WY", "Ontario": "ON", "Quebec": "QC", "New Brunswick": "NB", "Alberta": "AB", "Saskatchewan": "SK",
                "Manitoba": "MB", "British Columbia": "BC","Nova Scotia": "NS"};
 
+var 
+
    var defaultDiacriticsRemovalMap = [
         {'base':'A', 'letters':'\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F'},
         {'base':'AA','letters':'\uA732'},
@@ -110,6 +112,37 @@ var state_map={"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","Cali
         return str.replace(/[^\u0000-\u007E]/g, function(a){
            return diacriticsMap[a] || a;
         });
+    }
+
+  function DeCryptString( s )
+    {
+        var n = 0;
+        var r = "mailto:";
+        var z = 0;
+        for( var i = 0; i < s.length/2; i++)
+        {
+            z = s.substr(i*2, 1);
+            n = s.charCodeAt( i*2+1 );
+            if( n >= 8364 )
+            {
+                n = 128;
+            }
+            r += String.fromCharCode( n - z );
+        }
+        return r;
+    }
+
+    function DeCryptX( s )
+    {
+        return DeCryptString( s );
+    }
+    function cfDecodeEmail(encodedString) {
+        var email = "", r = parseInt(encodedString.substr(0, 2), 16), n, i;
+        for (n = 2; encodedString.length - n; n += 2){
+            i = parseInt(encodedString.substr(n, 2), 16) ^ r;
+            email += String.fromCharCode(i);
+        }
+        return email;
     }
 
 function is_bad_url(the_url, bad_urls, max_depth, check_function)
