@@ -45,6 +45,21 @@
                  "yellowpages.com","whitepages.com","moviefone.com","s3.amazonaws.com","walkscore.com","superpages.com",
                      "bizapedia.com","restaurants.com","city-data.com"];
     var country_domains=[".ar",".at",".au",".br",".ch",".cn",".de",".eu",".fr",".it",".jp",".ro",".ru",".se",".tw",".uk",".uy",".vn"];
+    var key_words=["State Park","Refuge","State Recreation Area"];
+    var replace_words={"SF":"State Forest","SRA":"State Recreation Area","NF":"National Forest","Rec Area":"Recreation Area","CG":"Campground",
+                      "Rec":"Recreation","Nat":"National","Conserve":"Conservation"};
+    var search_replace={"State Park":""};//,"RV Park":""};
+    var skip_first={"the": 0};
+    var state_map={"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE",
+                   "District of Columbia": "DC", "Florida": "FL","Georgia": "GA", "Hawaii": "HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA",
+                   "Kansas": "KS", "Kentucky": "KY", "Louisiana": "LA", "Maine": "ME", "Maryland": "MD", "Massachusetts":"MA", "Michigan": "MI",
+                   "Minnesota": "MN", "Mississippi": "MS", "Missouri": "MO", "Montana": "MT", "Nebraska": "NE", "Nevada": "NV", "New Hampshire": "NH",
+                   "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY", "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH",
+                   "Oklahoma": "OK", "Oregon": "OR", "Pennsylvania": "PA", "Rhode Island": "RI", "South Carolina": "SC", "South Dakota": "SD",
+                   "Tennessee": "TN", "Texas": "TX", "Utah": "UT", "Vermont": "VT", "Virginia": "VA", "Washington": "WA", "West Virginia": "WV",
+                   "Wisconsin": "WI", "Wyoming": "WY", "Ontario": "ON", "Quebec": "QC", "New Brunswick": "NB", "Alberta": "AB", "Saskatchewan": "SK",
+                   "Manitoba": "MB", "British Columbia": "BC","Nova Scotia": "NS"};
+
     var first_try=true;
 
     function bad_email_url(to_check)
@@ -65,6 +80,25 @@
         {
             setTimeout(function() { document.getElementById("submitButton").click(); }, 1000);
         }
+    }
+
+    String.prototype.str_in_array=function(the_array)
+    {
+        var i;
+        for(i=0; i < the_array.length; i++)
+        {
+            if(the_array[i].toLowerCase().indexOf(this.toLowerCase())!==-1) return true;
+        }
+        return false;
+    }
+    String.prototype.array_elem_in_str=function(the_array)
+    {
+        var i;
+        for(i=0; i < the_array.length; i++)
+        {
+            if(this.toLowerCase().indexOf(the_array[i].toLowerCase())!==-1) return true;
+        }
+        return false;
     }
     function is_bad_url(the_url)
     {
@@ -213,20 +247,23 @@
             var h2_title;
             var first_word;
 
-            for(i=0; i < b_algo.length; i++)
+            for(i=0; i < b_algo.length && i < 3; i++)
             {
                 rating="3.0";
 
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
-                h2_title=b_algo[i].getElementsByTagName("h2")[0].innerText;
-                first_word=h2_title.split(" ")[0];
+                h2_title=b_algo[i].getElementsByTagName("h2")[0].innerText.replace("s's","s");
+                var j=0;
+                var h2_split=h2_title.split(" ");
+                while(h2_split[j].toLowerCase() in skip_first) j++;
+                first_word=h2_split[j].replace("'","").replace("\'","");
                 console.log(website+" first word="+first_word);
                 console.log(website+"-h2: "+b_algo[i].getElementsByTagName("h2")[0].innerText);
     
      
 
                 
-                if(!is_good_entry(b_algo, first_word, h2_title))
+                if(!is_good_entry(website, b_algo[i], first_word, h2_title.replace("'","")))
                 {
                     console.log(website+": Bad entry, continuing");
                     continue;
@@ -259,22 +296,51 @@
         }
     }
 
-    function is_good_entry(b_algo, first_word, h2_title)
+    function is_good_entry(website, b_algo, first_word, h2_title)
     {
-
-        if(my_query.name.toLowerCase().indexOf(first_word.toLowerCase())===-1)
+        var b_url=b_algo.getElementsByTagName("a")[0].href;
+        if(website==="twitter") {
+            first_word=first_word.replace(/([A-Z][^A-Z]+).*/,"$1");
+            console.log("twitter first_word="+first_word);
+        }
+        var index1=my_query.name.toLowerCase().indexOf(first_word.toLowerCase());
+        if(index1===-1 || (index1!==0 && my_query.name.toLowerCase().indexOf(" "+first_word.toLowerCase())===-1))
         {
+            console.log(website+": first_word="+first_word+", not found in "+my_query.name);
             return false;
         }
-        if(h2_title.toLowerCase().indexOf(my_query.first_word.toLowerCase())===-1)
+        if(b_algo.innerText.toLowerCase().indexOf(my_query.first_word.toLowerCase())===-1)
         {
+            console.log(website+": first_word of my query="+my_query.first_word+", not found in "+h2_title);
             return false;
         }
+        if(website==="pinterest" && (h2_title.toLowerCase().indexOf(my_query.state.toLowerCase())===-1 &&
+           (!my_query.state in state_map || h2_title.indexOf(state_map[my_query.state])===-1)))
+        {
+            console.log(website+": state not found");
+            return false;
+        }
+        if(website==="facebook" && (b_url.indexOf("/public/")!==-1 || b_url.indexOf("/media/")!==-1)) return false;
         return true;
     }
 
     function camp_search(website,resolve,reject) {
-        var search_str=my_query.name+" "+ my_query.city+" "+my_query.state+" site:"+website+".com";
+        var search_str="";
+        var x;
+        if(website!=="facebook")
+        {
+            var search_name=my_query.name;
+            for(x in search_replace) search_name=search_name.replace(new RegExp(x,'i'),search_replace[x]);
+            search_name=search_name.replace(/\s\s/g," ");
+            search_str="+\""+search_name+"\" \""+my_query.state+"\" site:"+website+".com";
+
+        }
+        else if(website==="facebook")
+        {
+
+            search_str=my_query.name+" \""+my_query.state+"\" site:"+website+".com";
+        }
+
  
 //        if(!first_try) google_search_str=google_search_str+" "+my_query.country;
         console.log("Searching with bing for "+search_str);
@@ -310,7 +376,11 @@
         var parsed_str=JSON.parse(to_parse);
         console.log(parsed_str.website+": to_parse="+to_parse);
         console.log("Adding url for "+parsed_str.website);
+        parsed_str.url=parsed_str.url.replace(/(https?:\/\/twitter\.com\/[^\/]+)\/.*$/,"$1");
+        parsed_str.url=parsed_str.url.replace(/(https?:\/\/www\.facebook\.com\/.*)\/posts.*$/,"$1");
+         parsed_str.url=parsed_str.url.replace(/(https?:\/\/www\.facebook\.com\/[^\/]+)\/about.*$/,"$1");
         document.getElementById(parsed_str.website).value=parsed_str.url;
+
         if(parsed_str.website==="facebook") { my_query.doneFB=true; }
         if(parsed_str.website==="twitter") { my_query.doneTwitter=true; }
         if(parsed_str.website==="youtube") { my_query.doneYoutube=true; }
@@ -356,25 +426,56 @@
     function init_Camp()
     {
         var wT=document.getElementById("workContent").getElementsByTagName("table")[0];
-
+         var inst_body=document.getElementById("instructionBody");
+       //inst_body.style.display="block";
+        var i;
         var orig_name=wT.rows[0].cells[1].innerText.replace(/^BLM/,"");
         orig_name=orig_name.replace(/(RV Park)(.*)$/,"$1");
-        var name_split=orig_name.split(" - ");
-        var name=name_split[0];
-        name=orig_name;
-        var first_word=name.split(" ")[0];
+        var name=orig_name;
+       
         console.log("name="+name);
        // console.log("table.innerText="+wT.innerText+", "+wT.rows.length);
         my_query={name: name, city: wT.rows[1].cells[1].innerText,
                  state: wT.rows[3].cells[1].innerText, doneFB: false, doneTwitter: false, donePinterest: false, doneYoutube: false, first_word: first_word};
 
         my_query.tried_once=false;
+        var name_split=my_query.name.split(" ");
+        var new_name="";
+        for(i=0; i < name_split.length; i++)
+        {
+            if(name_split[i] in replace_words) new_name=new_name+replace_words[name_split[i]];
+            else new_name=new_name+name_split[i];
+            if(i < name_split.length-1) new_name=new_name+" ";
+        }
+        my_query.name=new_name;
+        if(my_query.name.indexOf("-")!==-1)
+        {
+            var new_str="";
+            var split_query=my_query.name.split(" - ");
+            for(i=0; i < split_query.length; i++)
+            {
+                if((split_query[i].length>new_str.length || split_query[i].trim().array_elem_in_str(key_words)) && !split_query[i].trim().str_in_array(key_words))
+                {
+                    console.log("split_query[i].trim()="+split_query[i].trim()+", split_query[i].trim().str_in_array(key_words)="+split_query[i].trim().str_in_array(key_words));
+                    new_str=split_query[i];
+                }
+                if(new_str.array_elem_in_str(key_words))
+                {
+                    break;
+                }
+            }
+            my_query.name=new_str;
+
+        }
        /* if(my_query.company.length==0){
             my_query.company=my_query.fname+" "+my_query.lname+" lawyer";
         }*/
+        my_query.name=my_query.name.replace(/ and .*$/,"");
+       // my_query.name=my_query.name.replace(/ at .*$/,"");
+        var first_word=my_query.name.split(" ")[0];
+        my_query.first_word=first_word;
 
-
-       // console.log("my_query="+JSON.stringify(my_query));
+       console.log("my_query="+JSON.stringify(my_query));
         first_try=true;
 
 
