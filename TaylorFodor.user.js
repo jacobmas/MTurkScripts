@@ -35,7 +35,7 @@
     var automate=GM_getValue("automate",false);
     var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%]+(\.[^<>()\[\]\\.,;:：\s@"\?]+)*)|("[^\?]+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
 
-    var phone_re=/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}/im;
+    var phone_re=/([(]?[0-9]{3}[)]?[-\s\.\/]+)?[0-9]{3}[-\s\.\/]+[0-9]{4,6}/im;
     var new_phone_re=/Phone: ([(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/im;
     var fax_re=/Fax[:]?[\s]?([\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/im;
 
@@ -44,32 +44,35 @@
     var my_query = {};
     var email_list=[];
     var sch_name="School District Name", sch_domain="Domain of school district";
-    var bad_urls=["facebook.com","instagram.com","twitter.com","yelp.com"];
+    var bad_urls=["facebook.com","instagram.com","twitter.com","yelp.com","webnode.com"];
     var country_domains=[".ar",".at",".au",".br",".ch",".cn",".de",".eu",".fr",".it",".jp",".ro",".ru",".se",".tw",".uk",".uy",".vn"];
     var sport_map1={
         "Field Hockey":["fhockey","fhock"],
         "Football":["football"],
         "Men's Basketball":["mbball"],
         "Men's Soccer":["msoc"],
-        "Men's Swimming": ["mswim","swim"],
+        "Men's Swimming": ["mswim","swim","msd"],
         "Men's Water Polo": ["mwpolo"],
         "Women's Basketball":["wbball"],
         "Women's Soccer":["wsoc"],
-        "Women's Swimming":["wswim","swim"],
-        "Women's Volleyball":["wvball","vball"],
+        "Women's Swimming":["wswim","swim","wsd"],
+        "Women's Volleyball":["wvball","vball","volleyball"],
         "Wrestling":["wrestling"],
     "Men's Wrestling":["wrestling"]};
     var sport_map1a={"Field Hockey":"fhock"};
-    var sport_map2={"Men's Basketball":["mbkb"],
-                    "Men's Soccer":["msoc"],
-                    "Football":["fball"],
-                    "Women's Basketball":["wbkb"],
-                    "Women's Volleyball":["wvball"],
-                    "Men's Swimming":["mswimdive","mswim","swim","swimdive"],
+    var sport_map2={"Men's Basketball":["mbkb","m-baskbl"],
+                    "Men's Soccer":["msoc","m-soccer"],
+                    "Football":["fball","m-footbl"],
+                    "Women's Basketball":["wbkb","w-baskbl"],
+                    "Women's Volleyball":["wvball","w-volley"],
+                    "Men's Swimming":["mswimdive","mswim","swim","swimdive","m-swim"],
                     "Men's Water Polo": ["mwaterpolo"],
-                    "Women's Swimming":["wswim","wswimdive","swim","swimdive"],
+
+                    "Women's Swimming":["wswim","wswimdive","swim","swimdive","w-swim"],
                     "Field Hockey":["fh"],
-                    "Women's Soccer":["wsoc"]};
+                    "Women's Soccer":["wsoc","w-soccer"],
+                   "Men's Wrestling":["wrest"]
+                   };
     var first_try=true;
 
     function hex_at(str, index) {
@@ -208,7 +211,7 @@
     function setField(field, id,value)
     {
         if(value===undefined) return;
-        if(/phone/i.test(field) && /x/.test(value) && my_query.phone.length>0)
+        if(/phone/i.test(field) && (/x/.test(value) || /ext:/i.test(value)) && my_query.phone.length>0)
         {
             value=my_query.phone+" "+value;
         }
@@ -253,7 +256,7 @@
     function add_fields(ret, id_val)
     {
         if(id_val<1 || id_val > 10) return;
-        var fullname=parse_name(ret.name);
+        var fullname=parse_name(ret.name.trim());
         console.log("id_val="+id_val);
         setField("First Name",id_val,fullname.fname);
         setField("Last Name",id_val,fullname.lname);
@@ -399,8 +402,14 @@
         var i;
         for(i=0; i < the_sports.length; i++)
         {
+
+         //   console.log("Here url="+url+"\t"+the_sports[i]);
             if((additional!==undefined && additional.length>0 && url.indexOf("/sports/"+the_sports[i]+"/"+additional+"/index")!==-1) ||
-               ((additional===undefined || additional.length===0) && url.indexOf("/sports/"+the_sports[i]+"/index")!==-1)) return true;
+               ((additional===undefined || additional.length===0) && url.indexOf("/sports/"+the_sports[i]+"/index")!==-1))
+            {
+
+                return true;
+            }
         }
         //        console.log("url="+url+", "+"/sports/"+the_sports[i]+"/index"+" returning false");
 
@@ -426,9 +435,26 @@
         {
             cf_email[i].innerText=decryptCloudFlare(cf_email[i].dataset.cfemail);
         }
-        console.log("in domain_response");
+        console.log("in sports_response, url="+response.finalUrl);
 //        for(var i in response) console.log("i="+i+", "+response[i]);
-       console.log(response.finalUrl);
+      if(response.finalUrl.indexOf("sorry.ashx")!==-1 && !my_query.doneSorry)
+      {
+          my_query.doneSorry=true;
+           GM_xmlhttpRequest({
+                    method: 'GET',
+                    url:    response.finalUrl.replace("sorry.ashx","staff.aspx"),
+
+                    onload: function(response) {
+                        //   console.log("On load in crunch_response");
+                        //    crunch_response(response, resolve, reject);
+                        sports_response(response, resolve, reject);
+                    },
+                    onerror: function(response) { console.log("Fail with "+new_url); },
+                    ontimeout: function(response) { console.log("Fail with "+new_url); }
+                });
+          return;
+      }
+
         var url=response.finalUrl;
         var begin_url=response.finalUrl.replace(/(https?:\/\/[^\/]+).*$/,"$1/");
         var new_url="";
@@ -443,7 +469,8 @@
             console.log("Done sidearm");
             return;
         }
-        else if(response.finalUrl.indexOf("/directory/index")!==-1 && doc.getElementById("mainbody")!==null)
+        else if(response.finalUrl.indexOf("/directory/index")!==-1
+                && doc.getElementById("mainbody")!==null)
         {
             console.log("Found information directory thing");
             if(parse_info_directory(doc)) return;
@@ -498,11 +525,13 @@
 
             console.log("Found staff_dgrd");
             var script=doc.getElementById("ctl00_contentDiv").getElementsByTagName("script");
-           /* for(j=0; j < script.length; j++)
+            for(j=0; j < script.length; j++)
             {
-                console.log("script[i]="+script[j].innerHTML);
-            }*/
-            parse_staff_dgrd(doc.getElementsByClassName("staff_dgrd")[0],"staff",script[0]);
+                if(script[j].innerHTML.indexOf("loadRow")!==-1) break;
+//                console.log("script["+j+"]="+script[j].innerHTML);
+            }
+            if(j>=script.length) j=0;
+            parse_staff_dgrd(doc.getElementsByClassName("staff_dgrd")[0],"staff",script[j]);
             return;
         }
         else if(doc.getElementsByClassName("coaches_dgrd").length>0)
@@ -512,12 +541,11 @@
             return;
         }
         else if(response.finalUrl.indexOf("/athletics/staff")!==-1 && response.finalUrl.indexOf("/athletics/staff.")===-1
-               && response.finalUrl.indexOf("/athletics/staff-")===-1 && response.finalUrl.indexOf("/athletics/staff_")===-1
-               )
+               && response.finalUrl.indexOf("/athletics/staff-")===-1 && response.finalUrl.indexOf("/athletics/staff_")===-1 && response.finalUrl.indexOf("/athletics/staffdirectory")===-1)
+               
         {
             console.log("Found athletics_staff");
-            parse_athletics_staff(doc);
-            return;
+            if(parse_athletics_staff(doc)) return;
         }
         if(response.finalUrl.indexOf(".dbml")!==-1)
         {
@@ -528,9 +556,16 @@
         {
             console.log("Found athletics staff directory");
         }
+        if(doc.getElementById("staffdir")!==null)
+        {
+            console.log("Found staffdir");
+            if(parse_staffdir(doc)) return;
+        }
+        if(parse_generic(doc)) return;
         if(my_query.try_count===0)
         {
             console.log("Found nothing, my_query.try_count="+my_query.try_count);
+            //console.log("doc.body.innerHTML="+doc.body.innerHTML);
             my_query.try_count++;
             var links=doc.links;
             var has_edu=response.finalUrl.indexOf(".edu")!==-1;
@@ -540,7 +575,7 @@
                 links[i].href=links[i].href.replace("https://www.mturkcontent.com/dynamic/hit",response.finalUrl);
                 links[i].href=links[i].href.replace("https://www.mturkcontent.com/",begin_url);
                   links[i].href=links[i].href.replace("https://s3.amazonaws.com/",begin_url);
-                //console.log("links["+i+"].href="+links[i].href+", innerText="+links[i].innerText);
+              //  console.log("links["+i+"].href="+links[i].href+", innerText="+links[i].innerText);
                 let my_sportresult=sport_map1[my_query.sport.trim()];
               //  console.log("my_query.sport="+my_query.sport);
                // console.log("sport_map1[my_query.sport.trim()]="+sport_map1[my_query.sport.trim()]);
@@ -549,13 +584,16 @@
                     for(j=0; j < my_sportresult.length; j++)
                     {
 
-                       if(links[i].href.indexOf("index.aspx?path="+my_sportresult[j])!==-1 ||
+                       if(links[i].href.indexOf(".aspx?path="+my_sportresult[j])!==-1 ||
                            links[i].href.indexOf("staff.aspx?path="+my_sportresult[j])!==-1
                           )
                         {
                             console.log("Found good links[i] for path="+my_sportresult[j]);
 
                             new_url=links[i].href.replace("index.aspx","coaches.aspx").replace("staff.aspx","coaches.aspx");//+"coaches.aspx?path="+my_sportresult[j];
+                           // new_url=links[i].href.replace(/\/[^\/]*\.aspx/,"/coaches.aspx");
+                            new_url=begin_url+"/coaches.aspx?path="+my_sportresult[j];
+                            console.log("new_url="+new_url);
                             break;
                         }
                     }
@@ -564,11 +602,7 @@
 
                 if(links[i].href.indexOf("index.aspx?path=")!==-1 ||
                    links[i].href.indexOf("staff.aspx?path=")!==-1) console.log("links["+i+"].href="+links[i].href);
-                else if(links[i].href.indexOf("staff.php")!==-1)
-                {
-                    console.log("Found staff.php");
-                    new_url=begin_url+"staff.php"; break;
-                }
+                
                 else if(is_sport_index(links[i].href,""))
                 {
                     console.log("Found sports indexy thing");
@@ -576,6 +610,11 @@
 
                     new_url=links[i].href;
                     if(new_url.indexOf("coaches")===-1) new_url=new_url.replace(/\/index/,"/coaches/index");
+                }
+                else if(links[i].href.indexOf("staff.php")!==-1)
+                {
+                    console.log("Found staff.php");
+                    new_url=begin_url+"staff.php"; break;
                 }
                 else if(has_edu && !my_query.doneRedirect &&
                         (links[i].innerText.toLowerCase().indexOf("athletics")!==-1 &&
@@ -598,7 +637,8 @@
             if(new_url.length===0 && !my_query.doneRedirect)
             {
 
-                new_url=response.finalUrl.replace(/\/[^\/]+\/?$/,"")
+
+                new_url=begin_url;//response.finalUrl.replace(/\/[^\/]+\/?$/,"")
                 my_query.try_count=0;
                 my_query.doneRedirect=true;
                 console.log("Nothing found to do, trying redirect");
@@ -622,7 +662,7 @@
                 return;
             }
             console.log("Can do nothing now");
-            var search_str=get_domain_only2(my_query.url) +" athletics -site:.edu";
+            var search_str=get_domain_only2(my_query.url) +" athletics "; // -site:.edu";
             const queryPromise = new Promise((resolve, reject) => {
                 console.log("Beginning query search");
                 query_search(search_str, resolve, reject, query_response);
@@ -637,7 +677,7 @@
         else if(my_query.try_count>0)
         {
             console.log("Truly failed");
-            let search_str=get_domain_only2(my_query.url) +" athletics -site:.edu";
+            let search_str=get_domain_only2(my_query.url) +" athletics "// -site:.edu";
             const queryPromise = new Promise((resolve, reject) => {
                 console.log("Beginning query search");
                 query_search(search_str, resolve, reject, query_response);
@@ -654,6 +694,217 @@
   
     }
 
+    function parse_generic(doc)
+    {
+        return false;
+        console.log("\n**** DOING parse_generic ****\n");
+        var staffdir=doc.getElementsByTagName("table");
+        if(staffdir.length===0) return false;
+        var the_table=staffdir[0];
+        var i,j, x;
+
+        var typeTitle=the_table.getElementsByTagName("th");
+        if(typeTitle.length===0)
+        {
+            typeTitle=the_table.querySelectorAll('[colspan="4"]');
+          //  for(i=0; i < typeTitle.length; i++) { console.log("i="+i+", typeTitle[i]="+typeTitle[i].innerText); }
+        }
+        if(typeTitle.length===0)
+        {
+            console.log("*** Couldn't find either typeTitle ***");
+            return parse_generic2(the_table);
+        }
+        try
+        {
+            var begin_row_index=-1;
+            var end_row_index=the_table.rows.length;
+            for(i=0; i < typeTitle.length; i++)
+            {
+                console.log("typeTitle["+i+"]="+typeTitle[i].innerText);
+                if(is_right_sport(typeTitle[i].innerText.toLowerCase()))
+                {
+                    begin_row_index=typeTitle[i].parentNode.rowIndex+1;
+                    if(i < typeTitle.length-1) end_row_index=typeTitle[i+1].parentNode.rowIndex;
+                    break;
+                }
+            }
+            //console.log(the_table.length);
+            //if(end_row_index===undefined) end_row_index=the_table.length;
+            if(begin_row_index===-1) {
+                console.log("Could not find right sport");
+                return;
+            }
+            console.log("Got right sport "+begin_row_index+"\t"+end_row_index);
+            var title_map={0: "name", 1:"title",2:"email",3:"phone"};
+
+            var curr_ret={name:"",title:"",email:"",phone:""};
+            var curr_text;
+            var ctr=1;
+            for(i=begin_row_index; i < end_row_index; i++)
+            {
+                curr_ret={};
+                for(j=0; j < the_table.rows[i].cells.length; j++)
+                {
+                    console.log("the_table.rows["+i+"].cells["+j+"].innerText="+the_table.rows[i].cells[j].innerText);
+                    if(title_map[j]!==undefined)
+                    {
+                        if(the_table.rows[i].cells[j].getElementsByTagName("a").length>0 && /^mailto:\s*/.test(the_table.rows[i].cells[j].getElementsByTagName("a")[0].href))
+                        {
+
+                            curr_ret[title_map[j]]=the_table.rows[i].cells[j].getElementsByTagName("a")[0].href.replace(/^mailto:\s*/,"");
+                        }
+                        else
+                        {
+                            curr_ret[title_map[j]]=the_table.rows[i].cells[j].innerText;
+                        }
+                    }
+                }
+                if(curr_ret.name.length<2 && the_table.rows[i].cells.length>0) curr_ret.name=the_table.rows[i].cells[0].innerText;
+                console.log("curr_ret="+JSON.stringify(curr_ret));
+                add_fields(curr_ret,ctr);
+                ctr++;
+
+            }
+            if(!my_query.submitted)
+            {
+                my_query.submitted=true;
+                check_and_submit();
+                return true;
+            }
+        }
+        catch(error) { console.log("Failed generic"); return false; }
+    }
+
+    function parse_generic2(the_table)
+    {
+        console.log("In parse_generic2");
+        var i,j,x;
+        var title_map={},title_map_inv={};
+        if(the_table.rows.length<2) return;
+        var curr_row=the_table.rows[0], curr_text;
+        try
+        {
+            for(j=0; j < curr_row.cells.length; j++)
+            {
+                curr_text=curr_row.cells[j].innerText;
+                if(/(name)|(coach)/i.test(curr_text)) { title_map[j]="name"; title_map_inv.name=j; }
+                else if(/mail/i.test(curr_text)) { title_map[j]="email"; title_map_inv.email=j; }
+                else if(/phone/i.test(curr_text)) { title_map[j]="phone"; title_map_inv.phone=j; }
+                else if(/(sport)|(title)|(position)/i.test(curr_text)) { title_map[j]="title"; title_map_inv.title=j; }
+
+            }
+            console.log("title_map_inv="+JSON.stringify(title_map));
+            var curr_ret={name:"",title:"",email:"",phone:""};
+
+            var ctr=1;
+            for(i=1; i < the_table.rows.length; i++)
+            {
+                curr_ret={name:"",title:"",email:"",phone:""};
+                if(the_table.rows[i].cells.length>= title_map_inv.title)
+                {
+                    console.log("title="+the_table.rows[i].cells[title_map_inv.title].innerText);
+                }
+                if(the_table.rows[i].cells.length<= title_map_inv.title || (!is_right_sport(the_table.rows[i].cells[title_map_inv.title].innerText))) continue;
+                for(j=0; j < the_table.rows[i].cells.length; j++)
+                {
+
+                    console.log("the_table.rows["+i+"].cells["+j+"].innerText="+the_table.rows[i].cells[j].innerText);
+                    if(title_map[j]!==undefined)
+                    {
+                        if(the_table.rows[i].cells[j].getElementsByTagName("a").length>0 && /^mailto:\s*/.test(the_table.rows[i].cells[j].getElementsByTagName("a")[0].href))
+                        {
+
+                            curr_ret[title_map[j]]=the_table.rows[i].cells[j].getElementsByTagName("a")[0].href.replace(/^mailto:\s*/,"");
+                        }
+                        else
+                        {
+                            curr_ret[title_map[j]]=the_table.rows[i].cells[j].innerText;
+                        }
+                    }
+                }
+                if(curr_ret.name.length<2 && the_table.rows[i].cells.length>0) curr_ret.name=the_table.rows[i].cells[0].innerText;
+                console.log("curr_ret="+JSON.stringify(curr_ret));
+                add_fields(curr_ret,ctr);
+                ctr++;
+
+            }
+            if(!my_query.submitted)
+            {
+                my_query.submitted=true;
+                check_and_submit();
+                return true;
+            }
+
+        }
+        catch(error) { console.log("Failed generic2 "+error); return false; }
+
+    }
+
+    function parse_staffdir(doc)
+    {
+        var staffdir=doc.getElementById("staffdir");
+        if(staffdir===null ||staffdir.tagName!=="TABLE") return false;
+        var the_table=staffdir;
+        var i,j, x;
+
+        var typeTitle=the_table.getElementsByTagName("th");
+        var begin_row_index=-1;
+        var end_row_index=the_table.rows.length;
+        for(i=0; i < typeTitle.length; i++)
+        {
+            console.log("typeTitle["+i+"]="+typeTitle[i].innerText);
+            if(is_right_sport(typeTitle[i].innerText.toLowerCase()))
+            {
+                begin_row_index=typeTitle[i].parentNode.rowIndex+1;
+                if(i < typeTitle.length-1) end_row_index=typeTitle[i+1].parentNode.rowIndex;
+                break;
+            }
+        }
+        //console.log(the_table.length);
+        //if(end_row_index===undefined) end_row_index=the_table.length;
+        if(begin_row_index===-1) {
+            console.log("Could not find right sport");
+            return;
+        }
+        console.log("Got right sport "+begin_row_index+"\t"+end_row_index);
+        var title_map={0: "name", 1:"title",2:"email",3:"phone"};
+
+        var curr_ret={name:"",title:"",email:"",phone:""};
+        var curr_text;
+        var ctr=1;
+        for(i=begin_row_index; i < end_row_index; i++)
+        {
+            curr_ret={};
+            for(j=0; j < the_table.rows[i].cells.length; j++)
+            {
+                console.log("the_table.rows["+i+"].cells["+j+"].innerText="+the_table.rows[i].cells[j].innerText);
+                if(title_map[j]!==undefined)
+                {
+                    if(the_table.rows[i].cells[j].getElementsByTagName("a").length>0 && /^mailto:\s*/.test(the_table.rows[i].cells[j].getElementsByTagName("a")[0].href))
+                    {
+
+                        curr_ret[title_map[j]]=the_table.rows[i].cells[j].getElementsByTagName("a")[0].href.replace(/^mailto:\s*/,"");
+                    }
+                    else
+                    {
+                        curr_ret[title_map[j]]=the_table.rows[i].cells[j].innerText;
+                    }
+                }
+            }
+            console.log("curr_ret="+JSON.stringify(curr_ret));
+            add_fields(curr_ret,ctr);
+            ctr++;
+
+        }
+        if(!my_query.submitted)
+        {
+            my_query.submitted=true;
+            check_and_submit();
+            return true;
+        }
+    }
+
+
     function parse_dbml(doc)
     {
         var i,j,k;
@@ -668,7 +919,7 @@
         {
             console.log("the_tab.rows[i].cells[0].colspan="+the_tab.rows[i].cells[0].getAttribute("colspan"));
             if(the_tab.rows[i].cells.length>0 && the_tab.rows[i].cells[0].getAttribute("colspan")!==null &&
-              the_tab.rows[i].cells[0].getAttribute("colspan") ==="4" &&
+              parseInt(the_tab.rows[i].cells[0].getAttribute("colspan"))>=4 &&
               is_right_sport(the_tab.rows[i].cells[0].innerText)
               )
             {
@@ -705,7 +956,7 @@
     {
         var category=doc.getElementsByClassName("category");
         var staffdir;
-        if(category.length===0) { console.log("Bad category"); return; }
+        if(category.length===0) { console.log("Bad category"); return false; }
         staffdir=category[0].parentNode;
         var i,j,k;
         var children=staffdir.children;
@@ -751,6 +1002,7 @@
 
             }
         }
+        return true;
     }
     function parse_sports_index(doc, url)
     {
@@ -775,7 +1027,7 @@
             var mainbody=doc.getElementById("mainbody");
             if(mainbody!==null)
             {
-                if(url.indexOf("/coaches/")!==-1)
+                if(url.indexOf("/coaches/")!==-1 && doc.getElementsByClassName("player-info").length>0)
                 {
                     parse_sports_index_coach(doc);
                     return;
@@ -813,15 +1065,16 @@
     function parse_sports_index_coach(doc)
     {
         var i,j,x;
-        var player_info=document.getElementsByClassName("player-info");
+        var player_info=doc.getElementsByClassName("player-info");
         var ret;
         var tab;
         var field_names={"Title: ": "title", "Phone: ":"phone","Email: ":"email"};
+        var ctr=1;
         for(i=0; i < player_info.length; i++)
         {
             ret={name:"",title:"",phone:"",email:""};
-            ret.name=player_info.getElementsByClassName("name")[0].innerText;
-            tab=player_info.getElementsByTagName("table");
+            ret.name=player_info[i].getElementsByClassName("name")[0].innerText.trim();
+            tab=player_info[i].getElementsByTagName("table");
             if(tab.length>0)
             {
                 for(j=0; j < tab[0].rows.length; j++)
@@ -831,12 +1084,14 @@
                     {
                         if(curr_row.indexOf(x)!==-1)
                         {
-                            ret[field_names[x]]=curr_row.replace(x,"");
+                            ret[field_names[x]]=curr_row.replace(x,"").trim();
                         }
 
                     }
                 }
             }
+            add_fields(ret,ctr);
+            ctr++;
         }
         if(!my_query.submitted)
         {
@@ -875,7 +1130,11 @@
 
 
 
-                if(!is_bad_url(b_url,bad_urls,-1)  )
+                if(!is_bad_url(b_url,bad_urls,-1) && (get_domain_only1(b_url.toLowerCase())!==get_domain_only1(my_query.url))
+                  && (get_domain_only2(b_url.toLowerCase())!==get_domain_only2(my_query.url) ||
+                     /^athletics/.test(get_domain_only1(b_url.toLowerCase()))
+                     )
+                  )
                 {
                     console.log("Found something");
                     b1_success=true;
@@ -934,12 +1193,12 @@
 
         var i,j,k, x;
 
-var split_script;
+        var split_script;
         var script_regex=/\(\'([^,]+)\',([^\),]+),([^\),]+),\s*([\d]+),\s*([\d]+),\s*([^\),]+)\);/;
         var script_array=[];
         if(prefix==="coaches")
         {
-           parse_info_directory_table(the_table);
+            parse_info_directory_table(the_table);
             return;
         }
         split_script=the_script.innerHTML.split("\n");
@@ -973,6 +1232,7 @@ var split_script;
 
         var typeTitle=the_table.getElementsByClassName("staff_dgrd_category");
         var begin_row_index=-1;
+        var found_good=false;
         var end_row_index=the_table.rows.length;
         console.log("typeTitle.length="+typeTitle.length);
         console.log("the_table.rows.length="+the_table.rows.length);
@@ -980,19 +1240,29 @@ var split_script;
         {
             console.log("("+i+"), "+the_table.rows[i].innerText);
         }
-        for(i=0; i < typeTitle.length; i++)
+        for(k=0; k < 2; k++)
         {
-            console.log("typeTitle["+i+"]="+typeTitle[i].innerText);
-            if(is_right_sport(typeTitle[i].innerText.toLowerCase()))
+            for(i=0; i < typeTitle.length; i++)
             {
-                begin_row_index=typeTitle[i].parentNode.rowIndex+1;
-                if(i < typeTitle.length-1) end_row_index=typeTitle[i+1].parentNode.rowIndex;
-                break;
+                console.log("typeTitle["+i+"]="+typeTitle[i].innerText);
+                if(is_right_sport(typeTitle[i].innerText.toLowerCase()))
+                {
+                    begin_row_index=typeTitle[i].parentNode.rowIndex+1;
+                    if(i < typeTitle.length-1) end_row_index=typeTitle[i+1].parentNode.rowIndex;
+                    found_good=true;
+                    break;
+                }
             }
-        }
-        if(begin_row_index===-1) {
-            console.log("Could not find right sport");
-            return;
+            if(found_good) break;
+            if(k===1) {
+                console.log("Could not find right sport");
+                return;
+            }
+            else {
+                my_query.short_sport=my_query.sport.replace(/^women\'s\s*/i,"").replace(/^men\'s\s*/i,"");
+                console.log("Failed first try, adding short sport="+my_query.short_sport);
+            }
+
         }
         var title_map={"staff_dgrd_fullname": "name", "staff_dgrd_staff_title":"title","staff_dgrd_staff_email":"email","staff_dgrd_staff_phone":"phone"};
 
@@ -1016,11 +1286,11 @@ var split_script;
                         {
                             curr_ret[title_map[the_table.rows[i].cells[j].className]]=decryptCloudFlare(the_table.rows[i].cells[j].dataset.cfemail);
                         }
-                       else curr_ret[title_map[the_table.rows[i].cells[j].className]]=the_table.rows[i].cells[j].innerText;
+                       else curr_ret[title_map[the_table.rows[i].cells[j].className]]=the_table.rows[i].cells[j].innerText.trim();
                     }
                     else
                     {
-                        curr_ret[title_map[the_table.rows[i].cells[j].className]]=the_table.rows[i].cells[j].innerText;
+                        curr_ret[title_map[the_table.rows[i].cells[j].className]]=the_table.rows[i].cells[j].innerText.trim();
                     }
                 }
             }
@@ -1122,7 +1392,7 @@ var split_script;
                 ret[i]="name";
             }
             else if(curr_cell.indexOf("title")!==-1) ret[i]="title";
-            else if(curr_cell.indexOf("phone")!==-1) ret[i]="phone";
+            else if(curr_cell.indexOf("phone")!==-1 || curr_cell.indexOf("extension")!==-1) ret[i]="phone";
             else if(curr_cell.indexOf("mail")!==-1) ret[i]="email";
         }
         return ret;
@@ -1295,7 +1565,7 @@ var split_script;
             title_map={0:"name",1:"title",2:"email",3:"phone"};
         }
         var curr_ret={};
-        var curr_text;
+        var curr_text, curr_cell;
         var ctr=1;
         for(i=1; i < sidearm.rows.length; i++)
         {
@@ -1304,6 +1574,17 @@ var split_script;
             {
 
                 curr_ret[title_map[x]]=sidearm.rows[i].cells[x].innerText.trim();
+            }
+            for(j=0; j < sidearm.rows[i].cells.length; j++)
+            {
+                curr_cell=sidearm.rows[i].cells[j];
+                if(curr_cell.getElementsByTagName("a").length>0 && /^mailto:/.test(curr_cell.getElementsByTagName("a")[0].href))
+                {
+                    var temp_str=curr_cell.getElementsByTagName("a")[0].href.replace(/^mailto:\s*/,""),temp_match;
+                    temp_match=temp_str.match(email_re);
+                    if(temp_match!==null) { curr_ret.email=temp_match[0]; }
+                }
+
             }
             add_fields(curr_ret,i);
         }
@@ -1472,19 +1753,34 @@ var split_script;
 
      //   console.log("my_query.sport.toLowerCase()="+my_query.sport.toLowerCase().trim()+",\n\tsports_str="+sports_str.trim().toLowerCase());
         if(sports_str.length===0) return false;
-sports_str=sports_str.replace(/\\\'/,"'");
-        sports_str=sports_str.replace(/^(.*) - (.*en(?:\'s)?)$/,"$2 $1");
 
+sports_str=sports_str.replace(/\\\'/g,"'");
+        sports_str=sports_str.replace(/\s\s+/g," ");
+        sports_str=sports_str.replace(/^(.*) - (.*en(?:\'s)?)$/,"$2 $1");
+        sports_str=sports_str.replace(/\//," and ");
         sports_str=sports_str.replace(/^(.*) \(([^\)]+)\)$/,function(match,p1,p2)
                                       {
             if(p2==="m") { return "Men's "+p1; }
-            else if(p2==="w") { return "Men's "+p1; }
+            else if(p2==="w") { return "Women's "+p1; }
+            else if(p2.indexOf("&")!==-1 || p2.indexOf(" and ")!==-1 || p2.indexOf("men's/women's")!==-1)
+            {
+                if(my_query.sport.indexOf("Men's")!==-1) {
+                return "Men's "+p2; }
+                else return "Women's "+p2;
+            }
+
             else if(/women/i.test(p2)) { return "Women's "+p1; }
             else if(/^men/i.test(p2)) { return "Men's "+p1; }
             return p1+" "+p2;
         });
+         console.log("new sports_str="+sports_str);
         sports_str=sports_str.replace(/^((?:Men)|(?:Women))\s/i,"$1's ");
-        sports_str=sports_str.replace(/Men\'s\s*(?:and|&)\s*Women\'s\s*/i,"");
+        sports_str=sports_str.replace(/Men\'s\s*(?:and|&)\s*Women\'s\s*/i, function(match) {
+            if(my_query.sport.indexOf("Men's")!==-1) {
+                return "Men's "; }
+            else return "Women's ";
+        }
+            );
 
          console.log("new sports_str="+sports_str);
         if((my_query.short_sport.length>0 && my_query.short_sport.trim().toLowerCase().indexOf(sports_str.toLowerCase()) === 0) ||
@@ -1534,6 +1830,16 @@ sports_str=sports_str.replace(/\\\'/,"'");
         ret=ret.replace(/.*\.([^\.]+\.[^\.]+)$/,"$1");
         return ret;
     }
+
+    function get_domain_only1(the_url)
+    {
+        var httpwww_re=/https?:\/\/www\./;
+        var http_re=/https?:\/\//;
+        var slash_re=/\/.*$/;
+        var ret=the_url.replace(httpwww_re,"").replace(http_re,"").replace(slash_re,"");
+
+        return ret;
+    }
     /* Following the finding the district stuff */
     function sports_promise_then(to_parse) {
 
@@ -1579,7 +1885,7 @@ sports_str=sports_str.replace(/\\\'/,"'");
 
         }
         my_query={url: well[0].innerText, sport: well[1].innerText, short_sport: "", curr_pos: 0, try_count: 0,
-                  doneRedirect: false, doneNewUrl: false, doneCoaches: false};
+                  doneRedirect: false, doneNewUrl: false, doneCoaches: false, doneSorry: false};
        /* if(my_query.company.length==0){
             my_query.company=my_query.fname+" "+my_query.lname+" lawyer";
         }*/
@@ -1628,7 +1934,7 @@ sports_str=sports_str.replace(/\\\'/,"'");
         )
         .catch(function(val) {
            console.log("Failed dist " + val);
-            var search_str=get_domain_only2(my_query.url) +" athletics -site:.edu";
+            var search_str=get_domain_only2(my_query.url) +" athletics ";// -site:.edu";
             const queryPromise = new Promise((resolve, reject) => {
                 console.log("Beginning query search");
                 query_search(search_str, resolve, reject, query_response);
