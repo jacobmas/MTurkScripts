@@ -23,6 +23,10 @@
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
+// @require https://p5dyncdn1.sharpschool.com/minify/js/resourcelibrary/thirdpartylibrary/jquery-confirm.js
+// @require https://p5dyncdn1.sharpschool.com/minify/js/resourcelibrary/reactportlets/reactPortletLoader_After.js
+// @require https://p5dyncdn1.sharpschool.com/minify/js/resourcelibrary/reactportlets/reactPortletLoader_Before.js
+// @require https://p5dyncdn1.sharpschool.com/bundle/js/vendor.cfcd208495d565ef66e7dff9f98764da.js
 // ==/UserScript==
 
 (function() {
@@ -37,9 +41,9 @@
     var personal_email_domains=["aol.com","bigpond.com","frontiernet.net","gmail.com","icloud.com","mchsi.com","me.com","pacbell.net","rogers.com","rr.com","ymail.com"];
     var my_query = {};
     var email_list=[];
-    var subjects=["math","science","social studies","history","language arts",
+    var subjects=["math","science","social studies","history","language arts","literature",
                   "english","algebra","grade","teacher","honors","cte","individualized programs",
-                 "physical education","chemistry","physics","art","music","biology"];
+                 "physical education","chemistry","physics","art","music","biology","special ed"];
     var sch_name="School District Name", sch_domain="Domain of school district";
     var bad_urls=["elementaryschools.org","facebook.com","cde.ca.gov","century21.com","greatschools.org","zillow.com","schooldigger.com",
                  "publicschoolreview.com","areavibes.com","high-schools.com","trulia.com","redfin.com","chamberofcommerce.com","tripadvisor.com",
@@ -242,6 +246,7 @@
             console.log("id_val="+id_val);
             document.getElementById("TeacherName"+id_val).value=ret.name;
             document.getElementById("TeacherEmail"+id_val).value=ret.email;
+            if(ret.subject==="") ret.subject="Teacher";
             document.getElementById("Subject"+id_val).value=ret.subject;
             return true;
         }
@@ -324,6 +329,17 @@
                 if(to_flip) begin_name=split_lines[j+1]+" "+begin_name;
                 else begin_name=begin_name+" "+split_lines[j+1];
                 j=j+1;
+            }
+            else if(to_flip)
+            {
+                var begin_split=begin_name.split(" ");
+                if(begin_split.length===2)
+                {
+                    begin_name=begin_split[1]+" "+begin_split[0];
+                }
+                //parse_name(begin_name);
+                //begin_name=temp_name.fname+" "+temp_name.lname;
+                console.log("** TO FLIP ** "+begin_name);
             }
             ret.name=parse_name_func(begin_name);
         }
@@ -605,6 +621,7 @@
     {
         var people_re=/\/people$/;
         var domain_re=/\/(domain|page)\/\d+/i;
+        var load_re=/loadReactPortlets\(\'([^\)\']+)\'\)/;
         var url=response.finalUrl;
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
@@ -626,9 +643,20 @@
             console.log("Found domain");
             parse_domain(doc, response.finalUrl);
         }
+        else if(load_re.test(doc.body.innerHTML))
+        {
+            var load_match=doc.body.innerHTML.match(load_re);
+            console.log("load_match="+JSON.stringify(load_match));
+            components.addItem("staffDirectorySearch");
+            var the_url=response.finalUrl.replace(/(https?:\/\/[^\/]+)\/.*$/,"$1")+load_match[1];
+            console.log("the_url="+the_url);
+            loadReactPortlets(the_url);
+            setTimeout(function() { console.log("components="+JSON.stringify(components)) }, 5000);
+        }
         else
         {
             console.log("Found generic");
+         //   console.log(doc.body.innerHTML);
             parse_generic(doc, response.finalUrl);
         }
 
@@ -795,7 +823,7 @@
     function parse_domain(doc, url)
     {
         var curr_id=0;
-        console.log("doc.body.innerText="+doc.body.innerText);
+       // console.log("doc.body.innerText="+doc.body.innerText);
         var staff=doc.getElementsByClassName("staff");
         var staffname, staffjob,staffmiddle,staffphone;
         var staff_re=/data\-value\=\"([^\"]+)\"/;
@@ -996,7 +1024,9 @@
             '<option value="john.smith">john.smith</option>'+
             '<option value="john_smith">john_smith</option>'+
             '<option value="smith.john">smith.john</option>'+
-            '<option value="smith_john">smith_john</option>';
+            '<option value="smith_john">smith_john</option>'+
+            '<option value="johnsmith">johnsmith</option>';
+            '<option value="j.smith">j.smith</option>';
 
         second_panel.appendChild(email_type_label);
         second_panel.appendChild(email_format_select);
@@ -1103,9 +1133,17 @@
                 {
                     document.getElementById("TeacherEmail"+i).value=the_name.fname+"_"+the_name.lname+"@"+the_domain;
                 }
-                      else if(email_format_select.value==="smith_john")
+                else if(email_format_select.value==="smith_john")
                 {
                     document.getElementById("TeacherEmail"+i).value=the_name.lname+"_"+the_name.fname+"@"+the_domain;
+                }
+                else if(email_format_select.value==="j.smith")
+                {
+                    document.getElementById("TeacherEmail"+i).value=the_name.fname.substr(0,1)+"."+the_name.lname+"@"+the_domain;
+                }
+                else if(email_format_select.value==="johnsmith")
+                {
+                    document.getElementById("TeacherEmail"+i).value=the_name.fname+the_name.lname+"@"+the_domain;
                 }
             }
         });
