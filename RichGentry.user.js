@@ -2,7 +2,7 @@
 // @name         RichGentry
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Stuff about JJNissen
+// @description  Scrape SEC
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -15,16 +15,30 @@
 // @grant GM_addValueChangeListener
 // @grant        GM_setClipboard
 // @grant GM_xmlhttpRequest
+// @grant GM_openInTab
+// @grant GM_getResourceText
+// @grant GM_addStyle
 // @connect google.com
 // @connect bing.com
-// @connect yellowpages.com
 // @connect sec.gov
-// @connect crunchbase.com
+// @connect yellowpages.com
+// @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
+// @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
+
+// VCF Do something with?
 (function() {
     'use strict';
+
+    var automate=GM_getValue("automate",false);
+    var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%]+(\.[^<>()\[\]\\.,;:：\s@"\?]+)*)|("[^\?]+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
+
+    var phone_re=/([(]?[0-9]{3}[)]?[-\s\.\/]+)?[0-9]{3}[-\s\.\/]+[0-9]{4,6}/im;
+    var new_phone_re=/Phone: ([(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/im;
+    var fax_re=/Fax[:]?[\s]?([\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/im;
 
     var my_query={};
 
@@ -43,23 +57,36 @@
         }
     }
 
-    function check_and_submit()
+function check_and_submit()
     {
 
-       // setTimeout(function() { document.getElementById("submitButton").click(); }, 1000);
-        
+        console.log("Checking and submitting");
+
+           if(GM_getValue("automate"))
+        {
+            setTimeout(function() { document.getElementById("submitButton").click(); }, 500);
+        }
     }
     function find_proxy(response) {
         // console.log(JSON.stringify(response));
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
         //console.log("doc.body="+doc.body.innerHTML);
-
+        console.log("in find_proxy");
         var the_table=doc.getElementsByClassName("tableFile2");
         if(the_table===undefined || the_table.length===0)
             the_table=doc.getElementsByClassName("tableFile");
+                console.log("in find_proxy2 ",the_table[0].rows.length);
+
        // console.log("the_table[0].innerHTML="+the_table[0].innerHTML);
+        if(the_table[0].rows.length<2) {
+            document.getElementsByName("question1")[0].checked=true;
+            check_and_submit();
+            return;
+        }
         var my_link=the_table[0].rows[1].cells[1].firstChild;
+                console.log("in find_proxy3");
+
        // console.log(my_link.href);
         //.firstChild;
         var url="";
@@ -154,13 +181,15 @@
 
          if(fiscal_re_match===null && fiscal_re_ended_match===null)
          {
+             console.log("null");
              set_unusual(true);
          }
          else if(!((my_query.end_month==="December" && my_query.end_year===my_query.fy) ||
                  (my_query.end_month==="March" && parseInt(my_query.end_year)-1===parseInt(my_query.fy)))
                 )
          {
-             set_unusual(true);
+             console.log("December march bad");
+             set_unusual(false);
          }
 
 
@@ -285,7 +314,7 @@
          if(fiscal_re_ended_match===null)
          {
              console.log("match null in annual");
-             set_unusual(true);
+             set_unusual(false);
          }
        else
        {
@@ -304,15 +333,24 @@
 
     function init_RichGentry()
     {
+       var inner_p=document.getElementById("mturk_form").getElementsByTagName("p");
 
+        var search_regex=/Search is occurring on all dates prior to:\s*(\d+)/;
+        var search_match=inner_p[1].innerText.match(search_regex);
+        console.log("search_match="+search_match);
+        if(search_match===null) { GM_setValue("returnHit",true); return; }
         var proxy=document.links[1].href;
         var annual=document.links[2].href;
 
         var my_re=/You are looking for fiscal year: (\d{4})/;
-        var my_match=document.getElementById("mturk_form").innerText.match(my_re);
+       // var my_match=search_match.substr(0,4);
         my_query.fy="0000";
-        if(my_match!==null && my_match.length>1) my_query.fy=my_match[1];
-        else { console.log("Failed to match"); GM_setValue("returnHit",true); }
+        if(search_match!==null && search_match.length>1) my_query.fy=search_match[1].substr(0,4);
+        else { console.log("Failed to match");
+              document.getElementsByName("question1")[0].checked=true;
+              GM_setValue("returnHit",true);
+             return;
+             }
         my_query.proxy=proxy;
         my_query.annual=annual;
              document.getElementsByName("question1")[0].value="No";
@@ -333,7 +371,7 @@
 
     }
 
-    /* Failsafe to stop it  */
+   /* Failsafe to stop it  */
     window.addEventListener("keydown",function(e) {
         if(e.key !== "F1") {
             return;
@@ -342,49 +380,90 @@
      });
 
 
-    if (window.location.href.indexOf("mturkcontent.com") != -1 || window.location.href.indexOf("amazonaws.com") != -1)
+    if (window.location.href.indexOf("mturkcontent.com") !== -1 || window.location.href.indexOf("amazonaws.com") !== -1)
     {
         var submitButton=document.getElementById("submitButton");
-        if(!submitButton.disabled || true)
+        if(!submitButton.disabled )
         {
-            
+
             init_RichGentry();
         }
 
     }
-    else
+    else if(window.location.href.indexOf("instagram.com")!==-1)
     {
-        //setTimeout(function() { btns_secondary[0].click(); }, 40000);
-        GM_setValue("returnHit",false);
-       GM_addValueChangeListener("returnHit", function() {
-                if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
-                  btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Return"
-                  )
-                {
+        GM_setValue("instagram_url","");
+        GM_addValueChangeListener("instagram_url",function() {
+            var url=GM_getValue("instagram_url");
+            window.location.href=url;
+        });
+        do_instagram();
+    }
+    else if(window.location.href.indexOf("mturk.com")!==-1)
+    {
 
-                  // btns_secondary[0].click();
-                }
-            });
-         /* Regular window at mturk */
-        var btns_primary=document.getElementsByClassName("btn-primary");
+	/* Should be MTurk itself */
+        var globalCSS = GM_getResourceText("globalCSS");
+        GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
+       var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
+        if(GM_getValue("automate")===undefined) GM_setValue("automate",false);
+
+        var btn_span=document.createElement("span");
+        var btn_automate=document.createElement("button");
+
+         var btns_primary=document.getElementsByClassName("btn-primary");
         var btns_secondary=document.getElementsByClassName("btn-secondary");
+         var my_secondary_parent=pipeline.getElementsByClassName("btn-secondary")[0].parentNode;
+        btn_automate.className="btn btn-ternary m-r-sm";
+        btn_automate.innerHTML="Automate";
+        btn_span.appendChild(btn_automate);
+        pipeline.insertBefore(btn_span, my_secondary_parent);
+         GM_addStyle(globalCSS);
+        if(GM_getValue("automate"))
+        {
+            btn_automate.innerHTML="Stop";
+            /* Return automatically if still automating */
+            setTimeout(function() {
+
+                if(GM_getValue("automate")) btns_secondary[0].click();
+                }, 20000);
+        }
+        btn_automate.addEventListener("click", function(e) {
+            var auto=GM_getValue("automate");
+            if(!auto) btn_automate.innerHTML="Stop";
+            else btn_automate.innerHTML="Automate";
+            GM_setValue("automate",!auto);
+        });
+        GM_setValue("returnHit",false);
+        GM_addValueChangeListener("returnHit", function() {
+            if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
+               btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Return"
+              )
+            {
+                if(GM_getValue("automate")) {
+                    setTimeout(function() { btns_secondary[0].click(); }, 0); }
+            }
+        });
+        /* Regular window at mturk */
+
+
         if(GM_getValue("stop") !== undefined && GM_getValue("stop") === true)
         {
         }
         else if(btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Skip" &&
-               btns_primary!==undefined && btns_primary.length>0 && btns_primary[0].innerText==="Accept")
+                btns_primary!==undefined && btns_primary.length>0 && btns_primary[0].innerText==="Accept")
         {
 
             /* Accept the HIT */
-         // btns_primary[0].click();
+            if(GM_getValue("automate")) {
+                btns_primary[0].click(); }
         }
         else
         {
             /* Wait to return the hit */
-            console.log("MOO");
             var cboxdiv=document.getElementsByClassName("checkbox");
             var cbox=cboxdiv[0].firstChild.firstChild;
-            //if(cbox.checked===false) cbox.click();
+            if(cbox.checked===false) cbox.click();
         }
 
     }
