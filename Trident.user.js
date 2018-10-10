@@ -8,6 +8,8 @@
 // @include        https://*.mturkcontent.com/*
 // @include        http://*.amazonaws.com/*
 // @include        https://*.amazonaws.com/*
+// @include https://*.allstays.com/*
+// @include https://allstays.com/*
 // @include https://worker.mturk.com/*
 // @include file://*
 // @grant  GM_getValue
@@ -16,12 +18,16 @@
 // @grant        GM_setClipboard
 // @grant GM_xmlhttpRequest
 // @grant GM_openInTab
+// @grant GM_getResourceText
+// @grant GM_addStyle
 // @connect google.com
 // @connect bing.com
 // @connect yellowpages.com
 // @connect *
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
+// @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
 
@@ -29,7 +35,7 @@
 (function() {
     'use strict';
 
-    var automate=true;
+    var automate=GM_getValue("automate",false);
     var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%]+(\.[^<>()\[\]\\.,;:：\s@"\?]+)*)|("[^\?]+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
 
     var phone_re=/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}/im;
@@ -59,7 +65,7 @@
 
     function check_and_submit()
     {
-
+        document.getElementById("phoneNumber").value=document.getElementById("phoneNumber").value.replace(/^\+1\s*/,"");
         console.log("Checking and submitting");
         if(document.getElementById("addressLine1").value==="undefined" ||
            document.getElementById("city").value==="undefined" ||
@@ -67,13 +73,16 @@
            document.getElementById("zip").value==="undefined" ||
            document.getElementById("phoneNumber").value==="undefined")
         {
+            console.log("Problem");
             GM_setValue("returnHit",true);
             return;
         }
 
-        if(automate)
+        console.log("Sending");
+
+        if(GM_getValue("automate"))
         {
-            setTimeout(function() { document.getElementById("submitButton").click(); }, 0);
+            setTimeout(function() { document.getElementById("submitButton").click(); }, 500);
         }
     }
     function is_bad_url(the_url)
@@ -87,92 +96,200 @@
     }
     function add_to_sheet(address,phone)
     {
-        if(address.state===undefined || address.city===undefined || address.state===undefined)
+        var is_good=false;
+        console.log("Adding "+JSON.stringify(address)+" to sheet");
+        if(!address) return false;
+        phone=phone.replace(/^\s*\(?\+1\)\s*/,"");
+        if(address.street===undefined || address.city===undefined || address.state===undefined)
         {
-            GM_setValue("returnHit",true);
+           
         }
-        document.getElementById("addressLine1").value=address.street;
-        document.getElementById("city").value=address.city;
-        document.getElementById("state").value=address.state;
-        document.getElementById("zip").value=address.zip;
-        document.getElementById("phoneNumber").value=phone;
+        var street="";
+
+        if(address.number!==undefined)
+        {
+            street=street+address.number+" ";
+        }
+        if(address.prefix!==undefined) street=street+address.prefix+" ";
+        if(address.street!==undefined)        street=street+address.street;
+        if(address.type!==undefined) street=street+" "+address.type;
+        if(document.getElementById("addressLine1").value.length===0 && street.length>0 &&
+          address.city!==undefined && address.state!==undefined && address.zip!==undefined) document.getElementById("addressLine1").value=street;
+        if(document.getElementById("city").value.length===0 && address.city!==undefined && address.state!==undefined) document.getElementById("city").value=address.city;
+        if(document.getElementById("state").value.length===0 && address.state!==undefined) document.getElementById("state").value=address.state;
+        if(document.getElementById("zip").value.length===0 && address.zip!==undefined) document.getElementById("zip").value=address.zip;
+        if(document.getElementById("phoneNumber").value.length===0 && phone!==undefined) document.getElementById("phoneNumber").value=phone;
+        if(document.getElementById("city").value.length>0 && document.getElementById("state").value.length>0 &&
+           document.getElementById("zip").value.length>0 && document.getElementById("phoneNumber").value.length>0 &&
+           document.getElementById("addressLine1").value.length>0)
+        {
+            is_good=true;
+        }
+        else if(document.getElementById("city").value.length>0 && document.getElementById("state").value.length>0 &&
+           document.getElementById("zip").value.length>0 && document.getElementById("phoneNumber").value.length>0)
+        {
+            if(my_query.doneQuery) {
+                document.getElementById("addressLine1").value=my_query.name;
+                is_good=true;
+            }
+        }
+        return is_good;
+    }
+    function parse_canada(to_parse)
+    {
+        var result={country:"Canada"};
+        var canada_zip=/ ([A-Z][\d][A-Z] [\d][A-Z][\d])$/;
+        to_parse=to_parse.replace(/(,|\s+)\s*Canada$/,"").trim();
+        var the_split;
+        if(canada_zip.test(to_parse))
+        {
+            result.zip=to_parse.match(canada_zip)[0].trim();
+
+        }
+        else {
+            console.log("Failed zip");
+            return result;
+        }
+        to_parse=to_parse.replace(canada_zip,"").trim();
+        if(/[A-Z]{2}$/.test(to_parse))
+        {
+            result.state=to_parse.match(/[A-Z]{2}$/)[0].trim();
+        }
+        else { console.log("Failed province");
+              return result; }
+        to_parse=to_parse.replace(/\s*[A-Z]{2}$/,"").trim();
+        to_parse=to_parse.replace(/,\s*$/,"").trim();
+        console.log("After province replace, to_parse="+to_parse);
+        if(!/,/.test(to_parse))
+        {
+            result.city=to_parse.trim();
+            result.street="";
+            return result;
+        }
+
+        var city_regex=/,\s*([^,]+)$/;
+        if(city_regex.test(to_parse))
+        {
+            result.city=to_parse.match(city_regex)[1].trim();
+
+        }
+        else {
+            console.log("Failed city");
+            return result;
+        }
+        to_parse=to_parse.replace(/\s*,?([^,]+)$/,"");
+        result.street=to_parse;
+        return result;
 
     }
+
     function my_parse_address(to_parse)
     {
         var ret_add={};
         var state_re=/([A-Za-z]+) ([\d\-]+)$/;
         var canada_zip=/ ([A-Z]{2}) ([A-Z][\d][A-Z] [\d][A-Z][\d])$/;
-        to_parse=to_parse.replace(canada_zip,", $&");
+       // console.log("In my parseaddess");
+        if(/(,|\s+)\s*Canada$/.test(to_parse) || canada_zip.test(to_parse))
+        {
+         //   console.log("Found canada");
+            return parse_canada(to_parse);
+        }
+        else {
+            if(/\s[A-Z]{2}$/.test(to_parse))
+            {
+                to_parse=to_parse.replace(/([\d]{5})[,\s]+([A-Z]{2})$/,"$2 $1");
+                console.log("to_parse="+to_parse);
+            }
 
-        console.log("to_parse="+to_parse);
-        var my_match;
-        var splits=to_parse.split(",");
-        if(splits.length===3)
-        {
-            if(canada_zip.test(splits[2]))
-            {
-                my_match=splits[2].match(canada_zip);
-                ret_add.state=my_match[1];
-                ret_add.zip=my_match[2];
-            }
-            else
-            {
-                my_match=splits[2].match(state_re);
-                if(my_match!==null && my_match!==undefined)
-                {
-                    ret_add.state=my_match[1];
-                    ret_add.zip=my_match[2];
-                }
-            }
-            ret_add.street=splits[0].trim();
-            ret_add.city=splits[1].trim();
-        }
-        else if(splits.length==2)
-        {
-
-            if(canada_zip.test(splits[1]))
-            {
-                my_match=splits[1].match(canada_zip);
-                ret_add.state=my_match[1];
-                ret_add.zip=my_match[2];
-            }
-            else
-            {
-                my_match=splits[1].match(state_re);
-                if(my_match!==null && my_match!==undefined)
-                {
-                    ret_add.state=my_match[1];
-                    ret_add.zip=my_match[2];
-                }
-            }
-            ret_add.street="";
-            ret_add.city=splits[0].trim();
-        }
-        if(ret_add.city===undefined || ret_add.state===undefined || ret_add.zip===undefined)
-        {
-            to_parse=to_parse.replace(/\, ([\d]{5})\,? ([A-Z]{2})/, ", $2 $1");
-            console.log("to_parse="+to_parse);
-            var new_add=parseAddress.parseLocation(to_parse);
-            ret_add.street="";
-            if(new_add.number!==undefined)
-            {
-                ret_add.street=ret_add.street+new_add.number+" ";
-            }
-            ret_add.street=ret_add.street+new_add.street+" ";
-            if(new_add.type!==undefined)
-            {
-                ret_add.street=ret_add.street+new_add.type;
-            }
-            ret_add.street=ret_add.street.trim();
-            ret_add.city=new_add.city;
-            ret_add.state=new_add.state;
-            if(new_add.zip!==undefined) { ret_add.zip=new_add.zip; }
-            else { ret_add.zip=""; }
-            console.log("new_add="+JSON.stringify(new_add));
-        }
-        return ret_add;
+            return parseAddress.parseLocation(to_parse); }
     }
+
+
+
+    function allstays_response(response,resolve,reject) {
+        var doc = new DOMParser()
+        .parseFromString(response.responseText, "text/html");
+        console.log("in allstays_response\n"+response.finalUrl);
+        var search, b_algo, i=0, inner_a;
+        var b_url="crunchbase.com", b_name, b_factrow, b_caption, b1_success=false, b_header_search;
+        try
+        {
+            search=doc.getElementById("b_content");
+            b_algo=search.getElementsByClassName("b_algo");
+
+            console.log("b_algo.length="+b_algo.length);
+
+            for(i=0; i < b_algo.length && i < 2; i++)
+            {
+                b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
+                b_url=b_algo[i].getElementsByTagName("a")[0].href;
+//                var test_re=/http:\/\/www\.rvparkreviews\.com\/[^\/]+\/[^\/]+\/[^\/]+\/[^\/]+/;
+                if(b_name.toLowerCase().indexOf(my_query.first.toLowerCase())!==-1)
+                {
+                    console.log("resolving on b_url="+b_url);
+                    resolve(b_url);
+                    return;
+
+                }
+
+            }
+
+           /* if(!found_url)
+            {
+                document.getElementById("UrlBad").checked=true;
+                check_and_submit();
+                b1_success=true;
+                return;
+            }*/
+
+          //GM_setValue("returnHit",true);
+            //return;
+
+        }
+        catch(error)
+        {
+	    console.log("Error "+error);
+	    GM_setValue("returnHit",true);
+            return;
+
+            //reject(JSON.stringify({error: true, errorText: error}));
+        }
+        console.log("None found");
+        reject("Failed allstays");
+        return;
+
+    }
+
+    function allstays_promise_then(url)
+    {
+        GM_setValue("allstays_result","");
+        GM_addValueChangeListener("allstays_result",function() {
+
+            var result=arguments[2];
+            console.log("result="+JSON.stringify(result));
+            if(result.failed) {
+                my_query.doneAllStays=true;
+                if(my_query.doneAllStays && my_query.doneQuery && !my_query.submitted)
+                {
+                    GM_setValue("returnHit",true);
+                    return;
+                }
+                return;
+            }
+
+            if(!my_query.submitted)
+            {
+                if(add_to_sheet(result.address,result.phone) && !my_query.submitted)
+                {
+                    my_query.submitted=true;
+                    check_and_submit();
+                    return;
+                }
+            }
+        });
+        GM_setValue("allstays_url",url);
+    }
+
     function camp_response(response,resolve,reject) {
         // console.log(JSON.stringify(response));
         var doc = new DOMParser()
@@ -229,11 +346,17 @@
                     }
                 }
                 /* Found in the top part */
-                if(add_success && phone_success)
+                if(add_success && phone_success && !my_query.submitted)
                 {
-                    add_to_sheet(the_address,the_phone);
-                    check_and_submit();
-                    return;
+                    if(add_to_sheet(the_address,the_phone) && !my_query.submitted)
+                    {
+                        my_query.submitted=true;
+                        my_query.success=true;
+                        my_query.doneQuery=true;
+
+                        check_and_submit();
+                        return;
+                    }
                 }
             }
             else if(b_context!==null && b_context!==undefined)
@@ -253,6 +376,8 @@
                         if(cbl[i].innerText.indexOf("Address:")===0)
                         {
                             the_address=my_parse_address(cbl[i].innerText.substr(9));
+                            console.log("the_address="+JSON.stringify(the_address));
+                            add_to_sheet(the_address,"");
                             add_success=true;
                         }
                         else if(cbl[i].innerText.indexOf("Phone:")==0)
@@ -261,11 +386,17 @@
                             phone_success=true;
                         }
                     }
-                    if(add_success && phone_success)
+                    if(add_success && phone_success && !my_query.submitted)
                     {
-                        add_to_sheet(the_address,the_phone);
-                        check_and_submit();
-                        return;
+                        if(add_to_sheet(the_address,the_phone) && !my_query.submitted)
+                        {
+                            my_query.submitted=true;
+                            my_query.success=true;
+                            my_query.doneQuery=true;
+
+                            check_and_submit();
+                            return;
+                        }
                     }
                 }
 
@@ -276,24 +407,20 @@
             {
 
                 my_query.tried_once=true;
-                const campPromise = new Promise((resolve, reject) => {
-                    console.log("Beginning camp search");
-                    camp_search(resolve, reject);
-                });
+               
+                console.log("Trying again");
+                camp_search(resolve, reject);
+                return;
             }
 
             b_algo=search.getElementsByClassName("b_algo");
 
             console.log("b_algo.length="+b_algo.length);
-            if(b_algo.length===0)
-            {
-                console.log("b_algo length=0");
-                GM_setValue("returnHit",true);
-                return;
-            }
+            
 
             i=0;
             var loc_re=/Location: (.*)\s*Phone: (.*)$/;
+            var loc_only_re=/Location: (.*)$/;
             var loc_phone_re=/Phone: (.*)\s*Location: (.*)$/;
             var add_re=/Address: (.*)\s*Phone: ([\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/;
             var loc_match;
@@ -304,18 +431,41 @@
                 {
                     console.log("b_factrow[0].innerText="+b_factrow[0].innerText);
                     loc_match=b_factrow[0].innerText.match(loc_re);
-                    if(loc_match!==null && loc_match!==undefined)
+                    console.log("MOO1");
+                    if(loc_match!==null && loc_match!==undefined && !my_query.submitted)
                     {
-                        add_to_sheet(my_parse_address(loc_match[1]),loc_match[2]);
-                        check_and_submit();
-                        return;
+                        if(add_to_sheet(my_parse_address(loc_match[1]),loc_match[2]) && !my_query.submitted)
+                        {
+                            my_query.submitted=true;
+
+
+                            check_and_submit();
+                            return;
+                        }
                     }
+                    console.log("Moo2");
                     loc_match=b_factrow[0].innerText.match(loc_phone_re);
-                    if(loc_match!==null && loc_match!==undefined)
+                    if(loc_match!==null && loc_match!==undefined && !my_query.submitted)
                     {
-                        add_to_sheet(my_parse_address(loc_match[2]),loc_match[1]);
-                        check_and_submit();
-                        return;
+                        if(add_to_sheet(my_parse_address(loc_match[2]),loc_match[1]) && !my_query.submitted)
+                        {
+                            my_query.submitted=true;
+
+                            check_and_submit();
+                            return;
+                        }
+                    }
+                    loc_match=b_factrow[0].innerText.match(loc_only_re);
+                    if(loc_match!==null && loc_match!==undefined && !my_query.submitted)
+                    {
+                        console.log("Matched loc_only_re");
+                        if(add_to_sheet(my_parse_address(loc_match[1]),"") && !my_query.submitted)
+                        {
+                            my_query.submitted=true;
+
+                            check_and_submit();
+                            return;
+                        }
                     }
                 }
                 else
@@ -324,11 +474,15 @@
                     if(b_caption!==null && b_caption!==undefined && b_caption.length>0)
                     {
                         loc_match=b_caption[0].innerText.match(add_re);
-                        if(loc_match!==null && loc_match!==undefined)
+                        if(loc_match!==null && loc_match!==undefined && !my_query.submitted)
                         {
-                            add_to_sheet(my_parse_address(loc_match[1].replace(/\.$/,"")),loc_match[2]);
-                            check_and_submit();
-                            return;
+                            if(add_to_sheet(my_parse_address(loc_match[1].replace(/\.$/,"")),loc_match[2]) && !my_query.submitted)
+                            {
+                                my_query.submitted=true;
+
+                                check_and_submit();
+                                return;
+                            }
                         }
                     }
                 }
@@ -339,11 +493,10 @@
             {
                 resolve(JSON.stringify({url: b_url, error:false}));
             }
-
             else
             {
                 console.log("No urls found");
-                resolve(JSON.stringify({error: true, noURLS: true, errorText: "Failed to find any urls"}));
+                reject("");
             }
         }
         catch(error)
@@ -395,8 +548,9 @@
         console.log("search_result="+to_parse);
         var name_split;
        // var dist_test_re=/(district$)|(schools$)|(department of education$)/i;
-        if(!search_result.error)
+        if(!search_result.error && !my_query.submitted)
         {
+            my_query.submitted=true;
             console.log("No error");
             /* we got a good result */
             document.getElementById("webpage_url").value=search_result.url;
@@ -404,8 +558,9 @@
         }
         else
         {
-            if(search_result.noURLS===true)
+            if(search_result.noURLS===true && !my_query.submitted)
             {
+                my_query.submitted=true;
                 console.log("search_result.noURLS="+search_result.noURLS);
                 document.getElementsByName("no_page")[0].checked=true;
                 check_and_submit();
@@ -431,28 +586,43 @@
         }
         return false;
     }
-    function parse_name(to_parse)
+  
+
+    function do_allstays()
     {
-        var suffixes=["Jr","II","III","IV","CPA","CGM"];
-        var split_parse=to_parse.split(" ");
-        var last_pos=split_parse.length-1;
-        var j;
-        var caps_regex=/^[A-Z]+$/;
-        var ret={};
-        for(last_pos=split_parse.length-1; last_pos>=1; last_pos--)
-        {
-            if(!prefix_in_string(suffixes,split_parse[last_pos]) && !caps_regex.test(split_parse[last_pos])) break;
+        console.log("Doing allstays");
+        var result={address:{street:"",city:"",state:"",zip:""}, phone:"",failed:false};
+        var add=document.querySelector("[itemprop='address']");
+        if(add===null || add===undefined) {
+            result.failed=true;
+            GM_setValue("allstays_result",result);
+            return; }
+        var street=document.querySelector("[itemprop='streetAddress']");
+        var city=document.querySelector("[itemprop='addressLocality']");
+        var state=document.querySelector("[itemprop='addressRegion']");
+        var zip=document.querySelector("[itemprop='postalCode']");
+        var phone=document.querySelector("[itemprop='telephone']");
+        result.address.street=street?street.innerText : "";
+        result.address.city=city?city.innerText : "";
+        result.address.state=state?state.innerText : "";
+        result.address.zip=zip?zip.innerText:"";
+        result.phone=phone?phone.innerText:"";
+        if(result.address.city.length===0) result.failed=true;
 
-        }
-        ret.lname=split_parse[last_pos];
-        ret.fname=split_parse[0];
-        if(last_pos>=2 && split_parse[1].length>=1) {
-            ret.mname=split_parse[1].substring(0,1); }
-        else {
-            ret.mname=""; }
-        return ret;
-
+        //console.log("result.list="+JSON.stringify(result.list));
+        GM_setValue("allstays_result",result);
     }
+
+    function query_search(search_str, resolve,reject, callback) {
+        console.log("Searching with bing for "+search_str);
+        var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str)+"&first=1&rdr=1";
+        var domain_URL='https://www.google.com/search?q='+encodeURIComponent(search_str);//+" company");
+        GM_xmlhttpRequest({ method: 'GET', url:    search_URIBing,onload: function(response) { callback(response, resolve, reject); },
+            onerror: function(response) { reject("Fail"); },
+            ontimeout: function(response) { reject("Fail"); }
+        });
+    }
+
 
     function init_Camp()
     {
@@ -460,8 +630,9 @@
 
         console.log("table.innerText="+wT.innerText+", "+wT.rows.length);
         my_query={name: wT.rows[0].cells[1].innerText, city: wT.rows[1].cells[1].innerText,
-                 state: wT.rows[3].cells[1].innerText};
+                 state: wT.rows[3].cells[1].innerText,submitted:false,doneAllStays:false,doneQuery: false, success:true,try_count:0};
         my_query.tried_once=false;
+        my_query.first=my_query.name.split(" ")[0].trim();
        /* if(my_query.company.length==0){
             my_query.company=my_query.fname+" "+my_query.lname+" lawyer";
         }*/
@@ -481,7 +652,28 @@
         campPromise.then(camp_promise_then
         )
         .catch(function(val) {
-           console.log("Failed dist " + val); GM_setValue("returnHit",true); });
+           console.log("Failed dist " + val);
+            my_query.doneQuery=true;
+            if(!my_query.success && !my_query.submitted && my_query.doneAllStays && my_query.doneQuery)
+            {
+                GM_setValue("returnHit",true);
+            }
+        });
+        search_str=my_query.name+" "+my_query.state+" site:allstays.com";
+        const allstaysPromise = new Promise((resolve, reject) => {
+            console.log("Beginning allstays search");
+            query_search(search_str,resolve, reject,allstays_response);
+        });
+        allstaysPromise.then(allstays_promise_then
+        )
+        .catch(function(val) {
+           console.log("Failed allstays " + val);
+            my_query.doneAllStays=true;
+            if(!my_query.success && !my_query.submitted && my_query.doneAllStays && my_query.doneQuery)
+            {
+                GM_setValue("returnHit",true);
+            } });
+
 
 
 
@@ -508,40 +700,79 @@
         }
 
     }
-    else
+    else if(window.location.href.indexOf("allstays.com")!==-1)
     {
-       // console.log("In LuisQuintero main");
-        if(automate)
-        {
-            setTimeout(function() { btns_secondary[0].click(); }, 20000); }
-        GM_setValue("returnHit",false);
-       GM_addValueChangeListener("returnHit", function() {
-                if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
-                  btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Return"
-                  )
-                {
-                    if(automate) {
-                        setTimeout(function() { btns_secondary[0].click(); }, 0); }
-                }
-            });
-         /* Regular window at mturk */
-        var btns_primary=document.getElementsByClassName("btn-primary");
+        GM_setValue("allstays_url","");
+        GM_addValueChangeListener("allstays_url",function() {
+            window.location.href=arguments[2];
+            /*if(GM_getValue("url").indexOf("allstays.com")!==-1) {
+                window.location.href=GM_getValue("url");
+            }*/
+        });
+        setTimeout(do_allstays,500);
+    }
+    else if(window.location.href.indexOf("mturk.com")!==-1)
+    {
+
+	/* Should be MTurk itself */
+        var globalCSS = GM_getResourceText("globalCSS");
+        GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
+       var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
+        if(GM_getValue("automate")===undefined) GM_setValue("automate",false);
+
+        var btn_span=document.createElement("span");
+        var btn_automate=document.createElement("button");
+
+         var btns_primary=document.getElementsByClassName("btn-primary");
         var btns_secondary=document.getElementsByClassName("btn-secondary");
+         var my_secondary_parent=pipeline.getElementsByClassName("btn-secondary")[0].parentNode;
+        btn_automate.className="btn btn-ternary m-r-sm";
+        btn_automate.innerHTML="Automate";
+        btn_span.appendChild(btn_automate);
+        pipeline.insertBefore(btn_span, my_secondary_parent);
+         GM_addStyle(globalCSS);
+        if(GM_getValue("automate"))
+        {
+            btn_automate.innerHTML="Stop";
+            /* Return automatically if still automating */
+            setTimeout(function() {
+
+                if(GM_getValue("automate")) btns_secondary[0].click();
+                }, 20000);
+        }
+        btn_automate.addEventListener("click", function(e) {
+            var auto=GM_getValue("automate");
+            if(!auto) btn_automate.innerHTML="Stop";
+            else btn_automate.innerHTML="Automate";
+            GM_setValue("automate",!auto);
+        });
+        GM_setValue("returnHit",false);
+        GM_addValueChangeListener("returnHit", function() {
+            if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
+               btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Return"
+              )
+            {
+                if(GM_getValue("automate")) {
+                    setTimeout(function() { btns_secondary[0].click(); }, 0); }
+            }
+        });
+        /* Regular window at mturk */
+
+
         if(GM_getValue("stop") !== undefined && GM_getValue("stop") === true)
         {
         }
         else if(btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Skip" &&
-               btns_primary!==undefined && btns_primary.length>0 && btns_primary[0].innerText==="Accept")
+                btns_primary!==undefined && btns_primary.length>0 && btns_primary[0].innerText==="Accept")
         {
 
             /* Accept the HIT */
-            if(automate) {
+            if(GM_getValue("automate")) {
                 btns_primary[0].click(); }
         }
         else
         {
             /* Wait to return the hit */
-            console.log("MOO");
             var cboxdiv=document.getElementsByClassName("checkbox");
             var cbox=cboxdiv[0].firstChild.firstChild;
             if(cbox.checked===false) cbox.click();

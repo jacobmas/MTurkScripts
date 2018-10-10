@@ -16,12 +16,16 @@
 // @grant        GM_setClipboard
 // @grant GM_xmlhttpRequest
 // @grant GM_openInTab
+// @grant GM_getResourceText
+// @grant GM_addStyle
 // @connect google.com
 // @connect bing.com
 // @connect yellowpages.com
 // @connect *
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
+// @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
 
@@ -29,7 +33,7 @@
 (function() {
     'use strict';
 
-    var automate=true;
+    var automate=GM_getValue("automate",false);
     var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%]+(\.[^<>()\[\]\\.,;:：\s@"\?]+)*)|("[^\?]+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
 
     var phone_re=/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}/im;
@@ -45,7 +49,7 @@
                  "yellowpages.com","whitepages.com","moviefone.com","s3.amazonaws.com","walkscore.com","superpages.com",
                      "bizapedia.com","restaurants.com","city-data.com"];
     var country_domains=[".ar",".at",".au",".br",".ch",".cn",".de",".eu",".fr",".it",".jp",".ro",".ru",".se",".tw",".uk",".uy",".vn"];
-    var key_words=["State Park","Refuge","State Recreation Area"];
+    var key_words=["State Park","Refuge","State Recreation Area","National Park"];
     var replace_words={"SF":"State Forest","SRA":"State Recreation Area","NF":"National Forest","Rec Area":"Recreation Area","CG":"Campground",
                       "Rec":"Recreation","Nat":"National","Conserve":"Conservation"};
     var search_replace={"State Park":""};//,"RV Park":""};
@@ -74,11 +78,13 @@
 
     function check_and_submit()
     {
+
         console.log("Checking and submitting");
 
-        if(automate)
+
+        if(GM_getValue("automate"))
         {
-            setTimeout(function() { document.getElementById("submitButton").click(); }, 1000);
+            setTimeout(function() { document.getElementById("submitButton").click(); }, 500);
         }
     }
 
@@ -198,25 +204,13 @@
         console.log("in camp_response");
 //        for(var i in response) console.log("i="+i+", "+response[i]);
        console.log(response.finalUrl);
-        var search;
-
-        var b_algo;
-     //   var g_stuff;
-        var i;
-       // var g1_success=false;
-        var b_url="crunchbase.com", b_name;
-        var b_top;
-        var good_url;
-        var lgb_info;
-        var b_context;
-        var b_factrow, b_caption;
-        var b1_success=false, b_header_search, b_srtxt;
-        var inner_a;
-        var name_split;
-        var the_address="";
-        var the_phone="";
-        var b_vList, b_entityTP, cbl;
-        var add_success=false, phone_success=false;
+        var search, b_algo, i, b_url="crunchbase.com", b_name, b_top, good_url, lgb_info, b_context;
+        var b_factrow, b_caption, b1_success=false, b_header_search, b_srtxt, inner_a;
+        var name_split, the_address="", the_phone="", b_vList, b_entityTP, cbl, add_success=false, phone_success=false;
+       // var loc_regex=/^([^\,\.]+)(,|\s*in\s*)\s*([^\,]+),\s*([^\.])\./;
+        var loc_regex=/([^,\.]+)(?:,|\s+in\s+)\s*([^\.,]+),\s+([^\.]+)(?:\.|$)/;
+        var loc_match, rating="0.0", h2_title, first_word,j;
+        var b_paragraph;
         try
         {
             search=doc.getElementById("b_content");
@@ -240,36 +234,124 @@
             var loc_re=/Location: (.*)\s*((Phone:)|($))/;
             var loc_phone_re=/Phone: (.*)\s*Location: (.*)$/;
             var rating_re=/([\d](\.[\d])?)\/[\d](\.[\d])?/;
-            var rating_match;
+            var rating_match,inner_li,loc_result;
             var add_re=/Address: (.*)\s*Phone: ([\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/;
-            var loc_match;
-            var rating="0.0";
-            var h2_title;
-            var first_word;
+            
+
 
             for(i=0; i < b_algo.length && i < 3; i++)
             {
+                console.log("loop: i="+i);
                 rating="3.0";
 
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
                 h2_title=b_algo[i].getElementsByTagName("h2")[0].innerText.replace("s's","s");
-                var j=0;
+               
                 var h2_split=h2_title.split(" ");
+
+                j=0;
                 while(h2_split[j].toLowerCase() in skip_first) j++;
+
                 first_word=h2_split[j].replace("'","").replace("\'","");
                 console.log(website+" first word="+first_word);
                 console.log(website+"-h2: "+b_algo[i].getElementsByTagName("h2")[0].innerText);
-    
-     
+                b_paragraph="";
+                if(b_algo[i].getElementsByClassName("b_caption").length>0 &&
+                   b_algo[i].getElementsByClassName("b_caption")[0].getElementsByTagName("p").length>0)
+                {
+
+                    b_paragraph=b_algo[i].getElementsByClassName("b_caption")[0].getElementsByTagName("p")[0].innerText;
+                }
+                if(website==="facebook")
+                {
+                    if(/\/people\//.test(b_url)) continue;
+                    b_url=b_url.replace(/\/photos\/.*$/,"");
+                    console.log("para["+i+"]="+b_paragraph);
+                    loc_match=b_paragraph.match(loc_regex);
+                    if(loc_match!==null)
+                    {
+
+                        if(loc_match[loc_match.length-1].trim().length!==2)
+                        {
+                            let b_split=b_paragraph.split(" - ");
+                            let temp_addr=null;
+                            for(j=0; j < b_split.length; j++)
+                            {
+                                temp_addr=parseAddress.parseLocation(b_split[j]);
+                                if(temp_addr)  console.log("temp_addr="+JSON.stringify(temp_addr));
+                                if(temp_addr!==null && temp_addr.city!==undefined && temp_addr.state!==undefined)
+                                {
+                                    loc_match=["",temp_addr.city,temp_addr.state];
+                                    break;
+                                }
+                                console.log("b_split["+j+"]="+b_split[j]);
+                                if(loc_regex.test(b_split[j].trim())) {
+                                    loc_match=b_split[j].trim().match(loc_regex);
+                                    break;
+                                }
+                            }
+                        }
+                        console.log("loc_match="+JSON.stringify(loc_match));
+                        let length=loc_match.length;
+                        if(loc_match.length>=3&&loc_match[length-1].trim().length>0 && loc_match[length-2].trim().length>0 &&
+                           ((my_query.state!==loc_match[loc_match.length-1]&&loc_match[loc_match.length-1]!==state_map[my_query.state])  ||
+
+                           (my_query.city.length>0 && my_query.city!==loc_match[loc_match.length-2]))
+                          && my_query.name.toLowerCase().indexOf(loc_match[length-3].toLowerCase())===-1 && loc_match[length-1].trim().length < 18
+                          )
+                        {
+                            console.log("Wrong location");
+                            continue;
+                        }
+                        else if(i===0 && loc_match.length===3 && (my_query.city.length>0 && my_query.city===loc_match[loc_match.length-2])  )
+                        {
+                            console.log("Good location for FB");
+                            b1_success=true;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        console.log("First loc_match is null");
+                        b_factrow=b_algo[i].getElementsByClassName("b_factrow");
+                        if(b_factrow!==undefined && b_factrow.length>0)
+                        {
+                            inner_li=b_factrow[0].getElementsByTagName("li");
+                            for(j=0; j < inner_li.length; j++)
+                            {
+                                // console.log("inner_li["+i+"]="+inner_li[i].innerText);
+                                loc_match=inner_li[j].innerText.match(loc_re);
+                                if(loc_match!==null)
+                                {
+                                    loc_result=parseAddress.parseLocation(loc_match[1]);
+                                    console.log("loc_result="+JSON.stringify(loc_result)+", state_map[my_query.state]="+state_map[my_query.state]+
+                                                "\tmy_query.city="+my_query.city);
+                                    if(loc_result.state!==undefined && loc_result.state.length>0 &&
+                                       (state_map[my_query.state]===loc_result.state || my_query.state===loc_result.state)
+                                       &&( loc_result.city!==undefined && (my_query.city.indexOf(loc_result.city)!==-1 || loc_result.city.indexOf(my_query.city)!==-1)
+                                          && my_query.city.length>0)
+                                      )
+                                    {
+                                        console.log("Good location for FB");
+                            b1_success=true;
+                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
                 
                 if(!is_good_entry(website, b_algo[i], first_word, h2_title.replace("'","")))
                 {
-                    console.log(website+": Bad entry, continuing");
+                    console.log(website+": Bad entry, i="+i+", continuing");
+                    //i++;
                     continue;
                 }
                 else
                 {
+
                     b1_success=true;
                     break;
                 }
@@ -281,10 +363,15 @@
             {
                 resolve(JSON.stringify({website: website, url: b_url, error:false}));
             }
-
+            /*else  if(!my_query.reset[website])
+            {
+                my_query.reset[website]=true;
+                return;
+            }*/
             else
             {
                 console.log(website+": No urls found");
+
                 reject(JSON.stringify({error: true, errorText: "No URLs"}));
             }
         }
@@ -296,31 +383,59 @@
         }
     }
 
+    function reset_name(website)
+    {
+        var i;
+
+    }
+
+
+
     function is_good_entry(website, b_algo, first_word, h2_title)
     {
         var b_url=b_algo.getElementsByTagName("a")[0].href;
+        console.log("h2_title="+h2_title+", my_query.short_name="+my_query.short_name+", index is "+
+                    h2_title.toLowerCase().indexOf(my_query.short_name.toLowerCase()));
+        h2_title=h2_title.replace(/\sPk(\s|$)/i," Park$1").replace(/\s*&\s*/," and ");
+        var short_title=h2_title.replace(/\s*-.*$/,"");
         if(website==="twitter") {
             first_word=first_word.replace(/([A-Z][^A-Z]+).*/,"$1");
             console.log("twitter first_word="+first_word);
         }
         var index1=my_query.name.toLowerCase().indexOf(first_word.toLowerCase());
-        if(index1===-1 || (index1!==0 && my_query.name.toLowerCase().indexOf(" "+first_word.toLowerCase())===-1))
+        if((index1===-1 || (index1!==0 && my_query.name.toLowerCase().indexOf(" "+first_word.toLowerCase())===-1)) &&
+          h2_title.toLowerCase().indexOf(my_query.short_name.toLowerCase())===-1)
         {
             console.log(website+": first_word="+first_word+", not found in "+my_query.name);
             return false;
         }
-        if(b_algo.innerText.toLowerCase().indexOf(my_query.first_word.toLowerCase())===-1)
+        if(b_algo.innerText.toLowerCase().indexOf(my_query.first_word.toLowerCase())===-1
+          &&
+          h2_title.toLowerCase().indexOf(my_query.short_name.toLowerCase())===-1
+          )
         {
-            console.log(website+": first_word of my query="+my_query.first_word+", not found in "+h2_title);
-            return false;
+
+            if(h2_title.toLowerCase().indexOf(my_query.short_name.toLowerCase())===-1)
+            {
+                console.log(website+": first_word of my query="+my_query.first_word+", not found in "+h2_title);
+                console.log("also bad index shit");
+                return false;
+            }
         }
         if(website==="pinterest" && (h2_title.toLowerCase().indexOf(my_query.state.toLowerCase())===-1 &&
-           (!my_query.state in state_map || h2_title.indexOf(state_map[my_query.state])===-1)))
+           (!my_query.state in state_map || h2_title.indexOf(state_map[my_query.state])===-1) ) &&
+           my_query.name.toLowerCase().indexOf(short_title.toLowerCase())===-1 &&
+           short_title.toLowerCase().indexOf(my_query.short_name.toLowerCase())===-1)
         {
             console.log(website+": state not found");
             return false;
         }
         if(website==="facebook" && (b_url.indexOf("/public/")!==-1 || b_url.indexOf("/media/")!==-1)) return false;
+        if(/Park/i.test(my_query.name) && !/Park/i.test(h2_title)
+          && my_query.name.toLowerCase().indexOf(short_title.toLowerCase())===-1 &&
+           short_title.toLowerCase().indexOf(my_query.short_name.toLowerCase())===-1
+
+          ) return false;
         return true;
     }
 
@@ -329,10 +444,10 @@
         var x;
         if(website!=="facebook")
         {
-            var search_name=my_query.name;
+            var search_name=my_query.short_name;
             for(x in search_replace) search_name=search_name.replace(new RegExp(x,'i'),search_replace[x]);
             search_name=search_name.replace(/\s\s/g," ");
-            search_str="+\""+search_name+"\" \""+my_query.state+"\" site:"+website+".com";
+            search_str=""+search_name+" \""+my_query.state+"\" site:"+website+".com";
 
         }
         else if(website==="facebook")
@@ -390,6 +505,39 @@
 
     }
 
+    function parse_factrow_Location(to_parse)
+    {
+        var i;
+        var result={state:""};
+        var comma_split;
+        if(/\s*[A-Z]{2}$/.test(to_parse))
+        {
+            result.state=to_parse.match(/\s([A-Z]+)$/)[1];
+        }
+        else if(/s*([\d\-]{5,})$/.test(to_parse))
+        {
+            result.zip=to_parse.match(/s*([\d\-]{5,})$/)[1];
+            to_parse=to_parse.replace(/s*([\d\-]{5,})$/,"").trim();
+            if(/\s*[A-Z]{2}$/.test(to_parse))
+            {
+                result.state=to_parse.match(/\s([A-Z]+)$/)[1];
+            }
+        }
+
+        to_parse=to_parse.replace(/\s*[A-Z]{2}$/,"").replace(/\s*,\s*$/,"").trim();
+       // console.log("to_parse="+to_parse);
+        comma_split=to_parse.split(", ");
+        if(comma_split.length>=2)
+        {
+            result.city=comma_split[comma_split.length-2].trim();
+        }
+        else
+        {
+            result.city=to_parse.match(/([^\d]+)$/)[1].trim();
+        }
+
+        return result;
+    }
 
 
     function prefix_in_string(prefixes, to_check)
@@ -400,28 +548,7 @@
         }
         return false;
     }
-    function parse_name(to_parse)
-    {
-        var suffixes=["Jr","II","III","IV","CPA","CGM"];
-        var split_parse=to_parse.split(" ");
-        var last_pos=split_parse.length-1;
-        var j;
-        var caps_regex=/^[A-Z]+$/;
-        var ret={};
-        for(last_pos=split_parse.length-1; last_pos>=1; last_pos--)
-        {
-            if(!prefix_in_string(suffixes,split_parse[last_pos]) && !caps_regex.test(split_parse[last_pos])) break;
 
-        }
-        ret.lname=split_parse[last_pos];
-        ret.fname=split_parse[0];
-        if(last_pos>=2 && split_parse[1].length>=1) {
-            ret.mname=split_parse[1].substring(0,1); }
-        else {
-            ret.mname=""; }
-        return ret;
-
-    }
 
     function init_Camp()
     {
@@ -436,9 +563,13 @@
         console.log("name="+name);
        // console.log("table.innerText="+wT.innerText+", "+wT.rows.length);
         my_query={name: name, city: wT.rows[1].cells[1].innerText,
-                 state: wT.rows[3].cells[1].innerText, doneFB: false, doneTwitter: false, donePinterest: false, doneYoutube: false, first_word: first_word};
-
+                 state: wT.rows[3].cells[1].innerText, doneFB: false, doneTwitter: false, donePinterest: false, doneYoutube: false, first_word: first_word,
+                 reset: {"twitter":false,"youtube": false, "facebook": false, "pinterest": false}};
+        my_query.orig_name=orig_name;
         my_query.tried_once=false;
+        if(my_query.state==="Alaska" && state_map[my_query.city]!==undefined) {
+            my_query.state=my_query.city;
+            my_query.city=""; }
         var name_split=my_query.name.split(" ");
         var new_name="";
         for(i=0; i < name_split.length; i++)
@@ -448,7 +579,27 @@
             if(i < name_split.length-1) new_name=new_name+" ";
         }
         my_query.name=new_name;
-        if(my_query.name.indexOf("-")!==-1)
+        if(/^KOA Campground (.*)$/.test(my_query.name))
+        {
+            my_query.city=my_query.name.match(/^KOA Campground (.*)$/)[1];
+        }
+
+        if(my_query.state==="Alaska")
+        {
+            if(my_query.city==="Yellowknife") my_query.state="Northwest Territories";
+        }
+        
+       /* if(my_query.company.length==0){
+            my_query.company=my_query.fname+" "+my_query.lname+" lawyer";
+        }*/
+        my_query.name=my_query.name.replace(/\s+MH(\s|$)/," Mobile Home$1");
+        my_query.name=my_query.name.replace(/\s*&\s*/," and ");
+        if(!/Park$/.test(my_query.name))
+        {
+            my_query.name=my_query.name.replace(/ and .*$/,"")
+        }
+
+         if(my_query.name.indexOf("-")!==-1)
         {
             var new_str="";
             var split_query=my_query.name.split(" - ");
@@ -465,19 +616,17 @@
                 }
             }
             my_query.name=new_str;
-
         }
-       /* if(my_query.company.length==0){
-            my_query.company=my_query.fname+" "+my_query.lname+" lawyer";
-        }*/
-        my_query.name=my_query.name.replace(/ and .*$/,"");
-       // my_query.name=my_query.name.replace(/ at .*$/,"");
+
+
+       my_query.short_name=my_query.name.replace(/ at .*$/,"");
         var first_word=my_query.name.split(" ")[0];
         my_query.first_word=first_word;
 
-       console.log("my_query="+JSON.stringify(my_query));
-        first_try=true;
+      
 
+         console.log("my_query="+JSON.stringify(my_query));
+        first_try=true;
 
 
         var search_str, search_URI, search_URIBing;
@@ -561,46 +710,73 @@
         }
 
     }
-    else
+    else if(window.location.href.indexOf("mturk.com")!==-1)
     {
-       // console.log("In LuisQuintero main");
-        if(automate)
-        {
-            setTimeout(function() { btns_secondary[0].click(); }, 20000); }
-        GM_setValue("returnHit",false);
-       GM_addValueChangeListener("returnHit", function() {
-                if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
-                  btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Return"
-                  )
-                {
-                    if(automate) {
-                        setTimeout(function() { btns_secondary[0].click(); }, 1000); }
-                }
-            });
-         /* Regular window at mturk */
-        var btns_primary=document.getElementsByClassName("btn-primary");
+
+	/* Should be MTurk itself */
+        var globalCSS = GM_getResourceText("globalCSS");
+        GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
+       var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
+        if(GM_getValue("automate")===undefined) GM_setValue("automate",false);
+
+        var btn_span=document.createElement("span");
+        var btn_automate=document.createElement("button");
+
+         var btns_primary=document.getElementsByClassName("btn-primary");
         var btns_secondary=document.getElementsByClassName("btn-secondary");
+         var my_secondary_parent=pipeline.getElementsByClassName("btn-secondary")[0].parentNode;
+        btn_automate.className="btn btn-ternary m-r-sm";
+        btn_automate.innerHTML="Automate";
+        btn_span.appendChild(btn_automate);
+        pipeline.insertBefore(btn_span, my_secondary_parent);
+         GM_addStyle(globalCSS);
+        if(GM_getValue("automate"))
+        {
+            btn_automate.innerHTML="Stop";
+            /* Return automatically if still automating */
+            setTimeout(function() {
+
+                if(GM_getValue("automate")) btns_secondary[0].click();
+                }, 20000);
+        }
+        btn_automate.addEventListener("click", function(e) {
+            var auto=GM_getValue("automate");
+            if(!auto) btn_automate.innerHTML="Stop";
+            else btn_automate.innerHTML="Automate";
+            GM_setValue("automate",!auto);
+        });
+        GM_setValue("returnHit",false);
+        GM_addValueChangeListener("returnHit", function() {
+            if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
+               btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Return"
+              )
+            {
+                if(GM_getValue("automate")) {
+                    setTimeout(function() { btns_secondary[0].click(); }, 0); }
+            }
+        });
+        /* Regular window at mturk */
+
+
         if(GM_getValue("stop") !== undefined && GM_getValue("stop") === true)
         {
         }
         else if(btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Skip" &&
-               btns_primary!==undefined && btns_primary.length>0 && btns_primary[0].innerText==="Accept")
+                btns_primary!==undefined && btns_primary.length>0 && btns_primary[0].innerText==="Accept")
         {
 
             /* Accept the HIT */
-            if(automate) {
+            if(GM_getValue("automate")) {
                 btns_primary[0].click(); }
         }
         else
         {
             /* Wait to return the hit */
-            console.log("MOO");
             var cboxdiv=document.getElementsByClassName("checkbox");
             var cbox=cboxdiv[0].firstChild.firstChild;
             if(cbox.checked===false) cbox.click();
         }
 
     }
-
 
 })();
