@@ -333,3 +333,11 @@ function parse_name(to_parse)
     return ret;
 
 }
+
+function shorten_company_name(name)
+{
+    name=name.replace(/\s*Corporation$/,"").replace(/\s*Corp\.?$/,"");
+    name=name.replace(/\s*Incorporated$/,"").replace(\s*Inc\.?$/,"");
+    name=name.replace(/\s*LLC$/,"").replace(/\s*Limited$/,"").trim();
+    return name;
+}
