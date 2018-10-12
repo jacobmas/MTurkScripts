@@ -34,6 +34,8 @@
 (function() {
     'use strict';
 
+    var prop_re=/(Rule 14a\-8)|(proposal[A-Za-z\s]+in writing)|(Shareholder Proposal)|(Stockholder Proposal)|(present a proposal)|(proposals must be submitted)|(submit a proposal)|(inclusion of your proposal)|(proposal to be presented)|(Proposals of shareholders)|(proposals[\sA-Za-z]+stockholders)/i;
+
     var automate=GM_getValue("automate",false);
     var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%]+(\.[^<>()\[\]\\.,;:：\s@"\?]+)*)|("[^\?]+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
 
@@ -166,19 +168,90 @@
         }
     }
 
-    function get_the_date(text)
+    function get_by_sentence(text)
     {
+
+        var split_text=text.split(". ");
+        var i,j;
+        var ret="",temp_ret="";
+        var curr_str="";
+        var pos=0, new_pos=0,temp_pos;
+        var period_pos=0;
+
+        console.log("Done");
+
+        console.log("\n\n**** split_text="+JSON.stringify(split_text)+"\n\n");
+       var the_pos;
+        var regexes=[/without inclusion[A-Za-z0-9\s]+proposal/i,/not\s*(to)?\s*be included[A-Za-z0-9\s\']+proxy/i,/outside of the process/i];
+        for(i=0; i < split_text.length; i++) {
+            curr_str=split_text[i];
+            if(split_text[i].indexOf("30 days")!==-1)
+            {
+                the_pos=split_text[i].indexOf("30 days");
+                curr_str=curr_str.substr(0,the_pos);
+            }
+            for(j=0; j < regexes.length; j++)
+            {
+                if(regexes[j].test(curr_str))
+                {
+                    the_pos=curr_str.match(regexes[j]).index;
+                    curr_str=curr_str.substr(0,the_pos);
+                }
+            }
+
+
+
+            temp_ret=get_the_date(curr_str,1);
+
+            if(temp_ret!=="")
+                console.log("split_text["+i+"]="+split_text[i]+", temp_ret="+temp_ret);
+            if(temp_ret!==null && temp_ret.length>0) ret=temp_ret;
+
+        }
+        return ret;
+    }
+    function get_the_date(text, depth)
+    {
+        var by_sentence;
+        if(depth===undefined || depth!==1)
+        {
+
+           by_sentence=get_by_sentence(text);
+ console.log("by_sentence="+by_sentence);
+            if(by_sentence.length>0)
+           {
+
+               return by_sentence;
+           }
+        }
+        else if(!prop_re.test(text)) return "";
+        if(!/(submitted(\s[^\s]+){0,2} for inclusion)|(to\ssubmit\sproposals\sfor\sinclusion)|(intended\s+for\s+inclusion)|(considered\s+for\s+inclusion)|(order\s+to\s+be\s+included)|(consider\s+including)/i.test(text))
+        {
+            console.log("WOOMPIM");
+            return "";
+        }
+
         var date_re=/((January)|(February)|(March)|(April)|(May)|(June)|(July)|(August)|(September)|(October)|(November)|(December))\s+\d{1,2},\s*\d{4}/g;
         var my_match=text.match(date_re);
         var date_array=[];
+        var temp_date;
         var i;
         if(my_match!==null)
         {
            // console.log("my_match="+JSON.stringify(my_match));
             for(i=0; i < my_match.length; i++)
             {
-                date_array.push(new Date(my_match[i]));
+                temp_date=new Date(my_match[i]);
+                if(temp_date.getFullYear()>2018 || (temp_date.getFullYear()===2018 && temp_date.getMonth()>=6))
+                {
+                    date_array.push(temp_date);
+                }
+                else
+                {
+                    console.log("MOOOSSHOFSDA");
+                }
             }
+            if(date_array.length===0) { return ""; }
 
         }
         else
@@ -187,6 +260,7 @@
             return "";
         }
         //date_array.sort();
+
         console.log("Dates: "+JSON.stringify(date_array));
         var last=date_array.length-1;
         console.log("last "+date_array[last].toLocaleString('en-US').replace(/,.*$/,""));
@@ -199,7 +273,7 @@
         var i,j;
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-        console.log("SEC3");
+        console.log("SEC3, url="+response.finalUrl);
         var text=doc.getElementsByTagName("text")[0];
         //console.log("text.innerText="+text.innerText);
         do_SEC3(text,0);
@@ -214,27 +288,28 @@
 
     function do_SEC3(docpart, depth)
     {
-        console.log("**** DOING SEC, depth="+depth);
+        //console.log("**** DOING SEC, depth="+depth);
         var i;
-        var prop_re=/(Shareholder Proposal)|(Stockholder Proposal)|(present a proposal)|(submit a proposal)|(inclusion of your proposal)|(proposal to be presented)/i;
-        var children=docpart.children;
+
+                var children=docpart.children;
         for(i=0; i < children.length; i++)
         {
-            console.log("children["+i+"]="+children[i]);
+            //console.log("children["+i+"]="+children[i]);
             if(prop_re.test(children[i].innerText))
             {
                 console.log("("+depth+","+i+"), reg expression matched, ");
             }
             if(children[i].tagName==="TABLE")
             {
-                console.log("("+depth+","+i+"), table found, continuing");
-                continue;
+                //console.log("("+depth+","+i+"), table found, continuing");
+              //  continue;
             }
             else if(children[i].getElementsByTagName("table").length>0)
             {
-                console.log("("+depth+","+i+"), found table internal");
-                if(depth<3)
+             //   console.log("("+depth+","+i+"), found table internal");
+                if(depth<6 && children[i].tagName!=="FONT")
                 {
+                   // console.log("children["+i+"].tagName="+children[i].tagName);
                     do_SEC3(children[i],depth+1);
                     continue;
                 }
@@ -242,9 +317,9 @@
             }
             if(prop_re.test(children[i].innerText))
             {
-                console.log("("+i+"));//, "+children[i].innerText);
-                var the_date=get_the_date(children[i].innerText);
-                //console.log("the_date="+the_date);
+                console.log("Prop_Re ("+i+"));//, "+children[i].innerText);
+                var the_date=get_the_date(children[i].innerText,0);
+                console.log("the_date="+the_date);
                 if(the_date.length>0 && !my_query.submitted)
                 {
                     my_query.submitted=true;
@@ -254,7 +329,7 @@
                 }
             }
         }
-        console.log("No date found in SEC3");
+        //console.log("No date found in SEC3");
     }
 
 
