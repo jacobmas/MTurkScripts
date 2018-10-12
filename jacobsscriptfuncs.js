@@ -334,10 +334,23 @@ function parse_name(to_parse)
 
 }
 
-function shorten_company_name(name)
-{
-    name=name.replace(/\s*Corporation$/,"").replace(/\s*Corp\.?$/,"");
-    name=name.replace(/\s*Incorporated$/,"").replace(\s*Inc\.?$/,"");
-    name=name.replace(/\s*LLC$/,"").replace(/\s*Limited$/,"").trim();
-    return name;
-}
+ function shorten_company_name(name)
+    {
+        name=name.replace(/ - .*$/,"").trim().replace(/\s*plc$/i,"");
+        name=name.replace(/\(.*$/i,"").trim();
+        name=name.replace(/\s*Corporation$/i,"").replace(/\s*Corp\.?$/i,"");
+        name=name.replace(/\s*Incorporated$/i,"").replace(/\s*Inc\.?$/i,"");
+        name=name.replace(/\s*LLC$/i,"").replace(/\s*Limited$/i,"").replace(/\s*Ltd\.?$/i,"").trim();
+        
+        name=name.replace(/,\s*$/,"");
+        name=name.replace(/\s+Pte$/,"").replace(/ AG$/,"");
+        name=name.replace(/\s+S\.?A\.?$/,"").replace(/\s+L\.?P\.?$/,"");
+
+        return name;
+    }    function shorten_company_name(name)
+    {
+        name=name.replace(/\s*Corporation$/,"").replace(/\s*Corp\.?$/,"");
+        name=name.replace(/\s*Incorporated$/,"").replace(/\s*Inc\.?$/,"");
+        name=name.replace(/\s*LLC$/,"").replace(/\s*Limited$/,"").trim();
+        return name;
+    }
