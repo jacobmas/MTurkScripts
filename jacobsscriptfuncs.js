@@ -8,7 +8,7 @@ var state_map={"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","Cali
                "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY", "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH",
                "Oklahoma": "OK", "Oregon": "OR", "Pennsylvania": "PA", "Rhode Island": "RI", "South Carolina": "SC", "South Dakota": "SD",
                "Tennessee": "TN", "Texas": "TX", "Utah": "UT", "Vermont": "VT", "Virginia": "VA", "Washington": "WA", "West Virginia": "WV",
-               "Wisconsin": "WI", "Wyoming": "WY"}
+               "Wisconsin": "WI", "Wyoming": "WY"};
 
 var province_map={"Ontario": "ON", "Quebec": "QC", "New Brunswick": "NB", "Alberta": "AB", "Saskatchewan": "SK",
                "Manitoba": "MB", "British Columbia": "BC","Nova Scotia": "NS"};
