@@ -265,7 +265,7 @@ function get_domain_only(the_url,limit_one)
     var ret=the_url.replace(httpwww_re,"").replace(http_re,"").replace(slash_re,"");
     if(limit_one!==undefined && limit_one)
     {
-	if(/\.(co|ac|gov)\.[A-Za-z]{2}$/.test(the)url)
+	if(/\.(co|ac|gov)\.[A-Za-z]{2}$/.test(the_url))
 	{
 	    ret=ret.replace(/^.*\.([^\.]+\.(?:co|ac|gov)\.[A-Za-z]{2})$/,"$1");
 	}
