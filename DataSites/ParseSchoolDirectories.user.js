@@ -169,7 +169,7 @@
 
      
     }
-
+    /* Loads the settings, namely the groupIds which is all we need */
     function loadSettings()
     {
         var json={"portletInstanceId":my_query.portletInstanceId};
@@ -192,21 +192,42 @@
         });
     }
 
+    /**
+     * '''load_search''' loads the West Corporation style search query for the job title set by
+     * my_query.job_title r loads the first 20 alphabetically otherwise if my_query.job_title isn't set
+     *
+     * Letting json_response=JSON.parse(response.responseText), json_response.d.results should have a
+     * list of objects of the results to the query, with
+     * fields email, firstName, lastName,jobTitle,phone,website,imageURL,userID
+     *
+     *
+     */
+
     function loadSearch()
     {
         var json={"firstRecord":0,"groupIds":my_query.groupIds,"lastRecord":19,
                  "portletInstanceId":my_query.portletInstanceId,
                  "searchTerm":my_query.job_title,"sortOrder":"LastName,FirstName ASC","searchByJobTitle":true};
+        if(my_query.job_title===undefined) { json.searchTerm=""; json.searchByJobTitle=false; }
          loadReact("Search",json,
                   function(response)
                   {
-             console.log("response="+JSON.stringify(response)+"\n\ntext="+response.responseText);
+             //console.log("response="+JSON.stringify(response)+"\n\ntext="+response.responseText);
+             var json_response=JSON.parse(response.responseText);
+             console.log("result.d="+JSON.stringify(json_response.d.results));
          });
     }
 
+    /**
+     * '''loadReact''' does a GM_xmlhttprequest query of the StaffDirectory at the my_query.staff_path in question
+     *
+     * (my_query.staff_path to be found by searching e.g. Bing, and should be the part found by /https?:\/\/[^\/]+/
+     * type is the type of query to get ("Settings" or "Search"), json is the json to send with it since it's a POST request
+     * callback is the callback
+     */
     function loadReact(type,json,callback)
     {
-        var url=my_query.begin_url+"/Common/controls/StaffDirectory/ws/StaffDirectoryWS.asmx/"+type;
+        var url=my_query.staff_path+"/Common/controls/StaffDirectory/ws/StaffDirectoryWS.asmx/"+type;
         var headers={"Content-Type":"application/json;charset=UTF-8"};
         GM_xmlhttpRequest({method: 'POST', url: url, headers:headers, data:JSON.stringify(json),
             onload: callback,
@@ -229,7 +250,7 @@
         document.getElementById("ads").innerHTML="<div id=\"divReactPortletCSS\"></div>";
         var url="https://swanscreekes.pwcs.edu/staff_directory";
            my_query={loadedScripts:0,totalScripts:0,url:url,job_title:"principal"};
-        my_query.begin_url=url.match(/^https?:\/\/[^\/]+/)[0];
+        my_query.staff_path=url.match(/^https?:\/\/[^\/]+/)[0];
         var appendElement=document.getElementById("ads");
         GM_xmlhttpRequest({method: 'GET', url: url,
             onload: function(response) { find_emails(response,appendElement); },
