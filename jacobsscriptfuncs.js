@@ -164,6 +164,7 @@ function is_bad_email(to_check)
 function is_bad_url(the_url, bad_urls, max_depth, check_function)
 {
     var i;
+    the_url=the_url.replace(/\/$/,"");
     if(max_depth===undefined)
     {
 	max_depth=4;
@@ -343,9 +344,10 @@ function shorten_company_name(name)
     name=name.replace(/\s*LLC$/i,"").replace(/\s*Limited$/i,"").replace(/\s*Ltd\.?$/i,"").trim();
     
     name=name.replace(/,\s*$/,"");
-    name=name.replace(/\s+Pte$/,"").replace(/ AG$/,"");
-    name=name.replace(/\s+S\.?A\.?$/,"").replace(/\s+L\.?P\.?$/,"");
-    name=name.replace(/\s+GmbH$/,"");
+    name=name.replace(/\s+Pte$/i,"").replace(/ AG$/i,"");
+    name=name.replace(/\s+S\.?A\.?$/i,"").replace(/\s+L\.?P\.?$/i,"");
+    name=name.replace(/\s+GmbH$/i,"").replace(/\s+SRL/i,"")
+    name=name.replace(/\s+Sàrl$/i,"");
 
     return name;
 }
