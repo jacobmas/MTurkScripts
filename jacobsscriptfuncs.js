@@ -347,7 +347,7 @@ function shorten_company_name(name)
     name=name.replace(/\s+Pte$/i,"").replace(/ AG$/i,"");
     name=name.replace(/\s+S\.?A\.?$/i,"").replace(/\s+L\.?P\.?$/i,"");
     name=name.replace(/\s+GmbH$/i,"").replace(/\s+SRL/i,"")
-    name=name.replace(/\s+Sàrl$/i,"");
+    name=name.replace(/\s+Sarl$/i,"");
 
     return name;
 }
