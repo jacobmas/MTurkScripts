@@ -38,7 +38,7 @@
     var phone_re=/([(]?[0-9]{3}[)]?[-\s\.\/]+)?[0-9]{3}[-\s\.\/]+[0-9]{4,6}/im;
     var new_phone_re=/Phone: ([(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/im;
     var fax_re=/Fax[:]?[\s]?([\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/im;
-
+    var good_count,bad_count;
 
     var personal_email_domains=["aol.com","bigpond.com","frontiernet.net","gmail.com","icloud.com","mchsi.com","me.com","pacbell.net","rogers.com","rr.com","ymail.com"];
     var my_query = {};
@@ -47,12 +47,15 @@
     var bad_urls=["facebook.com","instagram.com","twitter.com","yelp.com","webnode.com"];
     var country_domains=[".ar",".at",".au",".br",".ch",".cn",".de",".eu",".fr",".it",".jp",".ro",".ru",".se",".tw",".uk",".uy",".vn"];
     var sport_map1={
+        "Baseball":["baseball","bsb"],
         "Field Hockey":["fhockey","fhock"],
         "Football":["football"],
+
         "Men's Basketball":["mbball"],
         "Men's Soccer":["msoc"],
         "Men's Swimming": ["mswim","swim","msd"],
         "Men's Water Polo": ["mwpolo"],
+        "Softball": ["softball","sball"],
         "Women's Basketball":["wbball"],
         "Women's Soccer":["wsoc"],
         "Women's Swimming":["wswim","swim","wsd"],
@@ -102,7 +105,7 @@
 
     function check_and_submit()
     {
-
+        GM_setValue("good_count",good_count+1);
         console.log("Checking and submitting");
 
            if(GM_getValue("automate"))
@@ -456,13 +459,18 @@
         }
 
         var url=response.finalUrl;
+        console.log("url="+url);
         var begin_url=response.finalUrl.replace(/(https?:\/\/[^\/]+).*$/,"$1/");
         var new_url="",links=doc.links;
+        console.log("Blurg "+my_query.sport.trim());
         let my_sportresult=sport_map1[my_query.sport.trim()];
+                console.log("Blurg2 "+my_sportresult);
+
         var found_good_url=false;
         for(j=0; j < my_sportresult.length; j++)
         {
-            
+            console.log("j="+j);
+
             
             var tempRegExp=new RegExp(my_sportresult[j]+"\\/[\\d]+-[\\d]+\\/roster");
 
@@ -477,6 +485,11 @@
                 console.log("Found athleticsroster");
                 if(parse_athleticsroster(doc.getElementsByClassName("athletics-roster")[0],url)) return;
             }
+        }
+        console.log("Done first");
+        if(/\/mens-roster\//.test(url) || /\/womens-roster\//.test(url))
+        {
+            if(parse_vcgrid(doc)) return;
         }
         if(/SportSelect\.dbml/i.test(url))
         {
@@ -496,6 +509,12 @@
         {
             if(parse_innertable1(doc.getElementById("sortable_roster"))) return;
         }
+        if(doc.getElementsByClassName("entry-title").length>0 && doc.getElementsByClassName("entry-title").length===1+doc.getElementsByClassName("entry-summary").length)
+        {
+            console.log("Found entry-title");
+            if(parse_entrytitle(doc,url)) return;
+
+        }
         if(doc.getElementsByTagName("table").length>0)
         {
             console.log("\nTrying generic table");
@@ -508,9 +527,13 @@
         }
 
         console.log("Failed");
+        if(/\.aspx\?path/.test(url))
+        {
+            console.log("Found aspx path");
+        }
         for(i=0; i < links.length && !found_good_url; i++)
         {
-            console.log("links["+i+"].href="+links[i].href);
+         //   console.log("links["+i+"].href="+links[i].href);
 
             if(links[i].href.indexOf("mturkcontent.com")!==-1 || links[i].href.indexOf("amazonaws.com")!==-1)
             {
@@ -575,9 +598,12 @@
             else if(/Athletics/i.test(links[i].innerText))
             {
                 let athlet_url=links[i].href.replace(/(https?:\/\/[^\/]+).*$/,"$1/");
-                if(athlet_url!==begin_url && !/^javascript/.test(athlet_url))
+                if((my_query.try_count===0 || get_domain_only(athlet_url)!==get_domain_only(begin_url)) && !/^(javascript|mailto)/.test(athlet_url)
+
+                  && get_domain_only2(athlet_url)!=="imodules.com"
+                  )
                 {
-                    console.log("\nFound Athletics site");
+                    console.log("\nFound Athletics site="+athlet_url+"\t"+get_domain_only2(athlet_url));
                     found_good_url=true;
                     new_url=links[i].href;
                     break;
@@ -621,9 +647,10 @@
             }
 
         }
+        console.log("my_query.try_count="+my_query.try_count);
         if(my_query.try_count<2 && found_good_url)
         {
-            console.log("try_count=0, trying again with good url="+new_url);
+            console.log("try_count="+my_query.try_count+", trying again with good url="+new_url);
             my_query.try_count++;
              GM_xmlhttpRequest({ method: 'GET', url: new_url,
                                 onload: function(response) { sports_response(response); },
@@ -633,9 +660,23 @@
 
             return;
         }
+        else if(my_query.try_count<2)
+        {
+            var search_str=get_domain_only2(my_query.url) +" athletics ";// -site:.edu";
+            const queryPromise = new Promise((resolve, reject) => {
+                console.log("Beginning query search for url ");
+                query_search(search_str, resolve, reject, query_response);
+            });
+            queryPromise.then(query_promise_then)
+                .catch(function(val) {
+                console.log("Failed query " + val);
+            });
+            return;
+        }
         else
         {
             console.log("Truly failed, returning");
+            GM_setValue("bad_count",bad_count+1);
             GM_setValue("returnHit",true);
         }
 
@@ -722,6 +763,44 @@
             }
             pos++;
             if(pos>25) break;
+        }
+        if(document.getElementById("Full Name #1").value.length>0)
+        {
+            do_finish();
+            return true;
+        }
+        else return false;
+    }
+
+    function parse_vcgrid(doc)
+    {
+        var pos_count=1,i;
+        console.log("in parse_vcgrid");
+        var vc_grid=doc.getElementsByClassName("vc_grid"),vc_item;
+        if(vc_grid.length===0) {
+            console.log("No grid");
+           return false;
+        }
+        var name="",position="",hometown="";
+        vc_grid=vc_grid[0];
+        vc_item=vc_grid.getElementsByClassName("vc_grid-item");
+        for(i=0; i < vc_item.length; i++)
+        {
+            if(vc_item[i].getElementsByClassName("team-roster-name").length>0)
+            {
+                document.getElementById("Full Name #"+pos_count).value=vc_item[i].getElementsByClassName("team-roster-name")[0].innerText;
+            }
+            if(vc_item[i].getElementsByClassName("team-roster-position").length>0)
+            {
+                document.getElementById("Position #"+pos_count).value=vc_item[i].getElementsByClassName("team-roster-position")[0].innerText;
+            }
+            if(vc_item[i].getElementsByClassName("team-roster-green").length>0)
+            {
+                document.getElementById("Hometown #"+pos_count).value=vc_item[i].getElementsByClassName("team-roster-green")[0].innerText;
+            }
+
+            pos_count++;
+            if(pos_count>25) break;
         }
         if(document.getElementById("Full Name #1").value.length>0)
         {
@@ -1062,11 +1141,12 @@
             else if(/home\s*town\s*\/\s*.*school/i.test(curr_cell)) ret[i]="Homehigh";
             else if(/home\s*town\s*\(.*school\)/i.test(curr_cell)) ret[i]="Homeparenhigh";
             else if(/home\s*town|(^home$)/i.test(curr_cell)) ret[i]="Hometown";
+            else if(/Location/i.test(curr_cell)) ret[i]="Hometown";
             else if(/school|(^hs$)/i.test(curr_cell) && !done_school) { ret[i]="High School"; done_school=true; }
 
             else ret[i]="Null";
         }
-        console.log("Done assign_title_map");
+        console.log("Done assign_title_map="+JSON.stringify(ret));
         return ret;
     }
 
@@ -1348,6 +1428,9 @@ sports_str=sports_str.replace(/\\\'/g,"'");
     {
  //       var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         var well=document.getElementsByClassName("well");
+        good_count=GM_getValue("good_count",0);
+        bad_count=GM_getValue("bad_count",0);
+        console.log("Good: "+good_count+"\tBad: "+bad_count);
         setup_UI();
         var i;
 
@@ -1398,10 +1481,22 @@ sports_str=sports_str.replace(/\\\'/g,"'");
             my_query.sport="Men's Wrestling";
             my_query.short_sport="Wrestling";
         }
+        if(my_query.url.indexOf("google.com")!==-1)
+        {
+            let url_match=my_query.url.match(/&url=(.*)$/);
+            if(url_match!==null) {
+                my_query.url=decodeURIComponent(url_match[1]);
+                console.log("New url="+my_query.url);
+            }
+        }
+
 
         console.log("my_query="+JSON.stringify(my_query));
 
-
+        if(my_query.url.indexOf("nwacsports.org")!==-1) {
+            check_and_submit();
+            return;
+        }
         var search_str, search_URI, search_URIBing;
 
         const sportsPromise = new Promise((resolve, reject) => {
