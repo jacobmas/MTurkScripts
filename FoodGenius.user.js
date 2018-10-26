@@ -16,12 +16,16 @@
 // @grant        GM_setClipboard
 // @grant GM_xmlhttpRequest
 // @grant GM_openInTab
+// @grant GM_getResourceText
+// @grant GM_addStyle
 // @connect google.com
 // @connect bing.com
 // @connect yellowpages.com
 // @connect *
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
+// @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
 
@@ -29,7 +33,7 @@
 (function() {
     'use strict';
 
-    var automate=true;
+    var automate=GM_getValue("automate",false);
     var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%]+(\.[^<>()\[\]\\.,;:：\s@"\?]+)*)|("[^\?]+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
 
     var phone_re=/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}/im;
@@ -50,8 +54,9 @@
                  "menuism.com","newyorkdiningclub.com","www.visit","buzzfile.com","intercreditreport.com","linkedin.com",
                  "indeed.com","yelp.de","bedandbreakfast.com",".business.site","speisekarte.menu",".gov","locality.com",
                  "citymaps.com","advrider.com","twitter.com","findmeglutenfree.com",".net","hotfrog.com","foodtrucksin.com",
-                 "ourvalleyevents.com",".pdf","locu.com","restaurantguru.com","trulia.com","chinesemenu.com","trycaviar","beyondmenu","allmenus","groupon.com",
-                 "tripadvisor.com","alohaorderonline.com","singleplatform.com","timetemperature.com","restaurant.com"];
+                 "ourvalleyevents.com",".pdf","locu.com","restaurantguru.com","chinesemenu.com","trycaviar","beyondmenu","allmenus","groupon.com",
+                 "tripadvisor.com","alohaorderonline.com","singleplatform.com","timetemperature.com","www.restaurant.com","menutoeat.com",
+                  "cylex.us.com","www.zillow.com","www.realtor.com","www.trulia.com","www.homes.com","s3.amazonaws.com","www.yelp.co"];
     var country_domains=[".ar",".at",".au",".br",".ch",".cn",".de",".eu",".fr",".it",".jp",".ro",".ru",".se",".tw",".uk",".uy",".vn"];
     var first_try=true;
 
@@ -65,39 +70,37 @@
         return false;
     }
 
-    function check_and_submit()
+    function check_function() { return true;  }
+    function check_and_submit(check_function)
     {
         console.log("in check");
-        if(document.getElementById("webpage_url").value.length>0 && is_bad_url(document.getElementById("webpage_url").value))
-        {
-            GM_setValue("returnHit",true);
-            console.log("bad");
-            return;
-        }
+        
         console.log("Checking and submitting");
- /*       if(document.getElementById("addressLine1").value==="undefined" ||
-           document.getElementById("city").value==="undefined" ||
-           document.getElementById("state").value==="undefined" ||
-           document.getElementById("zip").value==="undefined" ||
-           document.getElementById("phoneNumber").value==="undefined")
+	if(GM_getValue("automate"))
         {
-            GM_setValue("returnHit",true);
-            return;
-        }*/
-
-        if(automate)
-        {
-            setTimeout(function() { document.getElementById("submitButton").click(); }, 0);
+            setTimeout(function() { document.getElementById("submitButton").click(); }, 500);
         }
     }
-    function is_bad_url(the_url)
+    function is_bad_url2(the_url)
     {
         var i;
         var bad_re=/https?:\/\/[^\/]*\/[^\/]*\/[^\/]*\//;
-        if(bad_re.test(the_url)) return true;
-        for(i=0; i < bad_urls.length; i++)
+        var split_url=the_url.split("/");
+        if(split_url.length>=4)
         {
-            if(the_url.indexOf(bad_urls[i])!==-1) return true;
+            console.log("split_url[3]="+split_url[3]);
+            let dash_split=split_url[3].split("-");
+            if(dash_split.length>=3) return true;
+        }
+        if(split_url.length>=3)
+        {
+            console.log("split_url[2]="+split_url[2]);
+            let dot_split=split_url[2].split(".");
+
+            let first=my_query.name.split(" ")[0].toLowerCase();
+            if(dot_split.length>=2 && dot_split[0]!=="www" && dot_split[0].indexOf(first)!==-1
+              && !/com|org|net|io|site|biz|(^[a-z]{2,3}$)/.test(dot_split[1])
+              ) return true;
         }
         return false;
     }
@@ -114,6 +117,7 @@
         document.getElementById("phoneNumber").value=phone;
 
     }
+
     function my_parse_address(to_parse)
     {
         var ret_add={};
@@ -189,6 +193,7 @@
         }
         return ret_add;
     }
+
     function camp_response(response,resolve,reject) {
         // console.log(JSON.stringify(response));
         var doc = new DOMParser()
@@ -216,34 +221,48 @@
         var name_split;
         var the_address="";
         var the_phone="";
-        var b_vList, b_entityTP, cbl;
+        var b_vList, b_entityTP, cbl,p_caption;
 
         var job_text,job_split;
         var add_success=false, phone_success=false;
         var epc;
+        var permanent="";
         try
         {
             search=doc.getElementById("b_content");
             lgb_info=doc.getElementById("lgb_info");
             console.log("hello");
+            permanent=doc.getElementById("permanentlyClosedIcon");
+            if(permanent)
+            {
+                console.log("Permanently closed!");
+                document.getElementsByName("closed")[0].checked=true;
+                check_and_submit();
+                return;
+            }
             if(lgb_info!==null && lgb_info!==undefined)
             {
                 console.log("lgb_info");
                 inner_a=lgb_info.getElementsByTagName("a");
-                if(inner_a!==null && inner_a!==undefined && inner_a.length>0 && !is_bad_url(inner_a[0].href))
+                if(inner_a!==null && inner_a!==undefined && inner_a.length>0 && !is_bad_url(inner_a[0].href.replace(/\/$/,""),bad_urls,5) && !is_bad_url2(inner_a[0].href))
                 {
                     document.getElementById("webpage_url").value=inner_a[0].href;
                     check_and_submit();
                     return;
                 }
+                else if(inner_a.length>0)
+                {
+                    console.log("lgbinfo:inner_a[0].href="+inner_a[0].href+", is_bad_url(*)="+is_bad_url(inner_a[0].href,bad_urls));
+                }
             }
+
             b_algo=search.getElementsByClassName("b_algo");
 
             console.log("b_algo.length="+b_algo.length);
             if(b_algo.length===0)
             {
                 console.log("b_algo length=0");
-                GM_setValue("returnHit",true);
+                //GM_setValue("returnHit",true);
                 return;
             }
 
@@ -256,16 +275,21 @@
             {
                 b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
+                b_caption=b_algo[i].getElementsByClassName("b_caption");
+                p_caption="";
+                if(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) {
+                    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText;
+                }
+                console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
 
-
-                if(!is_bad_url(b_url) && i < 3)
+                if(!is_bad_url(b_url,bad_urls) && !is_bad_url2(b_url,bad_urls) && i < 2)
                 {
                     document.getElementById("webpage_url").value=b_url;
                     check_and_submit();
                     return;
 
                 }
-                else if(!is_bad_url(b_url))
+                else if(!is_bad_url(b_url,bad_urls) && !is_bad_url2(b_url,bad_urls))
                 {
                     console.log("BAD can't guess");
                     GM_setValue("returnHit",true);
@@ -275,6 +299,12 @@
 
             }
             console.log("MOO");
+            if(my_query.try_count===0)
+            {
+                my_query.try_count++;
+                query_search(my_query.name+" "+my_query.city+" "+my_query.state,resolve,reject,camp_response);
+                return;
+            }
             document.getElementsByName("no_page")[0].checked=true;
             check_and_submit();
             return;
@@ -302,52 +332,19 @@ GM_setValue("returnHit",true);
 
     }
 
-    function camp_search(resolve,reject) {
-        var search_str=my_query.name+" "+my_query.city+" "+my_query.state;
 
-//        if(!first_try) google_search_str=google_search_str+" "+my_query.country;
+    function query_search(search_str, resolve,reject, callback) {
         console.log("Searching with bing for "+search_str);
-        var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str)+"&first=1&rdr=1";
-        var domain_URL='https://www.google.com/search?q='+encodeURIComponent(search_str);//+" company");
-        GM_xmlhttpRequest({
-            method: 'GET',
-            url:    search_URIBing,
-
-            onload: function(response) {
-             //   console.log("On load in crunch_response");
-            //    crunch_response(response, resolve, reject);
-             camp_response(response, resolve, reject);
-            },
+        var search_URIBing='https://www.bing.com/search?q='+
+	    encodeURIComponent(search_str)+"&first=1&rdr=1";
+	GM_xmlhttpRequest({method: 'GET', url: search_URIBing,
+            onload: function(response) { callback(response, resolve, reject); },
             onerror: function(response) { reject("Fail"); },
             ontimeout: function(response) { reject("Fail"); }
-
-
             });
     }
-
-      function person_google_search() {
-        var search_str=my_query.href;
-
-//        if(!first_try) google_search_str=google_search_str+" "+my_query.country;
-        console.log("Searching with Google for "+search_str);
-        var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str)+"&first=1&rdr=1";
-        var domain_URL='https://www.google.com/search?q='+encodeURIComponent(search_str);//+" company");
-        GM_xmlhttpRequest({
-            method: 'GET',
-            url:    domain_URL,
-
-            onload: function(response) {
-             //   console.log("On load in crunch_response");
-            //    crunch_response(response, resolve, reject);
-                console.log("At google");
-             person_google_response(response);
-            },
-            onerror: function(response) { console.log("Fail"); },
-            ontimeout: function(response) { console.log("Fail"); }
-
-
-            });
-    }
+    
+      
 
     function get_domain_only(the_url)
     {
@@ -424,7 +421,7 @@ GM_setValue("returnHit",true);
 
     }
 
-    function init_Camp()
+    function init_Query()
     {
 
        var wT=document.getElementById("workContent").getElementsByTagName("table")[0];
@@ -433,15 +430,18 @@ GM_setValue("returnHit",true);
 
 
         my_query={name: wT.rows[0].cells[1].innerText, address: wT.rows[1].cells[1].innerText, city: wT.rows[3].cells[1].innerText,
-                 state: wT.rows[4].cells[1].innerText, zip: wT.rows[5].cells[1].innerText};
+                 state: wT.rows[4].cells[1].innerText, zip: wT.rows[5].cells[1].innerText, try_count:0};
 
 
+        my_query.name=my_query.name.replace(/(^|\s)([A-Za-z0-9\-\.]+)\/(?:[^\s]+)/,"$1$2");
+        console.log("my_query.name="+my_query.name);
 
         var search_str, search_URI, search_URIBing;
+        search_str=my_query.name+" "+my_query.address+" "+my_query.city+" "+my_query.state;
 
         const campPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
-            camp_search(resolve, reject);
+            query_search(search_str,resolve, reject,camp_response);
         });
         campPromise.then(camp_promise_then
         )
@@ -454,7 +454,6 @@ GM_setValue("returnHit",true);
 
     }
 
-    /* Failsafe to stop it  */
     window.addEventListener("keydown",function(e) {
         if(e.key !== "F1") {
             return;
@@ -463,50 +462,87 @@ GM_setValue("returnHit",true);
      });
 
 
-    if (window.location.href.indexOf("mturkcontent.com") != -1 || window.location.href.indexOf("amazonaws.com") != -1)
+    if (window.location.href.indexOf("mturkcontent.com") !== -1 || window.location.href.indexOf("amazonaws.com") !== -1)
     {
         var submitButton=document.getElementById("submitButton");
         if(!submitButton.disabled )
         {
 
-            init_Camp();
+            init_Query();
         }
 
     }
-    else
+    else if(window.location.href.indexOf("instagram.com")!==-1)
     {
-       // console.log("In LuisQuintero main");
-        if(automate)
-        {
-            setTimeout(function() { btns_secondary[0].click(); }, 20000); }
-        GM_setValue("returnHit",false);
-       GM_addValueChangeListener("returnHit", function() {
-                if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
-                  btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Return"
-                  )
-                {
-                    if(automate) {
-                        setTimeout(function() { btns_secondary[0].click(); }, 0); }
-                }
-            });
-         /* Regular window at mturk */
-        var btns_primary=document.getElementsByClassName("btn-primary");
+        GM_setValue("instagram_url","");
+        GM_addValueChangeListener("instagram_url",function() {
+            var url=GM_getValue("instagram_url");
+            window.location.href=url;
+        });
+        do_instagram();
+    }
+    else if(window.location.href.indexOf("worker.mturk.com")!==-1)
+    {
+
+	/* Should be MTurk itself */
+        var globalCSS = GM_getResourceText("globalCSS");
+        GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
+       var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
+        if(GM_getValue("automate")===undefined) GM_setValue("automate",false);
+
+        var btn_span=document.createElement("span");
+        var btn_automate=document.createElement("button");
+
+         var btns_primary=document.getElementsByClassName("btn-primary");
         var btns_secondary=document.getElementsByClassName("btn-secondary");
+         var my_secondary_parent=pipeline.getElementsByClassName("btn-secondary")[0].parentNode;
+        btn_automate.className="btn btn-ternary m-r-sm";
+        btn_automate.innerHTML="Automate";
+        btn_span.appendChild(btn_automate);
+        pipeline.insertBefore(btn_span, my_secondary_parent);
+         GM_addStyle(globalCSS);
+        if(GM_getValue("automate"))
+        {
+            btn_automate.innerHTML="Stop";
+            /* Return automatically if still automating */
+            setTimeout(function() {
+
+                if(GM_getValue("automate")) btns_secondary[0].click();
+                }, 20000);
+        }
+        btn_automate.addEventListener("click", function(e) {
+            var auto=GM_getValue("automate");
+            if(!auto) btn_automate.innerHTML="Stop";
+            else btn_automate.innerHTML="Automate";
+            GM_setValue("automate",!auto);
+        });
+        GM_setValue("returnHit",false);
+        GM_addValueChangeListener("returnHit", function() {
+            if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
+               btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Return"
+              )
+            {
+                if(GM_getValue("automate")) {
+                    setTimeout(function() { btns_secondary[0].click(); }, 0); }
+            }
+        });
+        /* Regular window at mturk */
+
+
         if(GM_getValue("stop") !== undefined && GM_getValue("stop") === true)
         {
         }
         else if(btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Skip" &&
-               btns_primary!==undefined && btns_primary.length>0 && btns_primary[0].innerText==="Accept")
+                btns_primary!==undefined && btns_primary.length>0 && btns_primary[0].innerText==="Accept")
         {
 
             /* Accept the HIT */
-            if(automate) {
+            if(GM_getValue("automate")) {
                 btns_primary[0].click(); }
         }
         else
         {
             /* Wait to return the hit */
-            console.log("MOO");
             var cboxdiv=document.getElementsByClassName("checkbox");
             var cbox=cboxdiv[0].firstChild.firstChild;
             if(cbox.checked===false) cbox.click();
