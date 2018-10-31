@@ -182,7 +182,7 @@ for (var i=0; i < defaultDiacriticsRemovalMap .length; i++){
         if ((window.location.href.indexOf("mturkcontent.com") !== -1 ||
              window.location.href.indexOf("amazonaws.com") !== -1) &&
             !document.getElementById("submitButton").disabled) callback();
-        if(window.location.href.indexOf("mturk.com")!==-1) {
+        if(window.location.href.indexOf("worker.mturk.com")!==-1) {
             GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
             var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
             if(GM_getValue("automate")===undefined) GM_setValue("automate",false);
