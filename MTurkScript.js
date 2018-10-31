@@ -639,7 +639,9 @@ for (var i=0; i < defaultDiacriticsRemovalMap .length; i++){
      * parse_instagram parses an instagram page, scrapes page name, insta_name (the instagram handle sans @), followers,posts, following,
      url of instagram, an external url linked to if existing, description */
     MTurkScript.prototype.parse_instagram=function(doc,instance,fragment)
-    {
+{
+    if(instance===undefined) {
+	console.log("instance is undefined"); return }
         console.log("Doing IG attempts="+instance.attempts[fragment]);
         var j,x;
        // for(x in instance) { console.log("instance["+x+"]="+instance[x]); }
