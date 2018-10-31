@@ -126,8 +126,8 @@ for (var i=0; i < defaultDiacriticsRemovalMap .length; i++){
         diacriticsMap[letters[j]] = defaultDiacriticsRemovalMap [i].base;
     }
 }
-/* return_seconds is the number of seconds to wait before returning the HIT,
- * submit_ms is the number of seconds to wait before submitting the HIT
+  /* return_ms is the number of milliseconds to wait before returning the HIT,
+ * submit_ms is the number of milliseconds to wait before submitting the HIT
  * sites should be a list of {fragment:this.sites[x],timeout:2000} type objects
  sites we will be doing standardized scraping off of
  * callback is the init_Query type function to initialize the custom part of the script running
@@ -138,17 +138,22 @@ for (var i=0; i < defaultDiacriticsRemovalMap .length; i++){
         this.return_ms=return_ms;
         this.submit_ms=submit_ms;
         this.sites=sites;
+        this.site_parser_map={"bloomberg.com/research/stocks/private/snapshot.asp":this.parse_bloomberg_snapshot,
+                                          "bloomberg.com/profiles/companies/":this.parse_bloomberg_profile,
+                                          "instagram.com":this.parse_instagram};
+        this.query={};
+        this.attempts={};
+      for(x in this.site_parser_map) {
+          this.attempts[x]=0;
+          //console.log("this.site_parser_map["+x+"]="+this.site_parser_map[x]);
+      }
         console.log("this.sites="+JSON.stringify(this.sites));
         /* site_parser_map maps a website url fragment to a parser */
-	this.site_parser_map={"bloomberg.com/research/stocks/private/snapshot.asp":this.parse_bloomberg_snapshot,
-                             "bloomberg.com/profiles/companies/":this.parse_bloomberg_profile};
 
-
-
-       
         this.globalCSS=GM_getResourceText("globalCSS");
-        console.log("Initializing mturk "+JSON.stringify(this.site_parser_map));
-        //console.log("this.site_parser_map.get="+this.site_parser_map["bloomberg.com/research/stocks/private/snapshot.asp"]);
+        console.log("MTurk:Initializing mturk "+JSON.stringify(this.site_parser_map));
+
+        // initialize external site parsers
         for(var x=0; x<this.sites.length; x++)
         {
             console.log("x="+x+"\t"+this.sites[x].fragment);
@@ -160,18 +165,18 @@ for (var i=0; i < defaultDiacriticsRemovalMap .length; i++){
                 GM_setValue(this.sites[x].fragment+"_url","");
                 GM_addValueChangeListener(this.sites[x].fragment+"_url",function() {
                     window.location.href=arguments[2]; });
-            //    console.log("this.site_parser_map.has("+this.sites[x].fragment+")="+this.site_parser_map[this.sites[x].fragment]!==undefined);
-              //  console.log("function="+this.site_parser_map[this.sites[x].fragment]);
+                //    console.log("this.site_parser_map.has("+this.sites[x].fragment+")="+this.site_parser_map[this.sites[x].fragment]!==undefined);
+                //  console.log("function="+this.site_parser_map[this.sites[x].fragment]);
                 if(window.location.href.indexOf(this.sites[x].fragment)!==-1)
                 {
                     console.log("Calling parser for "+x);
                     setTimeout(
-                        this.site_parser_map[this.sites[x].fragment],this.sites[x].timeout,document);
+                        this.site_parser_map[this.sites[x].fragment],this.sites[x].timeout,document,this,this.sites[x].fragment);
                 }
             }
             else
             {
-               // console.log("this.site_parser_map.has("+this.sites[x].fragment+")="+this.site_parser_map[this.sites[x].fragment]!==undefined);
+                console.log("this.site_parser_map.has("+this.sites[x].fragment+")="+(this.site_parser_map[this.sites[x].fragment]!==undefined));
             }
         }
         if ((window.location.href.indexOf("mturkcontent.com") !== -1 ||
@@ -617,3 +622,76 @@ for (var i=0; i < defaultDiacriticsRemovalMap .length; i++){
         console.log("Setting bloom_result");
         GM_setValue("bloomberg.com/profiles/companies/"+"_result",result);
     }
+
+/* reload_parser reloads the parser if the page hasn't parsed yet and we have attempts left
+       (number of attempts is currently a magic number here of 30, timeout is 500 milliseconds
+     */
+    MTurkScript.prototype.reload_parser=function(doc,instance,fragment)
+    {
+       // console.log("func="+func);
+        if(instance.attempts[fragment] < 30)
+        {
+            instance.attempts[fragment]++;
+            setTimeout(instance.site_parser_map[fragment],500,doc,instance,fragment);
+        }
+    }
+    /**
+     * parse_instagram parses an instagram page, scrapes page name, insta_name (the instagram handle sans @), followers,posts, following,
+     url of instagram, an external url linked to if existing, description */
+    MTurkScript.prototype.parse_instagram=function(doc,instance,fragment)
+    {
+        console.log("Doing IG attempts="+instance.attempts[fragment]);
+        var j,x;
+       // for(x in instance) { console.log("instance["+x+"]="+instance[x]); }
+        var result={email:"",name:"",insta_name:"",followers:"",url:window.location.href,posts:"",following:"",
+                   external_url:"",description:""};
+        var accountname=doc.getElementsByClassName("AC5d8");
+        var name=doc.getElementsByClassName("rhpdm");
+        var counts=doc.getElementsByClassName("g47SY");
+        var text_div=doc.getElementsByClassName("-vDIg");
+
+        var error_container=doc.getElementsByClassName("error-container");
+        if(accountname.length===0) {
+            console.log("Calling reload_parser");
+            instance.reload_parser(doc,instance,fragment);
+            return;
+        }
+
+        if(error_container.length>0)
+        {
+            result.insta_name=window.location.href.replace(/https:\/\/(www\.)?instagram\.com\//,"").replace(/\//g,"");
+        }
+        if(accountname.length>0) result.insta_name="@"+accountname[0].innerText;
+        if(name.length>0) result.name=name[0].innerText.replace(/|.*$/,"").trim() ;
+        if(counts.length>=3)
+        {
+            result.posts=counts[0].innerText.replace(/[\.\,]+/g,"");
+            result.followers=counts[1].innerText.replace(/[\.\,]+/g,"");
+            result.following=counts[2].innerText.replace(/[\.\,]+/g,"");
+        }
+        if(text_div.length>0)
+        {
+            var email_matches=text_div[0].innerText.match(email_re);
+            if(email_matches!==null && email_matches.length>0)
+            {
+                for(j=0; j < email_matches.length; j++)
+                {
+                    if(!MTurkScript.is_bad_email(email_matches[j])) {
+
+                        result.email=email_matches[j];
+                        break;
+                    }
+                }
+            }
+            if(text_div[0].getElementsByTagName("span").length>0) result.description=text_div[0].getElementsByTagName("span")[0].innerText;
+            if(text_div[0].getElementsByClassName("yLUwa").length>0)
+            {
+                let url_match=text_div[0].getElementsByClassName("yLUwa")[0].href.match(/\?u\=([^&]+)&/);
+                if(url_match) result.external_url=decodeURIComponent(url_match[1]);
+            }
+        }
+        console.log("Done IG, result="+JSON.stringify(result));
+
+        GM_setValue("instagram.com_result",result);
+    }
+
