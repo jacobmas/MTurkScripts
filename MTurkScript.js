@@ -643,7 +643,7 @@ MTurkScript.prototype.reload_parser=function(doc,instance,fragment)
 /**
  * parse_instagram parses an instagram page, scrapes page name, insta_name (the instagram handle sans @), followers,posts, following,
  url of instagram, an external url linked to if existing, description */
-MTurkScript.prototype.parse_instagram=function(doc,instance,fragment)
+/*MTurkScript.prototype.parse_instagram=function(doc,instance,fragment)
 {
     if(instance===undefined) {
 	console.log("instance is undefined"); return; }
@@ -700,4 +700,4 @@ MTurkScript.prototype.parse_instagram=function(doc,instance,fragment)
     console.log("Done IG, result="+JSON.stringify(result));
 
     GM_setValue("instagram.com_result",result);
-}
+}*/
