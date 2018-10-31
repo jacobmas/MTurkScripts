@@ -127,25 +127,25 @@ for (var i=0; i < defaultDiacriticsRemovalMap .length; i++){
     }
 }
 /* return_seconds is the number of seconds to wait before returning the HIT,
- * submit_seconds is the number of seconds to wait before submitting the HIT
+ * submit_ms is the number of seconds to wait before submitting the HIT
  * sites should be a list of {fragment:this.sites[x],timeout:2000} type objects
  sites we will be doing standardized scraping off of
  * callback is the init_Query type function to initialize the custom part of the script running
  */
-    function MTurkScript(return_seconds,submit_seconds,sites,callback)
+    function MTurkScript(return_ms,submit_ms,sites,callback)
     {
         console.log("Initializing MTurkScript");
-        this.return_seconds=return_seconds;
-        this.submit_seconds=submit_seconds;
+        this.return_ms=return_ms;
+        this.submit_ms=submit_ms;
         this.sites=sites;
         console.log("this.sites="+JSON.stringify(this.sites));
         /* site_parser_map maps a website url fragment to a parser */
-
-
-
-
-        this.site_parser_map={"bloomberg.com/research/stocks/private/snapshot.asp":this.parse_bloomberg_snapshot,
+	this.site_parser_map={"bloomberg.com/research/stocks/private/snapshot.asp":this.parse_bloomberg_snapshot,
                              "bloomberg.com/profiles/companies/":this.parse_bloomberg_profile};
+
+
+
+       
         this.globalCSS=GM_getResourceText("globalCSS");
         console.log("Initializing mturk "+JSON.stringify(this.site_parser_map));
         //console.log("this.site_parser_map.get="+this.site_parser_map["bloomberg.com/research/stocks/private/snapshot.asp"]);
@@ -194,11 +194,11 @@ for (var i=0; i < defaultDiacriticsRemovalMap .length; i++){
             if(GM_getValue("automate"))
             {
                 btn_automate.innerHTML="Stop";
-                /* Return automatically if still automating according to return_seconds */
+                /* Return automatically if still automating according to return_ms */
                 setTimeout(function() {
 
                     if(GM_getValue("automate")) btns_secondary[0].click();
-                }, this.return_seconds);
+                }, this.return_ms);
             }
             btn_automate.addEventListener("click", function(e) {
                 var auto=GM_getValue("automate");
@@ -234,6 +234,8 @@ for (var i=0; i < defaultDiacriticsRemovalMap .length; i++){
         }
     }
 
+
+
     MTurkScript.prototype.check_and_submit=function(check_function)	{
         console.log("in check");
         if(check_function!==undefined && !check_function())
@@ -248,7 +250,7 @@ for (var i=0; i < defaultDiacriticsRemovalMap .length; i++){
         if(GM_getValue("automate"))
         {
             setTimeout(function() { document.getElementById("submitButton").click(); },
-                       this.submit_seconds);
+                       this.submit_ms);
         }
     }
     MTurkScript.prototype.removeDiacritics=function(str) {
