@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         New Userscript
+// @name         Kickstarter
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  New script
+// @description  Scrape Kickstarter
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -48,7 +48,10 @@
     var country_domains=[".ar",".at",".au",".br",".ch",".cn",".de",".eu",".fr",".it",".jp",".ro",".ru",".se",".tw",".uk",".uy",".vn"];
     var first_try=true;
 
-    function check_function() { return true;  }
+    function check_function()
+    {
+	return true;
+    }
     function check_and_submit(check_function)
     {
         console.log("in check");
@@ -59,75 +62,32 @@
             return;
         }
         console.log("Checking and submitting");
-	if(GM_getValue("automate"))
+
+
+        if(GM_getValue("automate"))
         {
             setTimeout(function() { document.getElementById("submitButton").click(); }, 0);
         }
     }
-    
     function is_bad_name(b_name)
     {
 	return false;
     }
 
-    function query_response(response,resolve,reject) {
+    function parse_kickstarter(response) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-        console.log("in query_response\n"+response.finalUrl);
-        var search, b_algo, i=0, inner_a;
-	var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
-        var b1_success=false, b_header_search;
-        try
+        console.log("in parse_kickstarter\n"+response.finalUrl);
+       var bg=doc.getElementsByClassName("bg-grey-100");
+        var initial;
+        if(bg.length===0)
         {
-            search=doc.getElementById("b_content");
-            b_algo=search.getElementsByClassName("b_algo");
-	    lgb_info=doc.getElementById("lgb_info");
-
-	    
-
-            console.log("b_algo.length="+b_algo.length);
-     
-            for(i=0; i < b_algo.length; i++)
-            {
-                b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
-                b_url=b_algo[i].getElementsByTagName("a")[0].href;
-		b_caption=b_algo[i].getElementsByClassName("b_caption");
-		p_caption="";
-		if(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) {
-		    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText;
-		}
-		console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-
-
-
-                if(!is_bad_url(b_url, bad_urls) && !is_bad_name(b_name))
-                {
-                    b1_success=true;
-		    break;
-
-                }
-                
-            }
-	    if(b1_success)
-	    {
-		/* Do shit */
-		resolve(b_url);
-		return;
-	    }
-           
-
+            console.log("Fail return");
         }
-        catch(error)
-        {
-	    console.log("Error "+error);
-	    reject(error);
-            return;
-            
-            //reject(JSON.stringify({error: true, errorText: error}));
-        }
-	reject("Nothing found");
-//        GM_setValue("returnHit",true);
-        return;
+        initial=JSON.parse(bg[0].dataset.initial);
+        console.log("initial="+JSON.stringify(initial));
+        document.getElementsByName("CampaignOwner")[0].value=initial.project.verifiedIdentity;
+
 
     }
 
@@ -155,11 +115,16 @@
 
     function init_Query()
     {
-        var dont=document.getElementsByClassName("dont-break-out")[0].href;
-        var wT=document.getElementById("workContent").getElementsByTagName("table")[0];
-        my_query={name};
+       // var dont=document.getElementsByClassName("dont-break-out")[0].href;
+        var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
+        my_query={url:wT.rows[0].cells[1].innerText, name:wT.rows[1].cells[1].innerText};
 
-	var search_str;
+        GM_xmlhttpRequest({method: 'GET', url: my_query.url,
+            onload: function(response) { parse_kickstarter(response); },
+            onerror: function(response) { console.log("Fail"); },
+            ontimeout: function(response) { console.log("Fail"); }
+            });
+	/*var search_str;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response);
@@ -167,7 +132,7 @@
         queryPromise.then(query_promise_then
         )
         .catch(function(val) {
-           console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+           console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });*/
 
 
 

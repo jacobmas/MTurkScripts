@@ -2,7 +2,7 @@
 // @name         ASOC_PD
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  ASOC get FB and Twitter
+// @description  ASOC get FB and Twitter PD and Sheriff
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -51,6 +51,29 @@
     var country_domains=[".ar",".at",".au",".br",".ch",".cn",".de",".eu",".fr",".it",".jp",".ro",".ru",".se",".tw",".uk",".uy",".vn"];
     var first_try=true;
 
+    var word_version={"1":"One","2":"Two","3":"Three","4":"Four","5":"Five","6":"Six","7":"Seven"};
+    var area_code_map={"201":"New Jersey","202":"District of Columbia","203":"Connecticut","204":"Manitoba","205":"Alabama","206":"Washington",
+                        "207":"Maine","208":"Idaho","209":"California","210":"Texas", "212":"New York","213":"California","214":"Texas","215":"Pennsylvania",
+                        "216":"Ohio","217":"Illinois","218":"Minnesota","219":"Indiana","224":"Illinois","225":"Louisiana","228":"Mississippi",
+                        "229":"Georgia","231":"Michigan","234":"Ohio", "239":"Florida","240":"Maryland","242":"Bahamas","246":"Barbados", "248":"Michigan",
+                        "250":"British Columbia","251":"Alabama","252":"North Carolina","253":"Washington","254":"Texas","256":"Alabama","260":"Indiana",
+                        "262":"Wisconsin","264":"Anguilla","267":"Pennsylvania","268":"Antigua\/Barbuda","269":"Michigan","270":"Kentucky","276":"Virginia",
+                        "281":"Texas","284":"British Virgin Islands","289":"Ontario","301":"Maryland","302":"Delaware","303":"Colorado","304":"West Virginia",
+                        "305":"Florida","306":"Saskatchewan","307":"Wyoming","308":"Nebraska","309":"Illinois","310":"California","312":"Illinois",
+                        "313":"Michigan","314":"Missouri","315":"New York","316":"Kansas","317":"Indiana","318":"Louisiana","319":"Iowa",
+                        "320":"Minnesota","321":"Florida","323":"California","325":"Texas","330":"Ohio","334":"Alabama","336":"North Carolina",
+                        "337":"Louisiana","339":"Massachusetts","340":"US Virgin Islands","345":"Cayman Islands","347":"New York","351":"Massachusetts",
+                        "352":"Florida","360":"Washington","361":"Texas","386":"Florida","401":"Rhode Island","402":"Nebraska","403":"Alberta","404":"Georgia",
+                        "405":"Oklahoma","406":"Montana","407":"Florida","408":"California","409":"Texas","410":"Maryland","412":"Pennsylvania",
+                        "413":"Massachusetts","414":"Wisconsin","415":"California","416":"Ontario","417":"Missouri","418":"Quebec","419":"Ohio","423":"Tennessee",
+                        "425":"Washington","430":"Texas","432":"Texas","434":"Virginia","435":"Utah","440":"Ohio","441":"Bermuda","443":"Maryland","450":"Quebec",
+                        "456":"NANP area","469":"Texas","473":"Grenada","478":"Georgia","479":"Arkansas","480":"Arizona","484":"Pennsylvania","501":"Arkansas","502":"Kentucky","503":"Oregon","504":"Louisiana","505":"New Mexico","506":"New Brunswick","507":"Minnesota","508":"Massachusetts","509":"Washington","510":"California","512":"Texas","513":"Ohio","514":"Quebec","515":"Iowa","516":"New York","517":"Michigan","518":"New York","519":"Ontario","520":"Arizona","530":"California","540":"Virginia","541":"Oregon","551":"New Jersey","559":"California","561":"Florida","562":"California","563":"Iowa","567":"Ohio","570":"Pennsylvania","571":"Virginia","573":"Missouri","574":"Indiana","580":"Oklahoma","585":"New York","586":"Michigan","601":"Mississippi","602":"Arizona","603":"New Hampshire","604":"British Columbia","605":"South Dakota","606":"Kentucky","607":"New York","608":"Wisconsin","609":"New Jersey","610":"Pennsylvania","612":"Minnesota","613":"Ontario","614":"Ohio","615":"Tennessee","616":"Michigan","617":"Massachusetts","618":"Illinois","619":"California","620":"Kansas","623":"Arizona","626":"California",
+                        "630":"Illinois","631":"New York","636":"Missouri","641":"Iowa","646":"New York","647":"Ontario","649":"Turks &amp; Caicos Islands","650":"California","651":"Minnesota","660":"Missouri","661":"California","662":"Mississippi","664":"Montserrat","670":"CNMI","671":"Guam","678":"Georgia","682":"Texas","701":"North Dakota","702":"Nevada","703":"Virginia","704":"North Carolina","705":"Ontario","706":"Georgia","707":"California","708":"Illinois","709":"Newfoundland",
+                        "710":"US","712":"Iowa","713":"Texas","714":"California","715":"Wisconsin","716":"New York","717":"Pennsylvania","718":"New York","719":"Colorado","720":"Colorado","724":"Pennsylvania","727":"Florida","731":"Tennessee","732":"New Jersey","734":"Michigan","740":"Ohio",
+                        "754":"Florida","757":"Virginia","758":"St. Lucia","760":"California","763":"Minnesota","765":"Indiana","767":"Dominica","770":"Georgia","772":"Florida","773":"Illinois","774":"Massachusetts","775":"Nevada","778":"British Columbia","780":"Alberta","781":"Massachusetts","784":"St. Vincent &amp; Grenadines","785":"Kansas","786":"Florida","787":"Puerto Rico","801":"Utah","802":"Vermont","803":"South Carolina","804":"Virginia","805":"California","806":"Texas","807":"Ontario","808":"Hawaii",
+                        "809":"Dominican Republic","810":"Michigan","812":"Indiana","813":"Florida","814":"Pennsylvania","815":"Illinois","816":"Missouri","817":"Texas","818":"California","819":"Quebec","828":"North Carolina","830":"Texas","831":"California","832":"Texas","843":"South Carolina","845":"New York","847":"Illinois","848":"New Jersey","850":"Florida","856":"New Jersey","857":"Massachusetts","858":"California","859":"Kentucky","860":"Connecticut","862":"New Jersey","863":"Florida","864":"South Carolina","865":"Tennessee","867":"Yukon, NW Terr., Nunavut","868":"Trinidad &amp; Tobago","869":"St. Kitts &amp; Nevis","870":"Arkansas","876":"Jamaica","878":"Pennsylvania","880":"NANP area","881":"NANP area","882":"NANP area","901":"Tennessee","902":"Nova Scotia","903":"Texas","904":"Florida","905":"Ontario","906":"Michigan","907":"Alaska","908":"New Jersey","909":"California","910":"North Carolina","912":"Georgia","913":"Kansas","914":"New York","915":"Texas","916":"California","917":"New York","918":"Oklahoma","919":"North Carolina","920":"Wisconsin","925":"California","928":"Arizona","931":"Tennessee","936":"Texas","937":"Ohio","939":"Puerto Rico","940":"Texas","941":"Florida","947":"Michigan","949":"California","952":"Minnesota",
+                        "954":"Florida","956":"Texas","970":"Colorado","971":"Oregon","972":"Texas","973":"New Jersey","978":"Massachusetts","979":"Texas","980":"North Carolina","985":"Louisiana","989":"Michigan"};
+
     function check_function() { return true;  }
     function check_and_submit(check_function)
     {
@@ -70,6 +93,7 @@
 
     function try_bad_name_again(b_name,p_caption,site,pos)
     {
+       // console.log("in try_bad_name");
         if(/(^|\s|,)Mt\.($|\s|,)/.test(b_name))
         {
             b_name=b_name.replace(/(^|\s|,)Mt\.($|\s|,)/,"$1Mount$2");
@@ -82,7 +106,20 @@
             console.log("Trying b_name again with "+b_name);
             return is_bad_name(b_name,p_caption,site,pos);
         }
+        else if(/(^|\s|,)ISD($|\s|,)/i.test(b_name))
+        {
+            b_name=b_name.replace(/(^|\s|,)ISD($|\s|,)/i,"$1I.S.D.$2");
+            console.log("Trying b_name again with "+b_name);
+            return is_bad_name(b_name,p_caption,site,pos);
+        }
         return true;
+    }
+
+    function acronym(text)
+    {
+        var ret="",t_split=text.split(" ");
+        for(var i=0; i < t_split.length; i++) ret=ret+t_split[i].charAt(0);
+        return ret;
     }
 
     function is_bad_name(b_name,p_caption,site,pos)
@@ -92,23 +129,36 @@
         b_name=b_name.toLowerCase().trim();
         var name_minus_state=my_query.agency_name.replace(/,.*$/,"");
         var state_regexp=new RegExp("(\\s|,)"+my_query.state+"(\\s|$|\\.)");
+        var county_acronym=acronym(my_query.county);
+        if(!/County/.test(my_query.agency_name))
+        {
+            if(my_query.agency_name.indexOf("University")>0)
+            {
+                county_acronym=acronym(my_query.agency_name.match(/^.*University/)[0]);
+            }
+            else if(my_query.agency_name.indexOf("College")>0)
+            {
+                county_acronym=acronym(my_query.agency_name.match(/^.*College/)[0]);
+            }
+        }
+      //  console.log("county_acronym="+county_acronym);
         if(b_name.indexOf(my_query.short_name.toLowerCase())===-1 &&
-           (site==="facebook" || p_caption.toLowerCase().indexOf(my_query.short_name.toLowerCase())===-1))
+           (site==="facebook" || p_caption.toLowerCase().indexOf(my_query.short_name.toLowerCase())===-1)
+          && ( orig_b_name.indexOf(county_acronym+" ")===-1)
+          )
 
         {
 
-                console.log("Failed to find city");
+                console.log("Failed to find "+my_query.short_name.toLowerCase());
                 return try_bad_name_again(orig_b_name,p_caption,site,pos);
 
         }
-        else if(!/^(City|Town|Village|County|Municipality|Township|Borough)/i.test(b_name)
-                && b_name.indexOf(my_query.short_name.toLowerCase())>0)
-
-        {
+        else if(!/^(City|Town|Village|County|Municipality|Township|Borough|County|Constable|Police|Sheriff|University)/i.test(b_name)
+                && b_name.indexOf(my_query.short_name.toLowerCase())>0) {
             console.log("Bad beginning");
             return try_bad_name_again(orig_b_name,p_caption,site,pos);
         }
-        else if((pos>0) && !state_regexp.test(orig_b_name) &&
+        else if(!state_regexp.test(orig_b_name) &&
                 //orig_b_name.indexOf(my_query.state+".")===-1 &&
                 b_name.indexOf(reverse_state_map[my_query.state].toLowerCase())===-1
                 &&
@@ -118,9 +168,24 @@
             && b_name.indexOf(name_minus_state.toLowerCase())===-1)
         {
             console.log("Failed to find state");
-            return try_bad_name_again(orig_b_name,p_caption,site,pos);
+          //  return try_bad_name_again(orig_b_name,p_caption,site,pos);
         }
-        if(!/(Police|PD|Marshal|Code|Public Safety)/i.test(b_name.replace(/\s-.*$/,"")))
+
+        for(let x in state_map)
+        {
+            if(state_map[x]===my_query.state) continue;
+            let bad_state_reg=new RegExp("(\\s|,)("+x+"|"+state_map[x]+")(\\s|$|\\,)","i");
+            //console.log("bad_state_reg["+x+"]="+bad_state_reg);
+            if(bad_state_reg.test(b_name) && state_map[x]!=="CO")
+            {
+                console.log("wrong state");
+                return true;
+            }
+        }
+
+
+        if(!/(^|\s)(Police|PD|Marshal(?:\'?s)?|Code|Public Safety|Public Saftey|Sheriff(?:\'?s)?|Constable(?:\'?s)?|SO)(\s|,|$)|Sheriff/i.test(b_name.replace(/\s-.*$/,""))
+          && !(/Fire/i.test(b_name) && /Fire/i.test(my_query.agency_name)))
         {
             console.log("Not police");
             return true;
@@ -128,6 +193,18 @@
         if(/Police Explorers/i.test(b_name)) { console.log("Explorers"); return true; }
         if(!/Police/.test(my_query.agency_type))
         {
+            if(my_query.agency_type==="Constable" && my_query.agency_number.length>0)
+            {
+                let regexp_str="(Constable(\\'s office)?)?\\s+(?:Precinct|Pct(?:\\.)?)\\s*(?:"+my_query.agency_number;
+                if(word_version[my_query.agency_number]!==undefined) regexp_str=regexp_str+"|"+word_version[my_query.agency_number];
+                regexp_str=regexp_str+")\\s*(Constable(\\'s office)?)?";
+                var const_regexp=new RegExp(regexp_str,"i");
+               // console.log("const_regexp="+const_regexp);
+                if(!const_regexp.test(orig_b_name)) {
+                    console.log("wrong number precinct");
+                    return true;
+                }
+            }
             var agency_type_regexp=new RegExp(my_query.agency_type,"i");
             if(!agency_type_regexp.test(b_name) && !agency_type_regexp.test(p_caption)) {
                 console.log("No match of agency type");
@@ -139,8 +216,8 @@
             let temp_b_name=orig_b_name.split(" - ")[0];
             var bad_regexp=new RegExp(my_query.short_name+"(-[^\\s]+)?\\s+([^-\\s]+\\s+){1,}");
             var good_regexp=new RegExp(my_query.short_name+"\\s+([^\\s]+\\s+){0,1}(City Hall|"+reverse_state_map[my_query.state]+")","i");
-            if(bad_regexp.test(temp_b_name)&& !good_regexp.test(temp_b_name) &&!/Police|PD/i.test(temp_b_name)) {
-                console.log("Bad heading");
+            if(bad_regexp.test(temp_b_name)&& !good_regexp.test(temp_b_name) &&!/Police|PD|Sheriff|Constable|Marshal|Fire/i.test(temp_b_name)) {
+                console.log("Bad heading1");
                 return try_bad_name_again(orig_b_name,p_caption,site,pos);
             }
         }
@@ -150,19 +227,20 @@
                                     "\\s+([^\\s]+\\s+){0,2}(?:Track|Citizen|High|National|County|Dam|News|ISD|Lumber|Hardware|Church"+
                                   "|Historical|Learning|Unofficial|House|Inn|Theatre|Library|Fair|Lanes|Association|Mall|Diner|Dental|Store|Shop|FFA|VFD|Community"+
                                     "|Celebration|Stormwater|Recreation)","i");
-        var heading_regexp1=new RegExp("(?:- (Social Club))|Elementary School");
-        if(/ Public Works/i.test(b_name) || park_regexp.test(orig_b_name) || park_regexp2.test(orig_b_name)
+        var heading_regexp1=new RegExp("(?:(Social Club))|Elementary School|Association");
+        //|| park_regexp.test(orig_b_name) || park_regexp2.test(orig_b_name)
+        if(/ Public Works/i.test(b_name) 
           || heading_regexp1.test(orig_b_name)
           )
         {
-            console.log("Bad heading");
+            console.log("Bad heading2");
             return try_bad_name_again(orig_b_name,p_caption,site,pos);
         }
         var p_caption_regexp=new RegExp("(\\s|,|^)(bank locations|Automotive)(\\s|,|$)","i");
         var p_caption_first=p_caption.split(/[!\.\?]+/)[0];
         if(/(\s|,|^)(Chamber of Commerce|Historical Society|Food Stand|Senior Living)(\s|,)/i.test(p_caption)
 
-          || p_caption_regexp.test(p_caption) || /People talk about/.test(p_caption)
+          || /People talk about/.test(p_caption)
           ) {
             console.log("Bad caption");
             return try_bad_name_again(orig_b_name,p_caption,site,pos);
@@ -177,25 +255,28 @@
     {
         orig_b_name=orig_b_name.replace(/\|.*$/,"").replace(/\(@[^\)]+\)/,"").replace(my_query.short_name,"").trim();
         orig_b_name=orig_b_name.replace(/(^|\s|,)Official($|\s|,)/i,"").trim()
-        .replace(/(^|\s|,)of($|\s|,)/i,"").replace(/(^|\s|,)(City|Town|Borough|Township|Village|Municipality)($|\s|,)/i,"")
+        .replace(/(^|\s|,)of($|\s|,)/i,"").replace(/(^|\s|,)(City|Town|Borough|Township|Village|Municipality|County)($|\s|,)/i,"")
         .trim();
         orig_b_name=orig_b_name.replace(/[,\.\?!]+/,"").replace(my_query.state,"").replace(reverse_state_map[my_query.state],"")
         .trim();
-        orig_b_name=orig_b_name.replace(/Police|Department|PD|Dept/g,"").replace(/Dep/,"").trim();
+        orig_b_name=orig_b_name.replace(/Police|Department|PD|Dept|Sheriff(?:'s)?|SO/g,"").replace(/Dep/,"").trim();
         console.log("orig_b_name="+orig_b_name);
         if(orig_b_name.length===0) return false;
+        else if(/^[A-Z]+$/.test(orig_b_name)) return false;
         else {
             console.log("Twitter name="+orig_b_name);
-            return true;
+            return false;
         }
     }
 
     function is_bad_site(site,b_url)
     {
-        if(site==="facebook" && (/\/(pages|public|groups|events)\//.test(b_url) ||
+        if((site==="facebook" && (/\/(pages|public|groups|events|posts)\//.test(b_url) ||
                                 /permalink\.php/.test(b_url) || /x\.facebook\.com/.test(b_url) || /reviews(\/|$)/.test(b_url)
                                 || !/www\.facebook\.com/.test(b_url)
-                                ) )
+                                ) ) ||
+          (site=="twitter" && (/\/status\//.test(b_url)))
+          )
         {
             console.log("bad url format");
             return true;
@@ -598,6 +679,18 @@
             about_fields=about[j].getElementsByClassName("_4bl9");
             for(i=0; i < about_fields.length; i++)
             {
+                if(phone_re.test(about_fields[i].innerText))
+                {
+                    let num_only=about_fields[i].innerText.replace(/[^\d]+/g,"");
+                    console.log("Phone number: "+about_fields[i].innerText+", num_only="+num_only);
+
+                    if(area_code_map[num_only.substr(0,3)]===undefined || state_map[area_code_map[num_only.substr(0,3)]]===undefined ||
+                       state_map[area_code_map[num_only.substr(0,3)]]!==my_query.state)
+                    {
+                        console.log("Wrong state, found "+state_map[area_code_map[num_only.substr(0,3)]]);
+                        return true;
+                    }
+                }
                 inner_a=about_fields[i].getElementsByTagName("a");
                 for(k=0; k < inner_a.length; k++)
                 {
@@ -612,7 +705,7 @@
                         console.log("MOO");
                         var keywords=inner_a[k].innerText;
                         console.log("keywords="+keywords);
-                        if(/(^Law Enforcement Agency$)|(^Police Station$)|(^Government Organization$)/.test(keywords)) return false;
+                        if(/(^Law Enforcement Agency$)|(^Police Station$)|(^Government Organization$)|(^Public & Government Service$)/.test(keywords)) return false;
                        /* if(/Government Organization|City Hall|Borough|(^City$)|Locality|Public &|Government|Town Hall|Public Service/.test(keywords)) return false;
                         if(/(^Community$)|(^Community Organization$)/.test(keywords)) { found_community=true; }
                         if(/Car Wash|Local Business|Automotive Repair Shop|Performing Arts|Musician\/Band/.test(keywords)) return true;
@@ -714,6 +807,13 @@
             if(parsedAdd.state!==my_query.state && state_map[parsedAdd.state]!==my_query.state)
             {
                 console.log("Bad address parsed="+parsedAdd.state+", my_query="+my_query.state);
+                result.success=false;
+                GM_setValue("fb_result",result);
+                return;
+            }
+            if(!/County/i.test(my_query.agency_name) && parsedAdd.city!==undefined && parsedAdd.city!==my_query.city)
+            {
+                console.log("Bad address city parsed="+parsedAdd.city+", my_query="+my_query.city);
                 result.success=false;
                 GM_setValue("fb_result",result);
                 return;
@@ -988,9 +1088,9 @@
         var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         var agency_match;
         my_query={agency_name:wT.rows[0].cells[1].innerText.trim(),query_name:"", city:wT.rows[1].cells[1].innerText.trim(),
-                  county: wT.rows[2].cells[1].innerText.replace(/,.*$/,"").trim(),
+                  county: wT.rows[2].cells[1].innerText.replace(/,.*$/,"").replace(/City and County of/,"").trim(),
                  state: wT.rows[3].cells[1].innerText.trim(),submitted:false,doneFB:false,doneTwitter:false,doneWebFB:false,
-                  doneWebTwitter:false,webTwitter_url:"",webFB_url:"",agency_type:"",
+                  doneWebTwitter:false,webTwitter_url:"",webFB_url:"",agency_type:"Police",agency_number:"",
                  try_count:{"twitter":0,"facebook":0}};
 
         my_query.agency_name=my_query.agency_name.trim().replace(/[A-Z]{2}$/,function(match, offset, string) {
@@ -1000,6 +1100,7 @@
         console.log("New my_query.agency_name="+my_query.agency_name);
         agency_match=my_query.agency_name.match(/(.*)\s-\s([^,]*),\s*(.*)$/);
         if(agency_match) my_query.agency_type=agency_match[2].replace(/(^|\s)(Department|Dept. of)(\s|$)/i,"");
+
         else
         {
             agency_match=my_query.agency_name.match(/([^,]*)\s*,\s*([^-]*)\s-\s*(.*)$/);
@@ -1010,20 +1111,33 @@
         console.log("New my_query.agency_name="+my_query.agency_name);
 
         my_query.short_name=my_query.agency_name.replace(/,.*$/,"")
-        .replace(/(^|\s)(City|Town|Village|County|Municipality|Township|Borough)(\s|$)/i,"")
-        .replace(/(^|\s)of(\s|$)/i,"");
+        .replace(/(^|\s)(City|Town|Village|County|Municipality|Township|Borough|(?:State )?University|Community College|College)(\s|$)/i," ");
+        if(!/Department of Justice/.test(my_query.short_name))
+        {
+            my_query.short_name=my_query.short_name
 
+                .replace(/Police\s*(?:Department|Dept.?)?\s*/,"").replace(/\s*Detectives/,"");
+        }
+         my_query.short_name=my_query.short_name.replace(/Marshal(?:\'?s)(\s|$)(Office(\s|$))?/,"");
+        my_query.short_name=my_query.short_name.trim();
 
-
+        if(/Constable (?:Pct(?:\.)?|Precinct)\s(\d+)/.test(my_query.short_name))
+        {
+            my_query.agency_type="Constable";
+            my_query.agency_number=my_query.short_name.match(/Constable (?:Pct(?:\.)?|Precinct)\s(\d+)/)[1];
+            my_query.short_name=my_query.short_name.replace(/Constable (?:Pct(?:\.)?|Precinct)\s(\d+)/,"").trim();
+        }
+        my_query.short_name=my_query.short_name.replace(/(^|\s)\([^\)]+\)(\s|$)/,"");
+        // Should never happen now
         if(/ - /.test(my_query.agency_name)) {
             console.log("Agency contains -, returning");
 
             GM_setValue("returnHit",true); return; }
 
-        my_query.query_name=my_query.agency_name.replace(/(^|\s)(City|Town|Village|County|Municipality|Township|Borough)(\s|$)/i,"")
-        .replace(/(^|\s)of(\s|$)/i,"");
+        my_query.query_name=my_query.agency_name.replace(/(^|\s)(City|Town|Village|County|Municipality|Township|Borough)(\s|$)/i," ");
+       // .replace(/(^|\s)of(\s|$)/i,"");
         console.log("my_query="+JSON.stringify(my_query));
-
+        my_query.agency_type=my_query.agency_type.replace(/Sherrif/,"Sheriff");
 
 
         var search_str=my_query.agency_name;

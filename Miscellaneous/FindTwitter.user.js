@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         New Userscript
+// @name         FindTwitter
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  New script
+// @description  Find Twitter
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -24,7 +24,6 @@
 // @connect *
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
@@ -32,7 +31,7 @@
 // VCF Do something with?
 (function() {
     'use strict';
-
+//  https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
     var automate=GM_getValue("automate",false);
     var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%]+(\.[^<>()\[\]\\.,;:：\s@"\?]+)*)|("[^\?]+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
 
@@ -48,7 +47,72 @@
     var country_domains=[".ar",".at",".au",".br",".ch",".cn",".de",".eu",".fr",".it",".jp",".ro",".ru",".se",".tw",".uk",".uy",".vn"];
     var first_try=true;
 
-    function check_function() { return true;  }
+    function prefix_in_string(prefixes, to_check)
+    {
+        var j;
+        for(j=0; j < prefixes.length; j++) {
+            if(to_check.indexOf(prefixes[j])===0) return true;
+        }
+        return false;
+    }
+
+    function parse_name(to_parse)
+    {
+        console.log("Doing parse_name on "+to_parse);
+        var suffixes=["Jr","II","III","IV","CPA","CGM"];
+        var prefixes=["Mr","Ms","Mrs","Dr","Rev"];
+        var paren_regex=/\([^\)]*\)/g;
+        to_parse=to_parse.replace(paren_regex,"");
+
+        var split_parse=to_parse.split(" ");
+        var last_pos=split_parse.length-1;
+        var first_pos=0;
+        var j;
+        var caps_regex=/^[A-Z]+$/;
+        var ret={};
+        for(last_pos=split_parse.length-1; last_pos>=1; last_pos--)
+        {
+            if(!prefix_in_string(suffixes,split_parse[last_pos]))
+            {
+                if(!(split_parse.length>0 && /[A-Z][a-z]/.test(split_parse[0]) && /^[^a-z]+$/.test(split_parse[last_pos])))
+                {
+                    //console.log("last_pos="+last_pos);
+                    //console.log( /[A-Z][a-z]/.test(split_parse[0]));
+
+                    break;
+                }
+            }
+
+
+
+        }
+        for(first_pos=0; first_pos< last_pos; first_pos++)
+        {
+            if(!prefix_in_string(prefixes,split_parse[last_pos])&&split_parse[last_pos]!=="Miss") break;
+        }
+        if(last_pos>=2 && /Van|de/.test(split_parse[last_pos-1]))
+        {
+            ret.lname=split_parse[last_pos-1]+" "+split_parse[last_pos];
+        }
+        else
+        {
+            ret.lname=split_parse[last_pos];
+        }
+        ret.fname=split_parse[0];
+        if(last_pos>=2 && split_parse[1].length>=1) {
+            ret.mname=split_parse[1].substring(0,1); }
+        else {
+            ret.mname=""; }
+
+
+        return ret;
+
+    }
+
+    function check_function()
+    {
+	return true;
+    }
     function check_and_submit(check_function)
     {
         console.log("in check");
@@ -59,15 +123,21 @@
             return;
         }
         console.log("Checking and submitting");
-	if(GM_getValue("automate"))
+
+
+        if(GM_getValue("automate"))
         {
             setTimeout(function() { document.getElementById("submitButton").click(); }, 0);
         }
     }
-    
     function is_bad_name(b_name)
     {
-	return false;
+        var name=b_name.replace(/\(.*$/,"").replace(/\s*|.*$/,"").trim().toLowerCase();
+        console.log("name="+name);
+        var fullname=parse_name(name);
+        if(my_query.name.toLowerCase().indexOf(name)!==-1 || name.toLowerCase().indexOf(my_query.name.toLowerCase())!==-1) return false;
+        else if(my_query.fullname.lname.toLowerCase() === fullname.lname.toLowerCase() && my_query.fullname.fname.charAt(0)===fullname.fname.charAt(0)) return false;
+        return true;
     }
 
     function query_response(response,resolve,reject) {
@@ -75,45 +145,42 @@
         .parseFromString(response.responseText, "text/html");
         console.log("in query_response\n"+response.finalUrl);
         var search, b_algo, i=0, inner_a;
-	var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
+	var b_url="crunchbase.com", b_name, b_factrow, b_caption,social_ic;
         var b1_success=false, b_header_search;
         try
         {
             search=doc.getElementById("b_content");
             b_algo=search.getElementsByClassName("b_algo");
-	    lgb_info=doc.getElementById("lgb_info");
-
-	    
 
             console.log("b_algo.length="+b_algo.length);
      
-            for(i=0; i < b_algo.length; i++)
+            for(i=0; i < b_algo.length && i < 2; i++)
             {
                 b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
-		b_caption=b_algo[i].getElementsByClassName("b_caption");
-		p_caption="";
-		if(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) {
-		    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText;
-		}
-		console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
+                b_url=b_url.replace(/^(https?:\/\/[^\/]+\/[^\/]+)(\/.*)$/,"$1");
+		b_caption=b_algo[i].getElementsByClassName("b_caption");//[0].innerText;
+                console.log("b_name="+b_name+"\tb_url="+b_url);
+                if(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0)
+                {
+                    console.log(b_caption[0].getElementsByTagName("p")[0].innerText);
+                }
 
 
-
-                if(!is_bad_url(b_url, bad_urls) && !is_bad_name(b_name))
+                if(b_algo[i].getElementsByClassName("social_ic").length>0 || !is_bad_name(b_name))
                 {
                     b1_success=true;
-		    break;
+                    break;
 
                 }
                 
             }
-	    if(b1_success)
-	    {
-		/* Do shit */
-		resolve(b_url);
-		return;
-	    }
+            if(b1_success)
+            {
+
+                resolve(b_url);
+                return;
+            }
            
 
         }
@@ -125,7 +192,16 @@
             
             //reject(JSON.stringify({error: true, errorText: error}));
         }
-	reject("Nothing found");
+        if(my_query.try_count===0)
+        {
+            my_query.try_count++;
+            query_search(my_query.name+" site:twitter.com", resolve, reject, query_response);
+            return;
+        }
+        else
+        {
+            reject("Nothing found");
+        }
 //        GM_setValue("returnHit",true);
         return;
 
@@ -144,9 +220,9 @@
     }
 
     /* Following the finding the district stuff */
-    function query_promise_then(result) {
-
-
+    function query_promise_then(url) {
+        document.getElementById("web_url").value=url;
+        check_and_submit(check_function,automate);
     }
 
 
@@ -155,13 +231,13 @@
 
     function init_Query()
     {
-        var dont=document.getElementsByClassName("dont-break-out")[0].href;
+       // var dont=document.getElementsByClassName("dont-break-out")[0].href;
         var wT=document.getElementById("workContent").getElementsByTagName("table")[0];
-        my_query={name};
-
-	var search_str;
+        my_query={name:wT.rows[0].cells[1].innerText,publication:wT.rows[1].cells[1].innerText,try_count:0};
+        my_query.fullname=parse_name(my_query.name);
+	var search_str=my_query.name+" "+my_query.publication+" site:twitter.com";
         const queryPromise = new Promise((resolve, reject) => {
-            console.log("Beginning URL search");
+            console.log("Beginning search for Twitters");
             query_search(search_str, resolve, reject, query_response);
         });
         queryPromise.then(query_promise_then
@@ -194,15 +270,7 @@
         }
 
     }
-    else if(window.location.href.indexOf("instagram.com")!==-1)
-    {
-        GM_setValue("instagram_url","");
-        GM_addValueChangeListener("instagram_url",function() {
-            var url=GM_getValue("instagram_url");
-            window.location.href=url;
-        });
-        do_instagram();
-    }
+
     else if(window.location.href.indexOf("worker.mturk.com")!==-1)
     {
 

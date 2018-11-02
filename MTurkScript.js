@@ -701,3 +701,30 @@ MTurkScript.prototype.parse_instagram=function(doc,instance,fragment)
 
     GM_setValue("instagram.com_result",result);
 };
+
+/* parse_b_context parses the b_context on Bing search
+   puts the b_vList fields (e.g. Address, Phone) into the results under the
+   name given on Bing,  puts b_entityTitle in Name
+*/
+MTurkScript.parse_b_context=function(b_context)
+{
+    var b_vList,i,bm_details_overlay,inner_li,b_entityTitle,b_entitySubTitle;
+    b_vList=b_context.getElementsByClassName("b_vList");
+    var field_regex=/^([^:]+):\s*(.*)$/,field_match,result={};
+    b_entityTitle=b_context.getElementsByClassName("b_entityTitle");
+    b_entitySubTitle=b_context.getElementsByClassName("b_entitySubTitle");
+    if(b_entityTitle.length>0) result.Title=b_entityTitle[0].innerText;
+    if(b_entitySubTitle.length>0) result.SubTitle=b_entitySubTitle[0].innerText;
+
+    if(b_vList.length>0)
+    {
+        inner_li=b_vList[0].getElementsByTagName("li");
+        for(i=0; i<inner_li.length; i++)
+        {
+            field_match=inner_li[i].innerText.match(field_regex);
+            if(field_match) result[field_match[1]]=field_match[2];
+        }
+
+    }
+    return result;
+}
