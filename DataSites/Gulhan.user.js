@@ -2,7 +2,7 @@
 // @name         Gulhan
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Do Gulhan
+// @description  Uses Manta (with location queries) to figure out business type
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -42,21 +42,25 @@
     var phone_re=/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}/im;
     var fax_re=/Fax[:]?[\s]?([\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/im;
 
+    /* for sic codes */
   var manta_key_map={"0752":{"value":"ANIMAL_SHELTER_KENNEL","text":""},
                     "7389":{"value":"OTHER_OFFICE","text":"Business Services"},
                     "3999":{"value":"OTHER_MANUFACTURING_INDUSTRIAL_PLANT","text":"Manufacturing general"},
                      "5722":{"value":"ELECTRONICS_STORE"},
-                     "8641":{"value":"SOCIAL_MEETING_HALL"}
+                     "8641":{"value":"SOCIAL_MEETING_HALL"},
+                     "5032":{"value":"CONTRACTOR"}
                     };
     var manta_naics_map={"5413":{"value":"OTHER_TECHNOLOGY_SCIENCE","text":"Architectural, Engineering, and Related Services"},
                          "111":{"value":"AGRICULTURE_FARM"},
                          "112":{"value":"AGRICULTURE_FARM"},
                          "2211":{"value":"ENERGY_POWER_STATION"},
+                         "2361":{"value":"CONTRACTOR"},
                          "238":{"value":"CONTRACTOR"},
                          "23822":{"value":"PLUMBER_OFFICE"},
                          "311":{"value":"FOOD_PROCESSING"},
                          "321":{value:"OTHER_MANUFACTURING_INDUSTRIAL_PLANT",text:"Wood product manufacturing"},
                          "323":{"value":"COPY_PRINTING_SHOP","text":""},
+                         "3262":{"value":"OTHER_MANUFACTURING_INDUSTRIAL_PLANT",text:"Rubber Product Manufacturing"},
                          "3272":{value:"OTHER_MANUFACTURING_INDUSTRIAL_PLANT",text:"Glass and Glass Product Manufacturing"},
                          "331":{"value":"METAL_FABRICATION"},
                          "332":{"value":"METAL_FABRICATION"},
@@ -73,16 +77,27 @@
                          "444":{"value":"OTHER_RETAIL","text":"Building Material and Garden Equipment and Supplies Dealer"},
                          "446":{"value":"OTHER_RETAIL","text":"Health and Personal Care Stores"},
                          "44511":{"value":"SUPERMARKET_GROCERY_STORE"},
+                         "44512":{"value":"CONVENIENCE_STORE"},
+                         "4452":{"value":"SUPERMARKET_GROCERY_STORE"},
+                         "4533":{"value":"OTHER_RETAIL","text":"Used Merchandise Store"},
                          "44611":{"value":"PHARMACY"},
 
 
                          "448":{"value":"CLOTHING_STORE"},
+                         "44831":{value:"JEWELRY_STORE"},
                          "452":{"value":"OTHER_RETAIL","text":"General Merchandise Store"},
                          "45322":{"value":"OTHER_RETAIL","text":"Gift, Novelty, and Souvenir Store"},
+                         "45391":{"value":"OTHER_RETAIL","text":"Pet supply store"},
+                         "45431":{"value":"DISTRIBUTION_CENTER"},
+                         "4841":{"value":"DISTRIBUTION_CENTER"},
                         "488":{"value":"OTHER_SERVICES","text":"Support Activities for Transportation"},
+                         "493":{"value":"WAREHOUSE"},
                         "51111":{"value":"OTHER_OFFICE","text":"Newspaper"},
+                         "51912":{"value":"LIBRARY"},
                         "532":{"value":"OTHER_RETAIL","text":"Leasing and Rental"},
                          "5321":{"value":"CAR_TRUCK_RENTAL"},
+                         "54161":{"value":"OTHER_OFFICE","text":"Management consulting"},
+                         "54192":{value:"OTHER_SERVICES","text":"Photography services"},
                          "5611":{"value":"REAL_ESTATE_PROPERTY_MANAGEMENT_OFFICE"},
                          "5617":{"value":"CONTRACTOR"},
                          "562":{"value":"OTHER_SERVICES","text":"Waste management and remediation"},
@@ -93,6 +108,9 @@
                          "623":{"value":"SENIOR_CARE_COMMUNITY_ASSISTED_LIVING"},
                          "624":{"value":"OTHER_OFFICE","text":"Social Assistance"},
                          "7224":{"value":"BAR_NIGHTCLUB"},
+                         "7121":{"value":"MUSEUM"},
+                         "71213":{"value":"ZOO"},
+                         "71393":{"value": "OTHER_ENTERTAINMENT_AND_PUBLIC_ASSEMBLY", "text": "Marina"},
                          "71394":{"value":"FITNESS_CENTER_HEALTH_CLUB_GYM"},
                          "811":{"value":"OTHER_SERVICES","text":"Repair and Maintenance"},
                          "8111":{"value":"AUTO_REPAIR_SHOP"},
@@ -100,6 +118,7 @@
                          "8121":{"value":"BEAUTY_SALON_BARBER_SHOP"},
 
                          "8122":{"value":"FUNERAL_HOME"},
+                         "813":{"value":"OTHER_OFFICE","text":"Civic and Social Organization"},
                         "9211":{"value":"CITY_HALL_CENTER"}
                         };
     var personal_email_domains=["aol.com","bigpond.com","frontiernet.net","gmail.com","icloud.com","mchsi.com","me.com","pacbell.net","rogers.com","rr.com","ymail.com"];
@@ -142,26 +161,6 @@
         }
     }
 
-    function is_bad_yelp(b_algo,i)
-    {
-        console.log("i="+i);
-        console.log("b_algo.innerText="+b_algo.innerText);
-        var b_caption;
-        try
-        {
-            b_caption=b_algo.getElementsByClassName("b_caption")[0].innerText;
-           /* if(b_caption.indexOf(my_query.address.split(" ")[0]+" ")===-1 )
-            {
-                console.log("Bad number");
-                return true;
-            }*/
-        }
-        catch(error)
-        {
-            return true;
-        }
-        return false;
-    }
     function query_response(response,resolve,reject) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
@@ -170,96 +169,81 @@
         var prefix_match=response.finalUrl.match(prefix_re);
         var prefix="";
         if(prefix_match!==null) prefix=prefix_match[1];
-        var search, b_algo, i=0, inner_a;
+        var search, b_algo, i=0, inner_a,bm_details_overlay;
 	var b_url="crunchbase.com", b_name, b_factrow, b_caption;
         var b1_success=false, b_header_search;
         try
         {
             search=doc.getElementById("b_content");
             b_algo=search.getElementsByClassName("b_algo");
-
-            console.log(prefix+": b_algo.length="+b_algo.length);
-            if(b_algo.length===0)
+            bm_details_overlay=doc.getElementsByClassName("bm_details_overlay");
+            if(bm_details_overlay.length>0)
             {
-                console.log(prefix+": b_algo length=0");
-                if(my_query.yelpCount===0 && response.finalUrl.indexOf("yelp.com")!==-1)
-                {
-                    my_query.yelpCount++;
-                    query_search(my_query.address+" "+my_query.city+" "+my_query.state+" "+my_query.name.split(" ")[0]+" site:yelp.com", resolve, reject);
-                }
-                else
-                {
-                    console.log("Nothing found b_algo=0");
-                    resolve("");
-                    return;
-                }
+                resolve(JSON.parse(bm_details_overlay[0].dataset.detailsoverlay));
+                return;
             }
 
-            for(i=0; i < b_algo.length && i<4; i++)
-            {
-                b_name=b_algo[i].getElementsByTagName("a")[0].textContent.toLowerCase();
-                b_url=b_algo[i].getElementsByTagName("a")[0].href;
 
-                b_caption=b_algo[i].getElementsByClassName("b_caption");
-                if(b_caption.length>0) b_caption=b_caption[0].innerText;
-                console.log(prefix+": b_url="+b_url+"\tb_name="+b_name);
-
-                if(!is_bad_url(b_url,bad_urls,-1))
-                {
-                    if(!(response.finalUrl.indexOf("yelp.com")!==-1 && is_bad_yelp(b_algo[i], i)))
-                    {
-
-                        console.log("B1 success with "+b_url);
-                        b1_success=true;
-                        break;
-                    }
-
-                }
-
-            }
-	    if(b1_success)
-	    {
-		/* Do shit */
-            resolve(b_url);
-            return;
-
-	    }
 
 
         }
         catch(error)
         {
-	    console.log("Error "+error);
-	    reject(error);
+            console.log("Error "+error);
+            reject(error);
             return;
 
             
         }
-        if(my_query.yelpCount===0 && response.finalUrl.indexOf("yelp.com")!==-1)
+        if(my_query.try_count===0)
         {
-            my_query.yelpCount++;
-            query_search(my_query.address+" "+my_query.city+" "+my_query.state+" "+my_query.name.split(" ")[0]+" site:yelp.com", resolve, reject);
+            my_query.try_count++;
+            console.log("Trying again with name");
+            query_search(my_query.name+" "+my_query.address+", "+my_query.city+" "+my_query.state+" "+my_query.zip,resolve,reject,query_response);
             return;
         }
         else
         {
-            console.log("Nothing found");
-            resolve("");
+            reject("Could not find bm_details_overlay");
             return;
         }
 
-//        GM_setValue("returnHit",true);
-        return;
+    }
 
+    function query_promise_then(overlay)
+    {
+        const mantaPromise = new Promise((resolve, reject) => {
+            console.log("Beginning Manta search on manta");
+            var manta_search_str="https://www.manta.com/search?search_source=nav&search="+my_query.name.replace(/\s/g,"+")+"&search_location="+
+                (my_query.city+" "+my_query.state).replace(/\s/g,"+")+"&pt="+overlay.centerLatitude+"%2C"+overlay.centerLongitude;
+            console.log("manta_search_str="+manta_search_str);
+            GM_setValue("manta_page_url","");
+            GM_addValueChangeListener("manta_page_url",function() {
+                console.log("arguments="+JSON.stringify(arguments));
+                var url=arguments[2];
+                if(url=="fail")
+                {
+                    query_search(my_query.name+" "+my_query.city+" "+my_query.state+" site:manta.com",resolve,reject,manta_response);
+                    return;
+                }
+                console.log("Calling manta_promise_then");
+                manta_promise_then(url);
+            });
+
+            GM_setValue("manta_url",manta_search_str);
+
+        });
+        mantaPromise.then(manta_promise_then
+        )
+        .catch(function(val) {
+           console.log("Failed at this mantaPromise " + val); GM_setValue("returnHit",true); });
     }
 
     function manta_response(response,resolve,reject) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-
-
         var search, b_algo, i=0, inner_a;
-	var b_url="crunchbase.com", b_name, b_factrow, b_caption;
+        var b_url="crunchbase.com", b_name, b_factrow, b_caption;
         var b1_success=false, b_header_search;
         try
         {
@@ -278,17 +262,17 @@
             {
                 b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
-
                 var b_name_split=b_name.split(" - ");
 
-                console.log("i="+i+", b_name="+b_name);
-                b_name=b_name.replace(" & "," and ");
+
+//                b_name=b_name.replace(" & "," and ");
+                b_name=b_name.replace("&"," & ");
+ console.log("i="+i+", b_name="+b_name);
                 if(b_name.toLowerCase().indexOf(my_query.name.toLowerCase())!==-1)
                 {
                     console.log("Manta success");
-                   resolve(b_url);
+                    resolve(b_url);
                     return;
-
                 }
 
             }
@@ -304,7 +288,7 @@
 
             //reject(JSON.stringify({error: true, errorText: error}));
         }
-console.log("Nothing found via manta");
+        console.log("Nothing found via manta");
         var lname=my_query.name.toLowerCase();
 
         if(lname.indexOf("dairy")!==-1 || lname.indexOf("farm")!==-1)
@@ -325,23 +309,13 @@ console.log("Nothing found via manta");
         console.log("Searching with bing for "+search_str);
         var search_URIBing='https://www.bing.com/search?q='+encodeURIComponent(search_str)+"&first=1&rdr=1";
         var domain_URL='https://www.google.com/search?q='+encodeURIComponent(search_str);//+" company");
-        GM_xmlhttpRequest({
-            method: 'GET',
-            url:    search_URIBing,
-
-            onload: function(response) {
-             //   console.log("On load in crunch_response");
-            //    crunch_response(response, resolve, reject);
-             callback(response, resolve, reject);
-            },
+        GM_xmlhttpRequest({ method: 'GET',url:    search_URIBing, onload: function(response) { callback(response, resolve, reject); },
             onerror: function(response) { reject("Fail"); },
             ontimeout: function(response) { reject("Fail"); }
-
-
-            });
+                          });
     }
 
-      function manta_promise_then(url) {
+    function manta_promise_then(url) {
          console.log("IN manta_promise_then");
         GM_setValue("manta_url",url);
         GM_xmlhttpRequest({
@@ -586,6 +560,7 @@ console.log("Nothing found via manta");
             }
             num_match=field_elems.streetAddress.match(/^([A-Z\d]*)\s/);
             console.log("num_match="+num_match);
+            field_elems.name=field_elems.name.replace(/&/," & ");
             //console.log("num_match!==null && num_match[1]===query_num_match="+(num_match[1]===query_num));
             if(field_elems.postalCode.substr(0,5)===my_query.zip.substr(0,5) &&
                 (field_elems.name!==undefined && (field_elems.name.toLowerCase().indexOf(my_query.name.toLowerCase())!==-1 ||
@@ -650,22 +625,25 @@ console.log("Nothing found via manta");
 
        var wT=document.getElementById("Other").getElementsByTagName("table")[0];
         my_query={name: wT.rows[1].cells[1].innerText, address: wT.rows[2].cells[1].innerText,
-                  city: wT.rows[3].cells[1].innerText, zip: wT.rows[4].cells[1].innerText, state: wT.rows[5].cells[1].innerText,
-                  doneFB: false, submitted: false,  doneManta: false, success: false};
+                  city: wT.rows[3].cells[1].innerText, zip: wT.rows[4].cells[1].innerText.replace(/-.*$/,""), state: wT.rows[5].cells[1].innerText,
+                  doneFB: false, submitted: false, doneManta: false, success: false, try_count: 0};
 
+        my_query.name=my_query.name.replace(/Inc\.?$/,"");
         GM_setValue("my_query",my_query);
 
-       /* const FBPromise = new Promise((resolve, reject) => {
-            console.log("Beginning URL search");
-            query_search(my_query.name+" "+my_query.city+" "+my_query.state+" site:facebook.com", resolve, reject,query_response);
+        const queryPromise = new Promise((resolve, reject) => {
+            console.log("Beginning address coords search");
+            query_search(my_query.address+", "+my_query.city+" "+my_query.state+" "+my_query.zip, resolve, reject,query_response);
         });
-        FBPromise.then(FB_promise_then
+        queryPromise.then(query_promise_then
         )
         .catch(function(val) {
-           console.log("Failed at this fbPromise " + val); GM_setValue("returnHit",true); });*/
+           console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
 
-       const mantaPromise = new Promise((resolve, reject) => {
-            console.log("Beginning URL search");
+
+
+    /*   const mantaPromise = new Promise((resolve, reject) => {
+            console.log("Beginning Manta search on manta");
            var manta_search_str="https://www.manta.com/search?search_source=nav&search="+my_query.name.replace(/\s/g,"+")+"&search_location="+
                (my_query.city+" "+my_query.state).replace(/\s/g,"+");
            GM_setValue("manta_page_url","");
@@ -683,19 +661,11 @@ console.log("Nothing found via manta");
 
            GM_setValue("manta_url",manta_search_str);
 
-/*           GM_xmlhttpRequest({
-               method: 'GET', url:    manta_search_str,
-               onload: function(response) { parse_manta_search(response, resolve, reject); },
-               onerror: function(response) { reject("Failed manta search"); }, ontimeout: function(response) { reject("Failed manta search"); }
-           });*/
-
-
-          //  query_search(my_query.name+" "+my_query.city+" "+my_query.state+" site:facebook.com", resolve, reject,query_response);
         });
         mantaPromise.then(manta_promise_then
         )
         .catch(function(val) {
-           console.log("Failed at this mantaPromise " + val); GM_setValue("returnHit",true); });
+           console.log("Failed at this mantaPromise " + val); GM_setValue("returnHit",true); }); */
 
 
 
