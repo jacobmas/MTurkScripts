@@ -134,8 +134,9 @@ console.log("Munky");
  * sites should be a list of {fragment:this.sites[x],timeout:2000} type objects
  sites we will be doing standardized scraping off of
  * callback is the init_Query type function to initialize the custom part of the script running
+ * requester_id is the MTurk id of the requester so it doesn't accidentally run on wrong HITs
  */
-function MTurkScript(return_ms,submit_ms,sites,callback)
+function MTurkScript(return_ms,submit_ms,sites,callback,requester_id)
 {
     console.log("Initializing MTurkScript");
     this.return_ms=return_ms;
@@ -146,6 +147,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback)
                           "instagram.com":this.parse_instagram};
     this.query={};
     this.attempts={};
+    this.requester_id=requester_id;
     
     for(x in this.site_parser_map) {
         this.attempts[x]=0;
@@ -185,10 +187,18 @@ function MTurkScript(return_ms,submit_ms,sites,callback)
     }
     if ((window.location.href.indexOf("mturkcontent.com") !== -1 ||
          window.location.href.indexOf("amazonaws.com") !== -1) &&
-        !document.getElementById("submitButton").disabled) callback();
+        !document.getElementById("submitButton").disabled &&
+	GM_getValue("req_id","")===this.requester_id) callback();
     if(window.location.href.indexOf("worker.mturk.com")!==-1) {
         GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
         var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
+	var detail_a=document.getElementsByClassName("project-detail-bar")[0].children[0]
+        .children[1].getElementsByClassName("detail-bar-value")[0].getElementsByTagName("a")[0];
+        var req_id=detail_a.href.match(/requesters\/([^\/]+)/);
+        if(req_id && req_id[1]===this.requester_id) GM_setValue("req_id",req_id[1]);
+        else { console.log("Wrong requester: found "+req_id[1]+", desired "+this.requester_id);
+	       return; }
+      
         if(GM_getValue("automate")===undefined) GM_setValue("automate",false);
 
         var btn_span=document.createElement("span"), btn_automate=document.createElement("button");
@@ -486,7 +496,7 @@ MTurkScript.prototype.parse_name=function(to_parse)
 
 MTurkScript.prototype.shorten_company_name=function(name)
 {
-    name=name.replace(/ - .*$/,"").trim().replace(/\s*plc$/i,"");
+    name=removeDiacritics(name).replace(/ - .*$/,"").trim().replace(/\s*plc$/i,"");
     name=name.replace(/\(.*$/i,"").trim();
     name=name.replace(/\s*Corporation$/i,"").replace(/\s*Corp\.?$/i,"");
     name=name.replace(/\s*Incorporated$/i,"").replace(/\s*Inc\.?$/i,"");
@@ -497,6 +507,7 @@ MTurkScript.prototype.shorten_company_name=function(name)
     name=name.replace(/\s+S\.?A\.?$/i,"").replace(/\s+L\.?P\.?$/i,"");
     name=name.replace(/\s+GmbH$/i,"").replace(/\s+SRL/i,"")
     name=name.replace(/\s+Sarl$/i,"");
+    name=name.replace(/[,\.]+$/,"");
 
     return name;
 }
@@ -727,4 +738,4 @@ MTurkScript.parse_b_context=function(b_context)
 
     }
     return result;
-}
+};
