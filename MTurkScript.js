@@ -717,10 +717,14 @@ MTurkScript.prototype.parse_instagram=function(doc,instance,fragment)
    puts the b_vList fields (e.g. Address, Phone) into the results under the
    name given on Bing,  puts b_entityTitle in Name
 */
-MTurkScript.parse_b_context=function(b_context)
+MTurkScript.prototype.parse_b_context=function(b_context)
 {
     var b_vList,i,bm_details_overlay,inner_li,b_entityTitle,b_entitySubTitle;
+    var b_hList,inner_a;
     b_vList=b_context.getElementsByClassName("b_vList");
+    b_hList=b_context.getElementsByClassName("b_hList");
+    
+
     var field_regex=/^([^:]+):\s*(.*)$/,field_match,result={};
     b_entityTitle=b_context.getElementsByClassName("b_entityTitle");
     b_entitySubTitle=b_context.getElementsByClassName("b_entitySubTitle");
@@ -736,6 +740,14 @@ MTurkScript.parse_b_context=function(b_context)
             if(field_match) result[field_match[1]]=field_match[2];
         }
 
+    }
+    if(b_hList.length>0)
+    {
+	inner_a=b_hList[0].getElementsByTagName("a");
+        for(i=0; i<inner_a.length; i++)
+        {
+	    result[inner_a[i].innerText]=inner_a[i].href;
+        }
     }
     return result;
 };
