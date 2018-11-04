@@ -771,4 +771,5 @@ MTurkScript.prototype.parse_lgb_info=function(lgb_info)
     {
         if(phone_re.test(b_factrow[i].innerText)) result.phone=b_factrow[i].innerText;
     }
+    return result;
 };
