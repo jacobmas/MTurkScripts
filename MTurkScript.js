@@ -751,3 +751,24 @@ MTurkScript.prototype.parse_b_context=function(b_context)
     }
     return result;
 };
+
+MTurkScript.prototype.parse_lgb_info=function(lgb_info)
+{
+    var result={},bm_details_overlay,b_factrow,i,b_entityTitle;
+    b_entityTitle=lgb_info.getElementsByClassName("b_entityTitle");
+    bm_details_overlay=lgb_info.getElementsByClassName("bm_details_overlay");
+    if(bm_details_overlay.length>0) result.address=bm_details_overlay[0].innerText;
+    b_factrow=lgb_info.getElementsByClassName("b_factrow");
+    if(b_entityTitle.length>0)
+    {
+	result.name=b_entityTitle[0].innerText;
+	if(b_entityTitle[0].getElementsByTagName("a").length>0)
+	{
+	    result.url=b_entityTitle[0].getElementsByTagName("a")[0].href;
+	}
+    }
+    for(i=0; i < b_factrow.length; i++)
+    {
+        if(phone_re.test(b_factrow[i].innerText)) result.phone=b_factrow[i].innerText;
+    }
+};
