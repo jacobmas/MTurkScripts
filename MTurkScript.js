@@ -830,8 +830,8 @@ MTurkScript.prototype.parse_hr_match=function(hr_match) {
             result.closed=true;
 	    return result;
         }
-        result.open=adjust_time(hr_match[2],hr_match[3],hr_match[4]);
-        result.close=adjust_time(hr_match[5],hr_match[6],hr_match[7]);
+        result.open=MTurkScript.prototype.adjust_time(hr_match[2],hr_match[3],hr_match[4]);
+        result.close=MTurkScript.prototype.adjust_time(hr_match[5],hr_match[6],hr_match[7]);
         return result;
 };
 
@@ -861,7 +861,7 @@ MTurkScript.prototype.parse_hours=function(script)
                     {
                         hr_match=good_instance[j].label.match(hr_regex);
                         console.log("hr_match at "+j+"="+JSON.stringify(hr_match));
-                        result[hr_match[1]]=parse_hr_match(hr_match);
+                        result[hr_match[1]]=MTurkScript.prototype.parse_hr_match(hr_match);
 
                     }
                 }
@@ -886,7 +886,7 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject)
         if(/^bigPipe\.beforePageletArrive\(\"PagesProfileAboutInfoPagelet/.test(scripts[i].innerHTML) && i < scripts.length-1)
         {
             /* Parse the next one */
-            result.hours=parse_hours(scripts[i+1]);
+            result.hours=MTurkScript.prototype.parse_hours(scripts[i+1]);
         }
     }
     for(i=0; i < code.length; i++)
@@ -938,3 +938,59 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject)
     resolve(result);
     //console.timeEnd("fb_about");
 };
+/* parse_search_script parses the script to get the search results; a helper function */
+MTurkScript.prototype.parse_search_script =function (script)
+    {
+        var result={success:true,sites:[]},parsed_text,i,j;
+        var text=script.innerHTML.replace(/^require\(\"TimeSlice\"\)\.guard\(\(function\(\)\{bigPipe\.onPageletArrive\(/,"")
+        .replace(/\);\}\).*$/,"")
+       // console.log("text="+text);
+        text=text.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\"$2\":").replace(/\\x3C/g,"<");
+        //console.log("text="+text);
+        parsed_text=JSON.parse(text);
+        var require=parsed_text.jsmods.require;
+        for(i=0; i < require.length; i++)
+        {
+           // console.log("require[i]="+JSON.stringify(require[i]));
+            if(require[i].length>3 && require[i][0]==="ReactRenderer")
+            {
+                console.log("require[i][3][0].props.results="+JSON.stringify(require[i][3][0].props.results));
+                let results_list=require[i][3][0].props.results;
+                for(j=0; j < results_list.length; j++)
+                {
+                    result.sites.push({url:results_list[j].uri,name:results_list[j].text});
+
+                }
+            //    if(require[i][3]
+            }
+
+        }
+        //console.log(JSON.stringify(require));
+
+        return result;
+    }
+/* Parse FB_search parses a search on Facebook *?
+MTurkScript.prototype.parse_FB_search=function(doc,url,resolve,reject)
+{
+    console.log("fb_search url="+url);
+    //console.log("this="+JSON.stringify(this));
+    var result={success:false};
+    var code=doc.body.getElementsByTagName("code"),i,j,scripts=doc.scripts;
+
+
+
+    for(i=0; i < scripts.length; i++)
+    {
+        // console.log("scripts["+i+"].innerHTML="+scripts[i].innerHTML);
+
+        if(/^bigPipe\.beforePageletArrive\(\"pagelet_loader_initial_browse_result/.test(scripts[i].innerHTML) && i < scripts.length-1)
+        {
+            /* Parse the next one */
+            result=MTurkScript.prototype.parse_search_script(scripts[i+1]);
+            break;
+        }
+    }
+    resolve(result);
+    //console.timeEnd("fb_about");
+};
+
