@@ -946,7 +946,7 @@ MTurkScript.prototype.parse_search_script=function(script)
         .replace(/\);\}\).*$/,"")
     //text=decodeURIComponent(text);
     // console.log("text="+text);
-    text=text.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\"$2\":").replace(/\\x3C/g,"<");
+  //  text=text.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\"$2\":").replace(/\\x3C/g,"<");
     //console.log("text="+text);
     try
     {
