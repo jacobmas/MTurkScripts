@@ -939,37 +939,37 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject)
     //console.timeEnd("fb_about");
 };
 /* parse_search_script parses the script to get the search results; a helper function */
-MTurkScript.prototype.parse_search_script =function (script)
-    {
-        var result={success:true,sites:[]},parsed_text,i,j;
-        var text=script.innerHTML.replace(/^require\(\"TimeSlice\"\)\.guard\(\(function\(\)\{bigPipe\.onPageletArrive\(/,"")
+MTurkScript.prototype.parse_search_script=function(script)
+{
+    var result={success:true,sites:[]},parsed_text,i,j;
+    var text=script.innerHTML.replace(/^require\(\"TimeSlice\"\)\.guard\(\(function\(\)\{bigPipe\.onPageletArrive\(/,"")
         .replace(/\);\}\).*$/,"")
-       // console.log("text="+text);
-        text=text.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\"$2\":").replace(/\\x3C/g,"<");
-        //console.log("text="+text);
-        parsed_text=JSON.parse(text);
-        var require=parsed_text.jsmods.require;
-        for(i=0; i < require.length; i++)
+    // console.log("text="+text);
+    text=text.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\"$2\":").replace(/\\x3C/g,"<");
+    //console.log("text="+text);
+    parsed_text=JSON.parse(text);
+    var require=parsed_text.jsmods.require;
+    for(i=0; i < require.length; i++)
+    {
+        // console.log("require[i]="+JSON.stringify(require[i]));
+        if(require[i].length>3 && require[i][0]==="ReactRenderer")
         {
-           // console.log("require[i]="+JSON.stringify(require[i]));
-            if(require[i].length>3 && require[i][0]==="ReactRenderer")
+            console.log("require[i][3][0].props.results="+JSON.stringify(require[i][3][0].props.results));
+            let results_list=require[i][3][0].props.results;
+            for(j=0; j < results_list.length; j++)
             {
-                console.log("require[i][3][0].props.results="+JSON.stringify(require[i][3][0].props.results));
-                let results_list=require[i][3][0].props.results;
-                for(j=0; j < results_list.length; j++)
-                {
-                    result.sites.push({url:results_list[j].uri,name:results_list[j].text});
+                result.sites.push({url:results_list[j].uri,name:results_list[j].text});
 
-                }
-            //    if(require[i][3]
             }
-
+            //    if(require[i][3]
         }
-        //console.log(JSON.stringify(require));
 
-        return result;
     }
-/* Parse FB_search parses a search on Facebook *?
+    //console.log(JSON.stringify(require));
+
+    return result;
+};
+/* Parse FB_search parses a search on Facebook */
 MTurkScript.prototype.parse_FB_search=function(doc,url,resolve,reject)
 {
     console.log("fb_search url="+url);
