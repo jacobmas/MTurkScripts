@@ -956,7 +956,7 @@ MTurkScript.prototype.parse_search_script=function(script)
     catch(error) { console.log("Error "+error+" when parsing\n"+text);
 
 		   var err_regex=/at position ([\d]+)/,err_match;
-		   err_match=error.match(err_regex);
+		   err_match=error.toString().match(err_regex);
 		   if(err_match)
 		   {
 		       console.log("Context of error: "+text.substr(parseInt(err_match[1])-100,200));
