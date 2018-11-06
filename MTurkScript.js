@@ -941,13 +941,18 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject)
 /* parse_search_script parses the script to get the search results; a helper function */
 MTurkScript.prototype.parse_search_script=function(script)
 {
-    var result={success:true,sites:[]},parsed_text,i,j;
+    var result={success:true,sites:[]},parsed_text="",i,j;
     var text=script.innerHTML.replace(/^require\(\"TimeSlice\"\)\.guard\(\(function\(\)\{bigPipe\.onPageletArrive\(/,"")
         .replace(/\);\}\).*$/,"")
     // console.log("text="+text);
     text=text.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\"$2\":").replace(/\\x3C/g,"<");
     //console.log("text="+text);
-    parsed_text=JSON.parse(text);
+    try
+    {
+	
+	parsed_text=JSON.parse(text);
+    }
+    catch(error) { console.log("Error "+error+" when parsing\n"+text); }
     var require=parsed_text.jsmods.require;
     for(i=0; i < require.length; i++)
     {
