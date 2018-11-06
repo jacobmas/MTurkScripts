@@ -312,6 +312,7 @@ MTurkScript.prototype.is_bad_email = function(to_check)
 {
     if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1) return true;
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
+    else if(/@(domain\.com|example\.com)/.test(to_check)) return true;
     return false;
 }
 /**
@@ -754,7 +755,7 @@ MTurkScript.prototype.parse_b_context=function(b_context)
 
 MTurkScript.prototype.parse_lgb_info=function(lgb_info)
 {
-    var result={},bm_details_overlay,b_factrow,i,b_entityTitle;
+    var result={"phone":"","name":"",url:""},bm_details_overlay,b_factrow,i,b_entityTitle;
     b_entityTitle=lgb_info.getElementsByClassName("b_entityTitle");
     bm_details_overlay=lgb_info.getElementsByClassName("bm_details_overlay");
     if(bm_details_overlay.length>0) result.address=bm_details_overlay[0].innerText;
@@ -772,4 +773,168 @@ MTurkScript.prototype.parse_lgb_info=function(lgb_info)
         if(phone_re.test(b_factrow[i].innerText)) result.phone=b_factrow[i].innerText;
     }
     return result;
+};
+
+MTurkScript.prototype.add_to_sheet=function()
+{
+    for(var x in my_query.fields) {
+        if(document.getElementById(x) && my_query.fields[x].length>0)
+        {
+            document.getElementById(x).value=my_query.fields[x];
+        }
+    }
+};
+
+/* Creates a promise where it does a standard GM_xmlhttpRequest GET thing, on which point it
+   does the DOMParser thing, loads the parser taking (doc,url,resolve,reject)
+
+   and the promise does (mandatory) then_func on resolving, (optional, otherwise just prints a message) catch_func on
+   rejecting
+*/
+MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func)
+{
+    if(catch_func==undefined) catch_func=function(response) { console.log("Request to url failed "+response); };
+    const queryPromise = new Promise((resolve, reject) => {
+        GM_xmlhttpRequest(
+            {method: 'GET', url: url,
+             onload: function(response) {
+                 var doc = new DOMParser()
+                     .parseFromString(response.responseText, "text/html");
+                 parser(doc,response.finalUrl, resolve, reject); },
+             onerror: function(response) { reject("Failed to load site "+response); },
+             ontimeout: function(response) {reject("Timed out loading site "+response); }
+            });
+    });
+    queryPromise.then(then_func)
+        .catch(catch_func);
+    return queryPromise;
+};
+    /**
+     * adjust_time adjusts the hr, min, ampm into military format */
+MTurkScript.prototype.adjust_time=function(hr,min,ampm)
+{
+    var time12=parseInt(hr);
+    if(ampm.toLowerCase()==="pm" && time12!==12) time12=time12+12;
+    else if(ampm.toLowerCase()==="am" && time12==="12") time12=0;
+    return ""+time12+":"+min;
+};
+    /**
+     * parse_hr_match gives that a matched daily hours in FB's format is either CLOSED and if not closed,
+     * sets the opening and closing times in military style format for submission
+     */
+MTurkScript.prototype.parse_hr_match=function(hr_match) {
+        // p1 is nondigits, p2 digits, and p3 non-alphanumerics
+        var result={closed:false,open:"",close:""};
+        if(hr_match[2]===null||hr_match[2]===undefined)
+        {
+            result.closed=true;
+	    return result;
+        }
+        result.open=adjust_time(hr_match[2],hr_match[3],hr_match[4]);
+        result.close=adjust_time(hr_match[5],hr_match[6],hr_match[7]);
+        return result;
+};
+
+    /* parse hours is a helper for parse_FB_about */
+MTurkScript.prototype.parse_hours=function(script)
+{
+    var result={};
+    var text=script.innerHTML.replace(/^require\(\"TimeSlice\"\)\.guard\(\(function\(\)\{bigPipe\.onPageletArrive\(/,"")
+        .replace(/\);\}\).*$/,"")
+    text=text.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\"$2\":").replace(/\\x3C/g,"<");
+    var parsed_text=JSON.parse(text);
+    var instances=parsed_text.jsmods.instances;
+    var x,i,j,good_instance,hr_match;
+    var hr_regex=/^([A-Za-z]+):\s*(?:CLOSED|([\d]{1,2}):([\d]{2})\s*([A-Z]{2})\s*-\s*([\d]{1,2}):([\d]{2})\s*([A-Z]{2}))/i;
+    for(i=0; i < instances.length; i++)
+    {
+        try
+        {
+            if(instances[i].length>=3 && instances[i][1].length>0 && instances[i][1][0]==="Menu"
+               && instances[i][2].length>0)
+            {
+
+                good_instance=instances[i][2][0];
+                for(j=0; j < good_instance.length; j++) {
+                    console.log("good_instance["+j+"].label="+good_instance[j].label);
+                    if(good_instance[j].label!==undefined && hr_regex.test(good_instance[j].label))
+                    {
+                        hr_match=good_instance[j].label.match(hr_regex);
+                        console.log("hr_match at "+j+"="+JSON.stringify(hr_match));
+                        result[hr_match[1]]=parse_hr_match(hr_match);
+
+                    }
+                }
+            }
+        }
+        catch(error) { console.log("error with hours "+error); }
+    }
+    return result;
+
+};
+    /**
+     * parse_FB_about is a create_promise style parser for a FB about page
+     */
+MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject)
+{
+    // console.time("fb_about");
+    //console.log("this="+JSON.stringify(this));
+    var result={};
+    var code=doc.body.getElementsByTagName("code"),i,j,scripts=doc.scripts;
+    for(i=0; i < scripts.length; i++)
+    {
+        if(/^bigPipe\.beforePageletArrive\(\"PagesProfileAboutInfoPagelet/.test(scripts[i].innerHTML) && i < scripts.length-1)
+        {
+            /* Parse the next one */
+            result.hours=parse_hours(scripts[i+1]);
+        }
+    }
+    for(i=0; i < code.length; i++)
+    {
+        //console.log("code ("+i+")");
+        code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
+    }
+    var about_fields=doc.getElementsByClassName("_3-8j"),inner_field1,text;
+    var _a3f=doc.getElementsByClassName("_a3f"); // map with coords
+    var coords_regex=/markers=([-\d\.]+)%2C([-\d\.]+)/,coords_match;
+    if(_a3f.length>0) {
+        coords_match=_a3f[0].src.match(coords_regex);
+        if(coords_match)
+        {
+            result.lat=coords_match[1];
+            result.lon=coords_match[2];
+        }
+    }
+
+    for(i=0; i < about_fields.length; i++)
+    {
+        //  console.log("about_fields["+i+"].className="+about_fields[i].className);
+        inner_field1=about_fields[i].getElementsByClassName("_50f4");
+        if(about_fields[i].className.toString().indexOf("_5aj7")!==-1 &&
+           about_fields[i].className.toString().indexOf("_20ud")!==-1 &&
+           about_fields[i].getElementsByClassName("_4bl9").length>0)
+        {
+            //console.log("Found address");
+            result.address="";
+            let add_fields=about_fields[i].getElementsByClassName("_2iem");
+            for(j=0; j < add_fields.length; j++) result.address=result.address+add_fields[j].innerText+",";
+            result.address=result.address.replace(/,$/,"");
+        }
+        if(inner_field1.length===0) continue;
+        text=inner_field1[0].innerText;
+        if(email_re.test(text)) result.email=text;
+        else if(inner_field1[0].parentNode.tagName==="DIV" &&
+                !/_4bl9/.test(inner_field1[0].parentNode.className)) result.url=text;
+        else if(/twitter\.com/i.test(text)) result.twitter_url=text;
+        else if(/instagram\.com/i.test(text)) result.insta_url=text;
+        else if(/pinterest\.com/i.test(text)) result.pinterest_url=text;
+        else if(phone_re.test(text)) result.phone=text.match(phone_re)[0];
+        else if(/^About$/i.test(text) && about_fields[i].getElementsByClassName("_3-8w").length>0) {
+            result.about=about_fields[i].getElementsByClassName("_3-8w")[0].innerText; }
+
+
+    }
+    //console.log("result="+JSON.stringify(result));
+    resolve(result);
+    //console.timeEnd("fb_about");
 };
