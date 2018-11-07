@@ -944,10 +944,11 @@ MTurkScript.prototype.parse_search_script=function(script)
     var result={success:true,sites:[]},parsed_text="",i,j;
     var text=script.innerHTML.replace(/^require\(\"TimeSlice\"\)\.guard\(\(function\(\)\{bigPipe\.onPageletArrive\(/,"")
         .replace(/\);\}\).*$/,"")
+    
     //text=decodeURIComponent(text);
-    // console.log("text="+text);
+    console.log("text="+text);
     text=text.replace(/src:\"([^\"]+)\"/,"src:\"\"");
-    text=text.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\'$2\':").replace(/\\x3C/g,"<")
+    text=text.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\"$2\":").replace(/\\x3C/g,"<")
 	.replace(/%23/g,"#");
     //console.log("text="+text);
     try
