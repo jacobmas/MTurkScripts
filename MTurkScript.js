@@ -873,7 +873,7 @@ MTurkScript.prototype.parse_hours=function(script)
 
 };
 
-MTurkScript.prototype.match_coords = function(src)
+MTurkScript.prototype.FB_match_coords = function(src)
 {
     var result={};
     var coords_regex=/markers=([-\d\.]+)%2C([-\d\.]+)/,coords_match;
