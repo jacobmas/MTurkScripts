@@ -872,6 +872,20 @@ MTurkScript.prototype.parse_hours=function(script)
     return result;
 
 };
+
+MTurkScript.prototype.match_coords = function(src)
+{
+    var result={};
+    var coords_regex=/markers=([-\d\.]+)%2C([-\d\.]+)/,coords_match;
+    coords_match=src.match(coords_regex);
+    if(coords_match)
+    {
+        result.lat=coords_match[1];
+        result.lon=coords_match[2];
+    }
+    return result;
+};
+
     /**
      * parse_FB_about is a create_promise style parser for a FB about page
      */
@@ -895,15 +909,10 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject)
         code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
     }
     var about_fields=doc.getElementsByClassName("_3-8j"),inner_field1,text;
-    var _a3f=doc.getElementsByClassName("_a3f"); // map with coords
-    var coords_regex=/markers=([-\d\.]+)%2C([-\d\.]+)/,coords_match;
-    if(_a3f.length>0) {
-        coords_match=_a3f[0].src.match(coords_regex);
-        if(coords_match)
-        {
-            result.lat=coords_match[1];
-            result.lon=coords_match[2];
-        }
+    var _a3f=doc.getElementsByClassName("_a3f"),coord_ret; // map with coords
+
+    if(_a3f.length>0 && (coord_ret=MTurkScript.prototype.FB_match_coords(_a3f[0].src))) {
+        for(i in coord_ret) result[i]=coord_ret[i];
     }
 
     for(i=0; i < about_fields.length; i++)
@@ -938,19 +947,18 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject)
     resolve(result);
     //console.timeEnd("fb_about");
 };
-/* parse_search_script parses the script to get the search results; a helper function */
+/* parse_search_script parses the script to get the search results; a helper function 
+   for parse_FB_search
+*/
 MTurkScript.prototype.parse_search_script=function(script)
 {
     var result={success:true,sites:[]},parsed_text="",i,j;
     var text=script.innerHTML.replace(/^require\(\"TimeSlice\"\)\.guard\(\(function\(\)\{bigPipe\.onPageletArrive\(/,"")
         .replace(/\);\}\).*$/,"")
     
-    //text=decodeURIComponent(text);
-   // console.log("text="+text);
     text=text.replace(/src:\"([^\"]+)\"/g,"src:\"\"");
     text=text.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\"$2\":").replace(/\\x3C/g,"<")
 	.replace(/%23/g,"#");
-    //console.log("text="+text);
     try
     {
 	
@@ -970,22 +978,13 @@ MTurkScript.prototype.parse_search_script=function(script)
     var require=parsed_text.jsmods.require;
     for(i=0; i < require.length; i++)
     {
-        // console.log("require[i]="+JSON.stringify(require[i]));
         if(require[i].length>3 && require[i][0]==="ReactRenderer")
         {
-            console.log("require[i][3][0].props.results="+JSON.stringify(require[i][3][0].props.results));
             let results_list=require[i][3][0].props.results;
-            for(j=0; j < results_list.length; j++)
-            {
-                result.sites.push({url:results_list[j].uri,name:results_list[j].text});
-
-            }
-            //    if(require[i][3]
+            for(j=0; j < results_list.length; j++) result.sites.push({url:results_list[j].uri,name:results_list[j].text});
         }
 
     }
-    //console.log(JSON.stringify(require));
-
     return result;
 };
 /* Parse FB_search parses a search on Facebook */
@@ -1011,5 +1010,79 @@ MTurkScript.prototype.parse_FB_search=function(doc,url,resolve,reject)
     }
     resolve(result);
     //console.timeEnd("fb_about");
+};
+
+/**
+ * match_home_text Returns list of two fields, either both blank or the first label, second value
+ * helper for parse_FB_home
+ */
+MTurkScript.prototype.match_home_text=function(text)
+{
+
+    var ret=["",""];
+    var follow_re=/^([\d\,]+) people follow this/,like_re=/^([\d\,]+) people like this/;
+    if(phone_re.test(text)) ret=["phone",text.match(phone_re)[0]];
+    else if(email_re.test(text)) ret=["email",text.match(email_re)[0]];
+    else if(follow_re.test(text)) ret=["followers",text.match(follow_re)[1].replace(/,/g,"")];
+    else if(like_re.test(text)) ret=["likes",text.match(like_re)[1].replace(/,/g,"")];
+    console.log("text="+text+", ret="+ret);
+    return ret;
+};
+
+/**
+ * match_home_a Returns list of two fields, either both blank or the first label, second value
+ * helper for parse_FB_home
+ */
+MTurkScript.prototype.match_home_a=function(inner_a,text)
+{
+    var ret=["",""],i;
+    var url_regex=/\.php\?u=(.*)$/;
+    if(url_regex.test(inner_a[0].href) &&
+       !/Get Directions/.test(inner_a[0].innerText))
+    {
+        ret=["url",decodeURIComponent(inner_a[0].href.match(url_regex)[1])
+             .replace(/\?fbclid.*$/,"")];
+    }
+    else if(/keywords_pages/.test(inner_a[0].href))
+    {
+        ret=["keywords",[]];
+        for(i=0; i < inner_a.length; i++) ret[1].push(inner_a[i].innerText);
+    }
+    return ret;
+};
+
+MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
+{
+    var result={success:true},outer_part,_4bl9,i,j,inner_a,response,_4j7v;
+    var _a3f,coord_ret,address;
+    var code=doc.body.getElementsByTagName("code"),scripts=doc.scripts;
+    for(i=0; i < code.length; i++)
+    {
+        code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
+    }
+    outer_part=doc.getElementsByClassName("_1xnd");
+    if(outer_part.length===0)
+    {
+        result.success=false;
+        resolve(result);
+        return;
+    }
+    _a3f=doc.getElementsByClassName("_a3f"); // map with coords
+    if(_a3f.length>0 && (coord_ret=MTurkScript.prototype.FB_match_coords(_a3f[0].src))) {
+        for(i in coord_ret) result[i]=coord_ret[i];
+    }
+    _4bl9=outer_part[0].getElementsByClassName("_4bl9");
+    for(i=0; i < _4bl9.length; i++)
+    {
+        if(_4bl9[i].getElementsByClassName("_2wzd").length>0 &&
+           (address=parseAddress.parseLocation(_4bl9[i].innerText.replace(/\n/g,",")))
+           && address) result.address=address;
+        inner_a=_4bl9[i].getElementsByTagName("a");
+        if(inner_a.length===0 && (response=MTurkScript.prototype.match_home_text(_4bl9[i].innerText))
+           && response[0].length>0) result[response[0]]=response[1];
+        else if(inner_a.length>0 && (response=MTurkScript.prototype.match_home_a(inner_a))
+                && response[0].length>0) result[response[0]]=response[1];
+    }
+    resolve(result);
 };
 
