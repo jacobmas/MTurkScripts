@@ -1001,7 +1001,7 @@ MTurkScript.prototype.parse_FB_search=function(doc,url,resolve,reject)
     {
         // console.log("scripts["+i+"].innerHTML="+scripts[i].innerHTML);
 
-        if(/^bigPipe\.beforePageletArrive\(\"pagelet_loader_initial_browse_result/.test(scripts[i].innerHTML) && i < scripts.length-1 && /tuid/.test(scripts[i].innerHTML))
+        if(/^bigPipe\.beforePageletArrive\(\"pagelet_loader_initial_browse_result/.test(scripts[i].innerHTML) && i < scripts.length-1)
         {
             /* Parse the next one */
             result=MTurkScript.prototype.parse_search_script(scripts[i+1]);
