@@ -142,9 +142,9 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id)
     this.return_ms=return_ms;
     this.submit_ms=submit_ms;
     this.sites=sites;
-    this.site_parser_map={"bloomberg.com/research/stocks/private/snapshot.asp":this.parse_bloomberg_snapshot,
-                          "bloomberg.com/profiles/companies/":this.parse_bloomberg_profile,
-                          "instagram.com":this.parse_instagram};
+    this.site_parser_map={"bloomberg.com/research/stocks/private/snapshot.asp":this.parseext_bloomberg_snapshot,
+                          "bloomberg.com/profiles/companies/":this.parseext_bloomberg_profile,
+                          "instagram.com":this.parseext_instagram};
     this.query={};
     this.attempts={};
     this.requester_id=requester_id;
@@ -475,10 +475,6 @@ MTurkScript.prototype.parse_name=function(to_parse)
 
 
     }
-    /*for(first_pos=0; first_pos< last_pos; first_pos++)
-      {
-      if(!prefix_in_string(prefixes,split_parse[last_pos])&&split_parse[last_pos]!=="Miss") break;
-      }*/
     if(last_pos>=2 && /Van|de/.test(split_parse[last_pos-1]))
     {
         ret.lname=split_parse[last_pos-1]+" "+split_parse[last_pos];
@@ -509,6 +505,7 @@ MTurkScript.prototype.shorten_company_name=function(name)
     name=name.replace(/\s+GmbH$/i,"").replace(/\s+SRL/i,"")
     name=name.replace(/\s+Sarl$/i,"");
     name=name.replace(/[,\.]+$/,"");
+    name=name.replace(/\sCo\.?$/i,"");
 
     return name;
 }
@@ -519,7 +516,7 @@ MTurkScript.prototype.shorten_company_name=function(name)
  * doc the document to use to parse it, to allow use for either xmlhttprequest or open in
  *       new window
  */
-MTurkScript.prototype.parse_bloomberg_snapshot=function(doc)
+MTurkScript.prototype.parseext_bloomberg_snapshot=function(doc)
 {
     console.log("Doing bloomberg ");
 
@@ -579,7 +576,7 @@ MTurkScript.prototype.parse_bloomberg_snapshot=function(doc)
 
 }
 
-MTurkScript.prototype.parse_bloomberg_profile=function(doc)
+MTurkScript.prototype.parseext_bloomberg_profile=function(doc)
 {
     var result={"phone":"","country":"",url:"","name":"","state":"","city":"","streetAddress":"","postalCode":"",
                 sector:"","industry":"","sub_industry":"",executives:[],description:""};
@@ -655,7 +652,7 @@ MTurkScript.prototype.reload_parser=function(doc,instance,fragment)
 /**
  * parse_instagram parses an instagram page, scrapes page name, insta_name (the instagram handle sans @), followers,posts, following,
  url of instagram, an external url linked to if existing, description */
-MTurkScript.prototype.parse_instagram=function(doc,instance,fragment)
+MTurkScript.prototype.parseext_instagram=function(doc,instance,fragment)
 {
     if(instance===undefined) {
 	console.log("instance is undefined"); return; }
@@ -1025,7 +1022,6 @@ MTurkScript.prototype.match_home_text=function(text)
     else if(email_re.test(text)) ret=["email",text.match(email_re)[0]];
     else if(follow_re.test(text)) ret=["followers",text.match(follow_re)[1].replace(/,/g,"")];
     else if(like_re.test(text)) ret=["likes",text.match(like_re)[1].replace(/,/g,"")];
-    console.log("text="+text+", ret="+ret);
     return ret;
 };
 
@@ -1086,3 +1082,53 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
     resolve(result);
 };
 
+/**
+     * parse_insta_script is a helper for parse_instagram that extracts the useful data
+     */
+ MTurkScript.prototype.parse_insta_script=function(parsed)
+    {
+        var x,y,z;
+        var user=parsed.entry_data.ProfilePage[0].graphql.user;
+        var result={success:true,followers:"",following:"",name:"",
+                    username:"",url:"",is_business:false,email:"",phone:"",
+                   category:"",address:{},biography:""};
+        if(user.edge_followed_by!==undefined &&
+           user.edge_followed_by.count!==undefined) result.followers=user.edge_followed_by.count;
+         if(user.edge_follow!==undefined &&
+           user.edge_follow.count!==undefined) result.following=user.edge_follow.count;
+        if(user.full_name!==undefined) result.name=user.full_name;
+        if(user.username!==undefined) result.username=user.username;
+        if(user.external_url!==undefined) result.url=user.external_url;
+        if(user.is_business_account!==undefined) result.is_business=user.is_business_account;
+        if(user.business_email) result.email=user.business_email;
+        if(user.business_address_json)
+        {
+            let temp_add=JSON.parse(user.business_address_json);
+            result.address={addressLine1:temp_add.street_address, city:temp_add.city_name.replace(/,.*$/,""),
+                            state:temp_add.region_name, country:"",country_code:temp_add.country_code};
+            if(result.address.state.length===0) result.address.state=temp_add.city_name.replace(/^[^,]*,\s*/,"");
+        }
+        if(user.biography) result.biography=user.biography;
+        if(user.business_phone_number) result.phone=user.business_phone_number;
+        return result;
+    }
+
+/** parser for instagram to read the data */
+MTurkScript.prototype.parse_instagram=function(doc,url,resolve,reject)
+{
+    var scripts=doc.scripts,i,j,parsed;
+    var script_regex=/^window\._sharedData\s*\=\s*/;
+    var result={success:false};
+    for(i=0; i < scripts.length; i++)
+    {
+        if(script_regex.test(scripts[i].innerHTML))
+        {
+            parsed=JSON.parse(scripts[i].innerHTML.replace(script_regex,"").replace(/;$/,""));
+            result=MTurkScript.prototype.parse_insta_script(parsed);
+            resolve(result);
+            break;
+        }
+    }
+    resolve(result);
+    return;
+};
