@@ -1132,3 +1132,30 @@ MTurkScript.prototype.parse_instagram=function(doc,url,resolve,reject)
     resolve(result);
     return;
 };
+
+MTurkScript.prototype.parse_FB_posts=function(doc,url,resolve,reject)
+{
+    var scripts=doc.scripts,i,j;
+    var code=doc.body.getElementsByTagName("code");
+    var result={success:false},time;
+    for(i=0; i < code.length; i++)
+    {
+        code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
+    }
+    var posts=doc.getElementsByClassName("mbm");
+    for(i=0; i < posts.length; i++)
+    {
+        if(posts[i].getElementsByClassName("_449j").length===0) break;
+    }
+    if(i>=posts.length || !(time=posts[i].getElementsByClassName("_5ptz")) ||
+       time.length===0 || !time[0].title || time[0].title.split(" ").length<2)
+    {
+
+        resolve(result);
+        return;
+    }
+
+    result={success:true,date:time[0].title.split(" ")[0],time:time[0].title.split(" ")[1]};
+    resolve(result);
+
+};
