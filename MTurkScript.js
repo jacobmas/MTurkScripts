@@ -1073,12 +1073,16 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
     {
         if(_4bl9[i].getElementsByClassName("_2wzd").length>0 &&
            (address=parseAddress.parseLocation(_4bl9[i].innerText.replace(/\n/g,",")
+					       .replace(/\s*\([^\)]+\)\s*/g,"")
+                                               .replace(/\s*\d[A-Za-z]{1,2}\s*floor\s*/i," ")
+					       .replace(/Ste\.? [\d]+/,"")
+					       .replace(/P(\.?)O(\.?) Box [\d\-]+,/,"123 Fake Street,");
 
 					      ))
            && address)
 	{
 	    result.address=address;
-	    result.addressInner=_4bl9[i].innerText;
+	    result.addressInner=_4bl9[i].innerText.replace(/Get Directions$/,"");
 	}
 	
         inner_a=_4bl9[i].getElementsByTagName("a");
