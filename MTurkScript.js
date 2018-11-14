@@ -1050,7 +1050,7 @@ MTurkScript.prototype.match_home_a=function(inner_a,text)
 
 MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
 {
-    var result={success:true},outer_part,_4bl9,i,j,inner_a,response,_4j7v;
+    var result={success:true,fb_url:url},outer_part,_4bl9,i,j,inner_a,response,_4j7v;
     var _a3f,coord_ret,address;
     var code=doc.body.getElementsByTagName("code"),scripts=doc.scripts;
     for(i=0; i < code.length; i++)
