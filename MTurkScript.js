@@ -1072,8 +1072,15 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
     for(i=0; i < _4bl9.length; i++)
     {
         if(_4bl9[i].getElementsByClassName("_2wzd").length>0 &&
-           (address=parseAddress.parseLocation(_4bl9[i].innerText.replace(/\n/g,",")))
-           && address) result.address=address;
+           (address=parseAddress.parseLocation(_4bl9[i].innerText.replace(/\n/g,",")
+
+					      ))
+           && address)
+	{
+	    result.address=address;
+	    result.addressInner=_4bl9[i].innerText;
+	}
+	
         inner_a=_4bl9[i].getElementsByTagName("a");
         if(inner_a.length===0 && (response=MTurkScript.prototype.match_home_text(_4bl9[i].innerText))
            && response[0].length>0) result[response[0]]=response[1];
