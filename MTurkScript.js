@@ -1076,7 +1076,7 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
 					       .replace(/\s*\([^\)]+\)\s*/g,"")
                                                .replace(/\s*\d[A-Za-z]{1,2}\s*floor\s*/i," ")
 					       .replace(/Ste\.? [\d]+/,"")
-					       .replace(/P(\.?)O(\.?) Box [\d\-]+,/,"123 Fake Street,");
+					       .replace(/P(\.?)O(\.?) Box [\d\-]+,/,"123 Fake Street,")
 
 					      ))
            && address)
