@@ -1001,6 +1001,7 @@ MTurkScript.prototype.parse_FB_search=function(doc,url,resolve,reject)
         if(/^bigPipe\.beforePageletArrive\(\"pagelet_loader_initial_browse_result/.test(scripts[i].innerHTML) && i < scripts.length-1)
         {
             /* Parse the next one */
+	    console.log("scripts["+i+"].innerHTML="+scripts[i].innerHTML);
             result=MTurkScript.prototype.parse_search_script(scripts[i+1]);
             break;
         }
@@ -1131,6 +1132,31 @@ MTurkScript.prototype.parse_instagram=function(doc,url,resolve,reject)
     }
     resolve(result);
     return;
+};
+
+/* Parse FB_search parses a search for PAGES on Facebook */
+MTurkScript.prototype.parse_FB_search_page=function(doc,url,resolve,reject)
+{
+    var result={success:false,sites:[]};
+    var code=doc.body.getElementsByTagName("code"),i,j,name,desc;
+    try
+    {
+        for(i=0; i < code.length; i++)
+        {
+            //console.log("code ("+i+")");
+            code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
+        }
+        name=doc.getElementsByClassName("_32mo")
+        desc=doc.getElementsByClassName("_glo");
+        for(i=0; i < name.length; i++)
+        {
+            result.sites.push({name:name[i].innerText,url:name[i].href,text:desc[i].innerText});
+        }
+        result.success=true;
+
+    }
+    catch(error) { console.log("Error in parse_FB_search_page "+error); result.success=false; }
+    resolve(result);
 };
 
 MTurkScript.prototype.parse_FB_posts=function(doc,url,resolve,reject)
