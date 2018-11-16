@@ -25,6 +25,8 @@
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/MTurkScript.js
+
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
@@ -56,7 +58,8 @@
                  "citymaps.com","advrider.com","twitter.com","findmeglutenfree.com",".net","hotfrog.com","foodtrucksin.com",
                  "ourvalleyevents.com",".pdf","locu.com","restaurantguru.com","chinesemenu.com","trycaviar","beyondmenu","allmenus","groupon.com",
                  "tripadvisor.com","alohaorderonline.com","singleplatform.com","timetemperature.com","www.restaurant.com","menutoeat.com",
-                  "cylex.us.com","www.zillow.com","www.realtor.com","www.trulia.com","www.homes.com","s3.amazonaws.com","www.yelp.co"];
+                  "cylex.us.com","www.zillow.com","www.realtor.com","www.trulia.com","www.homes.com","s3.amazonaws.com",
+                  "www.yelp.co","www.yooying.com",".opendi.us","tablehero.com"];
     var country_domains=[".ar",".at",".au",".br",".ch",".cn",".de",".eu",".fr",".it",".jp",".ro",".ru",".se",".tw",".uk",".uy",".vn"];
     var first_try=true;
 
@@ -74,6 +77,8 @@
     function check_and_submit(check_function)
     {
         console.log("in check");
+        console.log("Closed="+GM_getValue("closed",0)+"\nReturn="+GM_getValue("return",0)+
+                    "\nsuccess="+GM_getValue("success",0)+"\nno page="+GM_getValue("no_webpage",0));
         
         console.log("Checking and submitting");
 	if(GM_getValue("automate"))
@@ -97,8 +102,9 @@
             console.log("split_url[2]="+split_url[2]);
             let dot_split=split_url[2].split(".");
 
-            let first=my_query.name.split(" ")[0].toLowerCase();
-            if(dot_split.length>=2 && dot_split[0]!=="www" && dot_split[0].indexOf(first)!==-1
+            let first=my_query.name.replace(/[^A-Z]+/g,"").toLowerCase();
+            console.log("first="+first);
+           if(dot_split.length>=2 && dot_split[0]!=="www" && dot_split[0].indexOf(first)!==-1
               && !/com|org|net|io|site|biz|(^[a-z]{2,3}$)/.test(dot_split[1])
               ) return true;
         }
@@ -237,6 +243,7 @@
             {
                 console.log("Permanently closed!");
                 document.getElementsByName("closed")[0].checked=true;
+                GM_setValue("closed",my_query.closed+1);
                 check_and_submit();
                 return;
             }
@@ -247,6 +254,7 @@
                 if(inner_a!==null && inner_a!==undefined && inner_a.length>0 && !is_bad_url(inner_a[0].href.replace(/\/$/,""),bad_urls,5) && !is_bad_url2(inner_a[0].href))
                 {
                     document.getElementById("webpage_url").value=inner_a[0].href;
+                    GM_setValue("success",my_query.success+1);
                     check_and_submit();
                     return;
                 }
@@ -285,6 +293,7 @@
                 if(!is_bad_url(b_url,bad_urls) && !is_bad_url2(b_url,bad_urls) && i < 2)
                 {
                     document.getElementById("webpage_url").value=b_url;
+                    GM_setValue("success",my_query.success+1);
                     check_and_submit();
                     return;
 
@@ -292,6 +301,7 @@
                 else if(!is_bad_url(b_url,bad_urls) && !is_bad_url2(b_url,bad_urls))
                 {
                     console.log("BAD can't guess");
+                    GM_setValue("return",my_query.return+1);
                     GM_setValue("returnHit",true);
                     return;
                 }
@@ -305,6 +315,7 @@
                 query_search(my_query.name+" "+my_query.city+" "+my_query.state,resolve,reject,camp_response);
                 return;
             }
+            GM_setValue("no_webpage",my_query.no_webpage+1);
             document.getElementsByName("no_page")[0].checked=true;
             check_and_submit();
             return;
@@ -431,10 +442,17 @@ GM_setValue("returnHit",true);
 
         my_query={name: wT.rows[0].cells[1].innerText, address: wT.rows[1].cells[1].innerText, city: wT.rows[3].cells[1].innerText,
                  state: wT.rows[4].cells[1].innerText, zip: wT.rows[5].cells[1].innerText, try_count:0};
+        my_query.closed=GM_getValue("closed",0);
+        my_query.no_webpage=GM_getValue("no_webpage",0);
+        my_query.success=GM_getValue("success",0);
+        my_query.return=GM_getValue("return",0);
+
+        my_query.name=my_query.name.replace(/^BDW\s*/,"").replace(/\s+[A-Z]*\d{1,2}\/\d{1,2}$/,"")
+        .replace(/-.*$/,"");
+        my_query.name=my_query.name.replace(/(^|\s)([A-Za-z0-9\-\.]+)\/(?:[^\s]+)/,"$1$2")
 
 
-        my_query.name=my_query.name.replace(/(^|\s)([A-Za-z0-9\-\.]+)\/(?:[^\s]+)/,"$1$2");
-        console.log("my_query.name="+my_query.name);
+        console.log("my_query="+JSON.stringify(my_query));
 
         var search_str, search_URI, search_URIBing;
         search_str=my_query.name+" "+my_query.address+" "+my_query.city+" "+my_query.state;

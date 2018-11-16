@@ -138,7 +138,7 @@ console.log("Munky");
  */
 function MTurkScript(return_ms,submit_ms,sites,callback,requester_id)
 {
-    console.log("Initializing MTurkScript");
+//    console.log("Initializing MTurkScript");
     this.return_ms=return_ms;
     this.submit_ms=submit_ms;
     this.sites=sites;
@@ -153,11 +153,11 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id)
         this.attempts[x]=0;
         //console.log("this.site_parser_map["+x+"]="+this.site_parser_map[x]);
     }
-    console.log("this.sites="+JSON.stringify(this.sites));
+   // console.log("this.sites="+JSON.stringify(this.sites));
     /* site_parser_map maps a website url fragment to a parser */
 
     this.globalCSS=GM_getResourceText("globalCSS");
-    console.log("MTurk:Initializing mturk "+JSON.stringify(this.site_parser_map));
+ //   console.log("MTurk:Initializing mturk "+JSON.stringify(this.site_parser_map));
 
     // initialize external site parsers
     for(var x=0; x<this.sites.length; x++)
@@ -1075,8 +1075,9 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
            (address=parseAddress.parseLocation(_4bl9[i].innerText.replace(/\n/g,",")
 					       .replace(/\s*\([^\)]+\)\s*/g,"")
                                                .replace(/\s*\d[A-Za-z]{1,2}\s*floor\s*/i," ")
-					       .replace(/Ste\.? [\d]+/,"")
-					       .replace(/P(\.?)O(\.?) Box [\d\-]+,/,"123 Fake Street,")
+					       .replace(/(Ste(\.?)|Suite) [\d]+/,"")
+					       .replace(/Unit [A-Za-z\-\d]+,/,"")
+					       .replace(/P(\.|\s)?O(\.|\s)? Box [\d\-]+,/i,"123 Fake Street,")
 
 					      ))
            && address)
