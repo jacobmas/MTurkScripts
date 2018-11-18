@@ -127,7 +127,7 @@ for (var i=0; i < defaultDiacriticsRemovalMap .length; i++){
     }
 }
 
-console.log("Munky");
+//console.log("Munky");
 
 /* return_ms is the number of milliseconds to wait before returning the HIT,
  * submit_ms is the number of milliseconds to wait before submitting the HIT
@@ -790,14 +790,17 @@ MTurkScript.prototype.add_to_sheet=function()
 */
 MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func)
 {
-    if(catch_func==undefined) catch_func=function(response) { console.log("Request to url failed "+response); };
+    if(catch_func===undefined) catch_func=MTurkScript.prototype.my_catch_func;
+
     const queryPromise = new Promise((resolve, reject) => {
         GM_xmlhttpRequest(
             {method: 'GET', url: url,
              onload: function(response) {
                  var doc = new DOMParser()
                      .parseFromString(response.responseText, "text/html");
-                 parser(doc,response.finalUrl, resolve, reject); },
+                 if(extra_arg!==undefined) parser(doc,response.finalUrl, resolve, reject,extra_arg);
+                 else parser(doc,response.finalUrl, resolve, reject);
+             },
              onerror: function(response) { reject("Failed to load site "+response); },
              ontimeout: function(response) {reject("Timed out loading site "+response); }
             });
@@ -806,6 +809,8 @@ MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func
         .catch(catch_func);
     return queryPromise;
 };
+
+MTurkScript.prototype.my_catch_func=function(response) { console.log("Request to url failed "+response); };
     /**
      * adjust_time adjusts the hr, min, ampm into military format */
 MTurkScript.prototype.adjust_time=function(hr,min,ampm)
