@@ -788,7 +788,7 @@ MTurkScript.prototype.add_to_sheet=function()
    and the promise does (mandatory) then_func on resolving, (optional, otherwise just prints a message) catch_func on
    rejecting
 */
-MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func)
+MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func,extra_arg)
 {
     if(catch_func===undefined) catch_func=MTurkScript.prototype.my_catch_func;
 
