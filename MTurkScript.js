@@ -1206,7 +1206,7 @@ MTurkScript.prototype.parse_FB_posts=function(doc,url,resolve,reject)
      * found_url is the url that needs fixing
      *  page_url is the url from response.finalUrl
     */
-MTurkScript.prototype.fix_remote_urls=function(found_url,page_url)
+MTurkScript.prototype.fix_remote_url=function(found_url,page_url)
 {
     var replacement=page_url.match(/^https?:\/\/[^\/]+/);
     var to_replace= window.location.href.match(/^https?:\/\/[^\/]+/)[0];
