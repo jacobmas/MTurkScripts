@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         ASOC_School
+// @name         ASOC_Municipal
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  ASOC get FB and Twitter School Agency
@@ -97,9 +97,17 @@
             return;
         }
         console.log("Checking and submitting");
-	if(GM_getValue("automate"))
+        var fb_color=document.getElementsByName("FB URL")[0].style.backgroundColor;
+        var twitter_color=document.getElementsByName("Twitter URL")[0].style.backgroundColor;
+        console.log("fb_color=("+fb_color+", "+typeof(fb_color)+"=rgbstuff="+
+                    (fb_color==="rgb(255, 255, 255)")+
+                    "), twitter_color="+twitter_color);
+	if(GM_getValue("automate") &&
+       ((document.getElementsByName("FB URL")[0].style.backgroundColor==="rgb(255, 255, 255)"
+        ) &&
+       (document.getElementsByName("Twitter URL")[0].style.backgroundColor==="rgb(255, 255, 255)")))
         {
-            setTimeout(function() { document.getElementById("submitButton").click(); }, 1000);
+            setTimeout(function() { document.getElementById("submitButton").click(); }, 250);
         }
     }
 
@@ -130,6 +138,12 @@
             console.log("Trying b_name again with "+b_name);
             return is_bad_name(b_name,p_caption,site,pos);
         }
+        else if(/(^|\s|,)St\./.test(b_name))
+        {
+            b_name=b_name.replace(/(^|\s|,)St\./,"$1Saint ");
+            console.log("Trying b_name again with "+b_name);
+            return is_bad_name(b_name,p_caption,site,pos);
+        }
         else if(/(^|\s|,)ISD($|\s|,)/i.test(b_name))
         {
             b_name=b_name.replace(/(^|\s|,)ISD($|\s|,)/i,"$1I.S.D.$2");
@@ -148,30 +162,70 @@
              console.log("Trying b_name again with "+b_name);
             return is_bad_name(b_name,p_caption,site,pos);
         }
-
+        else if(/-/.test(b_name))
+        {
+            b_name=b_name.replace(/-/g," ");
+             console.log("Trying b_name again with "+b_name);
+            return is_bad_name(b_name,p_caption,site,pos);
+        }
         return true;
     }
 
     function acronym(text)
     {
+        text=text.replace(/([A-Za-z]{1})-([A-Za-z]{1])/,"$1 $2");
         var ret="",t_split=text.split(" ");
         for(var i=0; i < t_split.length; i++)
             if(/[A-Z]+/.test(t_split[i].substr(0,1))) ret=ret+t_split[i].charAt(0);
         return ret;
     }
 
+    function is_school_district(text)
+    {
+        return /(\s|^|[a-z]+)(District|Schools|Public School|Local School|((I(\.)?)?S(\.)?D(\.)?)|USD)([\s,]+|$)/i.test(text);
+    }
+
     function is_bad_name(b_name,p_caption,site,pos)
     {
-        b_name=b_name.replace(/^The\s*/,"");
+        b_name=b_name.replace(/^The\s*/,"").replace(/\'/g,"").replace(/^(Welcome to|Government of) (the )?/i,"");
+        b_name=b_name.replace(/(Village|Government|City) Offices/i,"$1");
+        if(site==="twitter")
+        {
+            b_name=b_name.replace(/\(@.*$/,"").trim();
+            b_name=b_name.replace(/([a-z]{1})([A-Z]{1})/g,"$1 $2");
+            b_name=b_name.replace(/^Vlg/i,"Village").replace(/(\s|^)Boro(\s|$)/i,"$1Borough$2");
+            b_name=b_name.replace(new RegExp(my_query.state+"([A-Z]{1}[a-z]{1})"),my_query.state+" $1");
+        }
+        if(site==="facebook")
+        {
+            b_name=b_name.replace(/\s\|.*$/,"").replace(/ - Home.*$/,"").replace(/ - .*$/,"").trim();
+        }
         var orig_b_name=b_name;
         b_name=b_name.toLowerCase().trim();
+
         var name_minus_state=my_query.agency_name.replace(/,.*$/,"");
         var state_regexp=new RegExp("(\\s|,)"+my_query.state+"(\\s|$|\\.)");
          var county_acronym=acronym(my_query.agency_name.replace(/,.*$/,""));
-        console.log("# county_acronym="+county_acronym);
+        var x,bad_state_reg;
+        for(x in reverse_state_map)
+        {
+            if(x===my_query.state) continue;
+            bad_state_reg=new RegExp(my_query.short_name+",\\s*"+reverse_state_map[x],"i");
+           // console.log("bad_state_reg="+bad_state_reg+", b_name="+b_name);
+            if(bad_state_reg.test(b_name))
+            {
+                console.log("Wrong state, found "+reverse_state_map[x]+", should be "+reverse_state_map[my_query.state]);
+                return true;
+            }
+        }
+        console.log("# b_name="+b_name+", county_acronym="+county_acronym);
 
-        if(b_name.indexOf(my_query.short_name.toLowerCase())===-1
-          && ( orig_b_name.indexOf(county_acronym+" ")===-1)
+        var name_regexp=new RegExp("(^|[^A-Za-z]{1})"+my_query.short_name.toLowerCase().replace(/-/,"(-|\\s)")+"($|[^A-Za-z]{1})");
+
+        console.log(name_regexp+".test("+b_name+")="+name_regexp.test(b_name));
+//b_name.indexOf(my_query.short_name.toLowerCase())===-1           && b_name.indexOf(my_query.short_name.toLowerCase().replace(/-/g," "))===-1
+        if(!name_regexp.test(b_name)
+          && !(county_acronym.length>1 && new RegExp(county_acronym,"i").test(b_name))
           )
         {
 
@@ -200,38 +254,86 @@
 //                return try_bad_name_again(orig_b_name,p_caption,site,pos);
             }
         }
-        if(/School Choice|Class Of|Alumni|School(?:s)? Foundation/i.test(b_name) || /(^|\s)NEA\s/.test(p_caption))
+        var bad_places="Baptist|Church|Firefighters|Fire|Police|Sports|Sport|Baptist|Cool|([A-Z]*ISD)|Chamber|FFA|PBA|Pulse|"+
+            "Magazine|Store|Liquor|Hockey[a-z]*|City Council|Recreation|Program|Committee|Democratic|Auto[a-z]*|Club|"+
+            "Tourism|Wildlife|GOP|Democrat[a-z]*|Neighborhood Watch|Art|Mountain|Athletics|Library|Baseball|Football|Magazine|"+
+            "Medical|Soccer|Patch|Pharmacy|Rec|Yoga|Resort|Development|Company|FPG|Herald|Tribune|Star|Times|UMC|Country Club|"+
+            "Planning|Neighborhood|Clerk|Department|Recreation|Program|Committee|Office of|"+
+            "Ambulance|School|"+
+            "PD|FD|"
+            "USD|ISD|School[a-z]{0,1}|HS|Elementary";
+        var bad_twitter_places="([A-Z]{1}[a-z]+s)|([A-Z]{2,})|([\d]+)|Football"
+        var bad_places_regexp=new RegExp("\\s"+bad_places+"(\\s|[,\/\.]{1}|$|-)","i");
+        var bad_stuff_regexp=new RegExp(my_query.short_name+",?(-[^\\s]*)?\\s([^\\s]+\\s){0,3}("+bad_places+
+                                        ")(\\s|[,\/\.]{1}|$|-)","i");
+        var bad_twitter_regexp=new RegExp(my_query.short_name+",?(-[^\\s]*)?\\s([^\\s]+\\s){0,3}("+bad_twitter_places+
+                                        ")(\\s|[,\/\.]{1}|$|-)","i");
+        var before_bads="Visit|Company|Larry";
+        var before_bad_stuff_regexp=new RegExp("^("+before_bads+")\\s([^\\s]+\\s){0,3}"+my_query.short_name+"(\\s|,|$|-)","i");
+        console.log("before_bad_stuff_regexp="+before_bad_stuff_regexp);
+        if(/(\s)Recreation Division|Public Works(\s|,|-|$)/i.test(b_name)
+          || (bad_stuff_regexp.test(b_name)) || before_bad_stuff_regexp.test(b_name)
+           || (!name_regexp.test(b_name)&&bad_places_regexp.test(b_name)) ||
+           (site==="twitter" && bad_twitter_regexp.test(b_name))
+          )
         {
-            console.log("Wrong stuff in Name");
-            return true;
-        }
-        if(!/School|College|University/i.test(b_name) && !/PS|SD|I(\.?)S(\.?)D|CSD/.test(orig_b_name) && !/(\s|^)Education|Teaching(\s|$)/.test(orig_b_name))
-        {
-            if(!/School|College|University/i.test(p_caption))
+            let bad_match=b_name.match(bad_stuff_regexp);
+            console.log("bad_match="+JSON.stringify(bad_match));
+            if(!(bad_match && (bad_match[3].indexOf(my_query.state.toLowerCase())!==-1 ||
+                              bad_match[3].indexOf(reverse_state_map[my_query.state].toLowerCase())!==-1)))
             {
-                console.log("Not a school thing");
+                console.log("bad name");
                 return true;
             }
         }
+        var of_regex=new RegExp("^(.*) of "+my_query.short_name,"i");
+
+        if(of_regex.test(orig_b_name))
+        {
+            var match=orig_b_name.match(of_regex);
+            var type=my_query.orig_name.match(/^(.*)\sof\s/);
+            var type_regex="";
+            if(type) type_regex=new RegExp("^"+type[1],"i");
+            console.log("type_regex="+type_regex);
+            if(match && type && !type_regex.test(match[1]) && !((type[1]==="City" && match[1]==="Town")||(type[1]==="Town" && match[1]==="City")))
+            {
+                console.log("Bad match, "+type[1]+" not found at beginning of "+match[1]);
+                return try_bad_name_again(orig_b_name,p_caption,site,pos);
+            }
+        }
+        else if(site==="twitter" && b_name.indexOf(my_query.short_name.toLowerCase())!==0)
+        {
+            console.log("bad name type twitter");
+            return true;
+        }
+
 
         var p_caption_regexp=new RegExp("(\\s|,|^)(bank locations|Automotive)(\\s|,|$)","i");
         var p_caption_first=p_caption.split(/[!\.\?]+/)[0];
-        if(/(\s|,|^)(Chamber of Commerce|Historical Society|Food Stand|Senior Living)(\s|,)/i.test(p_caption)
 
-          || p_caption_regexp.test(p_caption) || /People talk about/.test(p_caption)
-          ) {
-            console.log("Bad caption");
-            return try_bad_name_again(orig_b_name,p_caption,site,pos);
+        if(site==="twitter") {
+            if(!/country club/i.test(my_query.orig_name) && (/(country club)|(Protected Tweets )|((Cuisine|Baseball)(\s|\.|\,))|(Parody(\s|\.|$))/i.test(p_caption)
+              ||/(Follow us for the latest news,)|(Get the latest news)/.test(p_caption))
+
+              ) {
+                console.log("Protected Tweets found");
+                return true; }
+            if(/[^A-Za-z\d\.\,\;\-\'\"\!\?\s\(\)\[\]\{\}_\*]+/.test(b_name))
+            {
+                console.log("Found weird character "+b_name.match(/[^A-Za-z\d\.\,\;\-\'\"\!\?]+/));
+                return true;
+            }
         }
+        if(/NOT affiliated with/i.test(p_caption)) {
+            console.log("Unaffiliated page");
+            return true;
+        }
+       
        // if(site==="twitter") return is_bad_twitter_name(orig_b_name,p_caption,site,pos);
 
         return false;
     }
-
-
-
-    function is_bad_twitter_name(orig_b_name,p_caption,site,pos)
-    {
+    function is_bad_twitter_name(orig_b_name,p_caption,site,pos) {
         orig_b_name=orig_b_name.replace(/\|.*$/,"").replace(/\(@[^\)]+\)/,"").replace(my_query.short_name,"").trim();
         orig_b_name=orig_b_name.replace(/(^|\s|,)Official($|\s|,)/i,"").trim()
         .replace(/(^|\s|,)of($|\s|,)/i,"").replace(/(^|\s|,)(City|Town|Borough|Township|Village|Municipality|County)($|\s|,)/i,"")
@@ -248,23 +350,24 @@
         }
     }
 
-    function is_bad_site(site,b_url)
-    {
+    function is_bad_site(site,b_url) {
+       // console.log("in is_bad_site for "+b_url);
         if((site==="facebook" && (/\/(pages|public|groups|events|posts)\//.test(b_url) ||
                                 /permalink\.php/.test(b_url) || /x\.facebook\.com/.test(b_url) || /reviews(\/|$)/.test(b_url)
-                                || !/www\.facebook\.com/.test(b_url) || /public\?/.test(b_url)
+                                || !/www\.facebook\.com/.test(b_url) || /public\?/.test(b_url) ||
+                                  /\/story\.php/.test(b_url)
                                 ) ) ||
-          (site=="twitter" && (/\/status\//.test(b_url)))
+          (site=="twitter" && (/\/status\//.test(b_url) || !/twitter\.com/.test(b_url)))
           )
         {
             console.log("bad url format");
             return true;
         }
+
         return false;
     }
 
-    function get_bing_url(doc)
-    {
+    function get_bing_url(doc) {
         var b_context=doc.getElementById("b_context");
         var infocard,inner_a,i,cbtn;
         if(b_context)
@@ -298,6 +401,7 @@
         .parseFromString(response.responseText, "text/html");
         var site;
         if(/site%3A([^\.]+).com/.test(response.finalUrl)) site=response.finalUrl.match(/site%3A([^\.]+).com/)[1];
+        else if(/twitter&first/.test(response.finalUrl)) site="twitter";
         else site="bing";
 
         console.log("in query_response for "+site+"\n"+response.finalUrl);
@@ -365,7 +469,9 @@
         if(my_query.try_count[site]===0)
         {
             my_query.try_count[site]++;
-            query_search(my_query.query_name+" site:"+site+".com", resolve, reject, query_response);
+            var temp_name=my_query.agency_name.replace(/Consolidated Independent School District/,"CISD").replace(
+                /Independent School District/,"ISD");
+            query_search(temp_name+" "+site, resolve, reject, query_response);
             return;
         }
         else
@@ -392,6 +498,7 @@
             });
     }
 
+    /* Tests if the location is the right area for the city sought */
     function test_location(response,resolve,reject) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
@@ -436,11 +543,10 @@
 
     function test_promise_then(result) { }
 
-
-    function submit_if_done()
-    {
+    function submit_if_done() {
         var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         var orig_fb=wT.rows[5].cells[1].innerText.trim().toLowerCase().replace(/m\.facebook\.com/,"www.facebook.com")
+        .replace(/http:/,"https:")
 
         ,orig_twitter=wT.rows[10].cells[1].innerText.trim().toLowerCase();
         var curr_fb=document.getElementsByName("FB URL")[0], curr_twitter=document.getElementsByName("Twitter URL")[0];
@@ -450,14 +556,21 @@
         if(orig_twitter.length===0) orig_twitter="none";
         console.log("orig_fb="+orig_fb+", curr_fb="+curr_fb.value+"\norig_twitter="+orig_twitter+", curr_twitter="+curr_twitter.value);
         if(orig_fb.indexOf(curr_fb.value)!==-1 || curr_fb.value.indexOf(orig_fb)!==-1) {
-            //console.log("MATCH FB");
+            console.log("MATCH FB");
             curr_fb.style.backgroundColor="#ffffff"; }
-        else {
-
+        else if((orig_fb.split("/").length<4||
+                (orig_fb.split("/")[3].split("-").length<3&&orig_fb.split("/")[3]!=="pages"))||curr_fb.value==="none") {
             console.log("orig_fb.indexOf(curr_fb.value)="+orig_fb.indexOf(curr_fb.value));
             curr_fb.style.backgroundColor="#ffff55"; }
-        if(orig_twitter.indexOf(curr_twitter.value)!==-1 || curr_twitter.value.indexOf(orig_twitter)!==-1) { curr_twitter.style.backgroundColor="#fffff"; }
-        else { curr_twitter.style.backgroundColor="#ffff55"; }
+        else
+        {
+            curr_fb.style.backgroundColor="#ffffff"; }
+        if(orig_twitter.indexOf(curr_twitter.value)!==-1 || curr_twitter.value.indexOf(orig_twitter)!==-1 || curr_twitter.value===orig_twitter) {
+            console.log("MATCH twitter");
+            curr_twitter.style.backgroundColor="#ffffff"; }
+        else {  console.log("orig_twitter.indexOf(curr_twitter.value)="+orig_twitter.indexOf(curr_twitter.value));
+
+            curr_twitter.style.backgroundColor="#ffff55"; }
 
         console.log("(doneFB, doneTwitter,doneFBSearch,doneWebTwitter,submitted)=("+my_query.doneFB+","+my_query.doneTwitter+","+
                     my_query.doneWebFB+","+my_query.doneWebTwitter+","+my_query.submitted+")");
@@ -468,19 +581,164 @@
         }
     }
 
+    function fb_home_promise_then(result) {
+        console.log("* fb_home_promise_then"+JSON.stringify(result));
+        my_query.fb_home_result=result;
+        if(my_query.fb_home_result && my_query.fb_posts_result)
+        {
+            check_good_fb();
+        }
+
+    }
+
+    function fb_posts_promise_then(result) {
+        console.log("* fb_posts_promise_then"+JSON.stringify(result));
+        my_query.fb_posts_result=result;
+        if(my_query.fb_home_result && my_query.fb_posts_result)
+        {
+            check_good_fb();
+        }
+    }
+
+    function check_good_fb() {
+        console.log("* in check_good_fb");
+        var success=true;
+
+        if(!(my_query.fb_home_result.success && my_query.fb_posts_result.success))
+        {
+            console.log("no success");
+            success=false;
+        }
+        else
+        {
+
+            if(is_bad_fb_home())
+            {
+                console.log("Bad fb_home");
+                success=false;
+            }
+            if(my_query.fb_home_result.addressInner!==undefined &&
+               is_bad_fb_address(my_query.fb_home_result.addressInner.trim().replace(/\n/g,",").replace(/\s*\([^\)]+\)\s*/g,"")
+                                 .replace(/\s*\d[A-Za-z]{1,2}\s*floor\s*/i," ").replace(/Ste\.? [\d]+/,"")
+                                 .replace(/P(\.?)O(\.?) Box [\d\-]+,/,"123 Fake Street,")))
+            {
+                console.log("Bad fb_address");
+                success=false;
+            }
+        }
+        if(!success)
+        {
+            console.log("A bad FB page found");
+            if(document.getElementsByName("FB URL")[0].value.length===0)
+            {
+                document.getElementsByName("FB URL")[0].value="none";
+                document.getElementsByName("FB Likes")[0].value="none";
+                document.getElementsByName("FB Followers")[0].value="none";
+            }
+        }
+        else
+        {
+            document.getElementsByName("FB URL")[0].value=my_query.fb_home_result.fb_url;
+            document.getElementsByName("FB Likes")[0].value=my_query.fb_home_result.likes;
+            document.getElementsByName("FB Followers")[0].value=my_query.fb_home_result.followers;
+            document.getElementsByName("Most_Recent_Activity")[0].value=my_query.fb_posts_result.date;
+        }
+
+        if(my_query.caller==="")
+        {
+            my_query.doneFB=true;
+
+            if(!my_query.doneWebFB && my_query.webFB_url.length>0)
+            {
+                if(my_query.fb_home_result.fb_url.toLowerCase().replace(/\/$/,"")!==my_query.webFB_url.toLowerCase().replace(/\/$/,""))
+                {
+                    fb_promise_then(my_query.webFB_url,"website");
+                    my_query.webFB_url="";
+                }
+                else
+                {
+                   // console.log("setting doneWebFB in caller");
+                    my_query.doneWebFB=true;
+                }
+
+                submit_if_done();
+                my_query.fb_home_result=null;
+                my_query.fb_posts_result=null;
+                return;
+            }
+
+
+        }
+        else
+        {
+           // console.log("Setting doneWebFB for website in check_good_fb");
+            my_query.doneWebFB=true;
+        }
+        my_query.fb_home_result=null;
+        my_query.fb_posts_result=null;
+
+
+        submit_if_done();
+        return true;
+
+    }
+
+    function is_bad_fb_home() {
+        let result=my_query.fb_home_result,k;
+        if(result.phone!==undefined)
+        {
+
+            let num_only=result.phone.replace(/[^\d]+/g,"");
+            console.log("num_only="+num_only);
+
+            if(area_code_map[num_only.substr(0,3)]===undefined || state_map[area_code_map[num_only.substr(0,3)]]===undefined ||
+               state_map[area_code_map[num_only.substr(0,3)]]!==my_query.state)
+            {
+                if(area_code_map[num_only.substr(0,3)]!==undefined)
+                {
+                    console.log("Wrong phone state, found "+state_map[area_code_map[num_only.substr(0,3)]]);
+                    return true;
+                }
+            }
+        }
+
+        for(k=0; k < result.keywords.length; k++)
+        {
+            // console.log("inner_a.length="+inner_a.length);
+            if(result.keywords[k].length>0)
+            {
+                console.log("result.keywords["+k+"]="+result.keywords[k]);
+            }
+            let keywords=result.keywords[k];
+            if(/Government Organization|City Hall|Borough|(^City$)|Locality/.test(keywords) ||
+              /Public &|Government|Town Hall|Public Service|(^Community$)|(^Community)|(^Landmark & Historical Place)/.test(keywords)
+              ) {
+                return false; }
+
+
+//            console.log("this keyword not good");
+        }
+        console.log("No good keywords found");
+        return true;
+
+
+    }
+
     /* Following the finding the district stuff */
     function fb_promise_then(url,caller) {
 
         if(caller===undefined) caller="";
         if(caller==="") my_query.fb_url=url;
+        my_query.caller=caller;
         console.log("fb_promise_then:caller="+caller);
-        url=url.replace(/\/posts\/?.*$/,"");
+        url=url.replace(/\/posts\/?.*$/,"").replace(/\?([^\/]+)$/,"");
         url=url.replace(/^https:\/\/www\.facebook\.com\/pg\/([^\/]+)\/about/,"https://www.facebook.com/$1");
-        url=url.replace(/\/(about|videos|photos|info)\/?.*$/,"");
-        url=url.replace(/(m|business)\.facebook\.com/,"www.facebook.com");
+        url=url.replace(/\/(about|videos|photos|info)\/?.*$/,"").replace(/timeline(\/)?$/,"");
+        url=url.replace(/(m|business)\.facebook\.com/,"www.facebook.com").replace(/\.$/,"");
+
          console.log("fb:url="+url+", my_query.webFB_url="+my_query.webFB_url+"\tdoneWebFB="+my_query.doneWebFB);
         GM_setValue("fb_result","");
-        if(url.length===0)
+        if(url.length===0) // || (url.toLowerCase()===document.getElementsByName("FB URL")[0].value))
         {
             if(document.getElementsByName("FB URL")[0].value.length===0)
             {
@@ -504,48 +762,15 @@
             return;
 
         }
-
-/*        MTurkScript.prototype.create_promise(fb_url,MTurkScript.prototype.parse_FB_home,fb_home_promise_then,
-                                                         function(response) { console.log("failed FB search");
+        var promise1=MTurkScript.prototype.create_promise(url,MTurkScript.prototype.parse_FB_home,fb_home_promise_then,
+                                                         function(response) { console.log("failed FB home");
                                                                              my_query.doneFBHome=true;
-
-                                                                             submit_if_done(); })*/
-
-        GM_addValueChangeListener("fb_result", function() {
-            var result=arguments[2];
-
-            if(document.getElementsByName("FB URL")[0].value.length===0 || (document.getElementsByName("FB URL")[0].value==="none" &&
-                                                                           result.success))
-            {
-                document.getElementsByName("FB URL")[0].value=result.fb_url;
-                document.getElementsByName("FB Likes")[0].value=result.fb_likes;
-                document.getElementsByName("FB Followers")[0].value=result.fb_followers;
-                document.getElementsByName("Most_Recent_Activity")[0].value=result.most_recent;
-            }
-            console.log("fb_result="+JSON.stringify(result));
-            if(caller==="website") my_query.doneWebFB=true;
-            else
-            {
-                my_query.doneFB=true;
-                if(!my_query.doneWebFB && my_query.webFB_url.length>0)
-                {
-                    if(result.fb_url.toLowerCase().indexOf(my_query.webFB_url.toLowerCase())===-1)
-                    {
-                        fb_promise_then(my_query.webFB_url,"website");
-                        my_query.webFB_url="";
-                    }
-                    else my_query.doneWebFB=true;
-
-                    submit_if_done();
-                    return;
-                }
-
-            }
-            submit_if_done();
-        });
-        console.log("Setting fb_url in fb_promise_then: "+url);
-        GM_setValue("fb_url",{url:url,website:caller==="website"});
-        console.log("fb_url="+JSON.stringify(GM_getValue("fb_url")));
+                                                                             submit_if_done(); });
+        console.log("* posts_url="+(url.replace(/\/$/,"")+"/posts"));
+        var promise2=MTurkScript.prototype.create_promise(url.replace(/\/$/,"")+"/posts",MTurkScript.prototype.parse_FB_posts,fb_posts_promise_then,
+                                                         function(response) { console.log("failed FB posts "+response);
+                                                                             my_query.doneFBPosts=true;
+                                                                             submit_if_done(); });
 
     }
     function twitter_promise_then(url,caller) {
@@ -585,33 +810,56 @@
         }
         GM_addValueChangeListener("twitter_result", function() {
             var result=arguments[2];
-            console.log("twitter_result="+JSON.stringify(result));
-            if(document.getElementsByName("Twitter URL")[0].value.length===0 ||caller==="website")
+            console.log("url="+url+", twitter_result="+JSON.stringify(result));
+            if(result==="")
+            {
+                result=arguments[1];
+                console.log("arguments[2] not an object "+caller+", "+JSON.stringify(arguments));
+                /*if(caller==="") my_query.doneTwitter=true;
+                else my_query.doneWebTwitter=true;*/
+
+                submit_if_done();
+                return;
+            }
+            if((document.getElementsByName("Twitter URL")[0].value.length===0 ||caller==="website"))
             {
                 document.getElementsByName("Twitter URL")[0].value=result.twitter_url;
                 document.getElementsByName("Twitter Followers")[0].value=result.twitter_followers;
             }
-            if(caller==="website") my_query.doneWebTwitter=true;
-            else my_query.doneTwitter=true;
-            if(caller==="" && !result.success && !my_query.doneWebTwitter && my_query.webTwitter_url.length>0)
+            if(caller==="website")
             {
-                console.log("Result failed, trying original twitter");
-                twitter_promise_then(my_query.webTwitter_url,"website");
+                my_query.doneWebTwitter=true;
+                my_query.webTwitter_url="";
             }
-            else my_query.doneWebTwitter=true;
+            else
+            {
+                my_query.doneTwitter=true;
+                if(caller==="" && !result.success && !my_query.doneWebTwitter && my_query.webTwitter_url.length>0)
+                {
+                    console.log("Result failed, trying original twitter");
+                    twitter_promise_then(my_query.webTwitter_url,"website");
+                    my_query.webTwitter_url="";
+                }
+                else my_query.doneWebTwitter=true;
+            }
             submit_if_done();
             return;
         });
         GM_setValue("twitter_url",{url:url,website:caller==="website"});
     }
 
-    function bing_promise_then(url)
-    {
+    function bing_promise_then(url) {
         console.log("bing: official url="+url);
         my_query.agency_url=url;
         GM_setValue("my_query",my_query);
         var search_str;
-        search_str=my_query.query_name+" site:facebook.com";
+        console.log("my_query.query_name=("+my_query.query_name+")");
+        var search_name=my_query.query_name.replace(/,\s*([^,]+)$/,function(match, p1, offset, string) {
+            console.log("match="+JSON.stringify(p1)+", "+state_map[p1.trim()]);
+            if(match && state_map[p1]!==undefined) return ", ("+p1+" OR "+state_map[p1]+")";
+            else return match;
+        });
+        search_str=search_name+" site:facebook.com";
         const fbPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search for FB");
             query_search(search_str, resolve, reject, query_response);
@@ -621,7 +869,9 @@
         )
         .catch(function(val) {
            console.log("Failed at this fbPromise " + val); GM_setValue("returnHit",true); });
-        search_str=my_query.query_name+" site:twitter.com";
+
+        search_str=search_name
+            +" site:twitter.com";
 
         const twitterPromise = new Promise((resolve, reject) => {
             console.log("Beginning Twitter search");
@@ -638,8 +888,7 @@
         }
         else
         {
-            //my_query.doneWebFB=true;
-           /* my_query.doneWebTwitter=true; */
+            
            submit_if_done();
         }
     }
@@ -674,6 +923,8 @@
                 }
             }
         }
+        console.log("^ Here in parse_web");
+
         if(!foundWebFB) my_query.doneWebFB=true;
         if(!foundWebTwitter) my_query.doneWebTwitter=true;
         submit_if_done();
@@ -681,129 +932,24 @@
 
     }
 
-    function is_bad_fb_page()
-    {
-        var _jlx=document.getElementsByClassName("_jlx");
-        var community=document.getElementsByClassName("_6590");
-        var page_name=document.getElementsByClassName("_64-f");
-         var about=document.getElementsByClassName("_u9q"),i,inner_a,j,k;
-       var categories;
-        var about_fields;
-        var description=document.getElementsByName("description");
+  
 
-     /*   if(description.length>0)
-        {
-            console.log("description[0].content="+description[0].content);
-            if(description[0].content.indexOf(", "+my_query.state)===-1) return true;
-        }*/
-         var url_container=document.getElementsByClassName("_v0m");
-        var official_url="";
-        if((_jlx.length>0 && /Unofficial Page/i.test(_jlx[0].innerText)) || community.length===0)
-        {
-            console.log("Unofficial or no community");
-            return true;
-        }
-
-        if(url_container.length>0 && url_container[0].getElementsByTagName("a").length>=2) official_url=url_container[0].getElementsByTagName("a")[1].href;
-        if(about.length===0) return false;
-
-        var found_community=false;
-        if(official_url.length>0 && my_query.agency_url.length>0 && official_url.indexOf(get_domain_only(my_query.agency_url,true))!==-1)
-        {
-            return false;
-        }
-        for(j=0; j < about.length; j++)
-        {
-            about_fields=about[j].getElementsByClassName("_4bl9");
-            for(i=0; i < about_fields.length; i++)
-            {
-                if(phone_re.test(about_fields[i].innerText))
-                {
-                    let num_only=about_fields[i].innerText.replace(/[^\d]+/g,"");
-                    console.log("Phone number: "+about_fields[i].innerText+", num_only="+num_only);
-
-                    if(area_code_map[num_only.substr(0,3)]===undefined || state_map[area_code_map[num_only.substr(0,3)]]===undefined ||
-                       state_map[area_code_map[num_only.substr(0,3)]]!==my_query.state)
-                    {
-                        if(area_code_map[num_only.substr(0,3)]!==undefined)
-                        {
-                            console.log("Wrong state, found "+state_map[area_code_map[num_only.substr(0,3)]]);
-                            return true;
-                        }
-                    }
-                }
-                inner_a=about_fields[i].getElementsByTagName("a");
-                for(k=0; k < inner_a.length; k++)
-                {
-                    // console.log("inner_a.length="+inner_a.length);
-                    if(inner_a.length>0)
-                    {
-                        console.log("j="+j+",i="+i+"inner_a["+k+"].href="+inner_a[k].href);
-                    }
-
-                    if(inner_a[k].href.indexOf("/search/str/")!==-1)
-                    {
-                        console.log("MOO");
-                        var keywords=inner_a[k].innerText;
-                        console.log("keywords="+keywords);
-                       if(/(^School$)|(^Public School$)|(^Education$)|(^Elementary School$)|(^High School$)/.test(keywords)) return false;
-                        //if(/(^Retail Company$)|(^Nonprofit Organization$)/.test(keywords)) return true;
-                        /* if(/Government Organization|City Hall|Borough|(^City$)|Locality|Public &|Government|Town Hall|Public Service/.test(keywords)) return false;
-                        if(/(^Community$)|(^Community Organization$)/.test(keywords)) { found_community=true; }
-                        if(/Car Wash|Local Business|Automotive Repair Shop|Performing Arts|Musician\/Band/.test(keywords)) return true;
-                        if(/Sports Club|Ice Skating Rink|Stadium, Arena \& Sports Venue|Farm|Bar \& Grill|Beer|Brewery|Pizza|Business|School/.test(keywords)) return true;
-                        if(/Restaurant|(?:^Pub$)|Photographer|Nonprofit Organization|Media|Newspaper|Tour Agency|Grocery/.test(keywords)) return true;
-                         if(/Event Planner|Florist|Church|Religious|Professional Service|Funeral|(^Performance)|Wedding/.test(keywords)) return true;
-                         if(/Bowling Alley|Gift Shop|Antique Store|Travel & Transportation|Hotel|Apartment|Real Estate|Political Organization/.test(keywords)) return true;
-                        if(/Motel|Food|(Store$)|Sports||Lounge|Bar|Medical|Chiropractor/.test(keywords)) return true;*/
-
-                        console.log("this keyword good");
-
-                    }
-                }
-            }
-            console.log("MOOTOO");
-        }
-        console.log("SHROOTOO");
-        if(found_community)
-        {
-            console.log("Found Community");
-            if(official_url.length>0 && my_query.agency_url.length>0 && official_url.indexOf(get_domain_only(my_query.agency_url,true))!==-1)
-            {
-                return false;
-            }
-            my_query.check_about_page=true;
-            return false;
-
-            /*console.log("Returning hit");
-            GM_setValue("returnHit",true);
-            my_query.submitted=true;
-            return true;*/
-        }
-        return true;
-
-//        return false;
-    }
-
-
-    function check_about_page()
-    {
-        window.location.href=window.location.href.replace("https://www.facebook.com/","https://www.facebook.com/pg/").replace(/\/$/,"")+"/about/?ref=page_internal";
-    }
-
-    function is_bad_fb_address(address)
-    {
-        console.log("address.length="+address.length);
-        var parsedAdd=parseAddress.parseLocation(address[0].innerText.trim().replace(/\n/g,",").replace(/\s*\([^\)]+\)\s*/g,"")
-                                                 .replace(/\s*\d[A-Za-z]{1,2}\s*floor\s*/i," ") );
+    function is_bad_fb_address(add_text) {
+       // var add_text=
+         //           console.log("address.length="+address.length+", address="+add_text);
+       
+        add_text=add_text.replace(/,[^,]*County,/i,",").replace(/Suite [A-Z\-\d]+/i,"")
+        .replace(/P(\.|\s)?O(\.|\s)? Box [\d\-]+,/i,"123 Fake Street,")
+         console.log("address="+add_text);
+        var parsedAdd=parseAddress.parseLocation(add_text);
          if(parsedAdd.sec_unit_type!==undefined) parsedAdd.city=parsedAdd.sec_unit_type+" "+parsedAdd.city;
         console.log("parsedAdd="+JSON.stringify(parsedAdd));
 
         if(parsedAdd.state===undefined)
         {
             var state_regex=/([^\n,]+), ([^\n,]+) ([\d]{5})$/;
-            var my_match=address[0].innerText.trim().match(state_regex);
-            if(my_match)
+            var my_match=add_text.trim().match(state_regex);
+            if(my_match && (state_map[my_match[2]]!==undefined || reverse_state_map[my_match[2]]!==undefined))
             {
                 parsedAdd.state=my_match[2];
             }
@@ -817,7 +963,11 @@
         if(parsedAdd.city!==undefined)        parsedAdd.city=parsedAdd.city.toLowerCase();
 
         var query_city=my_query.city.toLowerCase();
-        if(parsedAdd.city!==undefined) parsedAdd.city=parsedAdd.city.replace(/Township|Twp\.?/i,"").replace(/\'/ig,"").trim();
+        if(parsedAdd.city!==undefined)
+        {
+            parsedAdd.city=parsedAdd.city.replace(/Township|Twp\.?/i,"").replace(/\'/ig,"").trim();
+            parsedAdd.city=parsedAdd.city.replace(/(^|\s)St\.?(^|\s|,)/i,"$1saint$2");
+        }
         if(!/County/i.test(my_query.agency_name) && parsedAdd.city!==undefined && parsedAdd.city!==query_city.replace(/\'/g,"")
           && parsedAdd.city.replace(/mount\s/i,"mt ").replace(/Saint\s/i,"st ")!==query_city.replace(/\'/g,"")
            && parsedAdd.city!==my_query.short_name.toLowerCase() && parsedAdd.city.replace(/mount\s/i,"mt ").replace(/saint\s/i,"st ")!==
@@ -830,214 +980,12 @@
         return false;
     }
 
-    /* Do facebook parsing of homepage (should be fixed to go here directly) */
-
-
-
-    function do_fbhome(time)
-    {
-        console.log("time="+time);
-        console.log("GM_getValue(\"fb_url\").website="+GM_getValue("fb_url").website);
-        if(time===undefined) time=0;
-        var result={success:true,fb_url:"none",fb_likes:"none",fb_followers:"none",most_recent:""};
-        var _jlx=document.getElementsByClassName("_jlx");
-        var community=document.getElementsByClassName("_6590");
-        var inner_community,i,j;
-        var address=document.getElementsByClassName("_2wzd");
-        var posts=document.getElementsByClassName("_427x");
-
-        var timestamp=document.getElementsByClassName("timestampContent");
-        var about=document.getElementsByClassName("_u9q");
-        console.log("Doing FB home timestamp.length="+timestamp.length);
-        /* Deal with unofficial */
-        var bad_page=document.getElementsByClassName("_4-dp"),uiHeader=document.getElementsByClassName("uiHeaderTitle");
-        if(bad_page.length>0 && bad_page[0].innerText==="This page isn't available")
+    function is_bad_twitter(bio,location) {
+        if(document.getElementsByClassName("errorpage-body-content").length>0)
         {
-            console.log("Page unavailable");
-            result.success=false;
-            GM_setValue("fb_result",result);
-            return;
+            console.log("Error page");
+            return true;
         }
-        for(i=0; i < uiHeader.length; i++)
-        {
-            if(/Sorry, this content isn\'t available right now/.test(uiHeader[i].innerText))
-            {
-                console.log("Page unavailable");
-                result.success=false;
-                GM_setValue("fb_result",result);
-                return;
-            }
-        }
-
-
-        if(posts.length===0 && time<=10)
-        {
-            time++;
-            window.scrollTo({
-                top: 1000*time,
-                behavior: "smooth"
-            });
-            console.log("Doing FB home posts.length="+posts+", time="+time);
-            setTimeout(function() { do_fbhome(time); },1000);
-            return;
-        }
-        console.log("posts.length="+posts);
-        if(is_bad_fb_page())
-        {
-            console.log("bad fb page");
-            result.success=false;
-            GM_setValue("fb_result",result);
-            return;
-        }
-
-
-        if(address.length>0)
-        {
-            if(is_bad_fb_address(address))
-            {
-                result.success=false;
-                GM_setValue("fb_result",result);
-                return;
-            }
-        }
-        else
-        {
-            console.log("*** NO address");
-
-        }
-
-
-        if(posts.length>0)
-        {
-            var pos=0;
-            if(posts[pos].getElementsByClassName("_5m7w").length>0 && pos+1<posts.length) pos++;
-            timestamp=posts[pos].getElementsByClassName("timestampContent");
-            console.log("posts["+pos+"].timestamp.length="+timestamp.length);
-            if(timestamp.length>0)
-            {
-                var abbr=timestamp[0].parentNode;
-                console.log("abbr="+abbr+"\tabbr.title="+abbr.title);
-                result.most_recent=abbr.title.replace(/\s.*$/,"");
-            }
-        }
-
-
-        inner_community=community[0].getElementsByClassName("_4bl9");
-        for(i=0; i < inner_community.length; i++)
-        {
-            if(/([\d]+) (?:people like|person likes) this/.test(inner_community[i].innerText))
-            {
-                result.fb_likes=inner_community[i].innerText.match(/([,\d]+) (?:people like|person likes) this/)[1]
-                 .replace(/,/g,"");
-            }
-            if(/([\d]+) (?:people follow|person follows) this/.test(inner_community[i].innerText))
-            {
-                result.fb_followers=inner_community[i].innerText.match(/([,\d]+) (?:people follow|person follows) this/)[1]
-                .replace(/,/g,"");
-            }
-        }
-        console.log("timestamp.length="+timestamp.length);
-
-
-
-        result.fb_url=window.location.href;
-
-        var a3f=document.getElementsByClassName("_a3f");
-        var a3fregex=/markers\=([\d\.-]+)%2C([\d\.-]+)&/,a3fmatch;
-
-        if(a3f.length>0 && address.length===0)
-        {
-            var src=a3f[0].src;
-            a3fmatch=src.match(a3fregex);
-            if(a3fmatch!==null)
-            {
-
-                my_query.temp_fb_result=result;
-                console.log("a3fmatch="+JSON.stringify(a3fmatch));
-                const testPromise=new Promise((resolve,reject) => {
-
-                    query_search(a3fmatch[1]+", "+a3fmatch[2],resolve,reject,test_location);
-                                 });
-                testPromise.then(test_promise_then)
-                .catch(function(val) { console.log("Failed testPromise "+val); GM_setValue("returnHit",true); return; });
-                console.log("*** REturning");
-                return;
-            }
-
-        }
-
-
-        if(my_query.check_about_page)
-        {
-            GM_setValue("temp_fb_result",result);
-            check_about_page();
-            return;
-        }
-        else
-        {
-            GM_setValue("fb_result",result);
-        }
-
-    }
-
-    /* Do Facebook parsing  stuff */
-    function do_fb()
-    {
-        console.log("Doing FB");
-        my_query.check_about_page=false;
-        var result={email:"",name:"",url:window.location.href,phone:""};
-        var i;
-        var contactlinks=document.getElementsByClassName("_50f4");
-        var namelinks=document.getElementsByClassName("_42ef");
-        if(window.location.href.indexOf("/about/")===-1)
-        {
-            do_fbhome();
-            return;
-        }
-
-        do_fb_about();
-        return;
-    }
-    function do_fb_about()
-    {
-        var i;
-        var contactlinks=document.getElementsByClassName("_50f4");
-        var namelinks=document.getElementsByClassName("_42ef");
-        var result=GM_getValue("temp_fb_result",{success:false});
-        var about=document.getElementsByClassName("_3-8w");
-       /* for(i=0; i < contactlinks.length; i++)
-        {
-            if(email_re.test(contactlinks[i].innerText))
-            {
-                result.email=contactlinks[i].innerText.match(email_re);
-                console.log("Found email="+result.email);
-            }
-            else if(phone_re.test(contactlinks[i].innerText))
-            {
-                result.phone=contactlinks[i].innerText.match(phone_re);
-                console.log("Found phone="+result.phone);
-            }
-        }
-        for(i=0; i < namelinks.length; i++)
-        {
-            result.name=namelinks[i].innerText;
-        }*/
-        if(/(^|\s)official(\s)/) { }
-
-
-         console.log("bad fb page");
-            result.success=false;
-            GM_setValue("fb_result",result);
-            return;
-
-          console.log("Done FB");
-        GM_setValue("temp_fb_result","");
-        GM_setValue("fb_result",result);
-
-    }
-
-    function is_bad_twitter(bio,location)
-    {
         var url_elem=document.getElementsByClassName("ProfileHeaderCard-urlText");
         var url="";
         var loc_text=location.innerText;
@@ -1052,6 +1000,14 @@
         var bio_split=bio.innerText.split(/[\.\!\?]+/,);
         var bio_text=bio.innerText;
         console.log("bio_split="+bio_split);
+        var bad_bio_regex=/Country Club|Bookstore|Unofficial/i;
+        var bad_first_regex=/Basketball|Baseball|Football|Casino/i;
+        if((!bad_bio_regex.test(my_query.orig_name) && bad_bio_regex.test(bio_text)) ||
+          (bio_split.length>0 && bad_first_regex.test(bio_split[0])))
+        {
+            console.log("Bad bio");
+            return true;
+        }
         var badges=document.getElementsByClassName("ProfileHeaderCard-badges");
         if(badges.length===0 || badges[0].getElementsByClassName("Icon--verified").length===0)
         {
@@ -1082,8 +1038,15 @@
                 //console.log("Found Street/road");
                 first_part=loc_text.split(",")[0].trim().replace(/\./g,"").trim();
             }
-
-            if(first_part.toLowerCase().indexOf(my_query.city.toLowerCase().replace(/\./g,"").trim())===-1 &&
+            if(/ County/i.test(first_part))
+            {
+                if(first_part.toLowerCase()!==my_query.county.toLowerCase())
+                {
+                    console.log("Counties don't match. Found "+first_part+", need "+my_query.county);
+                    return true;
+                }
+            }
+            else if(first_part.toLowerCase().indexOf(my_query.city.toLowerCase().replace(/\./g,"").trim())===-1 &&
                my_query.city.toLowerCase().indexOf(first_part.toLowerCase())===-1 &&
                first_part.toLowerCase().indexOf(my_query.county.toLowerCase())===-1 &&
               first_part.toLowerCase().replace(/mount\s/,"mt ").replace(/saint\s/,"st ")
@@ -1147,8 +1110,7 @@
     }
 
     /* Do twitter parsing */
-    function do_twitter()
-    {
+    function do_twitter() {
         var result={success:true,twitter_url:"none",twitter_followers:"none"};
         console.log("Doing twitter");
         var name=document.getElementsByClassName("ProfileHeaderCard-name");
@@ -1163,8 +1125,9 @@
 
         if(is_bad_twitter(bio, location))
         {
-            console.log("Bad bio");
+            console.log("Bad twitter");
             result.success=false;
+            console.log("result="+JSON.stringify(result));
             GM_setValue("twitter_result",result);
             return;
         }
@@ -1182,28 +1145,29 @@
 
     }
 
-
-    function fb_search_promise_then(result)
-    {
+    function fb_search_promise_then(result) {
         console.log("result="+JSON.stringify(result));
         var i;
-        for(i=0; i < result.sites.length; i++)
+        for(i=0; i < result.sites.length && i < 6; i++)
         {
             result.sites[i].url=result.sites[i].url.replace(/\/\?ref\=br_rs$/,"");
-            console.log("result.sites["+i+"]="+result.sites[i].url);
+            console.log("("+i+"), name="+result.sites[i].name+", url="+result.sites[i].url);
             if(!is_bad_site("facebook",result.sites[i].url) && !is_bad_name(result.sites[i].name,"","facebook",0))
             {
                 console.log("Success");
                 if(!my_query.doneFB)
                 {
 
-                    if(my_query.fb_url.length===0 || result.sites[i].url.indexOf(my_query.fb_url)===-1)
+                    if(my_query.fb_url.length===0 ||
+                       result.sites[i].url.toLowerCase().replace(/\/$/,"")!==my_query.fb_url.toLowerCase().replace(/\/$/,""))
                     {
                         my_query.webFB_url=result.sites[i].url;
+                        console.log("Setting webFB_url in fb_search_promise_then to "+my_query.webFB_url);
                         return;
                     }
                     else
                     {
+                        console.log("Setting webFB=true in fb_search_promise_then");
                         my_query.doneWebFB=true;
                         submit_if_done();
 
@@ -1213,24 +1177,41 @@
                 else
                 {
                     console.log("#### Oops FB already Finished");
-                    if(my_query.fb_url.length===0 || result.sites[i].url.indexOf(my_query.fb_url)===-1)
-                    {
-                        my_query.webFB_url=result.sites[i].url;
-                        fb_promise_then(my_query.webFB_url,"website");
-                        return;
-                    }
+
+                    my_query.webFB_url=result.sites[i].url;
+                    fb_promise_then(my_query.webFB_url,"website",result.sites[i].text);
+                    return;
+
 
                 }
             }
         }
+        if(/\d+,/.test(my_query.query_name) || (/\s(Elementary )?(School )?District/.test(my_query.query_name)) ||
+          /(^|\s)((?:Independent|Public|High|Community Consolidated) School District|Public Schools)(\s|,|$)/.test(my_query.query_name)
+
+          )
+        {
+
+            my_query.query_name=my_query.query_name.replace(/\d+,/g,",")
+            .replace(/(^|\s)((?:Independent|Public|High|Community Consolidated) School District|Public Schools)(\s|,|$)/,"$1Schools$3")
+
+            .replace(/\s(Elementary )?(School )?District/," Schools");
+
+            var fb_url="https://www.facebook.com/search/pages/?q="+encodeURIComponent(my_query.query_name);
+             console.log("Trying again with new query name\nfb_search_url:"+fb_url);
+            var promise=MTurkScript.prototype.create_promise(fb_url,MTurkScript.prototype.parse_FB_search_page,fb_search_promise_then,
+                                                         function(response) { console.log("failed FB search"); submit_if_done(); });
+            return;
+        }
+
+
         my_query.doneWebFB=true;
         submit_if_done();
 
 
     }
 
-    function replace_roman(match,p1,p2,p3)
-    {
+    function replace_roman(match,p1,p2,p3) {
         var i;
         var count=0,temp1=0,temp2=0;
         var num_map={"I":1,"V":5,"X":10};
@@ -1246,26 +1227,34 @@
         return p1+"R-"+count+p3;
     }
 
-
-
     function init_Query()
     {
         console.time("begin");
+        var k;
+        var ctrl=document.getElementsByClassName("form-control");
+        var pbody=document.getElementsByClassName("panel-body")[0];
+        pbody.parentNode.removeChild(pbody);
+        for(k=0; k < ctrl.length; k++)
+        {
+            ctrl[k].parentNode.className="col-md-12";
+        }
      //   var dont=document.getElementsByClassName("dont-break-out")[0].href;
         var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
 
         wT.rows[5].cells[1].innerHTML=wT.rows[5].cells[1].innerText.trim().toLowerCase()
-            .replace(/^facebook\.com/,"https://www.facebook.com");
+            .replace(/^facebook\.com/,"https://www.facebook.com").replace(/^http:/,"https:")
+            .replace(/https:\/\/facebook/,"https://www.facebook");
         wT.rows[10].cells[1].innerHTML=wT.rows[10].cells[1].innerText.trim().toLowerCase()
-            .replace(/^twitter\.com/,"https://twitter.com");
+        .replace(/\.com\/@/,".com")
+            .replace(/^twitter\.com/,"https://twitter.com").replace(/^http:/,"https:").replace(/^https:\/\/www\./,"https://");
          var orig_twitter=wT.rows[10].cells[1].innerText.trim().toLowerCase();
         var agency_match;
         my_query={agency_name:wT.rows[0].cells[1].innerText.trim(),query_name:"", city:wT.rows[1].cells[1].innerText.trim(),
                   county: wT.rows[2].cells[1].innerText.replace(/,.*$/,"").replace(/City and County of/,"").trim(),
-                 state: wT.rows[3].cells[1].innerText.trim(),submitted:false,doneFB:false,doneTwitter:false,doneWebFB:false,
+                 state: wT.rows[3].cells[1].innerText.trim().toUpperCase(),submitted:false,doneFB:false,doneTwitter:false,doneWebFB:false,
                   doneFBSearch:false,
-                  doneWebTwitter:false,webTwitter_url:orig_twitter,webFB_url:"",agency_type:"Police",agency_number:"",
-                  fb_url:"",
+                  doneWebTwitter:false,webTwitter_url:orig_twitter,webFB_url:"",agency_type:"",agency_number:"",
+                  fb_url:"",fb_home_result:null,fb_posts_result:null,fb_caller:null,
                  try_count:{"twitter":0,"facebook":0},orig_name:wT.rows[0].cells[1].innerText.trim(),
                  tot_attempts:GM_getValue("attempts",0),tot_time:GM_getValue("time",0),begin_time:new Date().getTime() };
 
@@ -1275,42 +1264,61 @@
             console.log("match="+match+", p1="+p1+", p2="+p2);
             return p1+p2.toLowerCase(); });
 
-        my_query.agency_name=my_query.agency_name.trim().replace(/[A-Z]{2}$/,function(match, offset, string) {
+
+        my_query.orig_name=my_query.orig_name.replace(/Township of ([^,]*)/,"$1 Township").replace(/charter Township/,"Township");
+        my_query.agency_name=my_query.orig_name.replace(/\([^\)]+\)/,"").trim().replace(/[A-Z]{2}$/,function(match, offset, string) {
             if(reverse_state_map[match]!==undefined) return reverse_state_map[match];
             else return match;
         });
-        console.log("New my_query.agency_name="+my_query.agency_name);
-        agency_match=my_query.agency_name.match(/(.*)\s-\s([^,]*),\s*(.*)$/);
-        if(agency_match) my_query.agency_type=agency_match[2].replace(/(^|\s)(Department|Dept. of)(\s|$)/i,"");
+        my_query.query_name=my_query.orig_name.replace(/\sCO\)/," County").replace(/[\(\)]+/g,"")
+            .trim().replace(/[A-Z]{2}$/,function(match, offset, string) {
+            if(reverse_state_map[match]!==undefined) return reverse_state_map[match];
+            else return match;
+        });
 
+
+        console.log("New my_query.agency_name="+my_query.agency_name);
+        agency_match=my_query.agency_name.match(/(.*)\s-\s*([^,]*),\s*(.*)$/);
+        if(agency_match) my_query.agency_type=agency_match[2].replace(/(^|\s)(Department|Dept. of)(\s|$)/i,"");
         else
         {
             agency_match=my_query.agency_name.match(/([^,]*)\s*,\s*([^-]*)\s-\s*(.*)$/);
             if(agency_match) my_query.agency_type=agency_match[3].replace(/(^|\s)(Department|Dept. of)(\s|$)/i,"");
         }
-        my_query.query_name=my_query.agency_name.replace(/([^,]*)\s*,\s*([^-]*)\s-\s*(.*)$/,"$1 $3 $2");
-        my_query.query_name=my_query.query_name.replace(/(^|\s)(School District|Public Schools)(\s|,|$)/,"$1Schools$3")
-        my_query.query_name=my_query.query_name.replace(/(^|\s)(?:Community|Central )School Corporation(\s|,|$)/,"$1Schools$2");
-        my_query.query_name=my_query.query_name.replace(/(^|\s)R-([XVI\d]+)(\s|$)/,replace_roman);
+        my_query.query_name=my_query.query_name.replace(/([^,]*)\s*,\s*([^-]*)\s-\s*(.*)$/,"$1 $3 $2");
+        my_query.query_name=my_query.query_name.replace(/(^|\s)(?:Community|Central )School Corporation(\s|,|$)/,"$1Schools$2").trim();
+        my_query.query_name=my_query.query_name.replace(/(^|\s)[\dR]+-([XVI\d]+)(\s|$|,)/,"")
+        .replace(/School District[^,]*,/,"School District,")
+        .replace(/Charter Township,/,"Township,");
+        my_query.query_name=my_query.query_name.replace(/(^|\s)Union Free(\s|$)/," ").trim();
+
         console.log("my_query.query_name="+my_query.query_name);
 
         my_query.agency_name=my_query.agency_name.replace(/(.*)\s-\s([^,]*),\s*(.*)$/,"$1, $3 $2");
         my_query.agency_name=my_query.agency_name.replace(/([^,]*)\s*,\s*([^-]*)\s-\s*(.*)$/,"$1, $2 $3");
-        my_query.agency_name=my_query.agency_name.replace(/(^|\s)(City|Town|Village|Borough)(\sof)(\s|$)/i," ");
+        my_query.agency_name=my_query.agency_name.replace(/(^|\s)(City|Town|Village|Borough)(\sof)(\s|$)/i," ")
+        .replace(/Charter Township,/,"Township,");
         console.log("New my_query.agency_name="+my_query.agency_name);
 
         my_query.short_name=my_query.agency_name.replace(/,.*$/,"")
 
          my_query.short_name=my_query.short_name.replace(/Marshal(?:\'?s)(\s|$)(Office(\s|$))?/,"");
         my_query.short_name=my_query.short_name.replace(/\s*Township/,"");
+        my_query.short_name=my_query.short_name.replace(/\s(Supervisory )?Union($|,)/,"");
         my_query.short_name=my_query.short_name.replace(/(((Area )?Public|Community|Consolidated) )?Schools$/,"");
-        my_query.short_name=my_query.short_name.replace(/(?:(?:Unified|Independent|Central|County|Metropolitan|Reorganized|Elementary|High(?:Community(?: High)?)) )?School District(?:(?:\s\d+))?(\s|$)/,"$1")
+        my_query.short_name=my_query.short_name.replace(/(?:(?:Union(?: Elementary))|Regional) School District(?:(?:\s\d+))?(\s|$)[^,]*/,"$1");
+        my_query.short_name=my_query.short_name.replace(/(?:(?:Union Free|Exempted Village|Unified|Local|Consolidated Independent|Independent|Community Unit|Community Consolidated|Central|County|Joint|Community|Public|Metropolitan|Reorganized|Elementary|City|High|(?:Community(?: High)?)) )?School District(?:(?:\s\d+))?(\s|$)[^,]*/,"$1")
+
+            .replace(/(?:(?:Unified|Regional|Independent|Central|County|Public|Metropolitan|Reorganized|Elementary|High(?:Community(?: High)?)) )?District(?:(?:\s\d+))?(\s|$)[^,]*/,"$1")
+.replace(/(\s)K-12/,"$1")
             .trim();
         my_query.short_name=my_query.short_name.replace(/Charter( Elementary)? School/i,"");
          my_query.short_name=my_query.short_name.replace(/((Public|Community) )?Schools$/,"");
-        my_query.short_name=my_query.short_name.replace(/(^|\s)R-[XVI\d]+(\s|$)/," ")
+        my_query.short_name=my_query.short_name.replace(/(^|\s)[R\d]{1}-[-A-Z\d]+(\s|$)/," ")
         .replace(/(^|\s)(City|Town|Village|County|Municipality|Township|Borough|(?:State )?University|Community College|College)(\sof)?(\s|$)/ig," ");
         my_query.short_name=my_query.short_name.replace(/(?: Community) School Corporation(\s|$)/,"$1");
+        my_query.short_name=my_query.short_name.replace(/\sSchool System$/,"");
+
         my_query.short_name=my_query.short_name.trim();
 
 
@@ -1322,7 +1330,7 @@
 
             GM_setValue("returnHit",true); return; }
 
-        my_query.query_name=my_query.query_name.replace(/(^|\s)(City|Town|Village|County|Municipality|(?:(Charter )?Township)|Borough)(\sof)?(\s|$)/i," ");
+       // my_query.query_name=my_query.query_name.replace(/(^|\s)(City|Town|Village|County|Municipality|(?:(Charter )?Township)|Borough)(\sof)?(\s|$)/i," ");
        // .replace(/(^|\s)of(\s|$)/i,"");
         console.log("my_query="+JSON.stringify(my_query));
         my_query.agency_type=my_query.agency_type.replace(/Sherrif/,"Sheriff");
@@ -1339,8 +1347,9 @@
         .catch(function(val) {
            console.log("Failed at this bingPromise " + val); GM_setValue("returnHit",true); });
 
-        var fb_url="https://www.facebook.com/search/top/?q="+encodeURIComponent(my_query.query_name);
-        var promise=MTurkScript.prototype.create_promise(fb_url,MTurkScript.prototype.parse_FB_search,fb_search_promise_then,
+        var fb_url="https://www.facebook.com/search/pages/?q="+encodeURIComponent(my_query.query_name);
+        console.log("fb_search_url="+fb_url);
+        var promise=MTurkScript.prototype.create_promise(fb_url,MTurkScript.prototype.parse_FB_search_page,fb_search_promise_then,
                                                          function(response) { console.log("failed FB search"); submit_if_done(); });
         document.getElementsByName("FB URL")[0].addEventListener('change',function() { submit_if_done(); });
         document.getElementsByName("Twitter URL")[0].addEventListener('change',function() { submit_if_done(); });
@@ -1379,7 +1388,7 @@
             console.log("url="+url);
             window.location.href=url;
         });
-        setTimeout(do_fb,2500);
+       // setTimeout(do_fb,2500);
     }
     else if(window.location.href.indexOf("twitter.com")!==-1)
     {
@@ -1426,10 +1435,10 @@
         {
             btn_automate.innerHTML="Stop";
             /* Return automatically if still automating */
-            setTimeout(function() {
+            /*setTimeout(function() {
 
                 if(GM_getValue("automate")) btns_secondary[0].click();
-                }, 35000);
+                }, 40000);*/
         }
         btn_automate.addEventListener("click", function(e) {
             var auto=GM_getValue("automate");
