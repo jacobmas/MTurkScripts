@@ -1202,3 +1202,19 @@ MTurkScript.prototype.parse_FB_posts=function(doc,url,resolve,reject)
     resolve(result);
 
 };
+/* fix_remote_urls fixes the remote urls so they aren't having the mturkcontent.com stuff
+     * found_url is the url that needs fixing
+     *  page_url is the url from response.finalUrl
+    */
+MTurkScript.prototype.fix_remote_urls=function(found_url,page_url)
+{
+    var replacement=page_url.match(/^https?:\/\/[^\/]+/);
+    var to_replace= window.location.href.match(/^https?:\/\/[^\/]+/)[0];
+    var curr_url=window.location.href, temp_url=curr_url.replace(/\/$/,"");
+    while(temp_url.split("/").length>=3)
+    {
+        found_url=found_url.replace(temp_url,replacement);
+        temp_url=temp_url.replace(/\/[^\/]+$/,"");
+    }
+    return found_url.replace(to_replace,replacement);
+};
