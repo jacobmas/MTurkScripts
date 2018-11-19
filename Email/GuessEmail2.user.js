@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         GuessEmail
+// @name         GuessEmail2
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  Script to Figure out where and what be-eth emailstars
@@ -178,7 +178,7 @@
         return ret;
     }
 
-   
+
 
 
     function company_response(response,resolve,reject) {
@@ -193,7 +193,7 @@
         var b_factrow, b_caption;
         var b1_success=false, b_header_search;
         var inner_a;
-  
+
         try
         {
             search=doc.getElementById("b_content");
@@ -206,7 +206,7 @@
                 GM_setValue("returnHit",true);
                 return;
             }
-            
+
             for(i=0; i < b_algo.length && i < 6; i++)
             {
                 if(b_algo[i].tagName!=="LI")
@@ -224,11 +224,11 @@
                     return;
 
                 }
-                
+
 
 
             }
-            
+
 
         }
         catch(error)
@@ -237,6 +237,7 @@
             //console.log("Error "+error);
             reject("Error is "+ error);
         }
+
         reject("Could not find a domain");
     }
 
@@ -297,9 +298,11 @@
         my_query.doneGuessEmail=false;
         my_query.doneParsePage=false;
         my_query.submitted=false;
-
         const guessEmailPromise=new Promise((resolve, reject) => {
-            email_search(resolve, reject);
+         console.log("Trying bing");
+            query_search(my_query.fname+" "+my_query.lname+"@"+my_query.domain,resolve,reject,bing_response);
+            return;
+
         })
 
         .then(guess_email_then)
@@ -320,11 +323,11 @@
 
         } );
 
-       
+
 
     }
 
-  
+
 
     function guess_email_then(the_message)
     {
@@ -455,8 +458,153 @@
             }
         }
         catch(error) { console.log("error="+error); }
-        reject("Failed");
+        if(b_algo.length>0)
+        {
+            for(i=0; i < b_algo.length; i++)
+            {
+                i
+             b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
+                b_url=b_algo[i].getElementsByTagName("a")[0].href;
+                if(/\.edu\//.test(b_url)) break;
+            }
+            console.log("Parsing first site b_name="+b_name+"\tb_url="+b_url);
+            GM_xmlhttpRequest({method: 'GET',url:b_url,
 
+            onload: function(response) {
+                //   console.log("On load in crunch_response");
+                //    crunch_response(response, resolve, reject);
+                parse_first(response, resolve, reject);
+            },
+            onerror: function(response) { reject("Fail"); },
+            ontimeout: function(response) { reject("Fail"); }
+
+
+        });
+
+        }
+
+
+    }
+
+    function parse_first(response,resolve,reject)
+    {
+        var doc = new DOMParser()
+        .parseFromString(response.responseText, "text/html");
+
+        console.log("Doing parse_first");
+         var i,j;
+        var email_val;
+        var my_match;
+        var foundInsta=false, foundFB=false;
+        console.log("in contact response "+response.finalUrl);
+        var short_name=response.finalUrl.replace(my_query.url,"");//.replace(/[\/]+/g,"");
+        var links=doc.links;
+        my_query.email="";
+        var email_matches=doc.body.innerHTML.match(email_re);
+       // var phone_matches=doc.body.innerText.match(phone_re);
+        if(email_matches!==null)
+        {
+            j=0;
+            for(j=0; j < email_matches.length; j++)
+            {
+                if(is_good_email(email_matches[j]) && email_matches[j].length>0) {
+
+                   my_query.email=email_matches[j];
+                  //  document.getElementsByName("Email ")[0].value=my_query.email;
+                   break;
+                }
+            }
+
+
+            console.log("Found email hop="+my_query.email);
+        }
+
+        for(i=0; i < links.length; i++)
+        {
+
+            if(links[i].dataset.encEmail!==undefined)
+            {
+                console.log("### "+links[i].dataset.encEmail);
+                let temp_email=swrot13(links[i].dataset.encEmail.replace(/\[at\]/,"@"));
+                console.log("### "+temp_email);
+                if(is_good_email(temp_email))
+                {
+                    my_query.email=temp_email;
+                }
+
+            }
+            else
+            {
+               // console.log("links["+i+"].dataset="+JSON.stringify(links[i].dataset));
+            }
+            if(links[i].href.indexOf("amazonaws.com")===-1 && links[i].href.indexOf("mturkcontent.com")===-1)
+            {
+                console.log(short_name+": ("+i+")="+links[i].href); }
+            if(links[i].href.indexOf("cdn-cgi/l/email-protection#")!==-1)
+            {
+                var encoded_match=links[i].href.match(/#(.*)$/);
+                if(encoded_match!==null)
+                {
+                    email_val=cfDecodeEmail(encoded_match[1]);
+                    console.log("DECODED "+email_val);
+                    if(is_good_email(email_val.replace(/\?.*$/,"")))
+                    {
+                        my_query.email=email_val.replace(/\?.*$/,"");
+
+                        my_query.doneEmail=true;
+                    }
+                }
+            }
+            if(email_re.test(links[i].href.replace(/^mailto:\s*/,"")))
+            {
+                email_val=links[i].href.replace(/^mailto:\s*/,"").match(email_re);
+                console.log("Found emailBlop="+email_val);
+
+                if(email_val.length>0 && is_good_email(email_val[0]))
+                {
+                    console.log("set email");
+                    my_query.email=email_val;
+
+                }
+
+            }
+            if(links[i].href.indexOf("javascript:location.href")!==-1)
+            {
+                my_match=links[i].href.match(/String\.fromCharCode\(([^\)]+)\)/);
+                console.log("my_match="+JSON.stringify(my_match));
+                var match_split=my_match[1].split(",");
+                email_val="";
+                for(j=0; j < match_split.length; j++)
+                {
+                    email_val=email_val+String.fromCharCode(match_split[j].trim());
+                }
+                //email_val=String.fromCharCode(my_match[1]);
+                console.log("new email_val="+email_val);
+                my_query.email=email_val;
+
+            }
+              if(links[i].href.indexOf("javascript:DeCryptX(")!==-1)
+            {
+               my_match=links[i].href.match(/DeCryptX\(\'([^\)]+)\'\)/);
+                console.log("my_match="+JSON.stringify(my_match));
+                email_val=DecryptX(my_match[1]);
+                console.log("new email_val="+email_val);
+            }
+
+                //='mailto:'+String.fromCharCode(
+
+        }
+        if(my_query.email.length>0)
+        {
+            add_to_sheet();
+            check_and_submit();
+            return;
+        }
+        else
+        {
+            console.log("Nothing found in parse_first");
+            email_search(resolve, reject);
+        }
     }
 
 
@@ -549,20 +697,18 @@
         }
         else
         {
-            console.log("Failed, trying bing");
-            query_search(my_query.fname+" "+my_query.lname+"@"+my_query.domain,resolve,reject,bing_response);
-            return;
+           reject("Failed");
 
         }
     }
 
-  
-   
+
+
     function add_to_sheet()
     {
-      
+
         document.getElementById("web_url").value=my_query.email;
-        
+
     }
 
 
@@ -576,7 +722,7 @@
 
         document.getElementById("web_url").value="";
 
-        my_query={fname: wT.rows[0].cells[1].innerText.trim(), mname:"", lname: wT.rows[1].cells[1].innerText.split(" ")[0].trim(),
+        my_query={fname: wT.rows[1].cells[1].innerText.trim(), mname:"", lname: wT.rows[0].cells[1].innerText.split(" ")[0].trim(),
                   title:wT.rows[2].cells[1].innerText.trim(),
                   orgname: wT.rows[3].cells[1].innerText.trim()};
        console.log("my_query="+JSON.stringify(my_query));
