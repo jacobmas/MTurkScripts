@@ -810,7 +810,7 @@ MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func
     return queryPromise;
 };
 
-MTurkScript.prototype.my_catch_func=function(response) { console.log("Request to url failed "+response); };
+MTurkScript.prototype.my_catch_func=function(response) { console.log("Request to url failed"); };
     /**
      * adjust_time adjusts the hr, min, ampm into military format */
 MTurkScript.prototype.adjust_time=function(hr,min,ampm)
