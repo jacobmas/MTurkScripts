@@ -810,6 +810,8 @@ MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func
     return queryPromise;
 };
 
+MTurkScript.prototype.my_then_func=function(response) {  };
+
 MTurkScript.prototype.my_catch_func=function(response) { console.log("Request to url failed"); };
     /**
      * adjust_time adjusts the hr, min, ampm into military format */
@@ -846,6 +848,7 @@ MTurkScript.prototype.parse_hours=function(script)
     text=text.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\"$2\":").replace(/\\x3C/g,"<");
     var parsed_text=JSON.parse(text);
     var instances=parsed_text.jsmods.instances;
+    if(!instances || instances===undefined) { return result; }
     var x,i,j,good_instance,hr_match;
     var hr_regex=/^([A-Za-z]+):\s*(?:CLOSED|([\d]{1,2}):([\d]{2})\s*([A-Z]{2})\s*-\s*([\d]{1,2}):([\d]{2})\s*([A-Z]{2}))/i;
     for(i=0; i < instances.length; i++)
