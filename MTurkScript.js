@@ -1056,6 +1056,26 @@ MTurkScript.prototype.match_home_a=function(inner_a,text)
     return ret;
 };
 
+/** 
+ * MTurkScript.prototype.parseAddress is a quick'n'dirty attempt to fix up some of the 
+ * edge cases with the 
+ * parseAddress.parseLocation function from 
+ * https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
+ * 
+ * will give 123 Fake Street in some instances so use with caution
+ */
+MTurkScript.prototype.pre_parse_address=function(address)
+{
+    return address.replace(/\n/g,",").replace(/;/g,",").replace(/\s*\([^\)]+\)\s*/g,"")
+	.replace(/(fl|floor)\s*([\d]+)/i,"").replace(/\s*\d[A-Za-z]{1,2}\s*floor\s*/i," ")
+	.replace(/(Ste(\.?)|Suite) [\d]+/,"").replace(/Unit [A-Za-z\-\d]+,/,"")
+	.replace(/P(\.|\s)?O(\.|\s)?\s*Box\s+[\d\-]+(,?)/i,"123 Fake Street,").replace(/,[^,]*County,/i,",")
+	.trim();
+};
+
+/** MTurkScript.prototype.parse_FB_home is a create_promise style function to 
+ * scrape FB home page 
+ */
 MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
 {
     var result={success:true,fb_url:url},outer_part,_4bl9,i,j,inner_a,response,_4j7v;
@@ -1080,18 +1100,11 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
     for(i=0; i < _4bl9.length; i++)
     {
         if(_4bl9[i].getElementsByClassName("_2wzd").length>0 &&
-           (address=parseAddress.parseLocation(_4bl9[i].innerText.replace(/\n/g,",")
-					       .replace(/\s*\([^\)]+\)\s*/g,"")
-                                               .replace(/\s*\d[A-Za-z]{1,2}\s*floor\s*/i," ")
-					       .replace(/(Ste(\.?)|Suite) [\d]+/,"")
-					       .replace(/Unit [A-Za-z\-\d]+,/,"")
-					       .replace(/P(\.|\s)?O(\.|\s)? Box [\d\-]+,/i,"123 Fake Street,")
-
-					      ))
+           (address=MTurkScript.prototype.pre_parse_address(_4bl9[i].innerText.replace(/Get Directions$/,"")))
            && address)
 	{
-	    result.address=address;
-	    result.addressInner=_4bl9[i].innerText.replace(/Get Directions$/,"");
+	    result.address=parseAddress.parseLocation(address);
+	    result.addressInner=address;
 	}
 	
         inner_a=_4bl9[i].getElementsByTagName("a");
@@ -1205,7 +1218,7 @@ MTurkScript.prototype.parse_FB_posts=function(doc,url,resolve,reject)
     resolve(result);
 
 };
-/* fix_remote_urls fixes the remote urls so they aren't having the mturkcontent.com stuff
+/* fix_remote_url fixes the remote urls so they aren't having the mturkcontent.com stuff
      * found_url is the url that needs fixing
      *  page_url is the url from response.finalUrl
     */
