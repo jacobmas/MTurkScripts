@@ -1,0 +1,74 @@
+/**
+     * TODO: parse state level directories
+     *
+     * NE: http://educdirsrc.education.ne.gov/
+     * OH: https://oeds.ode.state.oh.us/SearchOrg
+     * OK: https://sde.ok.gov/state-school-directory
+     * OR: (couldn't find)
+     * PA: http://www.edna.pa.gov/Screens/wfSearchEntity.aspx (no emails)
+     * RI: http://www2.ride.ri.gov/Applications/MasterDirectory/Organization_List.aspx
+     * SC: https://ed.sc.gov/districts-schools/schools/school-directory/?activetab=search
+     * SD: https://doe.sd.gov/ofm/edudir.aspx
+     * TN: https://k-12.education.tn.gov/sde/CreateDistrictList.asp?status=A&activeonly=Y
+     * TX: http://tea4avholly.tea.state.tx.us/TEA.AskTED.Web/Forms/SearchScreen.aspx?orgType=State
+     * VA: http://www.va-doeapp.com/StaffBySchoolDivisions.aspx?w=true
+     * WA: https://eds.ospi.k12.wa.us/DirectoryEDS.aspx
+     * WI: https://apps4.dpi.wi.gov/SchoolDirectory/Search/PublicSchoolsSearch
+     */
+
+    /**
+     * TODO:  school website site examples
+     *  https://www.bighorn1.com/,https://www.fortwashakieschool.com/,http://www.ansonschools.org/ (Cyberschool & IES Inc.)
+     *
+     * https://www.bgh2.org/,http://www.csd400.org/,https://www.gsd.wednet.edu/,https://www.elkhartisd.org/,https://www.westwoodisd.net/
+     * https://www.huntingtonisd.com, (Edlio [already known widely used])
+     *
+     * https://www.ccsd.k12.wy.us/,https://www.berkeleycountyschools.org/,https://www.aasd.wednet.edu/
+     * https://www.auburn.wednet.edu/,https://www.elginisd.net/,https://www.alleghany.k12.nc.us/ (Blackboard [already known widely used])
+     *
+     * https://wv01919545.schoolwires.net/,https://www.chewelah.k12.wa.us/,https://www.creston.wednet.edu/,https://www.gcdsd.org/,https://www.dallasisd.org/,
+     * https://www.banderaisd.net/,https://www.abss.k12.nc.us/ (Blackboard schoolwires)
+     *
+     * http://www.cabellschools.com/,https://www.asd.wednet.edu/,https://bsd405.org/,http://www.colsd.org/ (SchoolMessenger.com/West Corp)
+     *
+     * http://www.crb1.net/ (Gaggle)
+     *
+     * https://www.crb2.org/,https://www.crook1.com/,http://www.fremont14.k12.wy.us/,https://hudsonisd.org/,https://www.zavallaisd.org/,
+     * https://www.hollidayisd.net/,https://www.claudeisd.net/,https://medinaisd.org/ (Gabbart)
+     *
+     * https://www.converse2.org/,https://www.fremont2.org/,http://www.fremont24.com/ (School Webmasters)
+     *
+     * http://www.landerschools.org/ (infinitecampus.org)
+     *
+     * http://www.charlotteisd.net/,http://www.jourdantonisd.net/ (SOCS)
+     *
+     * http://www.boonecountyboe.org/,http://www.eastmont206.org/,http://www.andrews.esc18.net/ (Schoolblocks)
+     *
+     * http://www.cosmopolisschool.com/pages/Cosmopolis (Edline)
+     *
+     * http://www.dcschools.us/ (eschoolview)
+     *
+     * http://claycountyschools.org (wvnet)
+     *
+     * http://www.boe.faye.k12.wv.us/,http://www.csd49.org/,http://www.frankstonisd.net/ (schoolpointe)
+     *
+     * https://www.blainesd.org/,http://www.cpps.org/,https://www.daytonsd.org/,http://www.muleshoeisd.net/ (Apptegy)
+     *
+     * http://www.bickletonschools.org/,http://www.evalinesd.k12.wa.us/ (schoolinsites)
+     *
+     * https://www.be.wednet.edu/,https://www.eatonville.wednet.edu/,https://www.esd401.org/ (finalsite)
+     *
+     * http://www.cersd.org/district-information/district-staff-directory,https://www.ferndalesd.org/ (campussuite)
+     *
+     * http://www.finleysd.org/ (sightworksplatform)
+     *
+     * https://www.cayugaisd.com/contacts (appspot)
+     *
+     * http://www.palestineschools.org/,http://www.brazosisd.net/ (eztask)
+     *
+     * http://www.windthorstisd.net/ (Edclick)
+     *
+     * http://www.fre6.k12.wy.us/email.html,http://bchs.brax.k12.wv.us/,http://boe.calhoun.k12.wv.us/,http://www.centervilleschool.org
+     * http://www.adnaschools.org/,http://www.battlegroundps.org,http://www.colton.k12.wa.us/,http://www.crschools.org,http://www.concrete.k12.wa.us/,
+     * http://www.conway.k12.wa.us/,https://dphs.dpsd.org,http://ccps.net,http://ww1.poteetisd.org,https://www.averyschools.net,https://www.beaufort.k12.nc.us/ (none)
+     */
