@@ -842,6 +842,7 @@ MTurkScript.prototype.parse_hr_match=function(hr_match) {
     /* parse hours is a helper for parse_FB_about */
 MTurkScript.prototype.parse_hours=function(script)
 {
+    console.log("in MTurkScript.prototype.parse_hours");
     var result={};
     var text=script.innerHTML.replace(/^require\(\"TimeSlice\"\)\.guard\(\(function\(\)\{bigPipe\.onPageletArrive\(/,"")
         .replace(/\);\}\).*$/,"")
@@ -1070,6 +1071,7 @@ MTurkScript.prototype.pre_parse_address=function(address)
 	.replace(/(fl|floor)\s*([\d]+)/i,"").replace(/\s*\d[A-Za-z]{1,2}\s*floor\s*/i," ")
 	.replace(/(Ste(\.?)|Suite) [\d]+/,"").replace(/Unit [A-Za-z\-\d]+,/,"")
 	.replace(/P(\.|\s)?O(\.|\s)?\s*Box\s+[\d\-]+(,?)/i,"123 Fake Street,").replace(/,[^,]*County,/i,",")
+	.replace(/(?:Room|Rm(?:\.)?)\s+(?:[\dA-Z\-]+)\s*(,)?/,"")
 	.trim();
 };
 
