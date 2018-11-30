@@ -145,6 +145,8 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id)
                           "instagram.com":this.parseext_instagram};
     this.query={};
     this.attempts={};
+    this.queryList=[];
+    this.doneQueries=0;
     this.requester_id=requester_id;
     
     for(x in this.site_parser_map) {
