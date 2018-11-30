@@ -1120,3 +1120,39 @@ MTurkScript.prototype.time24totime12=function(time_str,uppercase) {
     if(hrtime>=12 && hrtime<24) ampm="pm";
     return ret+(uppercase ? ampm.toUpperCase() : ampm);
 };
+
+/* parse_ta_hours is a helper function for parse_trip_advisor */
+MTurkScript.prototype.parse_ta_hours=function(hrs) {
+    console.log("parse_ta_hours: hrs="+JSON.stringify(hrs));
+    var day_list=["Sat","Sun","Mon","Tue","Wed","Thu","Fri"],i,j,day_match,hrs_match,ret={};
+    for(i=0; i < hrs.length; i++) {
+        if(!/ - /.test(hrs[i].days)) hrs[i].days=hrs[i].days+" - "+hrs[i].days;
+        if(!(day_match=hrs[i].days.match(/^([A-Za-z]{3}) - ([A-Za-z]{3})/))) continue;
+        for(j=day_list.indexOf(day_match[1]); j<=day_list.indexOf(day_match[2]); j++) {
+            ret[day_list[j]]=hrs[i].times; }
+    }
+    return ret;
+};
+    /* Parses trip_advisor for some useful info like hours */
+MTurkScript.prototype.parse_trip_advisor=function(doc,url,resolve,reject) {
+    var scripts=doc.scripts,i,ret={},context=null,x,responses=null;
+    var context_regex=/^\{\"@context/,m_reg=/^define\(\'@ta\/page-manifest\',\[\],function\(\)\{return /;
+    console.log("in parse_trip_advisor, url="+url+", scripts.length="+scripts.length);
+    for(i=0; i < scripts.length; i++) {
+        if(!context && context_regex.test(scripts[i].innerHTML) &&
+           (context=JSON.parse(scripts[i].innerHTML))) ret.address=context.address;
+        else if(m_reg.test(scripts[i].innerHTML) &&
+                (responses=JSON.parse(scripts[i].innerHTML.replace(m_reg,"").replace(/;\}\);$/,""))
+                 .redux.api.responses)) {
+            for(x in responses) {
+                if(/\/about\//.test(x)) {
+                    ret.categories=responses[x].data.taxonomyInfos.map(x => x.name);
+                    //ret.taxonomyInfos=responses[x].data.taxonomyInfos;
+                    if(responses[x].data.displayHours) {
+                        ret.hours=MTurkScript.prototype.parse_ta_hours(responses[x].data.displayHours); }
+                }
+            }
+        }
+    }
+    resolve(ret);
+};
