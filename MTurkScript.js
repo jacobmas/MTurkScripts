@@ -979,7 +979,7 @@ MTurkScript.prototype.pre_parse_address=function(address)
 MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
 {
     var result={success:true,fb_url:url},outer_part,_4bl9,i,j,inner_a,response,_4j7v;
-    var _a3f,coord_ret,address;
+    var _a3f,coord_ret,address,name;
     var code=doc.body.getElementsByTagName("code"),scripts=doc.scripts;
     for(i=0; i < code.length; i++) code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
     if((outer_part=doc.getElementsByClassName("_1xnd")).length===0) {
@@ -987,6 +987,7 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
         resolve(result);
         return;
     }
+    if((name=doc.getElementsByClassName("_64-f")).length>0) result.name=name[0].innerText;
     if((_a3f=doc.getElementsByClassName("_a3f")).length>0 &&
        (coord_ret=MTurkScript.prototype.FB_match_coords(_a3f[0].src))) {
         for(i in coord_ret) result[i]=coord_ret[i];
