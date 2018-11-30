@@ -127,8 +127,6 @@ for (var i=0; i < defaultDiacriticsRemovalMap .length; i++){
     }
 }
 
-//console.log("Munky");
-
 /* return_ms is the number of milliseconds to wait before returning the HIT,
  * submit_ms is the number of milliseconds to wait before submitting the HIT
  * sites should be a list of {fragment:this.sites[x],timeout:2000} type objects
@@ -330,9 +328,7 @@ MTurkScript.prototype.is_bad_url=function(the_url, bad_urls, max_depth, max_dash
     if(max_depth===undefined) max_depth=4;
     if(max_dashes===undefined || max_dashes===-1) do_dashes=false;
     else do_dashes=true;
-
-    for(i=0; i < bad_urls.length; i++)
-    {
+    for(i=0; i < bad_urls.length; i++) {
         if(the_url.indexOf(bad_urls[i])!==-1) return true;
     }
     // -1 means we just check for specific bad stuff, not length
@@ -342,57 +338,26 @@ MTurkScript.prototype.is_bad_url=function(the_url, bad_urls, max_depth, max_dash
     return false;
 }
 
-/* Can be improved greatly, need a good way to parse addresses globally */
+/* TODO: Can be improved greatly, need a good way to parse addresses globally */
 MTurkScript.prototype.my_parse_address=function(to_parse)
 {
-    var ret_add={};
+    var ret_add={},my_match;
     var state_re=/([A-Za-z]+) ([\d\-]+)$/;
     var canada_zip=/ ([A-Z]{2}) ([A-Z][\d][A-Z] [\d][A-Z][\d])$/;
     to_parse=to_parse.replace(canada_zip,", $&");
-
     console.log("to_parse="+to_parse);
-    var my_match;
-    var splits=to_parse.split(",");
-    if(splits.length===3)
-    {
-        if(canada_zip.test(splits[2]))
-        {
-            my_match=splits[2].match(canada_zip);
+    var splits=to_parse.split(","),s_len;
+    if((s_len=splits.length)>=2 && s_len<=3) {
+        if((my_match=splits[s_len-1].match(canada_zip))) {
             ret_add.state=my_match[1];
             ret_add.zip=my_match[2];
         }
-        else
-        {
-            my_match=splits[2].match(state_re);
-            if(my_match!==null && my_match!==undefined)
-            {
-                ret_add.state=my_match[1];
-                ret_add.zip=my_match[2];
-            }
-        }
-        ret_add.street=splits[0].trim();
-        ret_add.city=splits[1].trim();
-    }
-    else if(splits.length==2)
-    {
-
-        if(canada_zip.test(splits[1]))
-        {
-            my_match=splits[1].match(canada_zip);
+        else if((my_match=splits[s_len-1].match(state_re))) {
             ret_add.state=my_match[1];
             ret_add.zip=my_match[2];
         }
-        else
-        {
-            my_match=splits[1].match(state_re);
-            if(my_match!==null && my_match!==undefined)
-            {
-                ret_add.state=my_match[1];
-                ret_add.zip=my_match[2];
-            }
-        }
-        ret_add.street="";
-        ret_add.city=splits[0].trim();
+        ret_add.street=(s_len===3 ? splits[0].trim() : "");
+        ret_add.city=splits[s_len-2].trim();
     }
     if(ret_add.city===undefined || ret_add.state===undefined || ret_add.zip===undefined)
     {
@@ -420,13 +385,9 @@ MTurkScript.prototype.my_parse_address=function(to_parse)
 }
 MTurkScript.prototype.get_domain_only=function(the_url,limit_one)
 {
-    var httpwww_re=/https?:\/\/www\./;
-    var http_re=/https?:\/\//;
-    var slash_re=/\/.*$/;
+    var httpwww_re=/https?:\/\/www\./,http_re=/https?:\/\//,slash_re=/\/.*$/;
     var ret=the_url.replace(httpwww_re,"").replace(http_re,"").replace(slash_re,"");
-
-    if(limit_one)
-    {
+    if(limit_one) {
         if(/\.(co|ac|gov)\.[A-Za-z]{2}$/.test(the_url))
         {
             ret=ret.replace(/^.*\.([^\.]+\.(?:co|ac|gov)\.[A-Za-z]{2})$/,"$1");
@@ -757,9 +718,7 @@ MTurkScript.prototype.parse_lgb_info=function(lgb_info)
     bm_details_overlay=lgb_info.getElementsByClassName("bm_details_overlay");
     if(bm_details_overlay.length>0) result.address=bm_details_overlay[0].innerText;
     b_factrow=lgb_info.getElementsByClassName("b_factrow");
-    if(b_entityTitle.length>0)
-    {
-	result.name=b_entityTitle[0].innerText;
+    if(b_entityTitle.length>0 && (result.name=b_entityTitle[0].innerText)) {
 	if(b_entityTitle[0].getElementsByTagName("a").length>0)
 	{
 	    result.url=b_entityTitle[0].getElementsByTagName("a")[0].href;
@@ -827,87 +786,54 @@ MTurkScript.prototype.adjust_time=function(hr,min,ampm)
      * sets the opening and closing times in military style format for submission
      */
 MTurkScript.prototype.parse_hr_match=function(hr_match) {
-        // p1 is nondigits, p2 digits, and p3 non-alphanumerics
-        var result={closed:false,open:"",close:""};
-        if(hr_match[2]===null||hr_match[2]===undefined)
-        {
-            result.closed=true;
-	    return result;
-        }
-        result.open=MTurkScript.prototype.adjust_time(hr_match[2],hr_match[3],hr_match[4]);
-        result.close=MTurkScript.prototype.adjust_time(hr_match[5],hr_match[6],hr_match[7]);
-        return result;
+    var result={closed:false,open:"",close:""};
+    if((hr_match[2]===null||hr_match[2]===undefined) && (result.closed=true)) return result;
+    result.open=MTurkScript.prototype.adjust_time(hr_match[2],hr_match[3],hr_match[4]);
+    result.close=MTurkScript.prototype.adjust_time(hr_match[5],hr_match[6],hr_match[7]);
+    return result;
 };
 
-    /* parse hours is a helper for parse_FB_about */
+    /* parse hours is a helper for parse_FB_about to parse opening hours */
 MTurkScript.prototype.parse_hours=function(script)
 {
     console.log("in MTurkScript.prototype.parse_hours");
     var result={};
     var text=script.innerHTML.replace(/^require\(\"TimeSlice\"\)\.guard\(\(function\(\)\{bigPipe\.onPageletArrive\(/,"")
-        .replace(/\);\}\).*$/,"")
+	.replace(/\);\}\).*$/,"")
     text=text.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\"$2\":").replace(/\\x3C/g,"<");
-    var parsed_text=JSON.parse(text);
-    var instances=parsed_text.jsmods.instances;
+    var parsed_text=JSON.parse(text), instances=parsed_text.jsmods.instances;
     if(!instances || instances===undefined) { return result; }
     var x,i,j,good_instance,hr_match;
     var hr_regex=/^([A-Za-z]+):\s*(?:CLOSED|([\d]{1,2}):([\d]{2})\s*([A-Z]{2})\s*-\s*([\d]{1,2}):([\d]{2})\s*([A-Z]{2}))/i;
-    for(i=0; i < instances.length; i++)
-    {
-        try
-        {
+    for(i=0; i < instances.length; i++) {
+        try {
             if(instances[i].length>=3 && instances[i][1].length>0 && instances[i][1][0]==="Menu"
-               && instances[i][2].length>0)
-            {
-
-                good_instance=instances[i][2][0];
+               && instances[i][2].length>0 && (good_instance=instances[i][2][0])) {
                 for(j=0; j < good_instance.length; j++) {
-                    console.log("good_instance["+j+"].label="+good_instance[j].label);
-                    if(good_instance[j].label!==undefined && hr_regex.test(good_instance[j].label))
-                    {
-                        hr_match=good_instance[j].label.match(hr_regex);
-                        console.log("hr_match at "+j+"="+JSON.stringify(hr_match));
-                        result[hr_match[1]]=MTurkScript.prototype.parse_hr_match(hr_match);
-
-                    }
+                    if(good_instance[j].label!==undefined && (hr_match=good_instance[j].label.match(hr_regex))) {
+                        result[hr_match[1]]=MTurkScript.prototype.parse_hr_match(hr_match); }
                 }
             }
         }
         catch(error) { console.log("error with hours "+error); }
     }
     return result;
-
 };
 
-MTurkScript.prototype.FB_match_coords = function(src)
-{
-    var result={};
-    var coords_regex=/markers=([-\d\.]+)%2C([-\d\.]+)/,coords_match;
-    coords_match=src.match(coords_regex);
-    if(coords_match)
-    {
-        result.lat=coords_match[1];
-        result.lon=coords_match[2];
-    }
+MTurkScript.prototype.FB_match_coords = function(src) {
+    var coords_regex=/markers=([-\d\.]+)%2C([-\d\.]+)/,coords_match,result={};
+    if((coords_match=src.match(coords_regex))) result={lat:coords_match[1],lon:coords_match[2]};
     return result;
 };
 
     /**
      * parse_FB_about is a create_promise style parser for a FB about page
      */
-MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject)
-{
-    // console.time("fb_about");
-    //console.log("this="+JSON.stringify(this));
-    var result={};
-    var code=doc.body.getElementsByTagName("code"),i,j,scripts=doc.scripts;
-    for(i=0; i < scripts.length; i++)
-    {
-        if(/^bigPipe\.beforePageletArrive\(\"PagesProfileAboutInfoPagelet/.test(scripts[i].innerHTML) && i < scripts.length-1)
-        {
-            /* Parse the next one */
-            result.hours=MTurkScript.prototype.parse_hours(scripts[i+1]);
-        }
+MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
+    var result={},code=doc.body.getElementsByTagName("code"),i,j,scripts=doc.scripts;
+    for(i=0; i < scripts.length; i++) {
+        if(/^bigPipe\.beforePageletArrive\(\"PagesProfileAboutInfoPagelet/.test(scripts[i].innerHTML) &&
+	   i < scripts.length-1) result.hours=MTurkScript.prototype.parse_hours(scripts[i+1]);
     }
     for(i=0; i < code.length; i++)
     {
@@ -916,11 +842,9 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject)
     }
     var about_fields=doc.getElementsByClassName("_3-8j"),inner_field1,text;
     var _a3f=doc.getElementsByClassName("_a3f"),coord_ret; // map with coords
-
     if(_a3f.length>0 && (coord_ret=MTurkScript.prototype.FB_match_coords(_a3f[0].src))) {
         for(i in coord_ret) result[i]=coord_ret[i];
     }
-
     for(i=0; i < about_fields.length; i++)
     {
         //  console.log("about_fields["+i+"].className="+about_fields[i].className);
@@ -946,12 +870,8 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject)
         else if(phone_re.test(text)) result.phone=text.match(phone_re)[0];
         else if(/^About$/i.test(text) && about_fields[i].getElementsByClassName("_3-8w").length>0) {
             result.about=about_fields[i].getElementsByClassName("_3-8w")[0].innerText; }
-
-
     }
-    //console.log("result="+JSON.stringify(result));
     resolve(result);
-    //console.timeEnd("fb_about");
 };
 /* parse_search_script parses the script to get the search results; a helper function 
    for parse_FB_search
@@ -960,27 +880,10 @@ MTurkScript.prototype.parse_search_script=function(script)
 {
     var result={success:true,sites:[]},parsed_text="",i,j;
     var text=script.innerHTML.replace(/^require\(\"TimeSlice\"\)\.guard\(\(function\(\)\{bigPipe\.onPageletArrive\(/,"")
-        .replace(/\);\}\).*$/,"")
-    
-    text=text.replace(/src:\"([^\"]+)\"/g,"src:\"\"");
-    text=text.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\"$2\":").replace(/\\x3C/g,"<")
-	.replace(/%23/g,"#");
-    try
-    {
-	
-	parsed_text=JSON.parse(text);
-    }
-    catch(error) { console.log("Error "+error+" when parsing\n"+text);
-
-		   var err_regex=/at position ([\d]+)/,err_match;
-		   err_match=error.toString().match(err_regex);
-		   if(err_match)
-		   {
-		       console.log("Context of error: "+text.substr(parseInt(err_match[1])-100,200));
-		   }
-
-
-		 }
+        .replace(/\);\}\).*$/,"").replace(/src:\"([^\"]+)\"/g,"src:\"\"")
+	.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\"$2\":").replace(/\\x3C/g,"<").replace(/%23/g,"#");
+    try { parsed_text=JSON.parse(text); }
+    catch(error) { console.log("Error "+error+" when parsing\n"+text); }
     var require=parsed_text.jsmods.require;
     for(i=0; i < require.length; i++)
     {
@@ -989,7 +892,6 @@ MTurkScript.prototype.parse_search_script=function(script)
             let results_list=require[i][3][0].props.results;
             for(j=0; j < results_list.length; j++) result.sites.push({url:results_list[j].uri,name:results_list[j].text});
         }
-
     }
     return result;
 };
@@ -1000,13 +902,7 @@ MTurkScript.prototype.parse_FB_search=function(doc,url,resolve,reject)
     //console.log("this="+JSON.stringify(this));
     var result={success:false};
     var code=doc.body.getElementsByTagName("code"),i,j,scripts=doc.scripts;
-
-
-
-    for(i=0; i < scripts.length; i++)
-    {
-        // console.log("scripts["+i+"].innerHTML="+scripts[i].innerHTML);
-
+    for(i=0; i < scripts.length; i++) {
         if(/^bigPipe\.beforePageletArrive\(\"pagelet_loader_initial_browse_result/.test(scripts[i].innerHTML) && i < scripts.length-1)
         {
             /* Parse the next one */
@@ -1083,34 +979,26 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
     var result={success:true,fb_url:url},outer_part,_4bl9,i,j,inner_a,response,_4j7v;
     var _a3f,coord_ret,address;
     var code=doc.body.getElementsByTagName("code"),scripts=doc.scripts;
-    for(i=0; i < code.length; i++)
-    {
-        code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
-    }
-    outer_part=doc.getElementsByClassName("_1xnd");
-    if(outer_part.length===0)
-    {
+    for(i=0; i < code.length; i++) code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
+    if((outer_part=doc.getElementsByClassName("_1xnd")).length===0) {
         result.success=false;
         resolve(result);
         return;
     }
-    _a3f=doc.getElementsByClassName("_a3f"); // map with coords
-    if(_a3f.length>0 && (coord_ret=MTurkScript.prototype.FB_match_coords(_a3f[0].src))) {
+    if((_a3f=doc.getElementsByClassName("_a3f")).length>0 &&
+       (coord_ret=MTurkScript.prototype.FB_match_coords(_a3f[0].src))) {
         for(i in coord_ret) result[i]=coord_ret[i];
     }
     _4bl9=outer_part[0].getElementsByClassName("_4bl9");
-    for(i=0; i < _4bl9.length; i++)
-    {
+    for(i=0; i < _4bl9.length; i++) {
         if(_4bl9[i].getElementsByClassName("_2wzd").length>0 &&
            (address=MTurkScript.prototype.pre_parse_address(_4bl9[i].innerText.replace(/Get Directions$/,"")))
-           && address)
-	{
+           && address) {
 	    result.address=parseAddress.parseLocation(address);
 	    result.addressInner=address;
 	}
-	
-        inner_a=_4bl9[i].getElementsByTagName("a");
-        if(inner_a.length===0 && (response=MTurkScript.prototype.match_home_text(_4bl9[i].innerText))
+        if((inner_a=_4bl9[i].getElementsByTagName("a")).length===0 &&
+	   (response=MTurkScript.prototype.match_home_text(_4bl9[i].innerText))
            && response[0].length>0) result[response[0]]=response[1];
         else if(inner_a.length>0 && (response=MTurkScript.prototype.match_home_a(inner_a))
                 && response[0].length>0) result[response[0]]=response[1];
@@ -1176,19 +1064,11 @@ MTurkScript.prototype.parse_FB_search_page=function(doc,url,resolve,reject)
     var code=doc.body.getElementsByTagName("code"),i,j,name,desc;
     try
     {
-        for(i=0; i < code.length; i++)
-        {
-            //console.log("code ("+i+")");
-            code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
-        }
+        for(i=0; i < code.length; i++) code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
         name=doc.getElementsByClassName("_32mo")
         desc=doc.getElementsByClassName("_glo");
-        for(i=0; i < name.length; i++)
-        {
-            result.sites.push({name:name[i].innerText,url:name[i].href,text:desc[i].innerText});
-        }
+        for(i=0; i < name.length; i++) result.sites.push({name:name[i].innerText,url:name[i].href,text:desc[i].innerText});
         result.success=true;
-
     }
     catch(error) { console.log("Error in parse_FB_search_page "+error); result.success=false; }
     resolve(result);
@@ -1196,29 +1076,20 @@ MTurkScript.prototype.parse_FB_search_page=function(doc,url,resolve,reject)
 
 MTurkScript.prototype.parse_FB_posts=function(doc,url,resolve,reject)
 {
-    var scripts=doc.scripts,i,j;
-    var code=doc.body.getElementsByTagName("code");
+    var scripts=doc.scripts,i,j,code=doc.body.getElementsByTagName("code");
     var result={success:false},time;
-    for(i=0; i < code.length; i++)
-    {
-        code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
-    }
+    for(i=0; i < code.length; i++) code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
     var posts=doc.getElementsByClassName("mbm");
-    for(i=0; i < posts.length; i++)
-    {
+    for(i=0; i < posts.length; i++) {
         if(posts[i].getElementsByClassName("_449j").length===0) break;
     }
     if(i>=posts.length || !(time=posts[i].getElementsByClassName("_5ptz")) ||
-       time.length===0 || !time[0].title || time[0].title.split(" ").length<2)
-    {
-
+       time.length===0 || !time[0].title || time[0].title.split(" ").length<2) {
         resolve(result);
         return;
     }
-
     result={success:true,date:time[0].title.split(" ")[0],time:time[0].title.split(" ")[1]};
     resolve(result);
-
 };
 /* fix_remote_url fixes the remote urls so they aren't having the mturkcontent.com stuff
      * found_url is the url that needs fixing
@@ -1235,4 +1106,17 @@ MTurkScript.prototype.fix_remote_url=function(found_url,page_url)
         temp_url=temp_url.replace(/\/[^\/]+$/,"");
     }
     return found_url.replace(to_replace,replacement);
+};
+/* time24totime12 converts a 24hr form timestring into a 12hr form, 
+   uppercase specifies if AM/PM are uppercase or lowercase, true by default */
+MTurkScript.prototype.time24totime12=function(time_str,uppercase) {
+    if(uppercase===undefined) uppercase=true;
+    var time_match,ret="",ampm="am",hrtime;
+    if(!(time_match=time_str.match(/([\d]+):([\d]+)/))) return time_str;
+    if((hrtime=parseInt(time_match[1]))>12) ret=ret+(hrtime-12);
+    else if(hrtime===0) ret=ret+(hrtime+12);
+    else ret=ret+(hrtime);
+    ret=ret+":"+time_match[2];
+    if(hrtime>=12 && hrtime<24) ampm="pm";
+    return ret+(uppercase ? ampm.toUpperCase() : ampm);
 };
