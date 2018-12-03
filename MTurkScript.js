@@ -313,7 +313,7 @@ MTurkScript.prototype.is_bad_email = function(to_check)
     if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1) return true;
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
     else if(/@(domain\.com|example\.com)/.test(to_check)) return true;
-    else if(/@(example|email)\.com$/.test(to_check) return true;
+    else if(/@(example|email)\.com$/.test(to_check)) return true;
     return false;
 }
 /**
@@ -764,7 +764,7 @@ MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func
                  else parser(doc,response.finalUrl, resolve, reject);
              },
              onerror: function(response) { reject("Failed to load site "); },
-             ontimeout: function(response) {reject("Timed out loading site "); }
+             ontimeout: function(response) { reject("Timed out loading site "); }
             });
     });
     queryPromise.then(then_func)
