@@ -1159,3 +1159,79 @@ MTurkScript.prototype.parse_trip_advisor=function(doc,url,resolve,reject) {
     }
     resolve(ret);
 };
+
+MTurkScript.prototype.call_contact_page=function(url,callback,extension) {
+    if(extension===undefined) { extension='';
+                                MTurk.queryList.push(url); }
+    GM_xmlhttpRequest({method: 'GET', url: url,onload: function(response) {
+			   var doc = new DOMParser().parseFromString(response.responseText, "text/html");
+			   contact_response(doc,response.finalUrl,{extension:extension,callback:callback}); },
+		       onerror: function(response) { console.log("Fail");
+						     MTurk.doneQueries++;
+						     callback(); },
+		       ontimeout: function(response) { console.log("Fail timeout");
+						       MTurk.doneQueries++;
+						       callback(); }
+		      });
+};
+
+
+/**
+ * contact_response Here it searches for an email */
+MTurkScript.prototype.contact_response=function(doc,url,extra) {
+        var i,j, my_match,temp_email,encoded_match,match_split;
+        var extension=extra.extension,callback=extra.callback;
+        if(extension===undefined) extension='';
+        if(extension==='') get_name_from_title(doc,url);
+        console.log("in contact_response "+url);
+        var short_name=url.replace(my_query.url,""),links=doc.links,email_matches,phone_matches;
+        var replacement=url.match(/^https?:\/\/[^\/]+/)[0];
+        var contact_regex=/(Contact|About|Privacy|Legal)/i,bad_contact_regex=/^\s*(javascript|mailto):/i;
+        console.log("replacement="+replacement);
+        var temp_url,curr_url;
+        if(email_matches=doc.body.innerHTML.match(email_re)) {
+            for(j=0; j < email_matches.length; j++) {
+                if(!MTurk.is_bad_email(email_matches[j]) && email_matches[j].length>0 &&
+                   (my_query.fields.email=email_matches[j])) break;
+            }
+            console.log("Found email hop="+my_query.fields.email);
+        }
+        if(phone_matches=doc.body.innerText.match(phone_re)) my_query.fields.phoneNumber=phone_matches[0];
+        for(i=0; i < links.length; i++)
+        {
+            // console.log("i="+i+", text="+links[i].innerText);
+            if(extension==='' && contact_regex.test(links[i].innerText) && !bad_contact_regex.test(links[i].href) &&
+               !MTurk.queryList.includes(links[i].href=MTurkScript.prototype.fix_remote_url(links[i].href,url)))
+            {
+                MTurk.queryList.push(links[i].href);
+                console.log("*** Following link labeled "+links[i].innerText+" to "+links[i].href);
+                call_contact_page(links[i].href,callback,"NOEXTENSION");
+                continue;
+            }
+            if(links[i].dataset.encEmail && (temp_email=MTurkScript.prototype.swrot13(links[i].dataset.encEmail.replace(/\[at\]/,"@")))
+               && !MTurkScript.prototype.is_bad_email(temp_email)) my_query.fields.email=temp_email;
+            if(links[i].href.indexOf("amazonaws.com")===-1 && links[i].href.indexOf("mturkcontent.com")===-1)
+            {
+                //    console.log(short_name+": ("+i+")="+links[i].href);
+            }
+            if(links[i].href.indexOf("cdn-cgi/l/email-protection#")!==-1 && (encoded_match=links[i].href.match(/#(.*)$/)) &&
+              (temp_email=MTurkScript.prototype.cfDecodeEmail(encoded_match[1]).replace(/\?.*$/,"")) &&
+               !MTurkScript.prototype.is_bad_email(temp_email)) my_query.fields.email=temp_email;
+            if((temp_email=links[i].href.replace(/^mailto:\s*/,"").match(email_re)) &&
+               !MTurkScript.prototype.is_bad_email(temp_email)) my_query.fields.email=temp_email;
+            if(links[i].href.indexOf("javascript:location.href")!==-1 && (temp_email="") &&
+               (encoded_match=links[i].href.match(/String\.fromCharCode\(([^\)]+)\)/)) && (match_split=encoded_match[1].split(","))) {
+                for(j=0; j < match_split.length; j++) temp_email=temp_email+String.fromCharCode(match_split[j].trim());
+                my_query.fields.email=temp_email;
+            }
+            if(links[i].href.indexOf("javascript:DeCryptX(")!==-1 &&
+               (encoded_match=links[i].href.match(/DeCryptX\(\'([^\)]+)\'\)/))) my_query.fields.email=MTurkScript.prototype.DecryptX(encoded_match[1]);
+            if(/^tel:/.test(links[i].href)) my_query.fields.phoneNumber=links[i].href.replace(/^tel:/,"");
+        }
+        console.log("* doing doneQueries++ for "+url);
+        MTurk.doneQueries++;
+        //add_to_sheet();
+        //submit_if_done();
+        callback();
+        return;
+};
