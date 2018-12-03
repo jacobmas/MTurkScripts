@@ -313,6 +313,7 @@ MTurkScript.prototype.is_bad_email = function(to_check)
     if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1) return true;
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
     else if(/@(domain\.com|example\.com)/.test(to_check)) return true;
+    else if(/@(example|email)\.com$/.test(to_check) return true;
     return false;
 }
 /**
@@ -762,8 +763,8 @@ MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func
                  if(extra_arg!==undefined) parser(doc,response.finalUrl, resolve, reject,extra_arg);
                  else parser(doc,response.finalUrl, resolve, reject);
              },
-             onerror: function(response) { reject("Failed to load site "+response); },
-             ontimeout: function(response) {reject("Timed out loading site "+response); }
+             onerror: function(response) { reject("Failed to load site "); },
+             ontimeout: function(response) {reject("Timed out loading site "); }
             });
     });
     queryPromise.then(then_func)
@@ -1160,6 +1161,7 @@ MTurkScript.prototype.parse_trip_advisor=function(doc,url,resolve,reject) {
     resolve(ret);
 };
 
+/* TODO: NOT READY */
 MTurkScript.prototype.call_contact_page=function(url,callback,extension) {
     if(extension===undefined) { extension='';
                                 MTurk.queryList.push(url); }
@@ -1177,7 +1179,7 @@ MTurkScript.prototype.call_contact_page=function(url,callback,extension) {
 
 
 /**
- * contact_response Here it searches for an email */
+ * contact_response Here it searches for an email TODO:FIX */
 MTurkScript.prototype.contact_response=function(doc,url,extra) {
         var i,j, my_match,temp_email,encoded_match,match_split;
         var extension=extra.extension,callback=extra.callback;
@@ -1186,7 +1188,7 @@ MTurkScript.prototype.contact_response=function(doc,url,extra) {
         console.log("in contact_response "+url);
         var short_name=url.replace(my_query.url,""),links=doc.links,email_matches,phone_matches;
         var replacement=url.match(/^https?:\/\/[^\/]+/)[0];
-        var contact_regex=/(Contact|About|Privacy|Legal)/i,bad_contact_regex=/^\s*(javascript|mailto):/i;
+        var contact_regex=/(Contact|About|Legal)/i,bad_contact_regex=/^\s*(javascript|mailto):/i;
         console.log("replacement="+replacement);
         var temp_url,curr_url;
         if(email_matches=doc.body.innerHTML.match(email_re)) {
