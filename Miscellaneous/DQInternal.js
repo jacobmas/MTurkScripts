@@ -22,7 +22,7 @@ DQ.carSearchShit=function(t, n, r,doc) {
             t[o][0].call(d.exports, function(e) {
                 var n = t[o][1][e];
                 return i(n ? n : e)
-            }, d, d.exports,doc, e, t, n, r)
+            }, d, d.exports,doc);//, e, t, n, r)
         }
         return n[o].exports
     }
