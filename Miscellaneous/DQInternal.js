@@ -1,4 +1,12 @@
-    DQ.carSearchShit=function(t, n, r,doc) {
+var DQ={dealer_regex:new RegExp("www\\.automanager\\.com|www\\.autosalesweb\\.net|www\\.carbase\\.com|www\\.carsforsale\\.com|"+
+                                    "www\\.dealer\\.com|www\\.dealercarsearch\\.com|dealerclick\\.com|"+
+                                    "www\\.dealerfire\\.com|www\\.dealerinspire\\.com|www\\.dealeron\\.com|"+
+                                    "www\\.drivetime\\.com|"+
+                                    "foxdealerinteractive\\.com|www\\.fzautomotive\\.com|"+
+                                    "media-cf\\.assets-cdk\\.com|remora\\.com|www\\.v12software\\.com|waynereaves\\.com|www\\.webstreak\\.com"+
+                                   "")};
+
+DQ.carSearchShit=function(t, n, r,doc) {
     function i(o, s) {
         if (!n[o]) {
             if (!t[o]) {
