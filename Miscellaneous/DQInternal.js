@@ -1,4 +1,4 @@
-    var DQ={dealer_regex:new RegExp(
+    /*var DQ={dealer_regex:new RegExp(
         "webstatic\\.auction123\\.com|"+
         "www\\.autocorner\\.com|www\\.autodrivemarketing\\.com|www\\.autofunds\\.com|www\\.autojini\\.com|"+
         "\\/\\/automotiveleads\\.com|www\\.automanager\\.com|www\\.autorevo\\.com|www\\.autosalesweb\\.net|"+
@@ -19,7 +19,28 @@
         "\\/\\/waynereaves\\.com|www\\.wearefullthrottle\\.com|www\\.webstreak\\.com|www\\.yourcarlot\\.com"
                                   ),
             dealer_map:{"fridaynet":"lotwizard","dealersocket":"dealerfire","dealerseo":"automotiveleads",
-			"dealerleads":"automotiveleads"}};
+	    "dealerleads":"automotiveleads"}};*/
+
+var DQ={dealer_regex:new RegExp(
+        "webstatic\\.auction123\\.com|"+
+        "www\\.(auto(conx|corner|drivemarketing|funds|jini|manager|revo|searchtech))\\.com|"+
+        "\\/\\/automotiveleads\\.com|www\\.autosalesweb\\.net|"+
+        "www\\.(car(base|guywebdesign|prolive|sforsale|think))|"+
+        "(www|static)\\.dealer\\.com|"+
+        "www\\.(dealer(carsearch|center|eprocess|fire|inspire|on|pac|peak|scloud|specialties|sync|websites))\\.com|"+
+        "dealerclick\\.com|www\\.dealerexpress\\.net|\\/\\/dealerleads\\.com|"+
+        "(\\/\\/|inventoryplus\\.)dealersocket\\.com|\\/\\/dealerseo\\.net|"+
+        "\\/\\/dealersolutionssoftware\\.com|"+
+        "www\\.drivedominion\\.com|www\\.drivetime\\.com|www\\.ebizautos\\.com|"+
+        "foxdealerinteractive\\.com|www\\.fridaynet\\.com|www\\.fzautomotive\\.com|www\\.higherturnover\\.com|"+
+        "www\\.jazelauto\\.com|"+
+        "\\/\\/kukui\\.com|(\\/\\/|www\\.)lotwizard\\.com|media-cf\\.assets-cdk\\.com|"+
+        "www\\.motorcarmarketing\\.com|(www|secure4)\\.motionfuze\\.com|"+
+        "\\/\\/prontodealer\\.com|\\/\\/remora\\.com|www\\.v12software\\.com|"+
+        "\\/\\/waynereaves\\.com|www\\.wearefullthrottle\\.com|www\\.webstreak\\.com|www\\.yourcarlot\\.com"
+                                  ),
+           dealer_map:{"fridaynet":"lotwizard","dealersocket":"dealerfire","dealerseo":"automotiveleads",
+                       "dealerleads":"automotiveleads"}};
 
 
     DQ.carSearchShit=function(t, n, r,doc,url) {
