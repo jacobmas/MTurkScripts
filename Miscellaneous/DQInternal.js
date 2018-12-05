@@ -1,14 +1,14 @@
-var DQ={dealer_regex:
-	new RegExp("www\\.autocorner\\.com|www\\.automanager\\.com|www\\.autosalesweb\\.net|"+
-                   "www\\.carbase\\.com|www\\.carsforsale\\.com|"+
-                   "www\\.dealer\\.com|www\\.dealercarsearch\\.com|www\\.dealercenter\\.com|dealerclick\\.com|"+
-                   "www\\.dealerfire\\.com|www\\.dealerinspire\\.com|www\\.dealeron\\.com|"+
-                   "www\\.dealerscloud\\.com|www\\.drivetime\\.com|www\\.ebizautos\\.com|"+
-                   "foxdealerinteractive\\.com|www\\.fzautomotive\\.com|www\\.higherturnover\\.com|"+
-                   "\\/\\/kukui\\.com|"+
-                   "media-cf\\.assets-cdk\\.com|\\/\\/remora\\.com|www\\.v12software\\.com|"+
-                   "\\/\\/waynereaves\\.com|www\\.webstreak\\.com"
-                  )};
+ var DQ={dealer_regex:new RegExp("www\\.autocorner\\.com|www\\.automanager\\.com|www\\.autosalesweb\\.net|"+
+                                    "www\\.carbase\\.com|www\\.carsforsale\\.com|"+
+                                    "(www|static)\\.dealer\\.com|www\\.dealercarsearch\\.com|www\\.dealercenter\\.com|dealerclick\\.com|"+
+                                    "www\\.dealereprocess\\.com|"+
+                                    "www\\.dealerfire\\.com|www\\.dealerinspire\\.com|www\\.dealeron\\.com|www\\.dealerscloud\\.com|"+
+                                    "www\\.drivetime\\.com|www\\.ebizautos\\.com|"+
+                                    "foxdealerinteractive\\.com|www\\.fzautomotive\\.com|www\\.higherturnover\\.com|"+
+                                    "\\/\\/kukui\\.com|\\/\\/lotwizard\\.com|"+
+                                    "media-cf\\.assets-cdk\\.com|\\/\\/remora\\.com|www\\.v12software\\.com|"+
+                                    "\\/\\/waynereaves\\.com|www\\.webstreak\\.com"
+                                  )};
 
     DQ.carSearchShit=function(t, n, r,doc,url) {
         function i(o, s) {
