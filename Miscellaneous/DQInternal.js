@@ -25,7 +25,7 @@ var DQ={dealer_regex:new RegExp(
         "webstatic\\.auction123\\.com|"+
         "www\\.(auto(conx|corner|drivemarketing|funds|jini|manager|revo|searchtech))\\.com|"+
         "\\/\\/automotiveleads\\.com|www\\.autosalesweb\\.net|"+
-        "www\\.(car(base|guywebdesign|prolive|sforsale|think))|"+
+        "www\\.(car(base|guywebdesign|prolive|sforsale|think))\\.com|"+
         "(www|static)\\.dealer\\.com|"+
         "www\\.(dealer(carsearch|center|eprocess|fire|inspire|on|pac|peak|scloud|specialties|sync|websites))\\.com|"+
         "dealerclick\\.com|www\\.dealerexpress\\.net|\\/\\/dealerleads\\.com|"+
