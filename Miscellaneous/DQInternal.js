@@ -1,16 +1,26 @@
-var DQ={dealer_regex:new RegExp("www\\.autocorner\\.com|www\\.autodrivemarketing\\.com|www\\.autofunds\\.com|www\\.automanager\\.com|"+
-                                    "\\/\\/automotiveleads\\.com|www\\.autorevo\\.com|www\\.autosalesweb\\.net|"+
-                                    "www\\.carbase\\.com|www\\.carprolive\\.com|www\\.carsforsale\\.com|"+
-                                    "(www|static)\\.dealer\\.com|www\\.dealercarsearch\\.com|www\\.dealercenter\\.com|dealerclick\\.com|"+
-                                    "www\\.dealereprocess\\.com|www\\.dealerfire\\.com|www\\.dealerinspire\\.com|www\\.dealeron\\.com|"+
-                                    "www\\.dealerscloud\\.com|www\\.dealerpeak\\.com|\\/\\/dealersocket\\.com|www\\.dealerwebsites\\.com|"+
-                                    "www\\.drivedominion\\.com|www\\.drivetime\\.com|www\\.ebizautos\\.com|"+
-                                    "foxdealerinteractive\\.com|www\\.fridaynet\\.com|www\\.fzautomotive\\.com|www\\.higherturnover\\.com|"+
-                                    "\\/\\/kukui\\.com|\\/\\/lotwizard\\.com|media-cf\\.assets-cdk\\.com|(www|secure4)\\.motionfuze\\.com|"+
-                                    "\\/\\/prontodealer\\.com|\\/\\/remora\\.com|www\\.v12software\\.com|"+
-                                    "\\/\\/waynereaves\\.com|www\\.wearefullthrottle\\.com|www\\.webstreak\\.com"
+    var DQ={dealer_regex:new RegExp(
+        "webstatic\\.auction123\\.com|"+
+        "www\\.autocorner\\.com|www\\.autodrivemarketing\\.com|www\\.autofunds\\.com|www\\.autojini\\.com|"+
+        "\\/\\/automotiveleads\\.com|www\\.automanager\\.com|www\\.autorevo\\.com|www\\.autosalesweb\\.net|"+
+        "www\\.autosearchtech\\.com|"+
+        "www\\.carbase\\.com|www\\.carprolive\\.com|www\\.carsforsale\\.com|"+
+        "(www|static)\\.dealer\\.com|www\\.dealercarsearch\\.com|www\\.dealercenter\\.com|dealerclick\\.com|"+
+        "www\\.dealereprocess\\.com|www\\.dealerfire\\.com|www\\.dealerinspire\\.com|\\/\\/dealerleads\\.com|"+
+        "www\\.dealeron\\.com|www\\.dealerscloud\\.com|www\\.dealerpeak\\.com|\\/\\/dealersocket\\.com|"+
+        "\\/\\/dealerseo\\.net|"+
+        "\\/\\/dealersolutionssoftware\\.com|www\\.dealerspecialties\\.com|www\\.dealersync\\.com|"+
+        "www\\.dealerwebsites\\.com|"+
+        "www\\.drivedominion\\.com|www\\.drivetime\\.com|www\\.ebizautos\\.com|"+
+        "foxdealerinteractive\\.com|www\\.fridaynet\\.com|www\\.fzautomotive\\.com|www\\.higherturnover\\.com|"+
+        "www\\.jazelauto\\.com|"+
+        "\\/\\/kukui\\.com|\\/\\/lotwizard\\.com|media-cf\\.assets-cdk\\.com|"+
+        "www\\.motorcarmarketing\\.com|(www|secure4)\\.motionfuze\\.com|"+
+        "\\/\\/prontodealer\\.com|\\/\\/remora\\.com|www\\.v12software\\.com|"+
+        "\\/\\/waynereaves\\.com|www\\.wearefullthrottle\\.com|www\\.webstreak\\.com|www\\.yourcarlot\\.com"
                                   ),
-           dealer_map:{"fridaynet":"lotwizard","dealersocket":"dealerfire"}};
+            dealer_map:{"fridaynet":"lotwizard","dealersocket":"dealerfire","dealerseo":"automotiveleads",
+			"dealerleads":"automotiveleads"}};
+
 
     DQ.carSearchShit=function(t, n, r,doc,url) {
         function i(o, s) {
