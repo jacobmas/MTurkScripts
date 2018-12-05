@@ -9,7 +9,15 @@
 // @include        https://*.mturkcontent.com/*
 // @include        http://*.amazonaws.com/*
 // @include        https://*.amazonaws.com/*
-// @grant        none
+// @grant  GM_getValue
+// @grant GM_setValue
+// @grant GM_addValueChangeListener
+// @grant GM_setClipboard
+// @grant GM_xmlhttpRequest
+// @grant GM_openInTab
+// @grant GM_getResourceText
+// @grant GM_addStyle
+// @connect google.com
 // ==/UserScript==
 
 (function() {
@@ -48,6 +56,9 @@
     fill_button.value="Fill";
     button_div.appendChild(fill_button);
     panel_primary.parentNode.insertBefore(button_div,panel_primary.nextSibling);
+    var address=document.getElementsByTagName("address");
+    GM_setClipboard(address[0].innerText);
+
     fill_button.onclick=function() {
         var inps=document.getElementsByTagName("input");
         var rad_count=0;
