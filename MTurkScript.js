@@ -756,7 +756,7 @@ MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func
 
     const queryPromise = new Promise((resolve, reject) => {
         GM_xmlhttpRequest(
-            {method: 'GET', url: url,
+            {method: 'GET', url: url,timeout:30000,
              onload: function(response) {
                  var doc = new DOMParser()
                      .parseFromString(response.responseText, "text/html");
