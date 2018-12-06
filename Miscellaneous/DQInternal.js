@@ -2,7 +2,7 @@
         "www\\.allautonetwork\\.com|webstatic\\.auction123\\.com|"+
         "www\\.(auto(conx|corner|drivemarketing|funds|jini|manager|revo|searchtech|webexpress))\\.com|"+
         "\\/\\/automotiveleads\\.com|www\\.autosalesweb\\.net|"+
-        "www\\.(car(base|guywebdesign|max|prolive|sforsale|think)).com|"+
+        "www\\.(car(base|guywebdesign|max|prolive|sforsale|think)).com|www\\.chromacars\\.com"+
         "(www|static)\\.dealer\\.com|\\/dealeron\\.js|"+
         "www\\.(dealer(carsearch|center|eprocess|fire|inspire|on|pac|peak|scloud|specialties|sync|websites))\\.com|"+
         "dealerclick\\.com|www\\.dealerexpress\\.net|\\/\\/dealerleads\\.com|"+
