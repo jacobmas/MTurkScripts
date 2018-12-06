@@ -676,40 +676,31 @@ MTurkScript.prototype.parseext_instagram=function(doc,instance,fragment)
 };
 
 /* parse_b_context parses the b_context on Bing search
-   puts the b_vList fields (e.g. Address, Phone) into the results under the
+   puts the b_vList fields (e.g. Address, Phone,Website) into the results under the
    name given on Bing,  puts b_entityTitle in Name
 */
 MTurkScript.prototype.parse_b_context=function(b_context)
 {
     var b_vList,i,bm_details_overlay,inner_li,b_entityTitle,b_entitySubTitle;
-    var b_hList,inner_a;
-    b_vList=b_context.getElementsByClassName("b_vList");
-    b_hList=b_context.getElementsByClassName("b_hList");
-    
-
+    var b_hList=b_context.getElementsByClassName("b_hList"),inner_a,details;  
     var field_regex=/^([^:]+):\s*(.*)$/,field_match,result={};
     b_entityTitle=b_context.getElementsByClassName("b_entityTitle");
     b_entitySubTitle=b_context.getElementsByClassName("b_entitySubTitle");
     if(b_entityTitle.length>0) result.Title=b_entityTitle[0].innerText;
     if(b_entitySubTitle.length>0) result.SubTitle=b_entitySubTitle[0].innerText;
-
-    if(b_vList.length>0)
-    {
+    if((b_vList=b_context.getElementsByClassName("b_vList")).length>0) {
         inner_li=b_vList[0].getElementsByTagName("li");
-        for(i=0; i<inner_li.length; i++)
-        {
-            field_match=inner_li[i].innerText.match(field_regex);
-            if(field_match) result[field_match[1]]=field_match[2];
+        for(i=0; i<inner_li.length; i++) {
+            if(field_match=inner_li[i].innerText.match(field_regex)) result[field_match[1]]=field_match[2];
         }
-
     }
-    if(b_hList.length>0)
-    {
-	inner_a=b_hList[0].getElementsByTagName("a");
-        for(i=0; i<inner_a.length; i++)
-        {
-	    result[inner_a[i].innerText]=inner_a[i].href;
-        }
+    if((bm_details_overlay=b_context.getElementsByClassName("bm_details_overlay")).length>0) {
+	details=JSON.parse(bm_details_overlay[0].dataset.detailsoverlay);
+	result.latitude=details.centerLatitude;
+	result.longitude=details.centerLongitude;
+    }
+    if(b_hList.length>0 && (inner_a=b_hList[0].getElementsByTagName("a"))) {
+        for(i=0; i<inner_a.length; i++) result[inner_a[i].innerText]=inner_a[i].href;
     }
     return result;
 };
