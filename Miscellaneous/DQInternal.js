@@ -5,7 +5,7 @@
         "www\\.(car(base|guywebdesign|max|prolive|sforsale|think)).com|www\\.carwizard\\.net|www\\.chromacars\\.com|"+
         "(www|static)\\.dealer\\.com|\\/dealeron\\.js|"+
         "www\\.(dealer(carsearch|center|eprocess|fire|inspire|on|pac|peak|scloud|specialties|spike|sync|websites))\\.com|"+
-        "dealerclick\\.com|www\\.dealerexpress\\.net|\\/\\/dealerleads\\.com|"+
+        "dealerclick\\.com|www\\.dealerexpress\\.net|\\/\\/dealerleads\\.com|cdn\\.dealereprocess\\.org|"+
         "(\\/\\/|inventoryplus\\.)dealersocket\\.com|\\/\\/dealerseo\\.net|"+
         "\\/\\/dealersolutionssoftware\\.com|"+
         "www\\.drivedominion\\.com|www\\.drivetime\\.com|www\\.ebizautos\\.com|"+
