@@ -4,22 +4,21 @@
         "\\/\\/automotiveleads\\.com|www\\.autosalesweb\\.net|"+
         "www\\.(car(base|guywebdesign|max|prolive|sforsale|think)).com|www\\.carwizard\\.net|www\\.chromacars\\.com|"+
         "(www|static)\\.dealer\\.com|\\/dealeron\\.js|"+
-        "www\\.(dealer(carsearch|center|eprocess|fire|inspire|on|pac|peak|scloud|specialties|spike|sync|websites))\\.com|"+
+        "www\\.(dealer(carsearch|center|eprocess|fire|inspire|on|pac|peak|scloud|specialties|spike|spiketruck|sync|websites))\\.com|"+
         "dealerclick\\.com|www\\.dealerexpress\\.net|\\/\\/dealerleads\\.com|cdn\\.dealereprocess\\.org|"+
         "(\\/\\/|inventoryplus\\.)dealersocket\\.com|\\/\\/dealerseo\\.net|"+
-        "\\/\\/dealersolutionssoftware\\.com|"+
-        "www\\.drivedominion\\.com|www\\.drivetime\\.com|www\\.ebizautos\\.com|"+
+        "\\/\\/dealersolutionssoftware\\.com|www\\.(drive(dominion|time))|www\\.ebizautos\\.com|"+
         "foxdealerinteractive\\.com|www\\.fridaynet\\.com|www\\.fzautomotive\\.com|www\\.higherturnover\\.com|"+
         "www\\.interactivedms\\.com|\\.hasyourcar\\.com|"+
         "www\\.jazelauto\\.com|analytics\\.jazel\\.net|(images-stag|userlogin)\\.jazelc\\.com|"+
-        "www\\.jdbyrider\\.com|"+
+        "www\\.(jdbyrider|lotboys|motorcarmarketing|wearefullthrottle)\\.com|"+
         "\\/\\/kukui\\.com|(\\/\\/|www\\.)lotwizard\\.com|media-cf\\.assets-cdk\\.com|"+
-        "www\\.motorcarmarketing\\.com|(www|secure4)\\.motionfuze\\.com|"+
+        "(www|secure4)\\.motionfuze\\.com|"+
         "\\/\\/prontodealer\\.com|\\/\\/remora\\.com|(www|cdn-w)\\.v12soft(|ware)\\.com|"+
-        "(\\/\\/|www\\.)waynereaves\\.com|www\\.wearefullthrottle\\.com|www\\.webstreak\\.com|www\\.yourcarlot\\.com"
+        "(\\/\\/|www\\.)waynereaves\\.com|www\\.webstreak\\.com|www\\.yourcarlot\\.com"
                                   ),
            dealer_map:{"fridaynet":"lotwizard","dealersocket":"dealerfire","dealerseo":"automotiveleads",
-                       "dealerleads":"automotiveleads","v12soft":"v12software","jazelc":"jazelauto"}};
+                       "dealerleads":"automotiveleads","v12soft":"v12software","jazelc":"jazelauto","dealerspiketruck":"dealerspike"}};
 
 
     DQ.carSearchShit=function(t, n, r,doc,url) {
