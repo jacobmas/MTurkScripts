@@ -10,7 +10,7 @@
         "\\/\\/dealersolutionssoftware\\.com|"+
         "www\\.drivedominion\\.com|www\\.drivetime\\.com|www\\.ebizautos\\.com|"+
         "foxdealerinteractive\\.com|www\\.fridaynet\\.com|www\\.fzautomotive\\.com|www\\.higherturnover\\.com|"+
-        "www\\.interactivedms\\.com|"+
+        "www\\.interactivedms\\.com|\\.hasyourcar\\.com|"+
         "www\\.jazelauto\\.com|analytics\\.jazel\\.net|(images-stag|userlogin)\\.jazelc\\.com|"+
         "www\\.jdbyrider\\.com|"+
         "\\/\\/kukui\\.com|(\\/\\/|www\\.)lotwizard\\.com|media-cf\\.assets-cdk\\.com|"+
