@@ -1,4 +1,4 @@
-    var DQ={dealer_regex:new RegExp(
+  var DQ={dealer_regex:new RegExp(
         "www\\.allautonetwork\\.com|webstatic\\.auction123\\.com|"+
         "www\\.(auto(conx|corner|drivemarketing|funds|jini|manager|revo|searchtech|webexpress))\\.com|"+
         "\\/\\/automotiveleads\\.com|www\\.autosalesweb\\.net|"+
@@ -7,9 +7,9 @@
         "www\\.(dealer(carsearch|center|eprocess|fire|inspire|on|pac|peak|scloud|specialties|spike|spiketruck|sync|websites))\\.com|"+
         "dealerclick\\.com|www\\.dealerexpress\\.net|\\/\\/dealerleads\\.com|cdn\\.dealereprocess\\.org|"+
         "(\\/\\/|inventoryplus\\.)dealersocket\\.com|\\/\\/dealerseo\\.net|"+
-        "\\/\\/dealersolutionssoftware\\.com|www\\.(drive(dominion|time))|www\\.ebizautos\\.com|"+
+        "\\/\\/dealersolutionssoftware\\.com|www\\.(drive(dominion|time))\\.com|www\\.ebizautos\\.com|"+
         "foxdealerinteractive\\.com|www\\.fridaynet\\.com|www\\.fzautomotive\\.com|www\\.higherturnover\\.com|"+
-        "www\\.interactivedms\\.com|(www|tracker)\\.hasyourcar\\.com|"+
+        "www\\.interactivedms\\.com|(www|tracking)\\.hasyourcar\\.com|"+
         "www\\.jazelauto\\.com|analytics\\.jazel\\.net|(images-stag|userlogin)\\.jazelc\\.com|"+
         "www\\.(jdbyrider|lotboys|motorcarmarketing|wearefullthrottle)\\.com|"+
         "\\/\\/kukui\\.com|(\\/\\/|www\\.)lotwizard\\.com|media-cf\\.assets-cdk\\.com|"+
