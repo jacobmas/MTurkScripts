@@ -294,10 +294,7 @@ MTurkScript.prototype.DeCryptString = function(s)
     return r;
 }
 /* DecryptX decrypts certain types of email */
-MTurkScript.prototype.DeCryptX=function(s)
-{
-    return this.DeCryptString( s );
-}
+MTurkScript.prototype.DeCryptX=function(s) { return this.DeCryptString( s ); };
 /* cfDecodeEmail decodes Cloudflare encoded emails */
 MTurkScript.prototype.cfDecodeEmail=function(encodedString) {
     var email = "", r = parseInt(encodedString.substr(0, 2), 16), n, i;
@@ -705,33 +702,24 @@ MTurkScript.prototype.parse_b_context=function(b_context)
     return result;
 };
 
-MTurkScript.prototype.parse_lgb_info=function(lgb_info)
-{
-    var result={"phone":"","name":"",url:""},bm_details_overlay,b_factrow,i,b_entityTitle;
+MTurkScript.prototype.parse_lgb_info=function(lgb_info) {
+    var result={"phone":"","name":"",url:"",address:""},bm_details_overlay,b_factrow,i,b_entityTitle,inner_a;
     b_entityTitle=lgb_info.getElementsByClassName("b_entityTitle");
     bm_details_overlay=lgb_info.getElementsByClassName("bm_details_overlay");
     if(bm_details_overlay.length>0) result.address=bm_details_overlay[0].innerText;
     b_factrow=lgb_info.getElementsByClassName("b_factrow");
-    if(b_entityTitle.length>0 && (result.name=b_entityTitle[0].innerText)) {
-	if(b_entityTitle[0].getElementsByTagName("a").length>0)
-	{
-	    result.url=b_entityTitle[0].getElementsByTagName("a")[0].href;
-	}
-    }
-    for(i=0; i < b_factrow.length; i++)
-    {
+    if(b_entityTitle.length>0 && (result.name=b_entityTitle[0].innerText) &&
+       (inner_a=b_entityTitle[0].getElementsByTagName("a")).length>0) result.url=inner_a[0].href;
+    for(i=0; i < b_factrow.length; i++) {
         if(phone_re.test(b_factrow[i].innerText)) result.phone=b_factrow[i].innerText;
     }
     return result;
 };
 
-MTurkScript.prototype.add_to_sheet=function()
-{
+MTurkScript.prototype.add_to_sheet=function() {
     for(var x in my_query.fields) {
-        if(document.getElementById(x) && my_query.fields[x].length>0)
-        {
-            document.getElementById(x).value=my_query.fields[x];
-        }
+        if(document.getElementById(x) &&
+	   my_query.fields[x].length>0) document.getElementById(x).value=my_query.fields[x];
     }
 };
 
@@ -741,8 +729,7 @@ MTurkScript.prototype.add_to_sheet=function()
    and the promise does (mandatory) then_func on resolving, (optional, otherwise just prints a message) catch_func on
    rejecting
 */
-MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func,extra_arg)
-{
+MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func,extra_arg) {
     if(catch_func===undefined) catch_func=MTurkScript.prototype.my_catch_func;
 
     const queryPromise = new Promise((resolve, reject) => {
@@ -752,7 +739,7 @@ MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func
                  var doc = new DOMParser()
                      .parseFromString(response.responseText, "text/html");
                  if(extra_arg!==undefined) parser(doc,response.finalUrl, resolve, reject,extra_arg);
-                 else parser(doc,response.finalUrl, resolve, reject);
+                 else parser(doc,response.finalUrl, resolve, reject,response);
              },
              onerror: function(response) { reject("Failed to load site "); },
              ontimeout: function(response) { reject("Timed out loading site "); }
