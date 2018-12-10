@@ -1,12 +1,13 @@
-    var Schools={contact_list:[],
-                page_regex_str:"apptegy\\.com|catapultk12\\.com|cms4schools\\.com|crescerance\\.com|cyberschool\\.com|"+
-            "echalk\\.com|edlio\\.com|edlioschool\\.com|edline\\.net|educationalnetworks\\.net|"+
-            "eschoolview\\.com|finalsite\\.com|foxbright\\.com|gabbart\\.com|gaggle\\.net|ilearnschools\\.org|"+
-            "schoolblocks\\.com|schooldesk\\.net|www\\.schoolinsites\\.com|schoolloop\\.com|www\\.schoolmessenger\\.com|"+
-            "schoolpointe\\.com|schoolwebmasters\\.com|socs\\.fes\\.org|www\\.zumu\\.com",
-                 script_regex_lst:[{regex:/apptegy_cms\//,name:"apptegy"}]
+var Schools={contact_list:[],
+             page_regex_str:"(www\\.|\/\/)(apptegy|catapultk12|cms4schools)\\.com|crescerance\\.com|cyberschool\\.com|"+
+             "echalk\\.com|edlio\\.com|edlioschool\\.com|edline\\.net|educationalnetworks\\.net|"+
+             "eschoolview\\.com|finalsite\\.com|foxbright\\.com|gabbart\\.com|gaggle\\.net|ilearnschools\\.org|"+
+             "schooldesk\\.net|schoolloop\\.com|"+
+	     "www\\.school(blocks|insites|messenger|pointe|webmasters)\\.com|"+
+             "socs\\.fes\\.org|www\\.zumu\\.com",
+             script_regex_lst:[{regex:/apptegy_cms\//,name:"apptegy"}]
 
-                };
+            };
     /* Schools.matches_name checks if a given name matches the desired school's name */
     Schools.matches_name=function(name) {
         var the_regex=/(\s)School.*$/;
