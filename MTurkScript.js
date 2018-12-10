@@ -852,6 +852,9 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
         else if(/^About$/i.test(text) && about_fields[i].getElementsByClassName("_3-8w").length>0) {
             result.about=about_fields[i].getElementsByClassName("_3-8w")[0].innerText; }
     }
+    result.team=[];
+    var t_m=doc.querySelectorAll("._42ef ._2iem");
+    for(i=0; i < t_m.length;i++) result.team.push(t_m[i].innerText);
     resolve(result);
 };
 /* parse_search_script parses the script to get the search results; a helper function 
