@@ -470,11 +470,12 @@ var Schools={contact_list:[],
             for(i=0; i < Schools.script_regex_lst.length;i++) {
                 if(curr_script.src&&
                    Schools.script_regex_lst[i].regex.test(curr_script.src)) page_type=Schools.script_regex_lst[i].name;
-                else if(curr_script.innerHTML.indexOf("_W.configDomain = \"www.weebly.com\"")!==-1) console.log("generator=weebly.com");
+                else if(curr_script.innerHTML.indexOf("_W.configDomain = \"www.weebly.com\"")!==-1) generator="weebly.com";
             }
             });
         }
-        return page_type;
+	if(page_type==="none" && generator!=="none") return generator;
+	else return page_type;
     };
 
 
