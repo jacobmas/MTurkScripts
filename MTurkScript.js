@@ -1076,6 +1076,7 @@ MTurkScript.prototype.parse_FB_posts=function(doc,url,resolve,reject)
 /* fix_remote_url fixes the remote urls so they aren't having the mturkcontent.com stuff
      * found_url is the url that needs fixing
      *  page_url is the url from response.finalUrl
+   * TODO: needs fixing, doesn't currently use the curr_url to help (or does it just not stop?)
     */
 MTurkScript.prototype.fix_remote_url=function(found_url,page_url)
 {
@@ -1215,3 +1216,11 @@ MTurkScript.prototype.contact_response=function(doc,url,extra) {
         callback();
         return;
 };
+/* Converts json to unencoded form for POST */
+MTurkScript.prototype.json_to_post=function(obj) {
+    var str="",x;
+    for(x in obj) {
+        if(str.length>0) str=str+"&";
+        str=str+encodeURIComponent(x)+"="+encodeURIComponent(obj[x]);
+    }
+    return str; };
