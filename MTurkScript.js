@@ -456,10 +456,10 @@ MTurkScript.prototype.shorten_company_name=function(name)
 {
     var first_suffix_str="(Pty Ltd(\\.)?)|Limited|LLC(\\.?)";
     var first_regex=new RegExp("\\s*"+first_suffix_str+"$","i");
-    const reducer = (accumulator, currentValue) => accumulator.replace(currentValue,"").trim();
+    
     
     name=removeDiacritics(name);
-    name=name.replace(first_regex);
+    name=name.replace(first_regex,"");
     name=name.replace(/ - .*$/,"").trim().replace(/\s*plc$/i,"");
     name=name.replace(/\(.*$/i,"").trim();
     name=name.replace(/\s*Corporation$/i,"").replace(/\s*Corp\.?$/i,"");
