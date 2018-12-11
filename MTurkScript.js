@@ -192,7 +192,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id)
     if(window.location.href.indexOf("worker.mturk.com")!==-1) {
         GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
         var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
-	console.log("document.getElementsByClassName("project-detail-bar")[0].innerHTML="+document.getElementsByClassName("project-detail-bar")[0]);
+	console.log("document.getElementsByClassName(\"project-detail-bar\")[0].innerHTML="+document.getElementsByClassName("project-detail-bar")[0]);
 	var detail_a=document.getElementsByClassName("project-detail-bar")[0].children[0]
         .children[1].getElementsByClassName("detail-bar-value")[0].getElementsByTagName("a")[0];
         var req_id=detail_a.href.match(/requesters\/([^\/]+)/);
