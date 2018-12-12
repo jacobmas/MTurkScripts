@@ -473,7 +473,7 @@ MTurkScript.prototype.shorten_company_name=function(name)
     name=name.replace(/\s+GmbH$/i,"").replace(/\s+SRL/i,"")
     name=name.replace(/\s+Sarl$/i,"").replace(/\s+KG/i,"");
     name=name.replace(/[,\.]+$/,"").replace(/\s+B(\.)?V(\.)?$/i,"");
-    name=name.replace(/\sCo\.?$/i,"");
+    name=name.replace(/(&)?\sCo\.?$/i,"");
 
     return name;
 }
