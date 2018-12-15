@@ -6,7 +6,7 @@
 	     "www\\.school(blocks|insites|messenger|pointe|webmasters)\\.com|"+
              "socs\\.fes\\.org|www\\.zumu\\.com",
              script_regex_lst:[{regex:/apptegy_cms\//,name:"apptegy"}],
-                              split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s+-\s+)|\||                     |	|	|●|•/
+                              split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s+-\s+)|\||                     |	|	|●|•|\s{3,}|\s+\*\s+/
 		};
     /* Schools.parse_name_func parses the name partially for a school person, primarily as a helper for parse_data_func */
     Schools.parse_name_func=function(text) {
@@ -470,10 +470,6 @@
     };
 
 
-    /**  Schools.init_search Initializes Schools search, a create_promise style function
-     * input page should've been identified already as the directory page
-     */
-    Schools.init_Search=function(doc,url,resolve,reject) { };
     /* Schools.call_parser is a helper function to create a promise for the school parser */
     Schools.call_parser=function(url) {
         var promise=MTP.create_promise(url,Schools.curr_school.parser,Schools.resolve,Schools.reject);
