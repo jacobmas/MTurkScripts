@@ -7,7 +7,7 @@
              "socs\\.fes\\.org|www\\.zumu\\.com",
              script_regex_lst:[{regex:/apptegy_cms\//,name:"apptegy"}],
                               split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s+-\s+)|\||                     |	|	|●|•/
-            };
+		};
     /* Schools.parse_name_func parses the name partially for a school person, primarily as a helper for parse_data_func */
     Schools.parse_name_func=function(text) {
         var split_str,fname,lname,i;
