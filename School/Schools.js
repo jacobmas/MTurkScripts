@@ -6,7 +6,10 @@
 	     "www\\.school(blocks|insites|messenger|pointe|webmasters)\\.com|"+
              "socs\\.fes\\.org|www\\.zumu\\.com",
              script_regex_lst:[{regex:/apptegy_cms\//,name:"apptegy"}],
-                              split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s+-\s+)|\||                     |	|	|●|•|\s{3,}|\s+\*\s+/
+                 split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s+-\s+)|\||                     |	|	|●|•|\s{3,}|\s+\*\s+/,
+		 AL:{},AK:{},AZ:{},AR:{},CA:{},CO:{},CT:{},DE:{},DC:{},FL:{},GA:{},HI:{},ID:{},IL:{},IN:{},IA:{},KS:{},KY:{},LA:{},
+		 ME:{},MD:{},MA:{},MI:{},MN:{},MS:{},MO:{},MT:{},NE:{},NV:{},NH:{},NJ:{},NM:{},NY:{},NC:{},ND:{},OH:{},OK:{},OR:{},
+		 PA:{},RI:{},SC:{},SD:{},TN:{},TX:{},UT:{},VT:{},VA:{},WA:{},WV:{},WI:{},WY:{}
 		};
     /* Schools.parse_name_func parses the name partially for a school person, primarily as a helper for parse_data_func */
     Schools.parse_name_func=function(text) {
