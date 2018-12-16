@@ -1232,7 +1232,7 @@ MTurkScript.prototype.json_to_post=function(obj) {
     var str="",x;
     for(x in obj) {
         if(str.length>0) str=str+"&";
-        str=str+encodeURIComponent(x)+"="+encodeURIComponent(obj[x]);
+        str=str+encodeURIComponent(x)+"="+encodeURIComponent(obj[x]).replace(/%2B/g,"+");
     }
     return str; };
 var MTP=MTurkScript.prototype;
