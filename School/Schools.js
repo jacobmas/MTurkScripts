@@ -560,103 +560,340 @@
     Schools.parse_promise_then=function(result) {
         console.log("parse_promise_then: result="+JSON.stringify(result));
     }
-    Schools.AL={};
-    Schools.AR={};
-    Schools.NJ={};
-    Schools.WI={};
-    
-    Schools.AL.get_state_dir=function(resolve,reject) {
-        var url="http://web.alsde.edu/EdDirToList/Default.aspx?listtype=principal&dataformat=csv";
-    };
-    Schools.AR.get_state_dir=function(resolve,reject) {
-        var url="https://adedata.arkansas.gov/spd/Home/schools";
-        var promise=MTP.create_promise(url,Schools.AR.grab_token,resolve,reject);
-    };
-    /* Grab token and query */
-    Schools.AR.grab_token=function(doc,url,resolve,reject) {
-        var token=doc.getElementsByName("__RequestVerificationToken")[0].value;
-        var data={"__RequestVerificationToken":token,"AlphabetKey":"","SearchValue":Schools.name.replace(/\s/g,"+"),"TitleId":"",
-                  "SortField":"DirectoryName"};
-        var data_str=MTP.json_to_post(data).replace(/%2B/g,"+");
-        var headers={"Content-Type": "application/x-www-form-urlencoded","host":"adedata.arkansas.gov","origin":"https://adedata.arkansas.gov",
-                     "referer":"https://adedata.arkansas.gov/spd/Home/schools","Upgrade-Insecure-Requests":"1"};
-        GM_xmlhttpRequest({method: 'POST', url: url,data:data_str,headers:headers,
-                           onload: function(response) {
-                               var doc = new DOMParser().parseFromString(response.responseText, "text/html");
-                               Schools.AR.get_school_info(doc,response.finalUrl, resolve, reject); },
-                           onerror: function(response) { reject("Fail"); },
-                           ontimeout: function(response) { reject("Fail"); }
-                          });
-    };
-    Schools.AR.get_school_info=function(doc,url,resolve,reject) {
-        var item=doc.getElementsByClassName("data-item"),i,result=[],curr_person;
-        if(item.length===0 && (resolve(result))) return;
-        var grp=item[0].getElementsByClassName("tbl-group-item");
-        for(i=0;i<grp.length; i++) {
-            if((curr_person=Schools.parse_data_func(grp[i].innerText.replace(/(^|\n)[^\n]*:\s*\n/g,""))) &&
-               Schools.matches_title_regex(curr_person.title)) result.push(curr_person);
-        }
-        resolve(result);
-    };
+Schools.AK.get_state_dir=function(resolve,reject) {
+    var url="https://education.alaska.gov/DOE_Rolodex/SchoolCalendar/Home/Search?term="+Schools.name.replace(/\s/g,"+");
+    var promise=MTP.create_promise(url,Schools.AK.get_school_search,resolve,reject);
+};
+Schools.AK.get_school_search=function(doc,url,resolve,reject) {
+    var table=doc.getElementById("myTable"),i,row,next_url="",url_lst,promise;
+    if(/\/SchoolDetails\//.test(url) && Schools.AK.parse_school_details(doc,url,resolve,reject)) return true;
+    for(i=0;i<table.rows.length;i++) {
+        if((row=table.rows[i])&&row.cells.length>=2 && /School/.test(row.cells[1].innerText) &&
+           Schools.matches_name(row.cells[0].innerText.trim()) && (url_lst=row.cells[0].getElementsByTagName("a")).length>0
+           && (next_url=MTP.fix_remote_url(url_lst[0].href,url))) break;
+    }
+    if(next_url.length>0) promise=MTP.create_promise(next_url,Schools.AK.parse_school_details,resolve,reject);
+    else resolve("");
+    return true;
 
-    Schools.NJ.get_state_dir=function(resolve,reject) {
-        var url="https://homeroom5.doe.state.nj.us/directory/school.php",data="school="+encodeURIComponent(Schools.name)+"&source=02";
-        var headers={"Content-Type":"application/x-www-form-urlencoded","host":"homeroom5.doe.state.nj.us",
-                    "origin":"https://homeroom5.doe.state.nj.us","referer":"https://homeroom5.doe.state.nj.us/directory/pub.php"};
-        GM_xmlhttpRequest({method: 'POST', url: url,data:data,headers:headers,
-                           onload: function(response) {
-                               var doc = new DOMParser().parseFromString(response.responseText, "text/html");
-                               Schools.NJ.get_school_info(doc,response.finalUrl, resolve, reject); },
-                           onerror: function(response) { reject("Fail"); },
-                           ontimeout: function(response) { reject("Fail"); }
-                          });
-    };
-    /* TODO: May want to play with matching the city here, e.g. Mt to Mount shit */
-    Schools.NJ.get_school_info=function(doc,url,resolve,reject) {
-        var d_box=doc.getElementsByClassName("district_box"),i,tab,curr_text,result={},split_text;
-        var temp_name,temp_addressLine1,temp_city,temp_state;
-        for(i=0;i<d_box.length;i++) {
-            if((tab=d_box[i].getElementsByTagName("table")).length===0) continue;
-            curr_text=d_box[i].innerText.replace(tab[0].innerText,"").replace(/\s*\n\s*\n+/g,"\n").trim();
-            split_text=curr_text.split("\n");
-            temp_name=split_text[3].replace(/\s*\([\d]+\).*$/,"");
-            temp_city=split_text[5].split(", ")[0];
-            if(Schools.matches_name(temp_name) && Schools.matches_city(temp_city) &&
-              resolve(Schools.NJ.parse_table(tab[0]))) return;
+};
+Schools.AK.parse_school_details=function(doc,url,resolve,reject) {
+    var lst=doc.getElementsByClassName("list-value")[0].children,i,label,value,x,curr_contact={},web,split_text;
+    var match_map={"address":/^Physical Address/,"phone":/^Telephone/,"low":/^Lowest Grade/,"high":/^Highest Grade/};
+    for(i=0;i<lst.length;i++) {
+        label=lst[i].getElementsByTagName("h3");
+        value=lst[i].getElementsByTagName("div");
+        if(label.length===0 || value.length===0) continue;
+        for(x in match_map) if(match_map[x].test(label[0].innerText)) curr_contact[x]=value[0].innerText.trim();
+        if(/School Website/.test(label[0].innerText)&&
+           (web=value[0].getElementsByTagName("a")).length>0) curr_contact.url=web[0].href;
+        if(/Contact Name/.test(label[0].innerText)) {
+            split_text=value[0].innerText.trim().split(", ");
+            curr_contact.name=split_text[0];
+            if(split_text.length>1) curr_contact.title=split_text[1];
+            if((web=value[0].getElementsByTagName("a")).length>0) curr_contact.email=web[0].href.replace(/^\s*mailto:\s*/,"");
         }
-    };
-    Schools.NJ.parse_table=function(tab) {
-        var result=[],i,curr_field={},split_text,j,match;
-        for(i=0;i<tab.rows.length;i++) {
-            split_text=tab.rows[i].cells[0].innerText.split(", ");
-            curr_field={name:Schools.parse_name_func(split_text[0].trim()),title:split_text[1].trim()};
-            split_text=tab.rows[i].cells[1].innerText.split("\n");
-            for(j=0;j<split_text.length;j++) {
-                if(match=split_text[j].match(email_re)) curr_field.email=match[0];
-                else if(match=split_text[j].match(phone_re)) curr_field.phone=match[0];
-            }
-            if(Schools.matches_title_regex(curr_field.title)) result.push(curr_field);
-        }
-        return result;
-    };
+    }
+    Schools.contact_list.push(curr_contact);
+    resolve("");
+    return true;
+};
+Schools.AR.get_state_dir=function(resolve,reject) {
+    var url="https://adedata.arkansas.gov/spd/Home/schools";
+    var promise=MTP.create_promise(url,Schools.AR.grab_token,resolve,reject);
+};
+/* Grab token and query */
+Schools.AR.grab_token=function(doc,url,resolve,reject) {
+    var token=doc.getElementsByName("__RequestVerificationToken")[0].value;
+    var data={"__RequestVerificationToken":token,"AlphabetKey":"","SearchValue":Schools.name.replace(/\s/g,"+"),"TitleId":"",
+              "SortField":"DirectoryName"};
+    var data_str=MTP.json_to_post(data).replace(/%2B/g,"+");
+    var headers={"Content-Type": "application/x-www-form-urlencoded","host":"adedata.arkansas.gov","origin":"https://adedata.arkansas.gov",
+                 "referer":"https://adedata.arkansas.gov/spd/Home/schools","Upgrade-Insecure-Requests":"1"};
+    GM_xmlhttpRequest({method: 'POST', url: url,data:data_str,headers:headers,
+                       onload: function(response) {
+                           var doc = new DOMParser().parseFromString(response.responseText, "text/html");
+                           Schools.AR.get_school_info(doc,response.finalUrl, resolve, reject); },
+                       onerror: function(response) { reject("Fail"); },
+                       ontimeout: function(response) { reject("Fail"); }
+                      });
+};
+Schools.AR.get_school_info=function(doc,url,resolve,reject) {
+    var item=doc.getElementsByClassName("data-item"),i,result=[],curr_person;
+    if(item.length===0 && (resolve(result))) return;
+    var grp=item[0].getElementsByClassName("tbl-group-item");
+    for(i=0;i<grp.length; i++) {
+        if((curr_person=Schools.parse_data_func(grp[i].innerText.replace(/(^|\n)[^\n]*:\s*\n/g,""))) &&
+           Schools.matches_title_regex(curr_person.title)) result.push(curr_person);
+    }
+    resolve(result);
+};
 
-    Schools.WI.get_state_dir=function(resolve,reject) {
-        var url="https://apps4.dpi.wi.gov/SchoolDirectory/Search/DisplayPublicSchools";
-        var headers={"Content-Type": "application/x-www-form-urlencoded","host":"apps4.dpi.wi.gov",
-                     "origin":"https://apps4.dpi.wi.gov",
-                     "referer":"https://apps4.dpi.wi.gov/SchoolDirectory/Search/PublicSchoolsSearch",
-                     "X-Requested-With":"XMLHttpRequest"};
-        var data={"SearchText":"Grand Marsh","DisplayRegularSchools":true,"CountyId":"","CesaId":""};
-        var data_str=MTP.json_to_post(data);
-        GM_xmlhttpRequest({method: 'POST', url: url,data:data_str,headers:headers,
-                           onload: function(response) {
-                               console.log("response="+JSON.stringify(response));
-                               var doc = new DOMParser().parseFromString(response.responseText, "text/html");
-                               Schools.WI.parse_school_results(doc,response.finalUrl,resolve,reject); },
-                           onerror: function(response) { reject("Fail"); },
-                           ontimeout: function(response) { reject("Fail"); }
-                          });
-    };
-    Schools.WI.parse_school_results=function(doc,url,resolve,reject) {
-        var table=doc.getElementById("grid");
-    };
+Schools.CA.get_state_dir=function(resolve,reject) {
+    var url="https://www.cde.ca.gov/SchoolDirectory/districtschool?allSearch="+Schools.name.replace(/\s/g,"+")+"&simpleSearch=Y&page=0&tab=3";
+    var promise=MTP.create_promise(url,Schools.CA.get_school_search,resolve,reject);
+};
+Schools.CA.get_school_search=function(doc,url,resolve,reject) {
+    if(/\/details\?/.test(url) && Schools.CA.parse_school(doc,url,resolve,reject)) return;
+    var table=doc.getElementsByTagName("table")[0],i,row,next_url,promise;
+    //        console.log("table.outerHTML="+table.outerHTML);
+    for(i=0;i<table.rows.length;i++) {
+        if((row=table.rows[i]).cells.length>=4 && Schools.matches_name(row.cells[3].innerText.trim())
+           && (next_url=row.cells[3].getElementsByTagName("a")).length>0) break;
+    }
+    if(next_url.length>0) promise=MTP.create_promise(MTP.fix_remote_url(next_url[0].href,url),Schools.CA.parse_school,resolve,reject);
+    else resolve("");
+    return true;
+};
+Schools.CA.parse_school=function(doc,url,resolve,reject) {
+    var table=doc.getElementsByClassName("table"),i,row,curr_contact;
+    for(i=0;i<table[0].rows.length;i++) {
+        row=table[0].rows[i];
+        curr_contact={};
+        if(row.cells.length<2) continue;
+        if(/Administrator|Chief Business Official|CDS Coordinator/.test(row.cells[0].innerText)) {
+            curr_contact=Schools.parse_data_func(row.cells[1].innerText.replace(/\n\n+\s*/g,"\n")); }
+        if(curr_contact && curr_contact.name&&curr_contact.title&&curr_contact.email) Schools.contact_list.push(curr_contact);
+    }
+    resolve("");
+    return true;
+};
+
+Schools.KY.get_state_dir=function(resolve,reject) {
+    var url="https://openhouse.education.ky.gov/Directory/Search";
+    var headers={"Content-Type":"application/x-www-form-urlencoded","host":"openhouse.education.ky.gov",
+                 "origin":"https://openhouse.education.ky.gov","referer":"https://openhouse.education.ky.gov/Directory",
+                 "upgrade-insecure-requests": "1"};
+    var data_str="search="+Schools.name.replace(/\s/g,"+")+"&x=0&y=0";
+    GM_xmlhttpRequest({method: 'POST', url: url,data:data_str,headers:headers,
+                       onload: function(response) {
+                           var doc = new DOMParser().parseFromString(response.responseText, "text/html");
+                           Schools.KY.get_school_search(doc,response.finalUrl, resolve, reject); },
+                       onerror: function(response) { reject("Fail"); },
+                       ontimeout: function(response) { reject("Fail"); }
+                      });
+};
+Schools.KY.get_school_search=function(doc,url,resolve,reject) {
+    var result=doc.getElementById("schoolResult"),table,i,row,next_url="",inner_a,text,parsed;
+    var new_url="https://openhouse.education.ky.gov/Directory/School/",data;
+    var promise,scripts=result.getElementsByTagName("script"),reg1=/^.*kendoGrid\(/,reg2=/\);\}\);/;
+    try {
+        text=scripts[0].innerHTML.trim().replace(reg1,"").replace(reg2,"");
+        data=JSON.parse(text).dataSource.data.Data;
+        for(i=0;i<data.length;i++) {
+            if(Schools.matches_name(data[i].SCH_NAME) && (
+                promise=MTP.create_promise(new_url+data[i].SCH_ORG_ID,Schools.KY.parse_school,resolve,reject))) return;
+        }
+    }
+    catch(error) { console.log("Error parsing="+error); resolve(""); }
+    return true;
+};
+Schools.KY.parse_school=function(doc,url,resolve,reject) {
+    var dist_info=doc.getElementsByClassName("DistrictInfo")[0].innerText,i,curr_contact={},j,tables,row,inner_a;
+    tables=doc.querySelectorAll(".SchoolDetails table");
+    Schools.school_phone=dist_info.match(/Phone:\s*(.*)/)[1];
+    Schools.school_url=dist_info.match(/Web:\s*(.*)/)[1];
+    for(i=0;i<tables.length;i++) {
+        for(j=0;j<tables[i].rows.length; j++) {
+            row=tables[i].rows[j];
+            if(row.length<3) continue;
+            curr_contact={name:row.cells[1].innerText.trim(),phone:Schools.school_phone,title:row.cells[0].innerText.trim(),
+                          email:(inner_a=row.cells[2].getElementsByTagName("a")).length>0 ? inner_a[0].href.replace(/\s*mailto:\s*/,"") : ""};
+            if(curr_contact.name.length>0 && curr_contact.email.length>0 && curr_contact.title.length>0) Schools.contact_list.push(curr_contact);
+
+        }
+    }
+    resolve("");
+    return true;
+
+};
+Schools.NJ.get_state_dir=function(resolve,reject) {
+    var url="https://homeroom5.doe.state.nj.us/directory/school.php",data="school="+encodeURIComponent(Schools.name)+"&source=02";
+    var headers={"Content-Type":"application/x-www-form-urlencoded","host":"homeroom5.doe.state.nj.us",
+                 "origin":"https://homeroom5.doe.state.nj.us","referer":"https://homeroom5.doe.state.nj.us/directory/pub.php"};
+    GM_xmlhttpRequest({method: 'POST', url: url,data:data,headers:headers,
+                       onload: function(response) {
+                           var doc = new DOMParser().parseFromString(response.responseText, "text/html");
+                           Schools.NJ.get_school_info(doc,response.finalUrl, resolve, reject); },
+                       onerror: function(response) { reject("Fail"); },
+                       ontimeout: function(response) { reject("Fail"); }
+                      });
+};
+/* TODO: May want to play with matching the city here, e.g. Mt to Mount shit */
+Schools.NJ.get_school_info=function(doc,url,resolve,reject) {
+    var d_box=doc.getElementsByClassName("district_box"),i,tab,curr_text,result={},split_text;
+    var temp_name,temp_addressLine1,temp_city,temp_state;
+    for(i=0;i<d_box.length;i++) {
+        if((tab=d_box[i].getElementsByTagName("table")).length===0) continue;
+        curr_text=d_box[i].innerText.replace(tab[0].innerText,"").replace(/\s*\n\s*\n+/g,"\n").trim();
+        split_text=curr_text.split("\n");
+        temp_name=split_text[3].replace(/\s*\([\d]+\).*$/,"");
+        temp_city=split_text[5].split(", ")[0];
+        if(Schools.matches_name(temp_name) && Schools.matches_city(temp_city) &&
+           resolve(Schools.NJ.parse_table(tab[0]))) return;
+    }
+};
+Schools.NJ.parse_table=function(tab) {
+    var result=[],i,curr_field={},split_text,j,match;
+    for(i=0;i<tab.rows.length;i++) {
+        split_text=tab.rows[i].cells[0].innerText.split(", ");
+        curr_field={name:Schools.parse_name_func(split_text[0].trim()),title:split_text[1].trim()};
+        split_text=tab.rows[i].cells[1].innerText.split("\n");
+        for(j=0;j<split_text.length;j++) {
+            if(match=split_text[j].match(email_re)) curr_field.email=match[0];
+            else if(match=split_text[j].match(phone_re)) curr_field.phone=match[0];
+        }
+        if(Schools.matches_title_regex(curr_field.title)) result.push(curr_field);
+    }
+    return result;
+};
+Schools.UT.get_state_dir=function(resolve,reject) {
+    var url="https://www.schools.utah.gov/School/GetList";
+    GM_xmlhttpRequest({method: 'GET', url: url,
+                       onload: function(response) {
+                           var doc = new DOMParser().parseFromString(response.responseText, "text/html");
+                           Schools.UT.parse_schools_dir(doc,response.finalUrl, resolve, reject,response); },
+                       onerror: function(response) { reject("Fail"); },
+                       ontimeout: function(response) { reject("Fail"); }
+                      });
+};
+/** TODO:  add option to check if more than name matches */
+Schools.UT.parse_schools_dir=function(doc,url,resolve,reject,response) {
+    var parsed,i,schools,curr_contact={"state":"UT"},x;
+    var term_map={"PrincipalName":"name","PrincipalTitle":"title","PrincipalEmail":"email","URL":"url","Phone":"phone","Address1":"street",
+                  "City":"city","Zip":"zip","GradeLow":"low","GradeHigh":"high"};
+    try {
+        schools=(parsed=JSON.parse(response.responseText)).Schools;
+        for(i=0;i<schools.length;i++) {
+            if(Schools.matches_name(schools[i].SchoolName)) {
+                for(x in term_map) if(schools[i][x] || schools[i][x]===0) curr_contact[term_map[x]]=schools[i][x];
+                if(curr_contact.name&&curr_contact.title&&curr_contact.email) Schools.contact_list.push(curr_contact);
+                break; }
+        }
+    }
+    catch(error) { console.log("Error parsing JSON in Schools.UT.parse_schools_dir "+error); }
+    resolve("");
+};
+Schools.WI.get_state_dir=function(resolve,reject) {
+    var url="https://apps4.dpi.wi.gov/SchoolDirectory/Search/DisplayPublicSchools";
+    var headers={"Content-Type": "application/x-www-form-urlencoded","host":"apps4.dpi.wi.gov",
+                 "origin":"https://apps4.dpi.wi.gov",
+                 "referer":"https://apps4.dpi.wi.gov/SchoolDirectory/Search/PublicSchoolsSearch",
+                 "X-Requested-With":"XMLHttpRequest"};
+    var data={"SearchText":"Grand Marsh","DisplayRegularSchools":true,"CountyId":"","CesaId":""};
+    var data_str=MTP.json_to_post(data);
+    GM_xmlhttpRequest({method: 'POST', url: url,data:data_str,headers:headers,
+                       onload: function(response) {
+                           console.log("response="+JSON.stringify(response));
+                           var doc = new DOMParser().parseFromString(response.responseText, "text/html");
+                           Schools.WI.parse_school_results(doc,response.finalUrl,resolve,reject); },
+                       onerror: function(response) { reject("Fail"); },
+                       ontimeout: function(response) { reject("Fail"); }
+                      });
+};
+Schools.WI.parse_school_results=function(doc,url,resolve,reject) {
+    //        console.log("doc.body.innerHTML="+doc.body.innerHTML);
+    var table=doc.getElementById("grid"),i,row,good_link,promise;
+    if(table.tagName!=="TABLE") table=table.getElementsByTagName("table")[0];
+    // console.log("table.outerHTML="+table.outerHTML);
+    for(i=0;i<table.rows.length;i++) {
+        if((row=table.rows[i]).cells.length>0 && Schools.matches_name(row.cells[0].innerText.trim()) &&
+           (good_link=row.cells[0].getElementsByTagName("a")).length>0) break;
+    }
+    // console.log("good_link[0].href="+good_link[0].href);
+    if(good_link && good_link.length>0) promise=MTP.create_promise(MTP.fix_remote_url(good_link[0].href,url),Schools.WI.parse_school_data,resolve,reject);
+};
+Schools.WI.parse_school_data=function(doc,url,resolve,reject) {
+    var table=doc.getElementsByTagName("table"),i,row,curr_contact={},label,text;
+    var form_map={"name:":/^Contact/,"title":/^Title/,"url":/^Website/,"phone":/^Phone/,"ext":/^Extension/,"email":/^Email/,
+                  "address":/^Physical Address/,"mailing_address":/^Mailing Address/,"school_type":/^School Type/},x;
+    try {
+        for(i=1;i<table[0].rows.length;i++) {
+            label=table[0].rows[i].getElementsByClassName("formLabel")[0].innerText.trim();
+            text=table[0].rows[i].getElementsByClassName("formText")[0].innerText.trim();
+            for(x in form_map) if(form_map[x].test(label)) curr_contact[x]=text;
+        }
+    }
+    catch(error) { console.log("Error parsing table in WI.parse_school_data "+error); }
+    if(curr_contact.phone!==undefined && curr_contact.ext!==undefined) curr_contact.phone+=" x"+curr_contact.ext;
+    Schools.contact_list.push(curr_contact);
+    resolve("");
+};
+Schools.WY.get_state_dir=function(resolve,reject) {
+    var url="https://fusion.edu.wyoming.gov/Login/Web/Pages/OnlineDirectory/OnlineDirectorySchoolSearch.aspx";
+    var promise=MTP.create_promise(url,Schools.WY.make_state_query,resolve,reject);
+};
+Schools.WY.make_state_query=function(doc,url,resolve,reject) {
+    var new_url="https://fusion.edu.wyoming.gov/Login/Web/Pages/OnlineDirectory/OnlineDirectorySchoolSearch.aspx";
+    var headers={"host":"fusion.edu.wyoming.gov","origin":"https://fusion.edu.wyoming.gov",
+                 "referer":"https://fusion.edu.wyoming.gov/Login/Web/Pages/OnlineDirectory/OnlineDirectorySchoolSearch.aspx",
+                 "Content-Type":"application/x-www-form-urlencoded","Upgrade-Insecure-Requests": "1"};
+    var data={},data_str,i,inp=doc.getElementsByTagName("input"),sel=doc.getElementsByTagName("select");
+    for(i=0;i<inp.length;i++) if(inp[i].type==="text"||inp[i].type==="hidden") data[inp[i].name]=inp[i].value;
+    for(i=0;i<sel.length;i++) data[sel[i].name]=sel[i].value;
+    data.txtSchoolname=Schools.name;
+    data.HidPageCount="1";
+    data["ImgSearch.x"]=25;
+    data["ImgSearch.y"]=10;
+    //data.__EVENTTARGET="dtgPersonExport$ctl02$ctl00";
+    data_str=MTP.json_to_post(data).replace(/%20/g,"+");
+    //console.log("data="+JSON.stringify(data));
+    //console.log("data_str="+data_str);
+    GM_xmlhttpRequest({method: 'POST', url: url,headers:headers,data:data_str,
+                       onload: function(response) {
+                           var doc = new DOMParser().parseFromString(response.responseText, "text/html");
+                           Schools.WY.make_state_query_get_orgid(doc,response.finalUrl,resolve,reject,response)
+                       },
+                       onerror: function(response) { reject("Fail"); },
+                       ontimeout: function(response) { reject("Fail"); }
+                      });
+};
+/* After getting the list we get the org query */
+Schools.WY.make_state_query_get_orgid=function(doc,url,resolve,reject) {
+
+    var new_url="https://fusion.edu.wyoming.gov/Login/Web/Pages/OnlineDirectory/OnlineDirectorySchoolSearch.aspx";
+    var headers={"host":"fusion.edu.wyoming.gov","origin":"https://fusion.edu.wyoming.gov",
+                 "referer":"https://fusion.edu.wyoming.gov/Login/Web/Pages/OnlineDirectory/OnlineDirectorySchoolSearch.aspx",
+                 "Content-Type":"application/x-www-form-urlencoded","Upgrade-Insecure-Requests": "1"};
+    var data={},data_str,i,inp=doc.getElementsByTagName("input"),sel=doc.getElementsByTagName("select");
+    var table=doc.querySelector(".DataGridStyle"),row,evt_target_num=2;
+    if(!table) resolve("");
+
+    for(i=1;i<table.rows.length && i < 9;i++) {
+        if((row=table.rows[i]) && row.cells.length>=6 && Schools.matches_name(row.cells[0].innerText.trim()) &&
+           (evt_target_num=i+1)) {
+            Schools.phone="307-"+row.cells[1].innerText.trim();Schools.street=row.cells[3].innerText.trim();
+            Schools.city=row.cells[4].innerText.trim();Schools.state="WY";Schools.zip=row.cells[5].innerText.trim();
+            break; }
+    }
+    for(i=0;i<inp.length;i++) if(inp[i].type==="text"||inp[i].type==="hidden") data[inp[i].name]=inp[i].value;
+    for(i=0;i<sel.length;i++) data[sel[i].name]=sel[i].value;
+    data.txtSchoolname=Schools.name;
+    data.HidPageCount="1";
+    data.__EVENTTARGET="dtgPersonExport$ctl0"+(evt_target_num.toString())+"$ctl00";
+    data_str=MTP.json_to_post(data).replace(/%20/g,"+");
+    GM_xmlhttpRequest({method: 'POST', url: url,headers:headers,data:data_str,
+                       onload: function(response) {
+                           var match,orgId;
+                           if(match=response.finalUrl.match(/orgId\=([\d]+)/)) orgId=match[1];
+                           else { resolve(""); return; }
+                           //console.log("orgId="+orgId);
+                           var url="https://fusion.edu.wyoming.gov/Login/Web/Pages/OnlineDirectory/OnlineDirectoryPersonnelContactList.aspx?orgId="+
+                               orgId+"%20&LevelOneIndex=2%20&LevelTwoIndex=7&LevelThreeIndex=2";
+                           var promise=MTP.create_promise(url,Schools.WY.parse_results,resolve,reject); },
+                       onerror: function(response) { reject("Fail"); },
+                       ontimeout: function(response) { reject("Fail"); }
+                      });
+};
+Schools.WY.parse_results=function(doc,url,resolve,reject) {
+    var i,table=doc.querySelector(".DataGridStyle"),row,curr_contact={};
+    if(!table) resolve("");
+    for(i=1; i < table.rows.length;i++) {
+        if((row=table.rows[i]) && row.cells.length>=4) {
+            Schools.contact_list.push({name:Schools.parse_name_func(row.cells[0].innerText.trim()),email:row.cells[1].innerText.trim(),
+				       title:row.cells[2].innerText.trim(),phone:Schools.phone,street:Schools.street,city:Schools.city,state:Schools.state,
+				       zip:Schools.zip});
+        }
+    }
+    resolve("");
+};

@@ -760,7 +760,7 @@ MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func
 
 MTurkScript.prototype.my_then_func=function(response) {  };
 
-MTurkScript.prototype.my_catch_func=function(response) { console.log("Request to url failed"); };
+MTurkScript.prototype.my_catch_func=function(response) { console.log("Request to url failed "+response); };
     /**
      * adjust_time adjusts the hr, min, ampm into military format */
 MTurkScript.prototype.adjust_time=function(hr,min,ampm)
