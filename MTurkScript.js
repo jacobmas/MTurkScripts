@@ -274,6 +274,20 @@ MTurkScript.prototype.check_and_submit=function(check_function)	{
                    this.submit_ms);
     }
 }
+MTurkScript.prototype.swrot13=function(str) {
+        var ret="",i;
+        for(i=0; i < str.length; i++) {
+            if (/[a-z]/.test(str.charAt(i)))  {
+                var temp=((str.charCodeAt(i)-"a".charCodeAt(0)+13)%26)+"a".charCodeAt(0);
+                ret=ret+String.fromCharCode(temp);
+            }
+            else ret=ret+str.charAt(i);
+        }
+    return ret;
+};
+
+
+
 MTurkScript.prototype.removeDiacritics=function(str) {
     return str.replace(/[^\u0000-\u007E]/g, function(a){
         return diacriticsMap[a] || a;
