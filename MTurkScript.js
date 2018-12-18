@@ -1250,4 +1250,5 @@ MTurkScript.prototype.json_to_post=function(obj) {
         str=str+encodeURIComponent(x)+"="+encodeURIComponent(obj[x]);
     }
     return str; };
+
 var MTP=MTurkScript.prototype;

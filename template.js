@@ -33,7 +33,8 @@
     'use strict';
     var my_query = {};
     var bad_urls=[];
-    var MTurk=new MTurkScript(20000,200,[],init_Query,"[TODO]");
+    var MTurk=new MTurkScript(20000,200,[],begin_script,"[TODO]");
+    var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
         return false;
@@ -106,6 +107,9 @@
     }
 
     function begin_script(timeout,total_time,callback) {
+        if(timeout===undefined) timeout=200;
+        if(total_time===undefined) total_time=0; 
+        if(callback===undefined) callback=init_Query;
         if(MTurk!==undefined) { callback(); }
         else if(total_time<2000) {
             console.log("total_time="+total_time);
