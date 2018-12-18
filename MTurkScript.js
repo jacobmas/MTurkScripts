@@ -323,7 +323,6 @@ MTurkScript.prototype.cfDecodeEmail=function(encodedString) {
 MTurkScript.prototype.is_bad_email = function(to_check)
 {
     if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1) return true;
-    else if(/\.(png|jpg)$/.test(to_check)) return true;
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
     else if(/@(domain\.com|example\.com)/.test(to_check)) return true;
     else if(/@(example|email)\.com$/.test(to_check)) return true;
