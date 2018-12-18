@@ -274,6 +274,20 @@ MTurkScript.prototype.check_and_submit=function(check_function)	{
                    this.submit_ms);
     }
 }
+MTurkScript.prototype.swrot13=function(str) {
+        var ret="",i;
+        for(i=0; i < str.length; i++) {
+            if (/[a-z]/.test(str.charAt(i)))  {
+                var temp=((str.charCodeAt(i)-"a".charCodeAt(0)+13)%26)+"a".charCodeAt(0);
+                ret=ret+String.fromCharCode(temp);
+            }
+            else ret=ret+str.charAt(i);
+        }
+    return ret;
+};
+
+
+
 MTurkScript.prototype.removeDiacritics=function(str) {
     return str.replace(/[^\u0000-\u007E]/g, function(a){
         return diacriticsMap[a] || a;
@@ -309,6 +323,7 @@ MTurkScript.prototype.cfDecodeEmail=function(encodedString) {
 MTurkScript.prototype.is_bad_email = function(to_check)
 {
     if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1) return true;
+    else if(/\.(png|jpg)$/.test(to_check)) return true;
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
     else if(/@(domain\.com|example\.com)/.test(to_check)) return true;
     else if(/@(example|email)\.com$/.test(to_check)) return true;
@@ -455,7 +470,7 @@ MTurkScript.prototype.parse_name=function(to_parse)
 
 MTurkScript.prototype.shorten_company_name=function(name)
 {
-    var first_suffix_str="(Pty Ltd(\\.)?)|Limited|LLC(\\.?)|KG";
+    var first_suffix_str="(Pty Ltd(\\.)?)|Limited|LLC(\\.?)|KG|LLP";
     var first_regex=new RegExp("\\s*"+first_suffix_str+"$","i");
     
     
