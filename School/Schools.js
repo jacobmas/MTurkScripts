@@ -515,51 +515,80 @@
      addressLine1,city,state,zip are as usual
      returns a promise (can be "then'd" on the client side)
     */
-    Schools.init_Schools=function(query) {
-        Schools.type=query.type;Schools.name=query.name;Schools.title_regex=query.title_regex;Schools.state_dir=query.state_dir;
-        Schools.addressLine1=query.addressLine1;Schools.city=query.city;Schools.state=query.state;
-        const schoolPromise=new Promise((resolve,reject) => {
-            if(Schools.state_dir) Schools[Schools.state].get_state_dir(resolve,reject);
-        });
-        return schoolPromise;
-    };
+Schools.init_Schools=function(query) {
+    for(var x in query) Schools[x]=query[x];
+    const schoolPromise=new Promise((resolve,reject) => {
+        if(Schools[Schools.state].spreadsheet) Schools.get_spreadsheet(resolve,reject);
+        else if(Schools[Schools.state]&&Schools[Schools.state].get_state_dir) Schools[Schools.state].get_state_dir(resolve,reject);
+        else resolve(""); });
+    return schoolPromise;
+};
+
+/** Schools.parse_spreadsheet parses a spreadsheet in the School/CSV directory called via MTP.create_promise */
+Schools.parse_spreadsheet=function(doc,url,resolve,reject) {
+    var split_lines=doc.body.innerHTML.split("\n"),i,curr_line;
+    var title_map=Schools.get_spreadsheet_title_map(split_lines[0].split(",")),curr_contact,temp_contact=null;
+    console.log("title_map="+JSON.stringify(title_map));
+    for(i=1;i<split_lines.length;i++) {
+        curr_line=split_lines[i].split(",");
+        curr_contact={name:title_map.name!==undefined?curr_line[title_map.name]:"",phone:title_map.phone!==undefined?curr_line[title_map.phone]:"",
+                      email:title_map.email!==undefined?curr_line[title_map.email]:"",state:title_map.state!==undefined?curr_line[title_map.state]:"",
+                      school:(title_map.school!==undefined)?curr_line[title_map.school]:"",street:title_map.street!==undefined?curr_line[title_map.street]:"",
+                      city:title_map.city!==undefined?curr_line[title_map.city]:"",zip:title_map.zip!==undefined?curr_line[title_map.zip]:""};
+        curr_contact.address=parseAddress.parseLocation(curr_contact.street+","+curr_contact.city+","+curr_contact.state+" "+curr_contact.zip);
+        if(curr_contact.school.length>0 && Schools.matches_name(curr_contact.school) && Schools.city.toLowerCase()===curr_contact.city.toLowerCase()
+           && curr_contact.email.indexOf("@")!==-1) Schools.contact_list.push(curr_contact);
+        else if(!temp_contact && curr_contact.school.length>0 && Schools.matches_name(curr_contact.school)) temp_contact=curr_contact;
+        else if(!temp_contact && curr_contact.address && Schools.address && curr_contact.address.number===Schools.address.number &&
+                curr_contact.address.street===Schools.address.street && curr_contact.address.type===Schools.address.type &&
+                curr_contact.city===Schools.city && curr_contact.state===Schools.state) temp_contact=curr_contact;
+    }
+    if(Schools.contact_list.length===0 && temp_contact) Schools.contact_list.push(temp_contact);
+    resolve("");
+};
+Schools.get_spreadsheet_title_map=function(line) {
+    var ret={},i,x,term_map={"school":/School/i,"name":/Name/i,"title":/Title|Position/i,"phone":/Phone|Telephone/i,
+                             "email":/E(-)?mail/i,"street":/Street|Address/i,"city":/City/i,"state":/state/i,"zip":/zip/i};
+    for(i=0;i<line.length;i++) for(x in term_map) if(term_map[x].test(line[i])) ret[x]=i;
+    return ret;
+}; 
 
 
-    /**
-     * Schools.id_page_type identifies the CMS/etc for the school website
-     */
-    Schools.id_page_type=function(doc,url,resolve,reject,query) {
-        var page_type="none",i,match,copyright,sites_google_found=false,generator,gen_content;
-        var page_type_regex2=/Apptegy/,copyright_regex=/Blackboard, Inc/,page_type_regex=new RegExp(Schools.page_regex_str,"i");
-        for(i=0; i < (generator=doc.getElementsByName("generator")).length; i++) console.log("generator="+(generator[i].content));
-        for(i=0; i < doc.links.length; i++) {
-            if((match=doc.links[i].href.match(page_type_regex)) || (match=doc.links[i].innerText.match(page_type_regex2))) {
-                page_type=match[0].replace(/\.[^\.]*$/,"").toLowerCase().replace(/www\./,"").replace(/\./g,"_");
-                break; }
-            else if(/sites\.google\.com/.test(doc.links[i].href)
-                    && /Google Sites/i.test(doc.links[i].innerText)) sites_google_found=true;
-        }
-        doc.querySelectorAll("footer").forEach(function(footer) {
-            if(footer.dataset.createSiteUrl&&/sites\.google\.com/.test(footer.dataset.createSiteUrl)) sites_google_found=true; });
-        if(page_type==="none" && doc.getElementById("sw-footer-copyright")) page_type="blackboard";
-        else if(page_type==="none"&& sites_google_found) page_type="sites_google";
-        if(page_type==="none") {
-            doc.querySelectorAll("script").forEach(function(curr_script) {
+/**
+ * Schools.id_page_type identifies the CMS/etc for the school website
+ */
+Schools.id_page_type=function(doc,url,resolve,reject,query) {
+    var page_type="none",i,match,copyright,sites_google_found=false,generator,gen_content;
+    var page_type_regex2=/Apptegy/,copyright_regex=/Blackboard, Inc/,page_type_regex=new RegExp(Schools.page_regex_str,"i");
+    for(i=0; i < (generator=doc.getElementsByName("generator")).length; i++) console.log("generator="+(generator[i].content));
+    for(i=0; i < doc.links.length; i++) {
+        if((match=doc.links[i].href.match(page_type_regex)) || (match=doc.links[i].innerText.match(page_type_regex2))) {
+            page_type=match[0].replace(/\.[^\.]*$/,"").toLowerCase().replace(/www\./,"").replace(/\./g,"_");
+            break; }
+        else if(/sites\.google\.com/.test(doc.links[i].href)
+                && /Google Sites/i.test(doc.links[i].innerText)) sites_google_found=true;
+    }
+    doc.querySelectorAll("footer").forEach(function(footer) {
+        if(footer.dataset.createSiteUrl&&/sites\.google\.com/.test(footer.dataset.createSiteUrl)) sites_google_found=true; });
+    if(page_type==="none" && doc.getElementById("sw-footer-copyright")) page_type="blackboard";
+    else if(page_type==="none"&& sites_google_found) page_type="sites_google";
+    if(page_type==="none") {
+        doc.querySelectorAll("script").forEach(function(curr_script) {
             for(i=0; i < Schools.script_regex_lst.length;i++) {
                 if(curr_script.src&&
                    Schools.script_regex_lst[i].regex.test(curr_script.src)) page_type=Schools.script_regex_lst[i].name;
                 else if(curr_script.innerHTML.indexOf("_W.configDomain = \"www.weebly.com\"")!==-1) console.log("generator=weebly.com");
             }
-            });
-        }
-        return page_type;
-    };
-
-
-    /* Probably should change to have a specific function for the script using the School thing */
-    Schools.parse_promise_then=function(result) {
-        console.log("parse_promise_then: result="+JSON.stringify(result));
+        });
     }
+    return page_type;
+};
+
+
+/* Probably should change to have a specific function for the script using the School thing */
+Schools.parse_promise_then=function(result) {
+    console.log("parse_promise_then: result="+JSON.stringify(result));
+}
 Schools.AK.get_state_dir=function(resolve,reject) {
     var url="https://education.alaska.gov/DOE_Rolodex/SchoolCalendar/Home/Search?term="+Schools.name.replace(/\s/g,"+");
     var promise=MTP.create_promise(url,Schools.AK.get_school_search,resolve,reject);
@@ -707,6 +736,106 @@ Schools.KY.parse_school=function(doc,url,resolve,reject) {
     return true;
 
 };
+Schools.MI.get_state_dir=function(resolve,reject) {
+    var url="https://www.cepi.state.mi.us/eem/EntitySearchQuick.aspx";
+    var promise=MTP.create_promise(url,Schools.MI.begin_state_dir,resolve,reject);
+};
+Schools.MI.begin_state_dir=function(doc,url,resolve,reject,response) {
+    console.log("in MI.begin_state_dir "+url);
+    //console.log("response="+JSON.stringify(response));
+    var query_url="https://www.cepi.state.mi.us/eem/EntitySearchQuick.aspx";
+    var form=doc.querySelector("form"),x;
+    var headers={"Content-Type":"application/x-www-form-urlencoded","host":"www.cepi.state.mi.us",
+                 "origin":"https://www.cepi.state.mi.us","referer":"https://www.cepi.state.mi.us/eem/EntitySearchQuick.aspx",
+                 "Upgrade-Insecure-Requests": "1"};
+    var data={},i,j,inp=form.querySelectorAll("input,select"),sel=form.getElementsByTagName("select"),data_str;
+    for(i=0;i<inp.length;i++) if((inp[i].tagName==="INPUT" && (inp[i].type==="hidden"||inp[i].type==="text"||
+							       ((inp[i].type==="radio"||inp[i].type==="checkbox") && inp[i].checked)||
+                                                               (inp[i].type==="submit"&&inp[i].value==="Search")))
+                                 || inp[i].tagName==="SELECT"
+                                ) data[inp[i].name]=inp[i].value;
+    // for(i=0;i<sel.length;i++) data[sel[i].name]=sel[i].value;
+    var submit=form.querySelector("input[type='submit']");
+    // if(submit) data[submit.name]=submit.value;
+    // data["ctl00$cphMain$cblTypes$0"]="on";
+    data["ctl00$cphMain$txtName"]=Schools.trim_name(Schools.name);
+    if(Schools.city!==undefined&&Schools.city.length>0) data["ctl00$cphMain$txtCity"]=Schools.city;
+    if(Schools.zip!==undefined&&Schools.zip.length>0) data["ctl00$cphMain$txtZip"]=Schools.zip;
+    // for(x in data) { console.log(" "+x+": "+data[x]); }
+    data_str=MTP.json_to_post(data).replace(/%20/g,"+");
+    // console.log("data="+JSON.stringify(data));
+
+    //console.log("data_str="+data_str);
+
+
+    GM_xmlhttpRequest({method: 'POST', url: query_url,data:data_str,headers:headers,
+                       onload: function(response) {
+
+                           var doc = new DOMParser().parseFromString(response.responseText, "text/html");
+                           Schools.MI.get_school_result_list(doc,response.finalUrl, resolve, reject); },
+                       onerror: function(response) { reject("Fail"); },
+                       ontimeout: function(response) { reject("Fail"); }
+                      });
+};
+Schools.MI.get_school_result_list=function(doc,url,resolve,reject) {
+    console.log("in MI.get_school_result, url="+url);
+    var query_url="https://www.cepi.state.mi.us/eem/EntitySearchQuick.aspx";
+    //  console.log("doc.body.innerHTML="+doc.body.innerHTML);
+    var grid=doc.querySelector(".grid"),row,form=doc.querySelector("form");
+    var data={},i,j,inp=form.querySelectorAll("input,select"),sel=form.getElementsByTagName("select"),data_str;
+    var col=0;
+    if(!grid && Schools.name.indexOf(" ")!==-1) {
+        Schools.name=Schools.name.split(" ")[0];
+        var promise=MTP.create_promise(url,Schools.MI.begin_state_dir,resolve,reject);
+        return;
+    }
+    else if(!grid) { console.log("FAiled"); GM_setValue("returnHit",true); return; }
+    for(i=1;i<grid.rows.length;i++) {
+        if((row=grid.rows[i])&&/School/.test(row.cells[4].innerText)) break;
+        else console.log("("+i+"), row.cells[4].innerText="+row.cells[4].innerText);
+        console.log("grid.rows["+i+"]="+grid.rows[i].innerHTML);
+    }
+    col=(i-1);
+    var headers={"Content-Type":"application/x-www-form-urlencoded","host":"www.cepi.state.mi.us",
+                 "origin":"https://www.cepi.state.mi.us","referer":"https://www.cepi.state.mi.us/eem/EntitySearchQuick.aspx",
+                 "Upgrade-Insecure-Requests": "1"};
+
+    for(i=0;i<inp.length;i++) if((inp[i].tagName==="INPUT" && (inp[i].type==="hidden"||inp[i].type==="text"||
+							       ((inp[i].type==="radio"||inp[i].type==="checkbox") && inp[i].checked)||
+                                                               (inp[i].type==="submit"&&inp[i].value==="Search")))
+                                 || inp[i].tagName==="SELECT") data[inp[i].name]=inp[i].value;
+    if(col>=inp.length-1 && resolve("")) return;
+    data["__EVENTTARGET"]="ctl00$cphMain$grdCommon$grdCommon";
+    data["__EVENTARGUMENT"]="$"+(col).toString();
+    // for(x in data) { console.log(" "+x+": "+data[x]); }
+    data_str=MTP.json_to_post(data).replace(/%20/g,"+");
+    GM_xmlhttpRequest({method: 'POST', url: query_url,data:data_str,headers:headers,
+                       onload: function(response) {
+
+                           var doc = new DOMParser().parseFromString(response.responseText, "text/html");
+                           Schools.MI.parse_school_result(doc,response.finalUrl, resolve, reject); },
+                       onerror: function(response) { reject("Fail"); },
+                       ontimeout: function(response) { reject("Fail"); }
+                      });
+}
+Schools.MI.parse_school_result=function(doc,url,resolve,reject) {
+    console.log("in MI.parse_school_result "+url);
+    var email=doc.getElementById("ctl00_cphMain_ctlEmailReadOnly");
+    if(email) { console.log("email.innerText="+email.innerText); }
+    var curr_contact={},i;
+    var table=doc.getElementById("ctl00_cphMain_tabID_grdContacts"),row;
+    for(i=1;i<table.rows.length;i++) {
+        console.log("row["+i+"].innerText="+table.rows[i].innerHTML);
+        if((row=table.rows[i]) &&  /Principal|Administrator|Director/.test(row.cells[1].innerText)) {
+            curr_contact={name:row.cells[2].innerText,title:row.cells[1].innerText,phone:row.cells[3].innerText,
+                          email:email.innerText.replace(/^[\d]+\./,"")};
+            // console.log("Shroo");
+            Schools.contact_list.push(curr_contact);
+            //console.log("CHOO");
+        }
+    }
+    resolve("");
+};
 Schools.NJ.get_state_dir=function(resolve,reject) {
     var url="https://homeroom5.doe.state.nj.us/directory/school.php",data="school="+encodeURIComponent(Schools.name)+"&source=02";
     var headers={"Content-Type":"application/x-www-form-urlencoded","host":"homeroom5.doe.state.nj.us",
@@ -819,6 +948,7 @@ Schools.WI.parse_school_data=function(doc,url,resolve,reject) {
     Schools.contact_list.push(curr_contact);
     resolve("");
 };
+
 Schools.WY.get_state_dir=function(resolve,reject) {
     var url="https://fusion.edu.wyoming.gov/Login/Web/Pages/OnlineDirectory/OnlineDirectorySchoolSearch.aspx";
     var promise=MTP.create_promise(url,Schools.WY.make_state_query,resolve,reject);
