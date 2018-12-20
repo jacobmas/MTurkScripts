@@ -1251,4 +1251,34 @@ MTurkScript.prototype.json_to_post=function(obj) {
     }
     return str; };
 
+/* parse loc_hy elements in Bing */
+MTurkScript.prototype.parse_loc_hy=function(loc_hy) {
+    var ret=[],ent_cnt=loc_hy.querySelectorAll(".ent_cnt"),add;
+    ent_cnt.forEach(function(elem) {
+        add=elem.querySelector("b_factrow")?elem.querySelector("b_factrow").innerText:"·";
+	ret.push({name:elem.querySelector("h2").innerText,address:add.split("·")[0].trim(),phone:add.split("·")[1].trim(),
+                  url:elem.querySelector("[aria-label='Website']").href});  });
+    return ret;
+};
+
+/** TODO: add query conditions, edit if to be less selective, maybe grab more than one */
+MTurkScript.prototype.parse_yellowpages=function(doc,url,resolve,reject) {
+    var mdm=doc.querySelectorAll(".search-results .mdm"),i,result={success:true},cats,new_url;
+    for(i=0;i<mdm.length;i++) {
+        var name=mdm[i].querySelector(".business-name"),addr=mdm[i].querySelector(".adr"),parsed_add,phone;
+        phone=mdm[i].querySelector(".phone");
+        if(addr&&(result.parsed_add=parseAddress.parseLocation(addr.innerText)) && name && (result.name=name.innerText)) {
+            result.phone=phone?phone.innerText:"";
+            if(cats=mdm[i].querySelector(".categories")) result.categories=cats.innerText;
+            if(new_url=mdm[i].querySelector(".track-visit-website")) result.url=new_url.href;
+            resolve(result);
+            return;
+        }
+    }
+    console.log("No yellowpages results");
+    result.success=false;
+    resolve(result);
+    return;
+};
+
 var MTP=MTurkScript.prototype;
