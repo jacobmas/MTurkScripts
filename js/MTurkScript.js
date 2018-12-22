@@ -474,7 +474,7 @@ MTurkScript.prototype.shorten_company_name=function(name)
     var first_regex=new RegExp("\\s*"+first_suffix_str+"$","i");
     
     
-    name=removeDiacritics(name);
+    name=MTurkScript.prototype.removeDiacritics(name);
     name=name.replace(first_regex,"");
     name=name.replace(/ - .*$/,"").trim().replace(/\s*plc$/i,"");
     name=name.replace(/\(.*$/i,"").trim();
@@ -1245,11 +1245,9 @@ MTurkScript.prototype.contact_response=function(doc,url,extra) {
 /* Converts json to unencoded form for POST */
 MTurkScript.prototype.json_to_post=function(obj) {
     var str="",x;
-    for(x in obj) {
-        if(str.length>0) str=str+"&";
-        str=str+encodeURIComponent(x)+"="+encodeURIComponent(obj[x]);
-    }
-    return str; };
+    for(x in obj) str=str+(str.length>0?"&":"")+encodeURIComponent(x)+"="+encodeURIComponent(obj[x]);
+    return str;
+};
 
 /* parse loc_hy elements in Bing */
 MTurkScript.prototype.parse_loc_hy=function(loc_hy) {
