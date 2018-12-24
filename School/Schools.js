@@ -84,6 +84,9 @@ var Schools={
         //console.log("short_mycity="+short_mycity+", short_city="+short_city);
         return short_mycity===short_city;
     };
+/* TODO: actually create use the uld aggregate thing */
+Schools.matches_address=function(parsed_add) {
+    return false; };
 
     /* Schools.match_in_list matches the schools name in a list */
     Schools.match_in_list=function(ul,url) {
