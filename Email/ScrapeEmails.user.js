@@ -53,6 +53,23 @@
     var first_try=true;
 
 
+    function swrot13(str)
+    {
+        var i;
+        str=str.toLowerCase();
+        var new_str="";
+        for(i=0; i < str.length; i++)
+        {
+            if(/[a-z]/.test(str.substr(i,1)))
+            {
+                new_str=new_str+String.fromCharCode(((str.charCodeAt(i)-'a'.charCodeAt(0)+13)%26)+'a'.charCodeAt(0));
+            }
+            else new_str=new_str+str.charAt(i);
+        }
+        return new_str;
+    }
+
+
     function DeCryptString( s )
     {
         var n = 0;
@@ -177,23 +194,22 @@
     {
         if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1) return true;
         else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
+        else if(/user@example\.com/.test(to_check)) return true;
         return false;
     }
 
     /**
     *  Search the contact page
     */
-    function contact_response(response,resolve,reject) {
+    function contact_response(response,resolve,reject,extension) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-        var i,j;
-        var email_val;
-        var my_match;
+        var i,j, email_val, my_match;
         var foundInsta=false, foundFB=false;
         console.log("in contact response "+response.finalUrl);
         var short_name=response.finalUrl.replace(my_query.url,"");//.replace(/[\/]+/g,"");
-        var links=doc.links;
-        var email_matches=doc.body.innerText.match(email_re);
+        var links=doc.links,email_matches=doc.body.innerHTML.match(email_re);
+        var phone_matches=doc.body.innerHTML.match(phone_re);
         if(email_matches!==null)
         {
             j=0;
@@ -202,7 +218,7 @@
                 if(!is_bad_email(email_matches[j]) && email_matches[j].length>0) {
 
                    my_query.email=email_matches[j];
-                    document.getElementsByName("Email ")[0].value=my_query.email;
+                  //  document.getElementsByName("Email ")[0].value=my_query.email;
                    break;
                 }
             }
@@ -210,14 +226,30 @@
            
             console.log("Found email hop="+my_query.email);
         }
+        if(phone_matches!==null)
+        {
+            j=0;
+            for(j=0; j < phone_matches.length; j++)
+            {
+               my_query.phone=phone_matches[j];
+
+                break;
+
+            }
+
+
+            console.log("Found phone hop="+my_query.phone);
+        }
         GM_setValue("fb_result","");
         if(fb_listener===undefined)
         {
             fb_listener=GM_addValueChangeListener("fb_result",function() {
+                console.log("Received FB_result="+JSON.stringify(arguments[2]));
                 if(my_query.doneFB) return;
                 var result=arguments[2];
-                if(result.email.length>0) { my_query.email=result.email; console.log("FB: got email="+my_query.email);  }
+                if(result.email.length>0 && !is_bad_email(result.email)) { my_query.email=result.email; console.log("FB: got email="+my_query.email);  }
                 if(result.name.length>0) { my_query.name=result.name; console.log("FB: got name="+my_query.name); }
+                if(result.phone.length>0) { my_query.phone=result.phone; console.log("FB: got phone="+my_query.phone); }
 
                 my_query.doneFB=true;
                 add_and_submit();
@@ -239,6 +271,32 @@
                 });
         for(i=0; i < links.length; i++)
         {
+            if(extension==='')
+            {
+                if(/^(Contact|About)/i.test(links[i].innerText))
+                {
+                   // console.log(my_query.url.match(/https?:\/\/[^\/]+/));
+                    let new_link=links[i].href.replace(/https?:\/\/[^\/]+/,my_query.url.match(/https?:\/\/[^\/]+/));
+                    console.log("*** Following link labeled "+links[i].innerText+" to "+new_link);
+                    get_page(new_link,
+                             resolve, reject, contact_response,"NOEXTENSION");
+                }
+            }
+            if(links[i].dataset.encEmail!==undefined)
+            {
+                console.log("### "+links[i].dataset.encEmail);
+                let temp_email=swrot13(links[i].dataset.encEmail.replace(/\[at\]/,"@"));
+                console.log("### "+temp_email);
+                if(!is_bad_email(temp_email))
+                {
+                    my_query.email=temp_email;
+                }
+
+            }
+            else
+            {
+               // console.log("links["+i+"].dataset="+JSON.stringify(links[i].dataset));
+            }
             if(links[i].href.indexOf("amazonaws.com")===-1 && links[i].href.indexOf("mturkcontent.com")===-1)
             {
                 console.log(short_name+": ("+i+")="+links[i].href); }
@@ -249,9 +307,12 @@
                 {
                     email_val=cfDecodeEmail(encoded_match[1]);
                     console.log("DECODED "+email_val);
-                    my_query.email=email_val.replace(/\?.*$/,"");
-                    document.getElementsByName("Email ")[0].value=my_query.email;
-                    my_query.doneEmail=true;
+                    if(!is_bad_email(email_val.replace(/\?.*$/,"")))
+                    {
+                        my_query.email=email_val.replace(/\?.*$/,"");
+                   
+                        my_query.doneEmail=true;
+                    }
                 }
             }
             if(email_re.test(links[i].href.replace(/^mailto:\s*/,"")))
@@ -263,7 +324,7 @@
                 {
                     console.log("set email");
                     my_query.email=email_val;
-                    document.getElementsByName("Email ")[0].value=my_query.email;
+              
                 }
 
             }
@@ -280,7 +341,7 @@
                 //email_val=String.fromCharCode(my_match[1]);
                 console.log("new email_val="+email_val);
                 my_query.email=email_val;
-                    document.getElementsByName("Email ")[0].value=my_query.email;
+          
             }
               if(links[i].href.indexOf("javascript:DeCryptX(")!==-1)
             {
@@ -318,7 +379,7 @@ console.log("Found FB url="+my_query.fb_url);
                 }
             }
         }
-        //add_and_submit();
+        add_and_submit();
 
 
     }
@@ -328,14 +389,16 @@ console.log("Found FB url="+my_query.fb_url);
     function add_and_submit()
     {
         console.log("Doing add and submit");
-        document.getElementsByName("First Name")[0].value=my_query.name.split(" ")[0];
-        document.getElementsByName("Email ")[0].value=my_query.email;
-        if(document.getElementsByName("First Name")[0].value.length===0)
-            {
-                document.getElementsByName("First Name")[0].value=" ";
-            }
+        if(my_query.email.length>0)
+        {
+            document.getElementById("email").value=my_query.email;
+        }
+        if(my_query.phone.length>0)
+        {
+            document.getElementById("Phone").value=my_query.phone;
+        }
         if(my_query.name.length>0 && my_query.email.length>0 &&
-           my_query.doneFB && !my_query.submitted)
+           my_query.doneFB && !my_query.submitted && my_query.phone.length)
         {
             my_query.submitted=true;
             console.log("Done");
@@ -395,7 +458,7 @@ console.log("Found FB url="+my_query.fb_url);
     }
 
 
-    function get_page(url, resolve, reject, callback)
+    function get_page(url, resolve, reject, callback,extension)
     {
         GM_xmlhttpRequest({
             method: 'GET',
@@ -404,7 +467,7 @@ console.log("Found FB url="+my_query.fb_url);
             onload: function(response) {
              //   console.log("On load in crunch_response");
             //    crunch_response(response, resolve, reject);
-             callback(response, resolve, reject);
+             callback(response, resolve, reject,extension);
             },
             onerror: function(response) { reject("Page \'"+url+"\' not found");
 
@@ -424,24 +487,34 @@ console.log("Found FB url="+my_query.fb_url);
        // var url=document.getElementsByClassName("dont-break-out")[0].href;
        var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
 
-        my_query={url:wT.rows[0].cells[1].innerText, submitted: false, doneEmail: false, doneName: false, doneInstagram: false, fb_url: "", insta_url:"", doneFB: false,
 
-                 email:"",followers:0,insta_name:"",name:" ", started_FB: false, started_Insta: false};
+         my_query={url:wT.rows[0].cells[1].innerText, submitted: false, doneEmail: false, doneName: false, doneInstagram: false, fb_url: "", insta_url:"", doneFB: false,
+
+                 email:"",followers:0,insta_name:"",name:" ", started_FB: false, started_Insta: false,donePhone:false, phone:""};
 
         my_query.url=my_query.url.replace(/(https?:\/\/[^\/]+)\/.*$/,"$1");
         console.log("my_query.url="+my_query.url);
 
 	var search_str=get_domain_only(my_query.url)+" site:facebook.com";
-        const queryPromise = new Promise((resolve, reject) => {
+
+      /*  my_query={url:wT.rows[0].cells[1].innerText, submitted: false, doneEmail: false, doneName: false, doneInstagram: false, fb_url: "", insta_url:"", doneFB: false,
+
+                 email:"",followers:0,insta_name:"",name:" ", started_FB: false, started_Insta: false};
+
+        my_query.url=my_query.url.replace(/(https?:\/\/[^\/]+)\/.*$/,"$1");
+        console.log("my_query.url="+my_query.url);*/
+
+	//var search_str=get_domain_only(my_query.url)+" site:facebook.com";
+    /*    const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response);
         });
         queryPromise.then(query_promise_then
         )
         .catch(function(val) {
-           console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+           console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); }); */
 
-        var extensions=['','/contact','/privacy','/includes/modules/contactinfo.php','/about/','/contact.php'];
+        var extensions=[''];//,'/contact','/privacy','/includes/modules/contactinfo.php','/about/','/contact.php','/contact-us'];
         var i;
         var promises=[];
         var currPromise;
@@ -449,7 +522,7 @@ console.log("Found FB url="+my_query.fb_url);
         {
             currPromise = new Promise((resolve, reject) => {
                 console.log("Beginning search for "+my_query.url+extensions[i]);
-                get_page(my_query.url+extensions[i], resolve, reject, contact_response);
+                get_page(my_query.url+extensions[i], resolve, reject, contact_response,extensions[i]);
             });
             currPromise.then(contact_promise_then
                             )
@@ -518,7 +591,7 @@ console.log("Found FB url="+my_query.fb_url);
     function do_fb()
     {
         console.log("Doing FB");
-        var result={email:"",name:"",url:window.location.href};
+        var result={email:"",name:"",url:window.location.href,phone:""};
         var i;
         var contactlinks=document.getElementsByClassName("_50f4");
         var namelinks=document.getElementsByClassName("_42ef");
@@ -529,6 +602,11 @@ console.log("Found FB url="+my_query.fb_url);
             {
                 result.email=contactlinks[i].innerText.match(email_re);
                 console.log("Found email="+result.email);
+            }
+            else if(phone_re.test(contactlinks[i].innerText))
+            {
+                result.phone=contactlinks[i].innerText.match(phone_re);
+                console.log("Found phone="+result.phone);
             }
         }
         for(i=0; i < namelinks.length; i++)
@@ -569,7 +647,7 @@ console.log("Found FB url="+my_query.fb_url);
         if(/https?:\/\/www\.instagram\.com\/.+/.test(window.location.href)) {
             setTimeout(do_instagram,1500); }
     }
-     else if(window.location.href.indexOf("facebook.com")!==-1)
+    else if(window.location.href.indexOf("facebook.com")!==-1)
     {
         GM_setValue("fb_url","https://www.facebook.com");
         console.log("Doing facebook");
