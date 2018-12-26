@@ -1034,6 +1034,7 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
         if(user.external_url!==undefined) result.url=user.external_url;
         if(user.is_business_account!==undefined) result.is_business=user.is_business_account;
         if(user.business_email) result.email=user.business_email;
+	if(user.profile_pic_url) result.profile_pic_url=user.profile_pic_url;
         if(user.business_address_json)
         {
             let temp_add=JSON.parse(user.business_address_json);
