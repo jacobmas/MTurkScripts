@@ -133,8 +133,9 @@ for (var i=0; i < defaultDiacriticsRemovalMap .length; i++){
  sites we will be doing standardized scraping off of
  * callback is the init_Query type function to initialize the custom part of the script running
  * requester_id is the MTurk id of the requester so it doesn't accidentally run on wrong HITs
+ * is_crowd is for this new crowd shit 
  */
-function MTurkScript(return_ms,submit_ms,sites,callback,requester_id)
+function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
 {
 //    console.log("Initializing MTurkScript");
     this.return_ms=return_ms;
@@ -187,7 +188,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id)
     }
     if ((window.location.href.indexOf("mturkcontent.com") !== -1 ||
          window.location.href.indexOf("amazonaws.com") !== -1) &&
-        !document.getElementById("submitButton").disabled &&
+        ((!is_crowd && !document.getElementById("submitButton").disabled) || (is_crowd && document.querySelector("crowd-button"))) &&
 	GM_getValue("req_id","")===this.requester_id) callback();
     if(window.location.href.indexOf("worker.mturk.com")!==-1) {
         GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
@@ -399,17 +400,15 @@ MTurkScript.prototype.my_parse_address=function(to_parse)
     }
     return ret_add;
 }
+/* get_domain_only gets the domain from a url, if limit_one is true it tries to really get just the domain 
+  i.e. from http://www.fuckingnonsense.goodsite.com it would get "goodsite.com", or 
+  http://www.rightfuckingnonsense.goodsite.co.uk it would get "goodsite.co.uk" */
 MTurkScript.prototype.get_domain_only=function(the_url,limit_one)
 {
     var httpwww_re=/https?:\/\/www\./,http_re=/https?:\/\//,slash_re=/\/.*$/;
     var ret=the_url.replace(httpwww_re,"").replace(http_re,"").replace(slash_re,"");
-    if(limit_one) {
-        if(/\.(co|ac|gov)\.[A-Za-z]{2}$/.test(the_url))
-        {
-            ret=ret.replace(/^.*\.([^\.]+\.(?:co|ac|gov)\.[A-Za-z]{2})$/,"$1");
-        }
-        else ret=ret.replace(/^.*\.([^\.]+\.[^\.]+$)/,"$1");
-    }
+    if(limit_one && /\.(co|ac|gov|com|org)\.[A-Za-z]{2}$/.test(the_url)) ret=ret.replace(/^.*\.([^\.]+\.(?:co|ac|gov)\.[A-Za-z]{2})$/,"$1");
+    else if(limit_one) ret=ret.replace(/^.*\.([^\.]+\.[^\.]+$)/,"$1");
     return ret;
 }
 MTurkScript.prototype.prefix_in_string=function(prefixes, to_check)
@@ -472,7 +471,6 @@ MTurkScript.prototype.shorten_company_name=function(name)
 {
     var first_suffix_str="(Pty Ltd(\\.)?)|Limited|LLC(\\.?)|KG|LLP";
     var first_regex=new RegExp("\\s*"+first_suffix_str+"$","i");
-    
     
     name=MTurkScript.prototype.removeDiacritics(name);
     name=name.replace(first_regex,"");
@@ -1278,5 +1276,51 @@ MTurkScript.prototype.parse_yellowpages=function(doc,url,resolve,reject) {
     resolve(result);
     return;
 };
+
+/* parse_youtube_inner is a helper function for the parse_youtube function */
+MTurkScript.prototype.parse_youtube_inner=function(text) {
+    var parsed,ret={},runs,match,x,content,contents,i,tabs,label,links,url;
+    try { parsed=JSON.parse(text); }
+    catch(error) { console.log("error parsing="+error+", text="+text); return; }
+    tabs=parsed.contents.twoColumnBrowseResultsRenderer.tabs;
+    for(i=0; i < tabs.length; i++) if(tabs[i].tabRenderer && tabs[i].tabRenderer.title==="About" && (content=tabs[i].tabRenderer.content)) break;
+    if(!content) return ret;
+    contents=content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].channelAboutFullMetadataRenderer;
+    if((label=contents.businessEmailLabel)===undefined) ret.email="";
+    if(contents.subscriberCountText && (runs=contents.subscriberCountText.runs) && runs.length>0 &&
+       runs[0].text) ret.total_subscribers=runs[0].text.replace(/,/g,"");
+    if(contents.country && contents.country.simpleText) ret.location=contents.country.simpleText;
+    if((links=contents.primaryLinks)===undefined) links=[];
+    for(i=0; i < links.length; i++) {
+        url=decodeURIComponent(links[i].navigationEndpoint.urlEndpoint.url.replace(/^.*(&|\?)q\=/,"")).replace(/(&|\?).*$/,"");
+        console.log("url["+i+"]="+url);
+        if(/instagram\.com/.test(url)) ret.insta=url; 
+        else if(/facebook\.com/.test(url)) ret.fb=url.replace(/\/$/,"").replace(/facebook\.com\//,"facebook.com/pg/")+"/about"; 
+        else if(/twitter\.com/.test(url)) ret.twitter=url;
+        else if(!/plus\.google\.com|((youtube|gofundme|patreon)\.com)/.test(url) && i===0) ret.url=url;
+    }
+    if(contents.description && contents.description.simpleText && (ret.description=contents.description.simpleText.replace(/\\n/g,"\n"))) {
+        if(match=ret.description.match(email_re)) ret.email=match[0];
+        if(!ret.insta && (match=ret.description.match(/https:\/\/(www.)?instagram.com\/[A-Za-z\.0-9_\-\/]+/))) ret.insta=match[0];
+        if(!ret.fb && (match=ret.description.match(/https?:\/\/([a-z]+).facebook.com\/[A-Za-z\.0-9_\-\/]+/))) ret.fb=match[0];
+    }
+    return ret;
+};
+/* parse_youtube Parses the 'about' page of a youtube channel */
+MTurkScript.prototype.parse_youtube=function(doc,url,resolve,reject) {
+    var scripts=doc.scripts,i,script_regex_begin=/^\s*window\[\"ytInitialData\"\] \=\s*/,text;
+    var script_regex_end=/\s*window\[\"ytInitialPlayerResponse\".*$/,ret={success:false},x,promise_list=[];
+    var email_match,match;
+    for(i=0; i < scripts.length; i++) {
+        if(script_regex_begin.test(scripts[i].innerHTML)) {
+            text=scripts[i].innerHTML.replace(script_regex_begin,"");
+            if(text.indexOf(";")!==-1) text=text.substr(0,text.indexOf("};")+1);
+            resolve(parse_youtube_inner(text));
+            return;
+        }
+    }
+    resolve(ret);
+};
+
 
 var MTP=MTurkScript.prototype;
