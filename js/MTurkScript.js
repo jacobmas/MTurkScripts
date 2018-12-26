@@ -189,9 +189,10 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
     if ((window.location.href.indexOf("mturkcontent.com") !== -1 ||
          window.location.href.indexOf("amazonaws.com") !== -1) &&
         ((!is_crowd && !document.getElementById("submitButton").disabled) ||
-	 (is_crowd && document.querySelector("crowd-button") && !document.querySelector("button[type='submit']").disabled)) &&
+	 (is_crowd && document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)) &&
 	GM_getValue("req_id","")===this.requester_id) callback();
     if(window.location.href.indexOf("worker.mturk.com")!==-1) {
+	console.log("Hello1");
         GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
         var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
 	console.log("document.getElementsByClassName(\"project-detail-bar\")[0].innerHTML="+document.getElementsByClassName("project-detail-bar")[0]);
@@ -203,7 +204,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
 	       return; }
       
         if(GM_getValue("automate")===undefined) GM_setValue("automate",false);
-
+	console.log("Hello2");
         var btn_span=document.createElement("span"), btn_automate=document.createElement("button");
         var btns_primary=document.getElementsByClassName("btn-primary")
         var btns_secondary=document.getElementsByClassName("btn-secondary");
@@ -223,6 +224,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
                 if(GM_getValue("automate")) btns_secondary[0].click();
             }, this.return_ms);
         }
+	console.log("Hello3");
         btn_automate.addEventListener("click", function(e) {
             var auto=GM_getValue("automate");
             if(!auto) btn_automate.innerHTML="Stop";
