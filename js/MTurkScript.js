@@ -192,7 +192,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
         ((!is_crowd && document.getElementById("submitButton") && !document.getElementById("submitButton").disabled) ||
 	 (is_crowd && document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)) &&
 	GM_getValue("req_id","")===this.requester_id) callback();
-    else if(((window.location.href.indexOf("mturkcontent.com") !== -1 ||
+    else if((window.location.href.indexOf("mturkcontent.com") !== -1 ||
          window.location.href.indexOf("amazonaws.com") !== -1) && is_crowd) MTurkScript.prototype.begin_crowd_script(200,0,callback);
     if(window.location.href.indexOf("worker.mturk.com")!==-1) {
 	console.log("Hello1");
