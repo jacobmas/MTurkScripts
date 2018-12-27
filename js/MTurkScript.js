@@ -188,7 +188,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
     }
     if ((window.location.href.indexOf("mturkcontent.com") !== -1 ||
          window.location.href.indexOf("amazonaws.com") !== -1) &&
-        ((!is_crowd && !document.getElementById("submitButton").disabled) ||
+        ((!is_crowd && document.getElementById("submitButton") && !document.getElementById("submitButton").disabled) ||
 	 (is_crowd && document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)) &&
 	GM_getValue("req_id","")===this.requester_id) callback();
     if(window.location.href.indexOf("worker.mturk.com")!==-1) {
