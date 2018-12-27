@@ -164,7 +164,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
         else if(total_time<2000) {
             console.log("total_time="+total_time);
             total_time+=timeout;
-            setTimeout(function() { this.begin_crowd_script(timeout,total_time,callback); },timeout);
+            setTimeout(function() { this(timeout,total_time,callback); },timeout);
             return;
         }
         else { console.log("Failed to begin crowd script"); }
