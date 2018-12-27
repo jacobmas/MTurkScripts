@@ -783,7 +783,7 @@ MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func
             });
     });
     queryPromise.then(then_func)
-        .catch(catch_func);
+        .catch(catch_func,url);
     return queryPromise;
 };
 
