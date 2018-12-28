@@ -1315,7 +1315,7 @@ MTurkScript.prototype.matches_names=function(name1,name2) {
         .replace(/-/g," ").replace(street_reg,"St ");
         for(x in num_replace) other_name=other_name.replace(num_replace[x],x);
         final_other=other_name.replace(and_regex,"").replace(at_reg,"").replace(/\s/g,"").toLowerCase().trim();
-        console.log("my_name="+my_name+", other_name="+other_name);
+        //console.log("my_name="+my_name+", other_name="+other_name);
         if(final_my===final_other || final_my.indexOf(final_other)!==-1 || final_other.indexOf(final_my)!==-1) return true;
         for(i=0;i<final_my.length;i++) if(final_my.charAt(i)!==final_other.charAt(i)) break;
         if(i*3/2>=final_my.length) return true;
