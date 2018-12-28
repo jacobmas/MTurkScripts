@@ -25,7 +25,7 @@
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
@@ -46,7 +46,7 @@
         console.log("in query_response\n"+response.finalUrl);
         var search, b_algo, i=0, inner_a;
         var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
-        var b1_success=false, b_header_search,b_context;
+        var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
         try
         {
             search=doc.getElementById("b_content");
@@ -54,6 +54,10 @@
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
+	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
+                console.log("parsed_context="+JSON.stringify(parsed_context)); } 
+            if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
+                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
             for(i=0; i < b_algo.length; i++)
             {
                 b_name=b_algo[i].getElementsByTagName("a")[0].textContent;

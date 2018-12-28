@@ -419,75 +419,42 @@ MTurkScript.prototype.my_parse_address=function(to_parse)
 /* get_domain_only gets the domain from a url, if limit_one is true it tries to really get just the domain 
   i.e. from http://www.fuckingnonsense.goodsite.com it would get "goodsite.com", or 
   http://www.rightfuckingnonsense.goodsite.co.uk it would get "goodsite.co.uk" */
-MTurkScript.prototype.get_domain_only=function(the_url,limit_one)
-{
+MTurkScript.prototype.get_domain_only=function(the_url,limit_one) {
     var httpwww_re=/https?:\/\/www\./,http_re=/https?:\/\//,slash_re=/\/.*$/;
     var ret=the_url.replace(httpwww_re,"").replace(http_re,"").replace(slash_re,"");
     if(limit_one && /\.(co|ac|gov|com|org)\.[A-Za-z]{2}$/.test(the_url)) ret=ret.replace(/^.*\.([^\.]+\.(?:co|ac|gov)\.[A-Za-z]{2})$/,"$1");
     else if(limit_one) ret=ret.replace(/^.*\.([^\.]+\.[^\.]+$)/,"$1");
     return ret;
 }
-MTurkScript.prototype.prefix_in_string=function(prefixes, to_check)
-{
-    var j;
-    for(j=0; j < prefixes.length; j++) {
-        if(to_check.indexOf(prefixes[j])===0) return true;
-
-    }
+MTurkScript.prototype.prefix_in_string=function(prefixes, to_check) {
+    for(var j=0; j < prefixes.length; j++) if(to_check.indexOf(prefixes[j])===0) return true;
     return false;
 }
 MTurkScript.prototype.parse_name=function(to_parse)
 {
     console.log("Doing parse_name on "+to_parse);
-    var suffixes=["Jr","II","III","IV","CPA","CGM"];
-    var prefixes=["Mr","Ms","Mrs","Dr","Rev"];
-    var prefixes_regex=/^(Mr|Ms|Mrs|Dr|Rev|Miss)\.?\s+/gi;
-    var paren_regex=/\([^\)]*\)/g;
-    to_parse=to_parse.replace(paren_regex,"");
-    to_parse=to_parse.replace(prefixes_regex,"");
-    var split_parse=to_parse.split(" ");
-    var last_pos=split_parse.length-1;
-    var first_pos=0;
-    var j;
-    var caps_regex=/^[A-Z]+$/;
-    var ret={};
-    for(last_pos=split_parse.length-1; last_pos>=1; last_pos--)
-    {
-        if(!this.prefix_in_string(suffixes,split_parse[last_pos]))
-        {
-            if(!(split_parse.length>0 && /[A-Z][a-z]/.test(split_parse[0]) && /^[^a-z]+$/.test(split_parse[last_pos])))
-            {
-                //console.log("last_pos="+last_pos);
-                //console.log( /[A-Z][a-z]/.test(split_parse[0]));
-
-                break;
-            }
-        }
-
-
-
+    var first_pos=0,j,last,ret={};
+    var suffixes=["Jr","II","III","IV","CPA","CGM"],prefixes=["Mr","Ms","Mrs","Dr","Rev"],split_parse;
+    var prefixes_regex=/^(Mr|Ms|Mrs|Dr|Rev|Miss)\.?\s+/gi,paren_regex=/\([^\)]*\)/g,caps_regex=/^[A-Z]+$/;
+    to_parse=to_parse.replace(paren_regex,"").replace(prefixes_regex,"");
+    split_parse=to_parse.split(" ");
+    last=split_parse.length-1;
+    for(last=split_parse.length-1; last>=1; last--) {
+        if(!this.prefix_in_string(suffixes,split_parse[last]) &&
+           !(split_parse.length>0 && /[A-Z][a-z]/.test(split_parse[0]) && /^[^a-z]+$/.test(split_parse[last]))) break;
     }
-    if(last_pos>=2 && /Van|de/.test(split_parse[last_pos-1]))
-    {
-        ret.lname=split_parse[last_pos-1]+" "+split_parse[last_pos];
-    }
-    else ret.lname=split_parse[last_pos];
+    if(last>=2 && /Van|de/.test(split_parse[last-1])) ret.lname=split_parse[last-1]+" "+split_parse[last];
+    else ret.lname=split_parse[last];
     ret.fname=split_parse[0];
-    if(last_pos>=2 && split_parse[1].length>=1) {
-        ret.mname=split_parse[1].substring(0,1); }
-    else {
-        ret.mname=""; }
-
-
+    if(last>=2 && split_parse[1].length>=1) ret.mname=split_parse[1].substring(0,1);
+    else ret.mname="";
     return ret;
-
-}
+};
 
 MTurkScript.prototype.shorten_company_name=function(name)
 {
     var first_suffix_str="(Pty Ltd(\\.)?)|Limited|LLC(\\.?)|KG|LLP";
     var first_regex=new RegExp("\\s*"+first_suffix_str+"$","i");
-    
     name=MTurkScript.prototype.removeDiacritics(name);
     name=name.replace(first_regex,"");
     name=name.replace(/ - .*$/,"").trim().replace(/\s*plc$/i,"");
@@ -495,7 +462,6 @@ MTurkScript.prototype.shorten_company_name=function(name)
     name=name.replace(/\s*Corporation$/i,"").replace(/\s*Corp\.?$/i,"");
     name=name.replace(/\s*Incorporated$/i,"").replace(/\s*Inc\.?$/i,"");
     name=name.replace(/\s*LLC$/i,"").replace(/\s*Limited$/i,"").replace(/\s*Ltd\.?$/i,"").trim();
-
     name=name.replace(/,\s*$/,"");
     name=name.replace(/\s+Pte$/i,"").replace(/ AG$/i,"");
     name=name.replace(/\s+S\.?A\.?$/i,"").replace(/\s+L\.?P\.?$/i,"");
@@ -503,8 +469,6 @@ MTurkScript.prototype.shorten_company_name=function(name)
     name=name.replace(/\s+Sarl$/i,"").replace(/\s+KG/i,"");
     name=name.replace(/[,\.]+$/,"").replace(/\s+B(\.)?V(\.)?$/i,"");
     name=name.replace(/(&)?\sCo\.?$/i,"").trim();
-    
-
     return name;
 }
 
@@ -961,8 +925,7 @@ MTurkScript.prototype.match_home_a=function(inner_a,text)
     var ret=["",""],i;
     var url_regex=/\.php\?u=(.*)$/;
     if(url_regex.test(inner_a[0].href) &&
-       !/Get Directions/.test(inner_a[0].innerText))
-    {
+       !/Get Directions/.test(inner_a[0].innerText)) {
         ret=["url",decodeURIComponent(inner_a[0].href.match(url_regex)[1])
              .replace(/\?fbclid.*$/,"")];
     }
@@ -1063,13 +1026,10 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
 /** parser for instagram to read the data */
 MTurkScript.prototype.parse_instagram=function(doc,url,resolve,reject)
 {
-    var scripts=doc.scripts,i,j,parsed;
-    var script_regex=/^window\._sharedData\s*\=\s*/;
+    var scripts=doc.scripts,i,j,parsed,script_regex=/^window\._sharedData\s*\=\s*/;
     var result={success:false};
-    for(i=0; i < scripts.length; i++)
-    {
-        if(script_regex.test(scripts[i].innerHTML))
-        {
+    for(i=0; i < scripts.length; i++) {
+        if(script_regex.test(scripts[i].innerHTML))  {
             parsed=JSON.parse(scripts[i].innerHTML.replace(script_regex,"").replace(/;$/,""));
             result=MTurkScript.prototype.parse_insta_script(parsed);
             resolve(result);
@@ -1337,6 +1297,33 @@ MTurkScript.prototype.parse_youtube=function(doc,url,resolve,reject) {
         }
     }
     resolve(ret);
+};
+/* Checks whether two names of places match, will need to be adjusted for use with b_name, e.g. split and iterate  */
+MTurkScript.prototype.matches_names(name1,name2) {
+        var num_replace={"$10$2":/(^|[^A-Za-z])Zero($|[^A-Za-z])/i,"$11$2":/(^|[^A-Za-z])One($|[^A-Za-z])/i,"$12$2":/(^|[^A-Za-z])Two($|[^A-Za-z])/i,
+                         "$13$2":/(^|[^A-Za-z])Three($|[^A-Za-z])/i,"$14$2":/(^|[^A-Za-z])Four($|[^A-Za-z])/i,"$15$2":/(^|[^A-Za-z])Five($|[^A-Za-z])/i,
+        "$16$2":/(^|[^A-Za-z])Six($|[^A-Za-z])/i,"$17$2":/(^|[^A-Za-z])Seven($|[^A-Za-z])/i,"$18$2":/(^|[^A-Za-z])Eight($|[^A-Za-z])/i,
+            "$19$2":/(^|[^A-Za-z])Nine($|[^A-Za-z])/i };
+        var and_regex=/\s+(&|and)\s+.*$/,extra_regex=/[\.\']+/g,prefix_reg=/^The\s*/i,i,at_reg=/\s+(@|at)\s+.*$/;
+        var split_camel=/([a-z]{1})([A-Z]{1})/,chain_reg=/^(Walmart).*$/,street_reg=/([^a-zA-Z]{1}|^)Street\s+/i;
+        var final_my,final_other,x;
+        var my_name=name1.replace(extra_regex,"").replace(chain_reg,"")
+        .replace(prefix_reg,"").replace(split_camel,"$1 $2").replace(/-/g," ").replace(street_reg,"$1St ");
+        for(x in num_replace) my_name=my_name.replace(num_replace[x],x);
+        final_my=my_name.replace(and_regex,"").replace(at_reg,"").replace(/\s/g,"").toLowerCase().trim();
+        var other_name=name2.replace(extra_regex,"").replace(chain_reg,"").replace(prefix_reg,"").replace(split_camel,"$1 $2")
+        .replace(/-/g," ").replace(street_reg,"St ");
+        for(x in num_replace) other_name=other_name.replace(num_replace[x],x);
+        final_other=other_name.replace(and_regex,"").replace(at_reg,"").replace(/\s/g,"").toLowerCase().trim();
+        console.log("my_name="+my_name+", other_name="+other_name);
+        if(final_my===final_other || final_my.indexOf(final_other)!==-1 || final_other.indexOf(final_my)!==-1) return true;
+        for(i=0;i<final_my.length;i++) if(final_my.charAt(i)!==final_other.charAt(i)) break;
+        if(i*3/2>=final_my.length) return true;
+        var my_split=my_name.split(" ");
+        var other_split=other_name.split(" ");
+        if(my_split[0].toLowerCase()===other_split[0].toLowerCase() &&
+           my_split[my_split.length-1].toLowerCase()===other_split[other_split.length-1].toLowerCase()) return true;
+        return false;
 };
 
 
