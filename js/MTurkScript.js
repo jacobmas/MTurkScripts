@@ -815,7 +815,7 @@ MTurkScript.prototype.FB_match_coords = function(src) {
      */
 MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
     var result={},code=doc.body.getElementsByTagName("code"),i,j,scripts=doc.scripts;
-    if(doc.querySelector("#pageTitle")) result.pageTitle=doc.querySelector("#pageTitle").innerText.replace(/\s+-\s+.*$/,"");
+    if(doc.querySelector("#pageTitle")) result.pageTitle=doc.querySelector("#pageTitle").innerText.replace(/\s+-\s+About$/,"");
     for(i=0; i < scripts.length; i++) {
         if(/^bigPipe\.beforePageletArrive\(\"PagesProfileAboutInfoPagelet/.test(scripts[i].innerHTML) &&
 	   i < scripts.length-1) result.hours=MTurkScript.prototype.parse_hours(scripts[i+1]);
