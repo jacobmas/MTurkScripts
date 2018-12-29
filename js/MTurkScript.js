@@ -1167,7 +1167,7 @@ MTurkScript.prototype.contact_response=function(doc,url,extra) {
         var i,j, my_match,temp_email,encoded_match,match_split;
         var extension=extra.extension,callback=extra.callback;
         if(extension===undefined) extension='';
-        if(extension==='') get_name_from_title(doc,url);
+       // if(extension==='') get_name_from_title(doc,url);
         console.log("in contact_response "+url);
         var short_name=url.replace(my_query.url,""),links=doc.links,email_matches,phone_matches;
         var replacement=url.match(/^https?:\/\/[^\/]+/)[0];
