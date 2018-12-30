@@ -293,7 +293,7 @@ MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,se
     if(document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled) {
 	self.submit_button=document.querySelector("crowd-button");
 	console.log("self.submit_button="+self.submit_button);
-	console.log("self="+JSON.stringify(self));
+	console.log(self);
 	callback();
     }
     else if(total_time<2000) {
