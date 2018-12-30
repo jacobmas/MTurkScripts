@@ -193,6 +193,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
 	 (is_crowd && document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)) &&
 	GM_getValue("req_id","")===this.requester_id) {
 	this.submit_button=is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");
+	console.log("this.submit_button="+this.submit_button);
 	callback();
     }
     else if((window.location.href.indexOf("mturkcontent.com") !== -1 || window.location.href.indexOf("amazonaws.com") !== -1)
