@@ -289,7 +289,7 @@ MTurkScript.prototype.swrot13=function(str) {
     return ret;
 };
 
-MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callbac,selfk) {	
+MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,self) {	
     if(document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled) {
 	self.submit_button=document.querySelector("crowd-button");
 	console.log("self.submit_button="+self.submit_button);
@@ -298,7 +298,7 @@ MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callbac,sel
     else if(total_time<2000) {
         console.log("total_time="+total_time);
         total_time+=timeout;
-        setTimeout(function() { MTurkScript.prototype.begin_crowd_script(timeout,total_time,callback); },timeout);
+        setTimeout(function() { MTurkScript.prototype.begin_crowd_script(timeout,total_time,callback,self); },timeout);
         return;
     }
     else { console.log("Failed to begin crowd script"); }
