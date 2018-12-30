@@ -197,7 +197,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
 	callback();
     }
     else if((window.location.href.indexOf("mturkcontent.com") !== -1 || window.location.href.indexOf("amazonaws.com") !== -1)
-	    && is_crowd && GM_getValue("req_id","")===this.requester_id) this.begin_crowd_script(200,0,callback);
+	    && is_crowd && GM_getValue("req_id","")===this.requester_id) this.begin_crowd_script(200,0,callback,this);
     if(window.location.href.indexOf("worker.mturk.com")!==-1) {
         GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
         var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
@@ -289,10 +289,10 @@ MTurkScript.prototype.swrot13=function(str) {
     return ret;
 };
 
-MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback) {	
+MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callbac,selfk) {	
     if(document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled) {
-	this.submit_button=document.querySelector("crowd-button");
-	console.log("this.submit_button="+this.submit_button);
+	self.submit_button=document.querySelector("crowd-button");
+	console.log("self.submit_button="+self.submit_button);
 	callback();
     }
     else if(total_time<2000) {
