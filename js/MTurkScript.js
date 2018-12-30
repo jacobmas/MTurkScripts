@@ -191,11 +191,13 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
          window.location.href.indexOf("amazonaws.com") !== -1) &&
         ((!is_crowd && document.getElementById("submitButton") && !document.getElementById("submitButton").disabled) ||
 	 (is_crowd && document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)) &&
-	GM_getValue("req_id","")===this.requester_id) callback();
+	GM_getValue("req_id","")===this.requester_id) {
+	this.submit_button=is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");
+	callback();
+    }
     else if((window.location.href.indexOf("mturkcontent.com") !== -1 || window.location.href.indexOf("amazonaws.com") !== -1)
 	    && is_crowd && GM_getValue("req_id","")===this.requester_id) MTurkScript.prototype.begin_crowd_script(200,0,callback);
     if(window.location.href.indexOf("worker.mturk.com")!==-1) {
-	console.log("Hello1");
         GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
         var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
 	console.log("document.getElementsByClassName(\"project-detail-bar\")[0].innerHTML="+document.getElementsByClassName("project-detail-bar")[0]);
@@ -207,7 +209,6 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
 	       return; }
       
         if(GM_getValue("automate")===undefined) GM_setValue("automate",false);
-	console.log("Hello2");
         var btn_span=document.createElement("span"), btn_automate=document.createElement("button");
         var btns_primary=document.getElementsByClassName("btn-primary")
         var btns_secondary=document.getElementsByClassName("btn-secondary");
@@ -227,7 +228,6 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
                 if(GM_getValue("automate")) btns_secondary[0].click();
             }, this.return_ms);
         }
-	console.log("Hello3");
         btn_automate.addEventListener("click", function(e) {
             var auto=GM_getValue("automate");
             if(!auto) btn_automate.innerHTML="Stop";
@@ -238,22 +238,18 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
         GM_addValueChangeListener("returnHit", function() {
             if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
                btns_secondary!==undefined && btns_secondary.length>0 &&
-               btns_secondary[0].innerText==="Return")
-            {
+               btns_secondary[0].innerText==="Return") {
                 if(GM_getValue("automate")) {
                     setTimeout(function() { btns_secondary[0].click(); }, 0); }
             }
         });
-
         if(btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Skip" &&
-           btns_primary!==undefined && btns_primary.length>0 && btns_primary[0].innerText==="Accept")
-        {
+           btns_primary!==undefined && btns_primary.length>0 && btns_primary[0].innerText==="Accept") {
             /* Accept the HIT */
             if(GM_getValue("automate")) {
                 btns_primary[0].click(); }
         }
-        else
-        {
+        else {
             /* Wait to return the hit */
             var cboxdiv=document.getElementsByClassName("checkbox");
             var cbox=cboxdiv[0].firstChild.firstChild;
@@ -266,8 +262,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
 
 MTurkScript.prototype.check_and_submit=function(check_function)	{
     console.log("in check");
-    if(check_function!==undefined && !check_function())
-    {
+    if(check_function!==undefined && !check_function()) {
         GM_setValue("returnHit",true);
         console.log("bad");
         return;
@@ -277,7 +272,7 @@ MTurkScript.prototype.check_and_submit=function(check_function)	{
 
     if(GM_getValue("automate"))
     {
-        setTimeout(function() { document.getElementById("submitButton").click(); },
+        setTimeout(function() { this.submit_button.click(); },
                    this.submit_ms);
     }
 }
@@ -1167,7 +1162,7 @@ MTurkScript.prototype.contact_response=function(doc,url,extra) {
         var i,j, my_match,temp_email,encoded_match,match_split;
         var extension=extra.extension,callback=extra.callback;
         if(extension===undefined) extension='';
-       // if(extension==='') get_name_from_title(doc,url);
+        if(extension==='') get_name_from_title(doc,url);
         console.log("in contact_response "+url);
         var short_name=url.replace(my_query.url,""),links=doc.links,email_matches,phone_matches;
         var replacement=url.match(/^https?:\/\/[^\/]+/)[0];
