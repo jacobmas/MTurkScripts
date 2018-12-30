@@ -192,8 +192,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
         ((!is_crowd && document.getElementById("submitButton") && !document.getElementById("submitButton").disabled) ||
 	 (is_crowd && document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)) &&
 	GM_getValue("req_id","")===this.requester_id) {
-	this.submit_button=is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");
-	console.log("this.submit_button="+this.submit_button);
+	this.submit_button=is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");	
 	callback();
     }
     else if((window.location.href.indexOf("mturkcontent.com") !== -1 || window.location.href.indexOf("amazonaws.com") !== -1)
@@ -263,6 +262,8 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
 
 MTurkScript.prototype.check_and_submit=function(check_function)	{
     console.log("in check");
+    var submit_button=this.is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");
+
     if(check_function!==undefined && !check_function()) {
         GM_setValue("returnHit",true);
         console.log("bad");
@@ -273,7 +274,7 @@ MTurkScript.prototype.check_and_submit=function(check_function)	{
 
     if(GM_getValue("automate"))
     {
-        setTimeout(function() { this.submit_button.click(); },
+        setTimeout(function() { submit_button.click(); },
                    this.submit_ms);
     }
 }
