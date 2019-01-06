@@ -6,6 +6,9 @@ var Schools={
         "schooldesk\\.net|schoolloop\\.com|"+
         "www\\.school(blocks|insites|messenger|pointe|webmasters)\\.com|"+
         "socs\\.fes\\.org|www\\.zumu\\.com",
+    title_regex:new RegExp("(^|[\\s,\\.]{1})(Director|Principal|Teacher|Assistant|Coach|Counselor|Secretary|Chief|President)($|[\\/\\n\\s,\\. ]{1}|[^A-Za-z0-9]{1})$","i"),
+    title_prefix_regex:/^(Director|Mayor|Chief|Councilman|Councilwoman|Secretary|Sergeant|Patrol Officer|Lieutenant|Detective)\s+/,
+    bad_stuff_re:/(\/\*)|(^Wh.*\?$)|(\sand\s)|([\d]+)|(I want to\s.*$)|(^Home.*)|(…)|((City|Town) Hall)|City Hall|Welcome to/i,
         script_regex_lst:[{regex:/apptegy_cms\//,name:"apptegy"}],
         split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s+-\s+)|\||                     |	|	|●|•|\s{3,}|\s+\*\s+/,
         AL:{spreadsheet:true},AK:{},AZ:{},AR:{},CA:{},CO:{},CT:{},DE:{},DC:{spreadsheet:true},FL:{spreadsheet:true},GA:{
@@ -24,47 +27,92 @@ var Schools={
     };
     /* Schools.parse_data_func parses text for a school person */
     Schools.parse_data_func=function(text) {
-        var ret={},fname="",lname="",i=0,j=0, k=0,curr_line, s_part="", second_arr,begin_name;
-        var has_pasted_title=false,good_stuff_re=/[A-Za-z0-9]/,split_comma,curr_last;
+        var ret={};
+        var fname="",lname="",i=0,j=0, k=0;
+        var curr_line, s_part="", second_arr,begin_name="";
+
+        var has_pasted_title=false,title_prefix,dept_name;
+        if(!/@/.test(text)) return;
+        //console.log("text="+text);
+        text=text.replace(/([a-z]{1})([A-Z][a-z]+:)/g,"$1\t$2").replace(/([a-z]{1})\s{1,}([\d]{1})/g,"$1\t$2")
+           .replace(/([\d]{1})\s{1,}([A-Za-df-wy-z]{1})/g,"$1\t$2").replace(/([A-Za-z]{1})\s([A-Za-z0-9\._]+@)/,"$1\t$2")
+        .replace(/([^\s]+)\s+([^\s@]+@[^\s@]+)/g,"$1\t$2")
+        .replace(/(-[\d]+)([a-zA-Z]+)/g,"$1\t$2").replace(/([a-zA-Z]+)([\d]+-)/g,"$1\t$2");;
         if((text=text.trim()).length===0) return ret;
-        var split_lines_1=(text=text.trim()).split(Schools.split_lines_regex),split_lines=[],temp_split_lines,new_split,found_email=false;
+        var split_lines_1=(text=text.trim()).split(Schools.split_lines_regex),split_lines=[],temp_split_lines,new_split;
+        var found_email=false,split_comma,found_phone=false;
         if(/^[^\s]+\s+[^\s]+,\s*[A-Z\.]*[^A-Z\s\n,]+/.test(split_lines_1[0])) {
             split_lines=split_lines_1[0].split(",").concat(split_lines_1.slice(1)); }
         else split_lines=split_lines_1;
-        if(/:/.test(split_lines[0])) split_lines=split_lines[0].split(":").concat(split_lines.slice(1));
-        split_lines=split_lines.filter(line => line);
+        if((split_comma=split_lines[0].split(","))&&split_comma.length>1&&Schools.title_regex.test(split_comma[0])) {
+            split_lines=split_comma.concat(split_lines.slice(1)); }
+        console.log("split_lines="+JSON.stringify(split_lines));
+        split_lines=split_lines.filter(line => line && line.replace(/[\-\s]+/g,"").trim().length>0);
+        split_lines=split_lines.map(line => line.replace(/^\s*[\(]*/,"").replace(/[\)]*\s*$/,"").trim());
+
+
+        if(split_lines.length>0&&(split_comma=split_lines[0].split(","))&&split_comma.length>1&&Schools.title_regex.test(split_lines[0])) {
+            split_lines=split_comma.concat(split_lines.slice(1)); }
+        console.log("split_lines="+JSON.stringify(split_lines));
+        while(/:/.test(split_lines[0])) split_lines=split_lines[0].split(":").filter(line=>line && line.trim().length>0).concat(split_lines.slice(1));
+
         /** Additional code **/
-        if(/Director|Principal|Teacher/.test(split_lines[0]) &&
-          (temp_split_lines=split_lines.splice(0,1))) split_lines.splice(1,0,temp_split_lines[0]);
+        if(Schools.title_regex.test(split_lines[0]) &&
+           (temp_split_lines=split_lines.splice(0,1))) {
+            split_lines.splice(1,0,temp_split_lines[0]); }
+
+        if(split_lines.length>0&&(title_prefix=split_lines[0].match(Schools.title_prefix_regex))) {
+            split_lines=[split_lines[0].replace(Schools.title_prefix_regex,"")].concat([title_prefix[0]].concat(split_lines.slice(1))); }
+        while(/:/.test(split_lines[0])) split_lines=split_lines[0].split(":").filter(line=>line && line.trim().length>0).concat(split_lines.slice(1));
         /** End additional code **/
+
+        var good_stuff_re=/[A-Za-z0-9]/;
         if(split_lines===null) return;
+        console.log("parse_data_func: "+JSON.stringify(split_lines));
         for(j=0; j < split_lines.length; j++) {
             if(split_lines.length>0 && split_lines[j] && split_lines[j].trim().length > 0
-               && good_stuff_re.test(split_lines[j])) break; }
+               && good_stuff_re.test(split_lines[j]) && !Schools.bad_stuff_re.test(split_lines[j])&& !(split_lines[j].match(email_re))) break;
+        }
         if(j>=split_lines.length) return ret;
-        if((split_comma=split_lines[j].split(/,/)).length===2 && /[^\s]\s/.test(split_comma[0])) {
-            console.log("Doing split_comma");
-            split_lines.push(split_lines[(curr_last=split_lines.length-1)]);
+        split_comma=split_lines[j].split(/,/);
+        if(split_comma.length===2 && /[^\s]\s/.test(split_comma[0])) {
+           // console.log("Doing split_comma");
+            var curr_last=split_lines.length-1;
+            split_lines.push(split_lines[curr_last]);
             for(k=curr_last; k>=j+2; k--) split_lines[k]=split_lines[k-1];
             split_lines[j]=split_comma[0];
             split_lines[j+1]=split_comma[1];
         }
         if(split_lines.length>0 && j<split_lines.length &&
-           split_lines[j] && split_lines[j].trim().length > 0) ret.name=Schools.parse_name_func(split_lines[j].trim());
-        for(i=j+1; i < split_lines.length; i++) {
-            found_email=false;
-            if(split_lines[i]===undefined || !good_stuff_re.test(split_lines[i])) continue;
-              if(/:$/.test(split_lines[i].trim())) continue;
-            second_arr=(curr_line=split_lines[i].trim()).split(/:\s+/);
-            if(/Title:/.test(curr_line) && (ret.title=curr_line.replace(/.*Title:\s*/,"").trim())) continue;
-            if((s_part=second_arr[second_arr.length-1].trim()) && email_re.test(s_part) && (found_email=true)) ret.email=s_part.match(email_re)[0];
-            else if(phone_re.test(s_part)) ret.phone=s_part.match(phone_re)[0];
-            else if(s_part.length>10 && s_part.substr(0,10)==="Phone Icon" &&
-                    phone_re.test(s_part.substr(11))) ret.phone=s_part.substr(11).match(phone_re)[0];
-            else if((s_part.trim().length>0  && !has_pasted_title) || s_part.indexOf("Title:")!==-1) {
-                if(/^ext/.test(s_part)) ret.phone=(ret.phone+" "+s_part.trim()).trim();
-                else if(has_pasted_title=true) ret.title=s_part.replace(/^Title:/,"").trim(); }
+           split_lines[j] && split_lines[j].trim().length > 0) {
+            if(!/\s/.test((begin_name=split_lines[j].trim()))
+               && j+1 < split_lines.length) begin_name=begin_name+" "+split_lines[(j++)+1];
+            ret.name=Schools.parse_name_func(begin_name?begin_name:"");
         }
+
+        for(i=j+1; i < split_lines.length; i++)
+        {
+         //   found_email=false;
+            if(split_lines[i]===undefined || !good_stuff_re.test(split_lines[i])) continue;
+          //  console.log("i="+i+", split_lines[i]="+split_lines[i]);
+            curr_line=split_lines[i].trim();
+
+            second_arr=curr_line.split(/:\s+/);
+            if(/Title:/.test(curr_line) && (ret.title=curr_line.replace(/.*Title:\s*/,"").trim())) continue;
+          //  console.log("curr_line="+curr_line+", second_arr.length="+second_arr.length);
+            s_part=second_arr[second_arr.length-1].trim();
+            //console.log("s_part="+s_part);
+            if(email_re.test(s_part) && !found_email &&(found_email=true)) ret.email=s_part.match(email_re)[0];
+            else if(phone_re.test(s_part)&& !found_phone && (found_phone=true)) ret.phone=s_part.match(phone_re)[0];
+            else if(s_part.length>10 && !found_phone && s_part.substr(0,10)==="Phone Icon" &&
+                    phone_re.test(s_part.substr(11)) && (found_phone=true)) ret.phone=s_part.substr(11).match(phone_re)[0];
+            else if((s_part.trim().length>0  && !has_pasted_title) || s_part.indexOf("Title:")!==-1)
+            {
+                if(/^ext/.test(s_part)) ret.phone=(ret.phone+" "+s_part.trim()).trim();
+                else if(has_pasted_title=true) ret.title=s_part.replace(/^Title:/,"").trim();
+            }
+        }
+        console.log("ret="+JSON.stringify(ret));
         return ret;
     };
     /* Schools.matches_name checks if a given name matches the desired school's name */
