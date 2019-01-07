@@ -13,7 +13,7 @@ var Schools={
         split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s+-\s+)|\||                     |	|	|●|•|\s{3,}|\s+\*\s+/,
         AL:{spreadsheet:true},AK:{},AZ:{},AR:{},CA:{},CO:{},CT:{},DE:{},DC:{spreadsheet:true},FL:{spreadsheet:true},GA:{
         spreadsheet:true},HI:{},ID:{},IL:{spreadsheet:true},IN:{spreadsheet:true},IA:{spreadsheet:true},KS:{},KY:{},LA:{spreadsheet:true},
-        ME:{},MD:{},MA:{},MI:{},MN:{},MS:{},MO:{},MT:{spreadsheet:true},NE:{},NV:{},NH:{},NJ:{},NM:{},NY:{spreadsheet:true},NC:{},ND:{},OH:{spreadsheet:true},OK:{},OR:{},
+    ME:{},MD:{},MA:{},MI:{},MN:{},MS:{},MO:{},MT:{spreadsheet:true},NE:{},NV:{},NH:{},NJ:{},NM:{spreadsheet:true},NY:{spreadsheet:true},NC:{},ND:{},OH:{spreadsheet:true},OK:{},OR:{spreadsheet:true},
     PA:{},RI:{},SC:{},SD:{},TN:{},TX:{},UT:{},VT:{},VA:{},WA:{},WV:{},WI:{},WY:{}};
     /* Schools.parse_name_func parses the name partially for a school person, primarily as a helper for parse_data_func */
     Schools.parse_name_func=function(text) {
