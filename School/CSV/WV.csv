@@ -1,0 +1,943 @@
+﻿Type,County,School,Name,Email,Street,City,State,Zip,Phone,Fax,Grades,URL
+ADMINISTRATIVE,Barbour,Barbour County Schools,Jeff Woofter,jwoofter@k12.wv.us,45 School Street,Philippi,WV,26416,4573030,4573559,n/a,http://www.wvschools.com/barbourcountyschools/
+PUBLIC,Barbour,Philip Barbour High School Complex,Ron Keener,rkeener@k12.wv.us,99 Horseshoe Drive ,Philippi,WV,26416,4571360,4572658,PK-12,http://pbhs.barb.k12.wv.us
+PUBLIC,Barbour,Belington Middle School,Mary Hovatter,mhovatter@k12.wv.us,Rr 2 Box 343 ,Belington,WV,26250,8231281,8232403,608,http://www.wvschools.com/bms
+PUBLIC,Barbour,Philippi Head Start,n/a,n/a,Chestnut Street ,Philippi,WV,26416,4572181,n/a,n/a,n/a
+PUBLIC,Barbour,Junior Elementary,Ashley Workman,ashley.workman@k12.wv.us,415 First Street ,Junior,WV,26275,8231200,8232895,PK-5,n/a
+PUBLIC,Barbour,Kasson Elementary/Middle School,Teresa Marsh,trmarsh@k12.wv.us,Rt. 1 Box 233a ,Moatsville,WV,26405,4571485,4576186,PK08,n/a
+NON-PUBLIC,Barbour,Feed My Sheep,  n/a,n/a,Rr 3 Box 278-A ,Philippi,WV,26416,4571135,n/a,n/a,n/a
+PUBLIC,Barbour,Philippi Middle School,Lisa Heinbaugh,lheinbaugh@k12.wv.us,Rt 3 Box 40 ,Philippi,WV,26416,4572999,4572561,608,n/a
+PUBLIC,Barbour,Belington Head Start,n/a,n/a,25 Horseshoe Drive ,Philippi,WV,26416,8232315,n/a,n/a,n/a
+PUBLIC,Barbour,Philippi Elementary School,Julie Bibey,jbibey@k12.wv.us,Route 3 Box 38 ,Philippi,WV,26416,4574229,4572287,PK-5,n/a
+PUBLIC,Barbour,Belington Elementary,Cindy Vance-Sigley,csigley@k12.wv.us,Rr 2 Box 344 ,Belington,WV,26250,8231411,8232414,PK-5,http://www.wvschools.com/bes/
+PUBLIC,Berkeley,Rosemont Elementary School,Erica Propst,ejpropst@k12.wv.us,301 South Alabama Avenue ,Martinsburg,WV,25401,2673560,2633838,PK03,http://boe.berk.k12.wv.us/bcschools/s211/
+ADMINISTRATIVE,Berkeley,Berkeley County Schools,Manny Arvon,mparvon@k12.wv.us,401 S. Queen Street,Martinsburg,WV,25401,2673500,2673524,n/a,http://www.berkeleycountyschools.org
+PUBLIC,Berkeley,James Rumsey Technical Institute,Donna Van Metre,dvanmetre@k12.wv.us,3274 Hedgesville Road ,Martinsburg,WV,25403,7547925,7547933,n/a,http://jrti.berk.tec.wv.us/
+PUBLIC,Berkeley,Mountain Ridge Intermediate,Autumne Frye,acfrye@k12.wv.us,2691 Gerrardstown Road ,Gerrardstown,WV,25420,2296791,2296914,305,n/a
+PUBLIC,Berkeley,Marlowe Elementary School,Amanda Stevens,amstevens@k12.wv.us,9580 Williamsport Pike ,Falling Waters,WV,25419,2742291,2748939,PK-2,http://boe.berk.k12.wv.us/bcschools/s209/
+PUBLIC,Berkeley,Musselman High School,Holly Kleppner,hkleppner@k12.wv.us,126 Excellence Way ,Inwood,WV,25428,2291950,2291959,912,http://boe.berk.k12.wv.us/BCSchools/s503/
+PUBLIC,Berkeley,Eagle School Intermediate,Lewis Mullenax,lamullen@k12.wv.us,730 Eagle School Road ,Martinsburg,WV,25404,2630422,2636506,305,n/a
+PUBLIC,Berkeley,Hedgesville Elementary School,Sonia Cloud,sknipe@k12.wv.us,88 School House Drive ,Hedgesville,WV,25427,7543341,7546660,PK-2,http://boe.berk.k12.wv.us/bcschools/s207/
+NON-PUBLIC,Berkeley,Saint Joseph Parish School,n/a,n/a,110 East Stephen Street ,Martinsburg,WV,25401,2676447,2676573,n/a,http://www.stjosephparishschool.us
+PUBLIC,Berkeley,Hedgesville High School,Ron Lyons,rwlyons @k12.wv.us,109 Ridge Road North ,Hedgesville,WV,25427,7543354,7547445,912,http://boe.berk.k12.wv.us/bcschools/s501/
+PUBLIC,Berkeley,Spring Mills High School,Robert Myers ,rtmyers@k12.wv.us,499 Campus Drive,Martinsburg,WV,25404,2745141,2745144,n/a,n/a
+PUBLIC,Berkeley,Potomack Intermediate School,Amanda Billmeyer,abillmeyer@k12.wv.us,5308 Williamsport Pike ,Martinsburg,WV,25404,2746592,2746876,305,http://boe.berk.k12.wv.us/bcschools/s216/
+PUBLIC,Berkeley,Burke Street Elementary School,Todd Cutlip,tcutlip@k12.wv.us,422 West Burke Street ,Martinsburg,WV,25401,2673525,2673527,PK03,http://boe.berk.k12.wv.us/bcschools/s205/
+NON-PUBLIC,Berkeley,Eastern Panhandle Christian Academy,n/a,n/a,P O Box 590 ,Inwood,WV,25428,2292210,n/a,n/a,n/a
+PUBLIC,Berkeley,Musselman Middle School,Jim Holland,jholland@kwv.us,105 Pride Avenue ,Bunker Hill,WV,25413,2291965,2291967,608,http://boe.berk.k12.wv.us/bcschools/s304/
+PUBLIC,Berkeley,Winchester Avenue Elementary School,Kathy Wright,kjwright@k12.wv.us,650 Winchester Avenue ,Martinsburg,WV,25401,2673570,2673572,PK03,http://boe.berk.k12.wv.us/bcschools/s214/
+PUBLIC,Berkeley,Berkeley Heights Elementary School,Amber Boeckmann,aboeckma@k12.wv.us,726 Hack Wilson Way ,Martinsburg,WV,25401,2673520,2633798,PK03,http://boe.berk.k12.wv.us/bcschools/s203/
+NON-PUBLIC,Berkeley,Martinsburg Christian Academy,n/a,n/a,2247 Williamsport Pike ,Martinsburg,WV,25404,2676368,2630287,n/a,n/a
+PUBLIC,Berkeley,Martinsburg North Middle School,Rebekah Eyler,reyler@k12.wv.us,250 East Road ,Martinsburg,WV,25404,2673540,2645066,608,http://boe.berk.k12.wv.us/bcschools/s302/
+PUBLIC,Berkeley,Tuscarora Elementary School,Tyler Long,tlong@k12.wv.us,2000 Tavern Road ,Martinsburg,WV,25401,2673565,2645059,PK-2,http://boe.berk.k12.wv.us/bcschools/s212/
+PUBLIC,Berkeley,Back Creek Valley Elementary School,Stephen Dellinger,sdelling@k12.wv.us,1962 Back Creek Valley Road ,Hedgesville,WV,25427,2291975,2291978,PK-2,http://boe.berk.k12.wv.us/bcschools/s201/
+NON-PUBLIC,Berkeley,Various Home School Residences,n/a,n/a,C/O Berkeley County Bd. Of Ed. 401 S. Queen St.,Martinsburg,WV,25401,2673500,n/a,n/a,n/a
+PUBLIC,Berkeley,Spring Mills Primary,Drenna Reineck,dreineck@k12.wv.us,401 Campus Drive ,Martinsburg,WV,25404,n/a,n/a,PK-2,n/a
+PUBLIC,Berkeley,Opequon Elementary School,Tana Burkhart,tburkhart@k12.wv.us,395 East Road ,Martinsburg,WV,25404,2673550,2673552,PK-2,http://boe.berk.k12.wv.us/bcschools/s210/
+PUBLIC,Berkeley,Pikeside Learning Center,Michelle Martin,mrmartin@k12.wv.us,3635 Winchester Ave ,Martinsburg,WV,25405,2673555,2673557,n/a,http://boe.berk.k12.wv.us/bcschools/s602/
+PUBLIC,Berkeley,Orchard View Intermediate School,Dr. Luke Smith,luke.smith@k12.wv.us,1455 Delmar Orchard Rd ,Martinsburg,WV,25403,2634143,2634148,405,n/a
+PUBLIC,Berkeley,Inwood Primary School,Ryan Ott,rlott@k12.wv.us,7864 Winchester Ave ,Inwood,WV,25428,2291990,2291992,PK03,http://boe.berk.k12.wv.us/bcschools/s208/
+PUBLIC,Berkeley,Martinsburg High School,trent Sherman,tsherman@k12.wv.us,701 South Queen Street ,Martinsburg,WV,25401,2673530,2673536,912,http://168.216.142.69/bcschools/s502/
+PUBLIC,Berkeley,Mill Creek Intermediate School,Elizabeth McCoy,emccoy@k12.wv.us,8785 Winchester Avenue ,Bunker Hill,WV,25413,2294570,2294793,405,http://boe.berk.k12.wv.us/bcschools/s217/
+PUBLIC,Berkeley,Gerrardstown Elementary School,Kevin McBee,kmcbee@k12.wv.us,15 Dominion Road ,Gerrardstown,WV,25420,2291985,2291988,PK-2,http://boe.berk.k12.wv.us/bcschools/s206/
+NON-PUBLIC,Berkeley,Morgan Academy,n/a,n/a,P.o. Box 1281 ,Shepherdstown,WV,25443,2620188,n/a,n/a,n/a
+PUBLIC,Berkeley,Spring Mills Middle School,Nancy Melonas,nmelonas@k12.wv.us,255 Campus Drive ,Martinsburg,WV,25404,2745030,2743598,608,n/a
+PUBLIC,Berkeley,Tomahawk Intermediate School,Paul Tyson III,ptyson@k12.wv.us,6665 Hedgesville Road ,Hedgesville,WV,25427,7543171,7543201,305,http://168.216.142.69/bcschools/s215/
+PUBLIC,Berkeley,Bunker Hill Elementary School,tncampbe@k12.wv.us,tncampbe@k12.wv.us,58 Happy School Avenue ,Bunker Hill,WV,25413,2291980,2291983,PK03,http://boe.berk.k12.wv.us/bcschools/s204/
+NON-PUBLIC,Berkeley,Rocky Knoll Seventh-Day Adventist School,n/a,n/a,52 Advent Drive ,Martinsburg,WV,25403,2639894,2639894,n/a,http://www.rockyknollsdaschool.org
+PUBLIC,Berkeley,Martinsburg South Middle School,Rosa Clark,rlclark@k12.wv.us,150 Bulldog Boulevard ,Martinsburg,WV,25401,2673545,2645062,608,http://boe.berk.k12.wv.us/bcschools/s303/
+PUBLIC,Berkeley,Valley View Elementary School,Brent Sherrard,bsherrar@k12.wv.us,140 Nadenbousch Lane ,Martinsburg,WV,25405,2291970,2291973,PK03,http://168.216.142.69/bcschools/s213/menu1.htm
+PUBLIC,Berkeley,Bedington Elementary School,Kim Agee,kagee@k12.wv.us,149 Bedington Road ,Martinsburg,WV,25404,2742535,2743957,PK-2,http://boe.berk.k12.wv.us/bcschools/s202/
+PUBLIC,Berkeley,Mountain Ridge Middle School,Dr. Ron Branch,rbranch@k12.wv.us,2771 Gerrardstown Road,Gerrardstown,WV,25420,n/a,n/a,n/a,n/a
+NON-PUBLIC,Berkeley,Faith Christian Academy,n/a,n/a,138 Greensburg Rd. ,Martinsburg,WV,25404,2630011,2670638,n/a,http://www.faithchristianacademy.net
+PUBLIC,Berkeley,Hedgesville Middle School,elizabeth Adams,egreenfi@k12.wv.us,334 School House Drive ,Hedgesville,WV,25427,7543313,7546613,608,http://boe.berk.k12.wv.us/bcschools/s301/
+ADMINISTRATIVE,Boone,Boone County Schools,Jeff Huffman,jwhuffma@k12.wv.us,69 Avenue B,Madison,WV,25130,3693131,3690855,n/a,http://www.boonecountyboe.org
+NON-PUBLIC,Boone,Christian Faith Academy,n/a,n/a,"Rt. 85, Box 10 ",Van,WV,n/a,2455711,n/a,n/a,n/a
+PUBLIC,Boone,Sherman High School,Todd Barnette,todd.barnette@k12.wv.us,10008 Coal River Road Po Box Ab,Seth,WV,25181,8373301,8377529,912,http://www.shermanhigh.com
+PUBLIC,Boone,Jeffrey-Spencer Elementary,n/a,n/a,3277 Hewett Creek Road Po Box 319,Hewett,WV,25108,3691342,3691345,PK-5,http://www.quicksitebuilder.cnet.com/jeffreyspencerel/
+PUBLIC,Boone,Sherman Junior High School,n/a,n/a,9846 Coal River Road Po Box Aa,Seth,WV,25181,8373694,8377603,708,http://www.wvschools.com/sjhs
+PUBLIC,Boone,Whitesville Elementary School,Chris Duncan,cduncan@k12.wv.us,"37949 Coal River Road Hc82, Box 265",Whitesville,WV,25209,8541301,8541301,PK06,http://www.members.tripod.com/wejhs/
+PUBLIC,Boone,Brookview Elementary,Jason Hill,jrhill@k12.wv.us,1 Learning Way ,Foster,WV,25081,3691012,3691054,PK-5,http://www.citynet.net/boonecountyschools/brookview/
+PUBLIC,Boone,Wharton Elementary,n/a,n/a,36071 Pond Fork Road Po Box 60,Wharton,WV,25208,2476672,2476676,PK-5,http://www.geocities.com/whartongrade/
+PUBLIC,Boone,Ramage Elementary,Amy Hale,ahale@k12.wv.us,"15908 Spruce River Road Rt 1, Box 293",Danville,WV,25053,3690763,3690765,PK-5,http://www.geocities.com/rams25053/
+PUBLIC,Boone,Van Junior/Senior High School,Shane Griffith,jsgriffi@k12.wv.us,913 Van High School Road Po Box 100,Van,WV,25206,2458237,2458695,612,http://vhs.boon.k12.wv.us/
+PUBLIC,Boone,Madison Elementary,Connie Napier or  Valissa Porter,conapier@k12.wv.us or Vlporter@k12.wv.us,150 Josephine Avenue ,Madison,WV,25130,3692241,3692869,PK-5,http://www.madisonelementary.org
+PUBLIC,Boone,Scott High School,Jacob Messer,mjmesser@k12.wv.us,1 Skyhawk Place ,Madison,WV,25130,3693011,3696564,912,http://www.scotthighskyhawks.com
+PUBLIC,Boone,Ashford-Rumble Elementary,Amy Pritt,apritt@k12.wv.us,1649 Ashford Nellis Road ,Ashford,WV,25009,8365381,8365381,0K06,http://www.geocities.com/webashford/
+PUBLIC,Boone,Madison Middle School,Shann J. Elkins,sjelkins@k12.wv.us,404 Riverside Dr-W ,Madison,WV,25130,3694464,3695800,608,http://madisonms.bcsd.wv.yso.lightspan.net
+PUBLIC,Boone,Sherman Elementary School,Lisa Lowe,llowe@k12.wv.us,7487 Coal River Road Po Box 369,Comfort,WV,25049,8378310,8378342,PK06,http://www.geocities.com/Athens/Acropolis/7973/
+PUBLIC,Boone,Van Elementary,Pam Campbell,pjcampbe@k12.wv.us,338 Van High School Road Po Box 360,Van,WV,25206,2458811,2458811,K-5,http://www.angelfire.com/wv2/vanelementary/
+PUBLIC,Boone,Boone Career-Technical Center,Allen Halley,ahalley@k12.wv.us,"3505 Daniel Boone Pkwy-Suite B Hc81, Box 50-B",Danville,WV,25053,3694585,3693692,n/a,http://boonecareercenter.com
+PUBLIC,Boone,Nellis Elementary,n/a,n/a,"179 Memorial Drive,1 School St Box 135",Nellis,WV,25142,8365281,8365281,PK06,http://www.geocities.com/nelliselementary/
+ADMINISTRATIVE,Braxton,Braxton County Schools,David E. Dilly,ddilly@k12.wv.us,98 Carter Braxton Drive,Sutton,WV,26601,7657101,7657148,n/a,http://boe.brax.k12.wv.us/
+PUBLIC,Braxton,Braxton County Middle School,Michelle Gorby,magorby@k12.wv.us,100 Carter Braxton Drive ,Sutton,WV,26601,7652644,7652696,708,http://boe.brax.k12.wv.us/schools/BCMSFrm.htm
+PUBLIC,Braxton,Little Birch Elementary School,Sandy Post,spost@k12.wv.us,55 Little Birch Road,Sutton,WV,26601,7652042,7657107,PK06,http://boe.brax.k12.wv.us/schools/LittleBirchFrm.htm
+PUBLIC,Braxton,Flatwoods Elementary School,Gregory Ball,gpball@k12.wv.us,Po Box 130 ,Flatwoods,WV,26621,7655821,7655851,PK06,http://boe.brax.k12.wv.us/schools/FlatwoodsFrm.htm
+PUBLIC,Braxton,Burnsville Elementary School,Robin Lewis,rjlewis@k12.wv.us,Po Box 35 228 Kanawha Ave,Burnsville,WV,26335,8532523,8532431,PK06,http://boe.brax.k12.wv.us/schools/BurnsvilleFrm.htm
+PUBLIC,Braxton,Braxton County High School,Jessica Pierson,jdpierso@k12.wv.us,200 Jerry Burton Drive ,Sutton,WV,26601,7657331,7657976,912,http://boe.brax.k12.wv.us/schools/BCHSFrm.htm
+PUBLIC,Braxton,Sutton Elementary School,Kyre-Ann Minney,k.minney@k12.wv.us,288 N Hill Road ,Sutton,WV,26601,7655202,7655547,PK06,http://boe.brax.k12.wv.us/schools/SuttonFrm.htm
+PUBLIC,Braxton,Frametown Elementary School,Linda Sears,lsears@k12.wv.us,Hc 61 Box 14 ,Frametown,WV,26623,3645526,3648620,PK06,http://boe.brax.k12.wv.us/schools/FrametownFrm.htm
+PUBLIC,Braxton,Davis Elementary School,Tony Minney,tdminney@k12.wv.us,113 Fifth Street ,Gassaway,WV,26624,3645291,3648547,PK06,http://boe.brax.k12.wv.us/schools/DavisFrm.htm
+PUBLIC,Brooke,Wellsburg Middle School,Jennifer Sisinni,jsisinni@k12.wv.us,1447 Main Street ,Wellsburg,WV,26070,7372922,7372976,508,http://wms.broo.k12.wv.us
+PUBLIC,Brooke,Wellsburg Primary School,Stephanie Duffy-Zimmer,smduffy@k12.wv.us,1448 Main Street ,Wellsburg,WV,26070,7370133,7370463,PK04,http://bhs.broo.k12.wv.us/Schools/Wellsburg Primary/index.htm
+PUBLIC,Brooke,Jefferson Primary School,Nadine Sweda,nsweda@k12.wv.us,Jefferson Street ,Follansbee,WV,26037,5272250,5272014,PK04,http://bhs.broo.k12.wv.us/Schools/Jefferson Primary/index.htm
+PUBLIC,Brooke,Franklin Primary School,William Donohew,wsdonohe@k12.wv.us,1305 Washington Pike ,Wellsburg,WV,26070,7371760,7371760,0K04,http://bhs.broo.k12.wv.us/Schools/Franklin Primary/index.htm
+PUBLIC,Brooke,Beech Bottom Primary,Michalene Mills,mcmills@k12.wv.us,High Street ,Beech Bottom,WV,26030,3945341,3945342,PK04,http://bhs.broo.k12.wv.us/Schools/Beech Bottom Primary/index.htm
+PUBLIC,Brooke,Brooke High School,Timothy Pannett,tpannett@k12.wv.us,"R.d. 3, Box 610 Cross Creek Road",Wellsburg,WV,26070,5271410,5273604,PK-12,http://bhs.broo.k12.wv.us/
+PUBLIC,Brooke,Follansbee Middle School,Greg Rothwell,grothwel@k12.wv.us,1400 Main Street ,Follansbee,WV,26037,5271942,5271954,508,http://bhs.broo.k12.wv.us/Schools/Follansbee Middle School/index.
+PUBLIC,Brooke,Lauretta B Millsop Primary School,Jaclyn Robinson,jjrobins@k12.wv.us,Legion & Swearingen ,Weirton,WV,26062,7487760,7488470,0K04,http://bhs.broo.k12.wv.us/Schools/Millsop Primary/index.htm
+PUBLIC,Brooke,Hooverson Heights Primary School,Joseph Farran,joseph.farran@k12.wv.us,200 Rockdale Road ,Follansbee,WV,26037,5270870,5272440,0K04,http://bhs.broo.k12.wv.us/Schools/Hooverson Heights Primary/index
+PUBLIC,Brooke,Colliers Primary School,Jo-Ellen Connolly,jmconnolly@k12.wv.us,Penn Street ,Colliers,WV,26035,7488188,7977242,PK04,http://bhs.broo.k12.wv.us/Schools/Colliers Primary/index.htm
+ADMINISTRATIVE,Brooke,Brooke County Schools,Toni Shute,tpaesano@k12.wv.us,1201 Pleasant Avenue ,Wellsburg,WV,26070,7373481,7373480,n/a,http://Brooke.schoolwires.net
+PUBLIC,Cabell,Cabell County Career Technology Center,Frank Barnett,flbarnet@k12.wv.us,1035 Norway Ave ,Huntington,WV,25705,5285172,5285110,n/a,n/a
+PUBLIC,Cabell,Village Of Barboursville Elementary Sch,Kelli Jordan,kajordan@k12.wv.us,718 Central Ave ,Barboursville,WV,25504,7333035,7333036,PK-5,http://vbe.cabellschools.com/
+PUBLIC,Cabell,Highlawn Elementary School,Robin Harmon,rharmon@k12.wv.us,2549 1st Avenue ,Huntington,WV,25703,5285130,5285152,PK-5,http://hes.cabellschools.com/
+PUBLIC,Cabell,Huntington High School,Joedy Cunningham,jacunnin@k12.wv.us,1 Highlander Way ,Huntington,WV,25701,5286400,5286422,912,http://hhs.cabellschools.com/
+PUBLIC,Cabell,Huntington East Middle School,DeLois Perry,dmorrow@k12.wv.us,2901 Saltwell Rd,Huntington,WV,25705,5289508,n/a,n/a,http://hems.cabellschools.com/
+PUBLIC,Cabell,Spring Hill Elementary School,Pamela Bailey,plbailey@k12.wv.us,1901 Hall Avenue ,Huntington,WV,25701,5285175,5285177,PK-5,http://she.cabellschools.com/
+PUBLIC,Cabell,Geneva Kent Elementary School,NO,n/a,68 Holley Avenue ,Huntington,WV,25705,5285126,5285150,PK-5,http://boe.cabe.k12.wv.us/genevake/
+NON-PUBLIC,Cabell,St. Joseph Grade School,n/a,n/a,520 13th St ,Huntington,WV,25701,5222644,n/a,n/a,n/a
+PUBLIC,Cabell,Explorer Academy,Ryan McKenzie,rmmckenz@k12.wv.us,68 Holley Ave,Huntington,WV,25705,5285126,5285150,n/a,http://ea.cabellschools.com/
+PUBLIC,Cabell,Alternative School,Brenda Scott,brscott@k12.wv.us,2800 5th Ave ,Huntington,WV,25702,5285060,n/a,712,http://as.cabellschools.com/
+PUBLIC,Cabell,Peyton Elementary School,NO,n/a,199 Rotary Rd ,Huntington,WV,25705,5285173,5285195,PK-5,http://boe.cabe.k12.wv.us/peyton/
+PUBLIC,Cabell,Culloden Elementary School,R. Keith Thomas,rthomas@k12.wv.us,2100 U.s. Route 60 ,Culloden,WV,25510,7437301,7437306,PK-5,http://ce.cabellschools.com/
+NON-PUBLIC,Cabell,Covenant School,n/a,n/a,5800 E Us Rt 60 ,Huntington,WV,25705,n/a,n/a,n/a,http://www.covenantschoolwv.org
+PUBLIC,Cabell,Milton Middle School,Deborah Underwood,dunderwo@k12.wv.us,1 Panther Trail ,Milton,WV,25541,7437308,7437324,608,http://mms.cabellschools.com/
+PUBLIC,Cabell,Nichols Elementary School,Serena Collins,icollins@k12.wv.us,3505 Erwin Road ,Barboursville,WV,25504,7333031,7333054,PK-5,http://nes.cabellschools.com/
+PUBLIC,Cabell,Altizer Elementary School,Carrie Smith,ckirkpat@k12.wv.us,"250 Third Street, Altizer ",Huntington,WV,25705,5285100,5285148,PK-5,http://ae.cabellschools.com/
+NON-PUBLIC,Cabell,Pressley Ridge School,n/a,n/a,2580 Grant Garden Rd ,Ona,WV,25545,7434439,n/a,n/a,n/a
+PUBLIC,Cabell,Beverly Hills Middle School,No,n/a,2901 Saltwell Rd ,Huntington,WV,25705,5285102,5285197,608,http://boe.cabe.k12.wv.us/bhms/
+PUBLIC,Cabell,Meadows Elementary School,Connie Mize,cmize@k12.wv.us,1601 Washington Blvd ,Huntington,WV,25701,5285166,5285153,PK-5,http://meadows.cabellschools.com/
+NON-PUBLIC,Cabell,Mountain State Christian School,n/a,n/a,1948 Martin Ln ,Culloden,WV,25510,7433751,n/a,n/a,http://www.mscspanthers.org/
+PUBLIC,Cabell,Southside Elementary,Carolyn Frye,cafrye@k12.wv.us,200 Tenth Avenue ,Huntington,WV,25701,5285168,5285154,PK-5,http://sse.cabellschools.com/
+PUBLIC,Cabell,Hite Saunders Elementary School,Brenda Horne,bthorne@k12.wv.us,3708 Green Valley Road ,Huntington,WV,25701,5285132,5285038,PK-5,http://hses.cabellschools.com/
+PUBLIC,Cabell,Cabell County Career Technology Center,Frank Barnett,flbarnet@k12.wv.us,1035 Norway Ave ,Huntington,WV,25705,5285172,5285110,n/a,http://ctc.cabellschools.com/
+PUBLIC,Cabell,Central City Elementary School,Shannon Rayburn,srayburn@k12.wv.us,2100 Washington Ave ,Huntington,WV,25704,5285231,5285245,PK-5,http://cce.cabellschools.com/
+PUBLIC,Cabell,Guyandotte Elementary School,Michael Krenzel,krenzel@k12.wv.us,607 5th Ave Guy ,Huntington,WV,25702,5285128,5285151,PK-5,http://ges.cabellschools.com/
+NON-PUBLIC,Cabell,Our Lady Of Fatima,n/a,n/a,535 Norway Ave ,Huntington,WV,25705,5232861,n/a,n/a,http://www.ourfatimafamily.com
+PUBLIC,Cabell,Cabell Midland High School,Lloyd McGuffin,lmcguffi@k12.wv.us,2300 Us Route 60 East ,Ona,WV,25545,7437400,7437577,912,http://cmhs.cabellschools.com/
+PUBLIC,Cabell,Salt Rock Elementary School,Jennifer Ross,jaross@k12.wv.us,5570 Madison Creek Rd ,Salt Rock,WV,25559,7333037,7333060,PK-5,http://sre.cabellschools.com/
+PUBLIC,Cabell,Davis Creek Elementary School,R. Patrick O'Neal,roneal@k12.wv.us,6330 Davis Creek Rd ,Barboursville,WV,25504,7333024,7333049,PK-5,http://dce.cabellschools.com/
+NON-PUBLIC,Cabell,St. Joseph Central Catholic High School,n/a,n/a,600 13th St ,Huntington,WV,25701,5255096,n/a,n/a,http://www.stjosephhs.org
+PUBLIC,Cabell,Huntington Middle School,James Paxton,jpaxton@k12.wv.us,925 Third Street ,Huntington,WV,25701,5285180,5285215,608,http://hms.cabellschools.com/
+PUBLIC,Cabell,Ona Elementary School,Lisa Alexander,lalexand@k12.wv.us,2701 Elementary Dr ,Ona,WV,25545,7437318,7437321,PK-5,http://oes.cabellschools.com/
+PUBLIC,Cabell,Cox Landing Elementary School,Kristin Giles,klgiles@k12.wv.us,6358 Cox Lane ,Lesage,WV,25537,7333019,7333021,PK-5,http://cle.cabellschools.com/
+NON-PUBLIC,Cabell,Grace Christian School,n/a,n/a,1111 Adams Ave ,Huntington,WV,25704,5228635,n/a,n/a,n/a
+PUBLIC,Cabell,Enslow Middle School,NO,n/a,2613 Collis Ave ,Huntington,WV,25702,5285121,5285097,609,http://boe.cabe.k12.wv.us/ems/
+PUBLIC,Cabell,Milton Elementary School,Kim Alan Cooper,kcooper@k12.wv.us,1201 Pike St. ,Milton,WV,25541,7437303,7437307,PK-5,http://milton.cabellschools.com/
+ADMINISTRATIVE,Cabell,Cabell County Schools,Ryan Saxe,rsaxe@k12.wv.us,PO Box 446,Huntington,WV,25702,5285000,5285080,n/a,http://boe.cabe.k12.wv.us/
+NON-PUBLIC,Cabell,Cammack Children's Center,n/a,n/a,64 6th Ave W ,Huntington,WV,25701,5233497,n/a,n/a,n/a
+PUBLIC,Cabell,Barboursville Middle School,Brent Jarrell,bwjarrel@k12.wv.us,1400 Central Ave ,Barboursville,WV,25504,7333003,7333009,608,http://bms.cabellschools.com/
+PUBLIC,Cabell,Martha Elementary School,Boyd Mynes,bmynes@k12.wv.us,3067 Martha Road ,Barboursville,WV,25504,7333027,7333016,PK-5,http://mes.cabellschools.com/
+PUBLIC,Calhoun,Pleasant Hill School,Amy Nicholas,ajnicholas@k12.wv.us,3254 N Calhoun Hwy ,Grantsville,WV,26147,3546022,3546070,PK04,http://pleasanthill.calh.k12.wv.us
+ADMINISTRATIVE,Calhoun,Calhoun County Schools,Timothy Woodward,twoodward@k12.wv.us,540 Alan B. Mollohan Dr.,Mt. Zion,WV,26151,3547011,3547420,n/a,http://www.edline.net/pages/Calhoun_CSD
+PUBLIC,Calhoun,Calhoun Middle/High School,Melanie Arthur,melanie.arthur@k12.wv.us,50 Underwood Circle ,Mt. Zion,WV,26151,3546148,3547382,512,http://www.edline.net/pages/Calhoun_County_Middle_School
+PUBLIC,Calhoun,Arnoldsburg School,Charles Thomas,chthomas@k12.wv.us,Post Office Box 159 ,Arnoldsburg,WV,25234,6558616,6558618,PK04,http://arnoldsburg.calh.k12.wv.us
+PUBLIC,Calhoun,Calhoun-Gilmer Career Center,Bryan Sterns,bsterns@k12.wv.us,5260 E Little Kanawha Hwy,Grantsville,WV,26147,3546151,3546154,n/a,https://www.edline.net/pages/Calhoun_Gilmer_Center
+PUBLIC,Clay,Clay County High School,Melinda Isaacs,mrisaacs@k12.wv.us,Po Box 729 1 Panther Drive,Clay,WV,25043,5874226,5872723,912,http://www.claycountyhighschool.org
+PUBLIC,Clay,Big Otter Elementary School,"Anthony ""Steve"" Boggs",asboggs@k12.wv.us,Po Box 100 59 Ossia Road,Ivydale,WV,25113,2863111,2863112,PK-5,n/a
+PUBLIC,Clay,Lizemore Elementary School,Britni Ramsey,bramsey@k12.wv.us,Po Box 70 #1 Lizemore Street,Lizemore,WV,25125,5874823,5872772,PK-5,http://www.claycountyschools.org/Lizemore.htm
+ADMINISTRATIVE,Clay,Clay County Schools,Joe Paxton,opaxton@k12.wv.us,PO Box 120,Clay,WV,25043,5874266,5874181,n/a,http://claycountyschools.org
+NON-PUBLIC,Clay,Clay Christian Academy,n/a,n/a,P.o. Box 849 ,Clay,WV,25043,5872786,n/a,n/a,n/a
+PUBLIC,Clay,Clay Middle School,Leslie Pierson,ljpierson@k12.wv.us,Po Box 489 419 Church Street,Clay,WV,25043,5872343,5872759,608,http://www.claycountyschools.org/CCMS.htm
+PUBLIC,Clay,H E White Elementary School,April Kearns,akearns@k12.wv.us,501 Bomont Road ,Bomont,WV,25030,5487101,5487101,PK-5,http://www.claycountyschools.org/HE%20White.htm
+PUBLIC,Clay,Clay Elementary School,Michelle Paxton,mapaxton@k12.wv.us,Po Box 600 219 Church Street,Clay,WV,25043,5874276,5874279,PK-5,http://www.claycountyschools.org/CES.htm
+ADMINISTRATIVE,Doddridge,Doddridge County Schools,Adam Cheeseman,acheeseman@k12.wv.us,1117 WV RT 18N,West Union,WV,26456,8732300,8732210,n/a,http://www.dcschools.us
+PUBLIC,Doddridge,Doddridge County High School,Gregory Kuhns,gkuhns@k12.wv.us,79 Bulldog Drive ,West Union,WV,26456,8732521,8731873,912,http://www.dcschools.us/doddridgecountyhighschool_home.aspx
+PUBLIC,Doddridge,Doddridge County Elementary School,Donna Michelle Robey,dmrobey@k12.wv.us,182 Doddridge School Road,West Union,WV,26456,8733294,8733297,PK04,http://www.dcschools.us/doddridgecountyelementaryschool_home.aspx
+PUBLIC,Doddridge,Doddridge County Preschool Center,Wesley Ezell,wezell@k12.wv.us,2945 Smithton Road,West Union,WV,26426,8733955,8733956,n/a,http://www.dcschools.us/doddridgecountypreschool_home.aspx
+NON-PUBLIC,Doddridge,Mountain State Academy,n/a,n/a,Rr 2 Box 193-2 ,Salem,WV,26426,7821531,7823800,n/a,n/a
+PUBLIC,Doddridge,Doddridge County Middle School,Deborah Kihns,dkuhns@k12.wv.us,65 Doddridge School Road,West Union,WV,26456,8732390,8732541,508,http://www.dcschools.us/doddridgecountymiddleschool_home.aspx
+PUBLIC,Fayette,Meadow Bridge Elementary,Cheryl Altizer,caltizer@k12.wv.us,2725 Main Street ,Meadow Bridge,WV,25976,4847914,4847599,PK06,http://meadowbridge.faye.k12.wv.us/
+PUBLIC,Fayette,Midland Trail High,Chris Perkins,caperkin@k12.wv.us,Po Box 89 Rt 60-E,Hico,WV,25854,6585184,6585185,912,http://mths.faye.k12.wv.us/
+PUBLIC,Fayette,Gatewood Elementary,Paul Thompson,pbthompson@k12.wv.us,5094 Gatewood Road ,Fayetteville,WV,25840,5742025,n/a,PK04,http://gatewood.faye.k12.wv.us/
+PUBLIC,Fayette,Fayetteville High,Bryan Parsons,brparson@k12.wv.us,515 West Maple Avenue ,Fayetteville,WV,25840,5740560,5740118,712,http://fhs.faye.k12.wv.us
+PUBLIC,Fayette,Divide Elementary,Steve Rhodes,swrhodes@k12.wv.us,Po Box 180 ,Lookout,WV,25868,5741443,5740693,PK-5,http://divide.faye.k12.wv.us/
+NON-PUBLIC,Fayette,Saints Peter & Paul Elementary School,n/a,n/a,123 Elmore Street ,Oak Hill,WV,25901,4655045,n/a,n/a,n/a
+PUBLIC,Fayette,Ansted Middle,Richard Petitt,rpetitt@k12.wv.us,Po Box 766 ,Ansted,WV,25812,6585170,n/a,608,http://ams.faye.k12.wv.us/
+ADMINISTRATIVE,Fayette,Fayette County Schools,Terry George,tgeorge@k12.wv.us,111 Fayette Avenue ,Fayetteville,WV,25840,5741176,5743643,n/a,http://boe.faye.k12.wv.us/
+NON-PUBLIC,Fayette,Mountain View Christian School,n/a,n/a,Po Box 1246 ,Oak Hill,WV,25901,4650502,n/a,n/a,n/a
+PUBLIC,Fayette,Valley Elementary,Melissa Harrah,mrharrah@k12.wv.us,Po Box 215 ,Smithers,WV,25186,4422321,4422337,PK-5,n/a
+PUBLIC,Fayette,Fayette Institute Of Technology,Barry Crist,bcrist@k12.wv.us,300 West Oyler Avenue ,Oak Hill,WV,25901,4692911,4696963,n/a,http://fit.faye.tec.wv.us/
+PUBLIC,Fayette,Mount Hope Elementary,Marsha Bishop,mbishop@k12.wv.us,408 Lincoln Street ,Mount Hope,WV,25880,8772891,8776105,PK-5,http://mounthope.faye.k12.wv.us/
+PUBLIC,Fayette,Oak Hill High,Tim Payton,tpayton@k12.wv.us,350 West Oyler Avenue ,Oak Hill,WV,25901,4693551,4651769,912,http://ohhs.faye.k12.wv.us
+PUBLIC,Fayette,Gauley Bridge Elementary,Janna Coleman,janna.coleman@k12.wv.us,Po Box 519 ,Gauley Bridge,WV,25085,6322661,n/a,PK-5,http://gauleybridge.faye.k12.wv.us/
+PUBLIC,Fayette,Meadow Bridge High,Stacy White,stwhite@k12.wv.us,2775 Main Street ,Meadow Bridge,WV,25976,4847917,n/a,712,http://www.geocities.com/Athens/Academy/5856/
+PUBLIC,Fayette,Fayetteville Elementary,Ellen Deel,ekdeel@k12.wv.us,200 Wiseman Avenue ,Fayetteville,WV,25840,5741011,5741011,PK06,http://fayetteville.faye.k12.wv.us/
+PUBLIC,Fayette,Collins Middle,Cynthia Hedrick,dhedrick@k12.wv.us,601 Jones Avenue ,Oak Hill,WV,25901,4693711,4651352,508,http://cms.faye.k12.wv.us/
+PUBLIC,Fayette,Ansted Elementary,Marchelle Bowling,mromage@k12.wv.us,Po Box 609 ,Ansted,WV,25812,6585961,n/a,PK-5,http://ansted.faye.k12.wv.us
+NON-PUBLIC,Fayette,Danese Christian School,n/a,n/a,Po Box 177 ,Danese,WV,25831,4388116,n/a,n/a,n/a
+PUBLIC,Fayette,New River Elementary,Lee Jones,lrjones@k12.wv.us,262 Oyler Avenue ,Oak Hill,WV,25901,4653806,n/a,PK04,n/a
+NON-PUBLIC,Fayette,Boomer Christian Academy,n/a,n/a,Po Box 446 ,Boomer,WV,25031,4429867,n/a,n/a,n/a
+PUBLIC,Fayette,Rosedale Elementary,Ted Dixon,tdixon@kl12.wv.us,4001 Summerlee Rd ,Oak Hill,WV,25901,4696661,4693569,PK04,http://rosedale.faye.k12.wv.us/
+PUBLIC,Fayette,Valley High School,Craig Loy,clloy@k12.wv.us,Po Box 459 Greyhound Lane,Smithers,WV,25186,4428284,4425865,612,http://vhs.faye.k12.wv.us/
+ADMINISTRATIVE,Gilmer,Sand Fork Elementary,n/a,n/a,"65 School House Hill , PO Box 260",Sand Fork,WV,26430,4627605,4625368,PK06,http://sandfork.gilmer.k12.wv.us/
+PUBLIC,Gilmer,Gilmer County Elementary School,Toni Bishop,tbishop@k12.wv.us,99 Fairground Road,Glenville,WV,26351,4627338,4625108,PK06,http://gces.gilmer.k12.wv.us
+ADMINISTRATIVE,Gilmer,Glenville Elementary School,n/a,n/a,454 Vanhorn Drive ,Glenville,WV,26351,4627338,4625108,PK06,http://glenville.gilmer.k12.wv.us/
+PUBLIC,Gilmer,Calhoun-Gilmer Career Center,Bryan Sterns,bsterns@k12.wv.us,5260 East Little Kanawha Hwy,Grantsville,WV,26147,3546151,3546154,n/a,http://calhoun-k12.wvnet.edu/careercenter/2015/06/25/2014-2015-faculty-and-staff/
+ADMINISTRATIVE,Gilmer,Troy Elementary School,n/a,n/a,3093 WV Highway 47W ,Troy,WV,26443,4628655,4625132,PK06,http://troy.gilmer.k12.wv.us/
+ADMINISTRATIVE,Gilmer,Normantown Elementary,n/a,n/a,10223 US Highway 33 West,Normantown,WV,25267,4628035,4625329,PK06,http://normantown.gilmer.k12.wv.us/
+ADMINISTRATIVE,Gilmer,Gilmer County Schools,Patricia Lowther,plowther@k12.wv.us,454 Vanhorn Drive,Glenville,WV,26351,4627386,4625103,n/a,http://boe.gilmer.k12.wv.us/
+PUBLIC,Gilmer,Gilmer County High School,Nasia Butcher,apbutche@k12.wv.us,300 Pine Street ,Glenville,WV,26351,4627960,4628578,712,http://gchs.gilmer.k12.wv.us
+NON-PUBLIC,Grant,North Fork Christian,n/a,n/a,Hc59 Box 217 ,Petersburg,WV,26847,2579722,n/a,n/a,n/a
+PUBLIC,Grant,Petersburg High School,Avery Anderson,adanders@k12.wv.us,207 Jefferson Avenue ,Petersburg,WV,26847,2571444,2575243,712,http://petersburghigh.googlepages.com/
+PUBLIC,Grant,Maysville Elementary School,Megan DiBenedetto,mdibenedetto@k12.wv.us,7147 Highway 42s ,Maysville,WV,26833,7497441,7497442,PK06,http://mww.grantcountyschools.com/grant9/web/
+PUBLIC,Grant,Union Educational Complex,Jenni Woy,jwoy@k12.wv.us,Hc 76 Box 750 ,Mount Storm,WV,26839,6937612,6937150,PK-12,n/a
+NON-PUBLIC,Grant,Potter's House Christian School,n/a,n/a,"1 Veach Street Petersburg, Wv  26847",n/a,WV,0,2571740,n/a,n/a,n/a
+PUBLIC,Grant,South Branch Career & Technical Center,Tracy Chenoweth,tchenowe@k12.wv.us,401 Pierpont Street ,Petersburg,WV,26847,2571331,2572270,n/a,http://southbranchtech.com
+PUBLIC,Grant,Petersburg Elementary School,Mitch Webster,mwebstor@k12.wv.us,333 Rig Street ,Petersburg,WV,26847,2571110,2579658,PK06,http://www.grantcountyschools.com/grant5
+PUBLIC,Grant,Dorcas Elementary School,n/a,n/a,Hc 33 Box 1060 ,Petersburg,WV,26847,2571220,n/a,206,http://teacherweb.com/WV/DorcasElementary/SchoolHomePage/S
+ADMINISTRATIVE,Grant,Grant County Schools,Doug Lambert,dslamber@k12.wv.us,204 Jefferson Avenue ,Petersburg,WV,26847,2571011,n/a,n/a,http://www.grantcountyschools.org
+NON-PUBLIC,Grant,Bmf Christian School,n/a,n/a,"Hc33 Box 261 Petersburg, Wv  26847",n/a,WV,0,2579716,n/a,n/a,n/a
+ADMINISTRATIVE,Greenbrier,Greenbrier County Schools,Jeffrey A. Bryant,jbryant@k12.wv.us,197 Chestnut Street ,Lewisburg,WV,24901,3046476470,3046476490,n/a,http://greenbriercountyschools.org/
+PUBLIC,Greenbrier,Ronceverte Elementary,Andrea Stewart,astewart@k12.wv.us,246 Ronceverte Elementary School Drive,Ronceverte,WV,24970,3046476480,3046473086,PK-5,http://ronceverte.greenbriercountyschools.org/
+NON-PUBLIC,Greenbrier,Seneca Trail Christian Academy,n/a,n/a,Route 2 Box 269 ,Ronceverte,WV,24970,6474878,n/a,n/a,n/a
+PUBLIC,Greenbrier,Frankford Elementary,Linda King,lsking@k12.wv.us,21692 Seneca Trail ,Frankford,WV,24938,3044972921,3044972963,PK-5,http://fes.greenbriercountyschools.org/
+NON-PUBLIC,Greenbrier,Lewisburg Baptist Academy,n/a,n/a,113 Montvue  Drive ,Lewisburg,WV,24901,6453797,n/a,n/a,n/a
+PUBLIC,Greenbrier,Smoot Elementary,Molly Judy,mmadkins@k12.wv.us,General Delivery ,Smoot,WV,24977,3043925295,3043922152,PK-5,http://ses.greenbriercountyschools.org/
+PUBLIC,Greenbrier,Greenbrier West High School,Amy Robertson,arobertson@k12.wv.us,Po Box 325 One Cavalier Drive,Charmco,WV,25958,3044386191,3044385865,9-12,http://gwhs.greenbriercountyschools.org/
+PUBLIC,Greenbrier,Rainelle Elementary,Kimberly Tincher,ktincher@k12.wv.us,701 Kanawha Avenue ,Rainelle,WV,25962,3044388861,3044388875,PK-5,http://rainelle.greenbriercountyschools.org/
+PUBLIC,Greenbrier,Western Greenbrier Middle School,Marsha Podsiadlik,mstacy@k12.wv.us,Hc 40 Box 14 ,Crawley,WV,24931,3043926446,3043926785,6-8,http://wgms.greenbriercountyschools.org/
+PUBLIC,Greenbrier,White Sulphur Elementary,Ann Smith,anesmith@k12.wv.us,150 Reed Street ,White Sulphur Springs,WV,24986,3045362244,3045361930,PK-5,http://wsse.greenbriercountyschools.org/
+NON-PUBLIC,Greenbrier,Greenbrier Episcopal School,n/a,n/a,10 Dry Creek Road ,White Sulphur Springs,WV,24986,5363636,n/a,n/a,n/a
+PUBLIC,Greenbrier,Lewisburg Elementary,Leann Piercy-McMillion,lmcmilli@k12.wv.us,206 North Lee Street ,Lewisburg,WV,24901,3046476477,3046474838,PK-5,http://les.greenbriercountyschools.org/
+NON-PUBLIC,Greenbrier,Renick Christian School,n/a,n/a,Hc 66 Box 291 ,Renick,WV,24966,4972581,n/a,n/a,n/a
+PUBLIC,Greenbrier,Alderson Elementary,Deborah Fairchild,dfairchi@k12.wv.us,Rr1 Box 162f ,Alderson,WV,24910,3044457241,3044459718,PK-5,http://aes.greenbriercountyschools.org/
+PUBLIC,Greenbrier,Greenbrier School Of Practical Nursing,n/a,n/a,One Spartan Lane ,Lewisburg,WV,24901,3046476487,3046476487,n/a,n/a
+PUBLIC,Greenbrier,Rupert Elementary,Jenny Harden,jlharden@k12.wv.us,Po Drawer D ,Rupert,WV,25984,3043925235,3043925234,PK-5,http://rupert.greenbriercountyschools.org/
+PUBLIC,Greenbrier,Greenbrier East High School,Ben Routson,broutson@k12.wv.us,One Spartan Lane ,Lewisburg,WV,24901,3046476464,3046452698,PK-12,http://gehs.greenbriercountyschools.org/
+PUBLIC,Greenbrier,Crichton Elementary,Stephania Meadows,ssmeadow@k12.wv.us,Po Box 205 ,Quinwood,WV,25981,3044386958,3044385227,PK-5,http://ces.greenbriercountyschools.org/
+PUBLIC,Greenbrier,Eastern Greenbrier Middle School,Preston Modlin,pmodlin@k12.wv.us,Route 1 Box 150 ,Ronceverte,WV,24970,3046476498,3046473087,6-8,http://egms.greenbriercountyschools.org/
+ADMINISTRATIVE,Hampshire,Hampshire County Schools,Jeff Pancione,jpancion@k12.wv.us,111 School Street ,Romney,WV,26757,3048223528,3048225382,n/a,http://boe.hamp.k12.wv.us
+NON-PUBLIC,Hampshire,Potomac Diagnostic And Training,n/a,n/a,Po Drawer H ,Romney,WV,26757,8223861,n/a,n/a,n/a
+PUBLIC,Hampshire,Hampshire Senior High School,DiAnna Liller,dliller@k12.wv.us,"Hc 63, Box 1970 ",Romney,WV,26757,3048225016,3048225760,9-12,http://hhs.hamp.k12.wv.us/
+PUBLIC,Hampshire,Capon Bridge Middle School,Ann Downs,adowns@k12.wv.us,"Hc 71, Box 1001 ",Capon Bridge,WV,26711,3048562534,3048563192,6-8,n/a
+PUBLIC,Hampshire,Springfield-Green Spring Elementary School,Cynthia Morris,cynthia.morris@k12.wv.us,Hc 65 Box 9000 ,Springfield,WV,26763,3048224317,3048224317,PK-5,n/a
+PUBLIC,Hampshire,Romney Elementary School,Patty Lipps,plipps@k12.wv.us,45 School Street ,Romney,WV,26757,3048223018,3048224201,PK-5,http://boe.hamp.k12.wv.us/index.asp?nid=60
+NON-PUBLIC,Hampshire,Maranatha Christian Academy,n/a,n/a,Hc 65 Box 300 ,Romney,WV,26757,8223906,n/a,n/a,n/a
+PUBLIC,Hampshire,Augusta Elementary School,Brenda J. Omps,bomps@k12.wv.us,Po Box 910 ,Augusta,WV,26704,3044967001,3044967001,PK-5,n/a
+PUBLIC,Hampshire,Hampshire County Career Training Center,Orie Pancione,ljgrapes@k12.wv.us,Hc 63 Box 1970 ,Romney,WV,26757,3048223979,3048223220,n/a,n/a
+PUBLIC,Hampshire,Romney Middle School,John Watson,jmwatson@k12.wv.us,"Hc 63, Box 1975 ",Romney,WV,26757,3048225014,3048225744,6-8,http://rms.hamp.k12.wv.us
+PUBLIC,Hampshire,Capon Bridge Elementary School,John Ferraro,jferraro@k12.wv.us,"Hc 71, Box 1000 ",Capon Bridge,WV,26711,3048563329,3048563329,PK-5,n/a
+PUBLIC,Hampshire,Slanesville Elementary School,Pam Slocum,pslocum@k12.wv.us,P.o. Box 308 ,Slanesville,WV,25444,3044967069,3044961139,PK-5,n/a
+NON-PUBLIC,Hampshire,Slanesville Christian School,n/a,n/a,P O Box 300 ,Slanesville,WV,25444,4969224,n/a,n/a,n/a
+PUBLIC,Hampshire,John J. Cornwell,Nicole Morris,cynthia.morris@k12.wv.us,"Hc 60, Box 72 ",Levels,WV,25431,3044925520,3044925520,PK-5,n/a
+ADMINISTRATIVE,Hancock,Hancock County Schools,Timothy Woodward,twoodward@k12.wv.us,PO Box 1300,New Cumberland,WV,26047,3045643411,3045643990,n/a,http://www.hancockschools.org/
+PUBLIC,Hancock,Weir Middle School,Sarah Parsons,saparsons@k12.wv.us,125 Sinclair Avenue ,Weirton,WV,26062,3047486080,3047480847,5-8,http://www.edline.net/pages/Weir_Middle_School
+NON-PUBLIC,Hancock,St. Paul School,n/a,n/a,140 Walnut ,Weirton,WV,26062,7485225,n/a,n/a,n/a
+NON-PUBLIC,Hancock,St. Joseph School,n/a,n/a,Park Avenue ,Weirton,WV,26062,7233961,n/a,n/a,n/a
+PUBLIC,Hancock,Weir High School,Kristin Bissett,kbissett@k12.wv.us,100 Red Rider Road ,Weirton,WV,26062,3047487600,3047487602,912,http://www.edline.net/pages/Weir_High_School
+PUBLIC,Hancock,Oak Glen Middle School,Alyssa Mick,amick@k12.wv.us,39 Golden Bear Drive ,New Cumberland,WV,26047,3043872363,n/a,5-8,http://www.edline.net/pages/Oak_Glen_Middle_School
+PUBLIC,Hancock,Weirton Elementary,Frank Carey,fcarey@k12.wv.us,3428 Pennsylvania Ave,Weirton,WV,26062,3047488370,3047483383,n/a,n/a
+PUBLIC,Hancock,A. T. Allison Elementary School,Toni Hartung,thartung@k12.wv.us,600 Railroad Street ,Chester,WV,26034,3043871915,3043872114,K-4,http://www.edline.net/pages/Allison_Elementary_School
+PUBLIC,Hancock,New Manchester Elementary School,Cinthia Yeater,cvirtue@k12.wv.us,128 Frankfort Road ,New Cumberland,WV,26047,3045643242,3045645084,PK-4,http://www.edline.net/pages/New_Manchester_ES
+NON-PUBLIC,Hancock,Madonna High School,n/a,n/a,Park Avenue & Michael Way ,Weirton,WV,26062,7230564,n/a,n/a,http://www.weirtonmadonna.org
+PUBLIC,Hancock,John D. Rockefeller Career Center,Dan Enich,denich@k12.wv.us,95 Rockyside Road ,New Cumberland,WV,26047,3045643337,3045644058,CTE,http://www.jdrcc.org/
+PUBLIC,Hancock,Oak Glen High School,David Smith,desmith@k12.wv.us,195 Golden Bear Drive ,New Cumberland,WV,26047,3045643500,3043872079,PK-12,http://www.edline.net/pages/Oak_Glen_High_School
+ADMINISTRATIVE,Hardy,Hardy County Schools,Sheena VanMeter,srvanmet@k12.wv.us,510 Ashby Street ,Moorefield,WV,26836,3045302348,3045302340,n/a,http://www.hardycountyschools.com
+PUBLIC,Hardy,Moorefield Intermediate School,Amber Champ,achamp@k12.wv.us,345 Caledonia Heights Road ,Moorefield,WV,26836,3045303450,3045303451,3-5,n/a
+PUBLIC,Hardy,Moorefield Elementary School,Wade Armentrout,larmentr@k12.wv.us,400 North Main Street ,Moorefield,WV,26836,3045306356,3045302536,PK-2,http://www.hardycountyschools.com/~mes
+PUBLIC,Hardy,Moorefield High School,Patrick McGregor,pmcgrego@k12.wv.us,401 North Main Street ,Moorefield,WV,26836,3045306034,3045307569,9-12,http://moorefield.wv.hch.schoolinsites.com/
+PUBLIC,Hardy,Moorefield Middle School,Scott Stutler,scstutler@k12.wv.us,303 Caledonia Heights Road ,Moorefield,WV,26836,3044343000,3044343003,6-8,http://moorefield.wv.hcm.schoolinsites.com/
+PUBLIC,Hardy,East Hardy Early/Middle School,Emily Morris,emily.morris@k12.wv.us,P. O. Box 260 238 Cougar Drive,Baker,WV,26801,3048975970,3048976653,PK-8,n/a
+PUBLIC,Hardy,East Hardy High School,Jennifer Strawderman,jclayton@k12.wv.us,P. O. Box 120 259 Cougar Drive,Baker,WV,26801,3048975948,3048976261,9-12,http://www.hardycountyschools.com/~ehhs
+ADMINISTRATIVE,Harrison,Harrison County Schools,Dr. Mark Manchin,mmanchin@k12.wv.us,PO Box 1370 ,Clarksburg,WV,26301,3043267300,3046243361,n/a,http://www.harcoboe.com
+NON-PUBLIC,Harrison,Mother Goose,n/a,n/a,401 W. Va. Avenue ,Nutter Fort,WV,26301,6230789,n/a,n/a,n/a
+PUBLIC,Harrison,Mountaineer Middle School,John Rogers,jprogers@k12.wv.us,2 Mountaineer Dr ,Clarksburg,WV,26301,3043267620,3043267632,6-8,http://www.harcoboe.net/mountaineermiddle/page/home
+PUBLIC,Harrison,Simpson Elementary School,Jill Steele,jsteele@k12.wv.us,250 Worthington Dr ,Bridgeport,WV,26330,3043267060,3048422568,PK-5,n/a
+NON-PUBLIC,Harrison,Emmanuel Christian School,n/a,n/a,1318 N 16th St ,Clarksburg,WV,26301,6246125,n/a,n/a,n/a
+PUBLIC,Harrison,Washington Irving Middle School,Susan Ferrell,sbferrel@k12.wv.us,443 Lee Ave ,Clarksburg,WV,26301,3043267420,3046243388,6-8,http://harcoboe.com/wimiddle
+PUBLIC,Harrison,North View Elementary School,Danielle Veltri,dveltri@k12.wv.us,1400 N 19th Street ,Clarksburg,WV,26301,3043267650,3046243287,PK-5,n/a
+NON-PUBLIC,Harrison,St Mary's Elementary School,n/a,n/a,107 E Pike St ,Clarksburg,WV,26301,6229831,n/a,n/a,n/a
+PUBLIC,Harrison,Pressley Ridge School,L. D. Skarzinski,lskarzin@k12.wv.us,591 Pressley Ridge Road,Clarksburg,WV,26301,3046272331,3046272330,7-12,http://wvde.state.wv.us/odtp/Schools/Laurel%20Park.html
+PUBLIC,Harrison,Bridgeport Middle School,David Mazza,dmazza@k12.wv.us,413 Johnson Ave ,Bridgeport,WV,26330,3043267142,3048426275,6-8,http://www.wvonline.com/bms/bms.html
+PUBLIC,Harrison,Lost Creek Elementary School,Laura Trent,ltrent@k12.wv.us,Po Box 128 ,Lost Creek,WV,26385,3043267040,3047454393,PK-5,n/a
+NON-PUBLIC,Harrison,Heritage Christian School,n/a,n/a,225 Newton Avenue,Bridgeport,WV,26330,8421740,n/a,n/a,http://www.hcswv.org/
+PUBLIC,Harrison,Robert C. Byrd High School,Steve Gibson,sggibson@k12.wv.us,1 Eagle Way ,Clarksburg,WV,26301,3043267200,3046243211,9-12,n/a
+PUBLIC,Harrison,Nutter Fort Intermediate School,JoDee Decker,jkdecker@k12.wv.us,1302 Buckhannon Pike ,Nutter Fort,WV,26301,3043267501,3046243259,3-5,http://www.harcoboe.net/nfi/page/home
+PUBLIC,Harrison,Adamston Elementary School,Tammy Leaseburg,tleasebu@k12.wv.us,1636 W Pike St ,Clarksburg,WV,26301,3043267070,3046243270,PK-5,http://www.harcoboe.com/adamston/
+NON-PUBLIC,Harrison,Madonna Center For Children,n/a,n/a,444 E Pike St ,Clarksburg,WV,26301,6224453,n/a,n/a,n/a
+PUBLIC,Harrison,Lincoln High School,James Lopez,jlopez@k12.wv.us,Rr 1 Box 300 ,Shinnston,WV,26431,3043267400,3045923415,9-12,http://www.iolinc.net/lhs/
+PUBLIC,Harrison,Big Elm Elementary School,Julie Mancini,jmancini@k12.wv.us,200 Tetrick Rd ,Shinnston,WV,26431,3043267280,3045923255,PK-5,http://bigelm.harr.k12.wv.us/
+NON-PUBLIC,Harrison,Cubby's Child Care Center,n/a,n/a,449 Cherry St ,Bridgeport,WV,26330,8423508,n/a,n/a,n/a
+PUBLIC,Harrison,Bridgeport High School,Mark Defazio,mdefazio@k12.wv.us,515 Johnson Ave ,Bridgeport,WV,26330,3043267137,3048426288,9-12,http://www.wvonline.com/bhs/
+PUBLIC,Harrison,United High School,Edwin Propst,egpropst@k12.wv.us,1349 Shinnston Pike,Clarksburg,WV,26301,3043267560,n/a,n/a,http://www.harcoboe.net/hcalc/page/home
+PUBLIC,Harrison,West Milford Elementary School,Patricia Kinney,pkinney@k12.wv.us,226 School St ,West Milford,WV,26451,3043267030,3047454488,PK-5,http://www.harcoboe.com/WestMilfordElementarySchool/index.cfm
+NON-PUBLIC,Harrison,Berean Baptist School,n/a,n/a,Po Box 151 ,Gypsy,WV,26361,5921430,n/a,n/a,n/a
+PUBLIC,Harrison,South Harrison Middle School,Brian Hage,bhage@k12.wv.us,Rr 1 Box 58b ,Lost Creek,WV,26385,3043267460,3047455587,6-8,http://www.harcoboe.com/southharrisonmiddleschool/
+PUBLIC,Harrison,Norwood Elementary School,Dora Stutler,dstutler@k12.wv.us,208 Kidd Ave ,Stonewood,WV,26301,3043267050,3046243286,PK-5,n/a
+NON-PUBLIC,Harrison,Notre Dame High School,n/a,n/a,127 E Pike St ,Clarksburg,WV,26301,6231026,n/a,n/a,n/a
+PUBLIC,Harrison,United Technical Center,Matthew Call,mcall@k12.wv.us,251 Marietta St.,Clarksburg,WV,26301,3043267580,3046226138,CTE,http://www.wvonline.com/utc/
+PUBLIC,Harrison,Lumberport Middle School,Lori Scott,lscott@k12.wv.us,314 Main Street ,Lumberport,WV,26386,3043267540,3045844602,6-8,http://www.lumberportmiddleschool.com
+PUBLIC,Harrison,Lumberport Elementary School,Vickie Luchuck,vluchuck@k12.wv.us,Po Box 417 Chestnut & Lyndon Streets,Lumberport,WV,26386,3043267020,3045845943,PK-5,n/a
+NON-PUBLIC,Harrison,Union High School,n/a,n/a,216 Roley St ,Bridgeport,WV,26330,8421745,n/a,n/a,n/a
+PUBLIC,Harrison,Harrison Co Alternative Learning Center,Edwin Propst,egpropst@k12.wv.us,Rr 3 Box 43b ,Clarksburg,WV,26301,3043267560,3046243245,n/a,n/a
+PUBLIC,Harrison,Salem Elementary,David Decker,ddecker@k12.wv.us,Rr 1 Box 10a ,Salem,WV,26426,3043267180,n/a,PK-5,n/a
+PUBLIC,Harrison,Johnson Elementary School,Vicki Huffman,vjhuffma@k12.wv.us,531 Johnson Ave ,Bridgeport,WV,26330,3043267109,3048426562,PK-5,http://www.harcoboe.com/jes
+NON-PUBLIC,Harrison,Headstart-Central Wv Community Action,n/a,n/a,106 Frederick St ,Clarksburg,WV,26301,6231665,n/a,n/a,n/a
+PUBLIC,Harrison,South Harrison High School,Dr. Gregory Moore,grhmoore@k12.wv.us,Rr 1 Box 58 ,Lost Creek,WV,26385,3043267440,3047454292,9-12,http://www.southharrison.com
+PUBLIC,Harrison,Nutter Fort Primary School,Joann Gilbert,jmgilber@k12.wv.us,1302 Buckhannon Pike ,Nutter Fort,WV,26301,3043267520,3046243382,PK-2,http://www.wvonline.com/nfs/
+NON-PUBLIC,Harrison,Apostolic Christian Academy,n/a,n/a,"Rt 3, Box 303c ",Clarksburg,WV,26301,6244459,n/a,n/a,n/a
+PUBLIC,Harrison,Liberty High School,Pamela Knight,paknight@k12.wv.us,1 Mountaineer Dr ,Clarksburg,WV,26301,3043267470,3046233159,9-12,http://www.wvonline.com/liberty/
+PUBLIC,Harrison,Wilsonburg Elementary School,Laura Dick,lewhite@k12.wv.us,Rr 4 Box 1 ,Clarksburg,WV,26301,3043267640,3046243279,PK-5,n/a
+ADMINISTRATIVE,Jackson,Jackson County Schools,Blaine Hess,bhess@k12.wv.us,PO Box 770,Ripley,WV,25271,3043727300,3043727312,n/a,http://boe.jack.k12.wv.us/
+PUBLIC,Jackson,Evans Elementary School,Matthew Howery,mhowery@k12.wv.us,205 Schoolhouse Drive ,Evans,WV,25241,3043727333,3043727317,PK-5,n/a
+PUBLIC,Jackson,Ravenswood High School,Jimmy Frashier,jgfrashi@k12.wv.us,Plaza Drive ,Ravenswood,WV,26164,3042739301,3042739556,9-12,n/a
+PUBLIC,Jackson,Ravenswood Middle School,Jeffrey Haskins,jhaskins@k12.wv.us,409 Sycamore Street ,Ravenswood,WV,26164,3042735480,3042735746,6-8,n/a
+PUBLIC,Jackson,Ravenswood Grade School,Jane Graham,jgraham@k12.wv.us,"Rt 2, Box 22-A ",Ravenswood,WV,26164,3042735391,3042735392,3-5,http://ravgrade.tripod.com/rgs/
+PUBLIC,Jackson,Kenna Elementary School,Sonya White,snjwhite@k12.wv.us,650 Route 21 ,Kenna,WV,25248,3043727343,3043727313,PK-5,http://jackson.wv.schoolwebpages.com/education/components/layout/default.php?sectionid=656
+NON-PUBLIC,Jackson,Heritage Christian Academy,n/a,n/a,P.o. Box 427 ,Ravenswood,WV,26164,2739463,8682229,n/a,n/a
+PUBLIC,Jackson,Fairplain Elementary School,Melissa Browning,mbrownin@k12.wv.us,Rt 3 Box 147 ,Ripley,WV,25271,3043727340,3043727347,PK-5,http://fairplain.jack.k12.wv.us/
+PUBLIC,Jackson,Ripley High School,William Hosaflook,whosaflo@k12.wv.us,2 School Street ,Ripley,WV,25271,3043727355,3043727334,9-12,http://ripleyhs.jack.k12.wv.us
+PUBLIC,Jackson,Cottageville Elementary School,Tracy LeMasters,tlemaste@k12.wv.us,100 School Street ,Cottageville,WV,25239,3043727330,3043727342,PK-5,http://members.tripod.com/~cottageville/
+PUBLIC,Jackson,Ripley Middle School,Cathryn Carena,cathryn.carena@k12.wv.us,"Route 2, Box 75-A Klondyke Road",Ripley,WV,25271,3043727350,3043727332,6-8,http://ripleyms.jack.k12.wv.us
+PUBLIC,Jackson,Ripley Elementary School,Janet Postlethwaite,jpostlet@k12.wv.us,404 Second Avenue ,Ripley,WV,25271,3043727345,3043727364,PK-5,n/a
+PUBLIC,Jackson,Henry J Kaiser Elementary School,Amber Hardman,amber.hardman@k12.wv.us,803 Kaiser Avenue ,Ravenswood,WV,26164,3042732692,3042733029,PK-2,http://henryjkaiser.jack.k12.wv.us/
+PUBLIC,Jackson,Gilmore Elementary School,Jenny Knopp,jdknopp@k12.wv.us,"Rt. 3, Box 28-A ",Sandyville,WV,25275,3042733511,3042739560,PK-5,n/a
+PUBLIC,Jackson,Roane-Jackson Technical Center,Ben Cummings,bpcummin@k12.wv.us,9450 Spencer Rd,Leroy,WV,25252,3043727335,3043727336,CTE,http://www.rjtcwv.com/
+ADMINISTRATIVE,Jefferson,Jefferson County Schools,Dr. Bondy Gibson,bondy.gibson@k12.wv.us, 110 Mordington Avenue,Charles Town,WV,25414,3047259741,3047256487,n/a,http://boe.jeff.k12.wv.us/
+NON-PUBLIC,Jefferson,Rock Spring Child Learning Center,n/a,n/a,114 Poor Farm Road ,Kearneysville,WV,25430,n/a,n/a,n/a,n/a
+PUBLIC,Jefferson,South Jefferson Elementary School,Richard Jenkins,rjjenkin@k12.wv.us,4599 Summit Point Road ,Charles Town,WV,25414,3047289216,3047256428,K-5,http://boe.jeff.k12.wv.us/sjes
+PUBLIC,Jefferson,Blue Ridge Primary,Susan Zigler,szigler@k12.wv.us,175 Lowery Lane ,Harpers Ferry,WV,25425,3047243300,n/a,PK-1,https://boe.jeff.k12.wv.us/Domain/24
+PUBLIC,Jefferson,Washington High School,Judy Marcus,jmarcus@k12.wv.us,300 Washington Patriots Drive ,Charles Town,WV,25414,3048855110,3047259233,9-12,http://boe.jeff.k12.wv.us/whs
+PUBLIC,Jefferson,Shepherdstown Elementary School,Scott Jacobson,scott.jacobson@k12.wv.us,662 South Church Street ,Shepherdstown,WV,25443,3048766270,3048766850,K-5,http://boe.jeff.k12.wv.us/ses
+PUBLIC,Jefferson,Wildwood Middle School,Patricia Brockway,pbrockwa@access.k12.wv.us,1209 Shenandoah Junction Road ,Shenandoah Junction,WV,25442,3047284518,3047289521,6-8,http://boe.jeff.k12.wv.us/wms
+PUBLIC,Jefferson,Page Jackson Elementary,Nicole Shaffer,nshaffer@k12.wv.us,370 Page Jackson School Road ,Charles Town,WV,25414,3047289212,3047252968,PK-2,http://boe.jeff.k12.wv.us/pjes
+PUBLIC,Jefferson,Harpers Ferry Middle School,Eric Vandell,evandell@k12.wv.us,1710 West Washington Street ,Harpers Ferry,WV,25425,3045356357,3045356986,6-8,http://boe.jeff.k12.wv.us/hfms
+PUBLIC,Jefferson,Blue Ridge Elementary School,Susan Zigler,szigler@k12.wv.us,18866 Charles Town Road ,Harpers Ferry,WV,25425,7252995,7287041,2-5,http://boe.jeff.k12.wv.us/bres
+PUBLIC,Jefferson,Driswood Elementary School,Kelly Osborne,kosborne@k12.wv.us,75 Caspian Way ,Shenandoah Junction,WV,25442,3048855020,3047251936,PK-5,n/a
+NON-PUBLIC,Jefferson,Wee Disciples Christian Enrichment Progr,n/a,n/a,110 W North Street ,Charles Town,WV,25414,7076812,n/a,n/a,n/a
+PUBLIC,Jefferson,Wright Denny Intermediate School,Chris Walter,cwalter@k12.wv.us,209 West Congress Street ,Charles Town,WV,25414,3047252513,3047251721,3-5,http://boe.jeff.k12.wv.us/wdis
+NON-PUBLIC,Jefferson,Country Day School Of Jefferson County,n/a,n/a,449 Rose Hill Drive ,Kearneysville,WV,25430,7251438,n/a,n/a,http://www.thecountrydayschool.com
+PUBLIC,Jefferson,C. W. Shipley Elementary School,Ian Hillman,ihillman@k12.wv.us,652 Shipley School Road ,Harpers Ferry,WV,25425,3047254395,3047287388,K-5,http://boe.jeff.k12.wv.us/cwses
+PUBLIC,Jefferson,Jefferson High School,Sherry Ross,sherry.ross@k12.wv.us,4141 Flowing Springs Road ,Shenandoah Junction,WV,25442,3047258491,3047286590,9-12,http://boe.jeff.k12.wv.us/jhs
+PUBLIC,Jefferson,Ranson Elementary School,Debra Corbett,dcorbett@k12.wv.us,600 North Preston Street ,Ranson,WV,25438,3047257310,3047251912,PK-5,http://boe.jeff.k12.wv.us/res
+PUBLIC,Jefferson,Shepherdstown Middle School,Rebecca Horn,rhorn@k12.wv.us,54 Minden Avenue ,Shepherdstown,WV,25443,3048766120,3048761826,6-8,http://boe.jeff.k12.wv.us/sms
+PUBLIC,Jefferson,North Jefferson Elementary,Dorothy Johnson,dnjohnson@k12.wv.us,6996 Charles Town Road ,Kearneysville,WV,25430,3047259587,3047287331,PK-5,http://boe.jeff.k12.wv.us/njes
+PUBLIC,Jefferson,Charles Town Middle School,Tim Sites,tsites@k12.wv.us,193 High Street ,Charles Town,WV,25414,3047257821,3047287526,6-8,http://boe.jeff.k12.wv.us/ctms
+NON-PUBLIC,Jefferson,The Joy Of Learning Montessori,n/a,n/a,P.o. Box 889 ,Harpers Ferry,WV,25425,5826729,n/a,n/a,n/a
+PUBLIC,Jefferson,T A Lowery Elementary School,Kristen Martin,kmartin@k12.wv.us,103 Shenandoah Junction Road ,Shenandoah Junction,WV,25442,3047287250,3047287631,PK-5,http://boe.jeff.k12.wv.us/tales
+ADMINISTRATIVE,Kanawha,Kanawha County Schools,Ron Duerring,rduerrin@k12.wv.us,200 Elizabeth Street ,Charleston,WV,25311,3043487770,3043486188,n/a,http://kcs.kana.k12.wv.us/
+PUBLIC,Kanawha,Pinch Elementary School,Elizabeth Moore,elizabeth.moore@k12.wv.us,300 South Pinch Rd ,Elkview,WV,25071,3043481943,3043481944,PK-5,http://pinch.kana.k12.wv.us/
+NON-PUBLIC,Kanawha,Freedom Christian Academy,n/a,n/a,Po Box 754 ,Nitro,WV,25143,7557075,n/a,n/a,n/a
+PUBLIC,Kanawha,Holz Elementary School,Lynn Davis,lynn.davis@k12.wv.us,1505 Hampton Rd ,Charleston,WV,25314,3043481906,3043450387,PK-5,http://holz.kana.k12.wv.us/
+PUBLIC,Kanawha,Ben Franklin Career Center,Jennifer Stowers,jmstowers@mail.kana.k12.wv.us,500 28th Street ,Dunbar,WV,25064,3047660369,3047660371,CTE,http://benfranklinctc.weebly.com/
+PUBLIC,Kanawha,Cedar Grove Elementary School,Deborah Mougaes,deborah.mougaes@k12.wv.us,Po Box J ,Cedar Grove,WV,25039,3049491642,3045952541,PK-5,http://cg.kana.k12.wv.us/
+PUBLIC,Kanawha,Stonewall Jackson Middle School,John Wilkerson,jwilkerson@k12.wv.us,812 Park Avenue ,Charleston,WV,25302,3043486123,3043481999,6-8,http://www.sjgenerals.com/
+PUBLIC,Kanawha,Andrew Jackson Middle School,Rhonda Donohoe,rhonda.donohoe@k12.wv.us,5445 Big Tyler Road ,Charleston,WV,25313,3047763310,3047763305,6-8,http://KCS.KANA.K12.WV.US/AJMS/
+PUBLIC,Kanawha,Sissonville Elementary School,David Agnew,dagnew@k12.wv.us,8324 Sissonville Drive ,Sissonville,WV,25320,3043481961,3043486147,PK-4,http://kcs.kana.k12.wv.us/sisselem/
+NON-PUBLIC,Kanawha,Saint Francis Of Assisi,n/a,n/a,525 Holley Street ,Saint Albans,WV,25177,7275690,n/a,n/a,http://www.sfswv.com/
+PUBLIC,Kanawha,Nitro Elementary School,Ashley Garrett,ashley.garrett@k12.wv.us,1921 19th Street ,Nitro,WV,25143,3047552451,3047559215,PK-5,http://nitro.kana.k12.wv.us/
+NON-PUBLIC,Kanawha,Upper Kanawha Valley Christian School,n/a,n/a,12721 Mccorkle Avenue ,Chesapeake,WV,25315,n/a,n/a,n/a,n/a
+PUBLIC,Kanawha,Riverside High School,Jane Kennedy,jkennedy@k12.wv.us,#1 Warrior Way ,Belle,WV,25015,3043481996,n/a,9-12,http://rhs.kana.k12.wv.us
+PUBLIC,Kanawha,Sissonville Middle School,Robert Smith,robertsmith@k12.wv.us,100 Middle School Lane ,Charleston,WV,25312,3043481993,3043486594,5-8,http://sms.wvnet.edu/
+PUBLIC,Kanawha,Edgewood Elementary,Janet Scott,jscott@mail.kana.k12.wv.us,550 Hawks Ridge,Charleston,WV,25302,3043486635,n/a,PK-5,http://edgewood.kana.k12.wv.us/
+PUBLIC,Kanawha,Mary C. Snow West Side Elementary School,Cheryl Plear,cplear@mail.kana.k12.wv.us,100 Florida Street ,Charleston,WV,25302,3043481902,3043481903,PK-5,http://mcs.kana.k12.wv.us/
+PUBLIC,Kanawha,Sharon Dawes Elementary School,Natalie Vaughan,natalie.vaughan@k12.wv.us,P O Box 149 ,Miami,WV,25134,3045953323,3045953361,PK-5,http://sd.kana.k12.wv.us/
+NON-PUBLIC,Kanawha,Saint Anthony School,n/a,n/a,1027 Sixth Street West ,Charleston,WV,25302,3468441,n/a,n/a,http://home.att.net/~stanthonyschool/stanthonyschool.html
+PUBLIC,Kanawha,Midland Trail Elementary School,Grant Davis,grant.davis@k12.wv.us,200 Ferry St ,Diamond,WV,25015,3049491823,3049491016,PK-5,http://mt.kana.k12.wv.us/
+NON-PUBLIC,Kanawha,Mountaineer Montessori,n/a,n/a,308 20th Street ,Charleston,WV,25304,3427870,n/a,n/a,http://www.mountaineermontessori.com
+PUBLIC,Kanawha,Dunbar Primary Center,Michelle Settle,michelle.settle@k12.wv.us,2401 Myers Avenue ,Dunbar,WV,25064,3047660367,3047660368,PK-2,http://dp.kana.k12.wv.us/
+PUBLIC,Kanawha,South Charleston High School,Michael Arbogast,marbogast@mail.kana.k12.wv.us,1 Eagle Way ,South Charleston,WV,25309,3047660352,3047684663,9-12,http://kcs.kana.k12.wv.us/schs/
+PUBLIC,Kanawha,Anne Bailey Elementary School,Robert Somerville,robert.somerville@k12.wv.us,405 Winfield Road ,St. Albans,WV,25177,3047220230,3047220231,PK-5,http://ab.kana.k12.wv.us/
+PUBLIC,Kanawha,Horace Mann Middle School,Elizabeth Tweedy,elizabeth.tweedy@k12.wv.us,4300 Maccorkle Avenue ,Charleston,WV,25304,3043481971,3043486591,6-8,http://kcs.kana.k12.wv.us/horacemann/Teachers_6th.htm
+PUBLIC,Kanawha,Piedmont Year-Round Education,Ashley Grogg,dgrogg@k12.wv.us,203 Bradford Street ,Charleston,WV,25301,3043481910,3043481911,PK-5,http://kcs.kana.k12.wv.us/piedmont/
+PUBLIC,Kanawha,Ruffner Elementary School,Henry Nearman,henry.nearman@k12.wv.us,809 Litz Drive ,Charleston,WV,25311,3043481130,3043481131,PK-5,http://kcs.kana.k12.wv.us/ruffner
+NON-PUBLIC,Kanawha,South Charelston Christian Academy,n/a,n/a,Seventh And E Street ,South Charleston,WV,25303,4441258,n/a,n/a,n/a
+PUBLIC,Kanawha,Marmet Elementary School,Cynthia Schilling,cynthia.armstrong@k12.wv.us,408 94th St ,Marmet,WV,25315,3049492382,n/a,PK-5,http://marmet.kana.k12.wv.us/
+NON-PUBLIC,Kanawha,Elk Valley Christian School,n/a,n/a,58 Mount Pleasant Drive ,Elkview,WV,25071,9657063,n/a,n/a,n/a
+PUBLIC,Kanawha,Clendenin Elementary School,Vanessa Brown,susan.v.brown@k12.wv.us,P O Box 462 ,Clendenin,WV,25045,3049655311,3045487372,PK-5,http://clendenin.kana.k12.wv.us/
+PUBLIC,Kanawha,Saint Albans High School,Jeffrey Kelley,jeffrey.s.kelley@k12.wv.us,2100 Kanawha Terrace ,St. Albans,WV,25177,3047220212,3047220211,9-12,http://sahs.kana.k12.wv.us/
+PUBLIC,Kanawha,Alum Creek Elementary School,Elizabeth Hoylman,elizabeth.hoylman@k12.wv.us,Rt 7 Box 279a ,So Charleston,WV,25309,3043481935,3043481936,PK-5,http://kanawha-k12.wvnet.edu/alumcreek/
+PUBLIC,Kanawha,Elkview Middle School,Missy Lovejoy,missy.lovejoy@k12.wv.us,5090 N Elk River Rd ,Elkview,WV,25071,3043481947,3043486590,6-8,http://kcs.kana.k12.wv.us/schools/elkviewmiddle/
+PUBLIC,Kanawha,Elk Elementary Center,Donna Chambers,donna.chambers@k12.wv.us,3320 Pennsylvania Ave ,Charleston,WV,25302,3043487776,3049656921,PK-5,http://elk.kana.k12.wv.us/
+PUBLIC,Kanawha,Richmond Elementary School,Jordan McBride,jordan.mcbride@k12.wv.us,4620 Spring Hill Avenue ,South Charleston,WV,25309,3047660357,n/a,PK-5,http://richmond.kana.k12.wv.us/
+NON-PUBLIC,Kanawha,Twin City Christian Academy,n/a,n/a,100 1st Avenue ,Nitro,WV,25143,7293002,n/a,n/a,n/a
+PUBLIC,Kanawha,Lakewood Elementary School,Kelly Haynes,evelyn.haynes@k12.wv.us,2089 Lakewood Drive ,St. Albans,WV,25177,3047220200,3047220456,PK-5,http://kcs.kana.k12.wv.us/lakewood
+NON-PUBLIC,Kanawha,Bible Center School,n/a,n/a,1111 Oakhurst Drive ,Charleston,WV,25314,3460431,n/a,n/a,http://www.biblecenterchurch.com/school
+PUBLIC,Kanawha,Chandler Academy,Wayman D. Wilson,wayman.wilson@k12.wv.us,1900 School Street ,Charleston,WV,25312,3047200283,3043486690,K-12,n/a
+PUBLIC,Kanawha,Herbert Hoover High School,Michael Kelley,michael.kelley@k12.wv.us,275 Elk River Rd S ,Clendenin,WV,25045,3049653394,3049651871,9-12,http://kcs.kana.k12.wv.us/herberthoover/
+PUBLIC,Kanawha,Du Pont Middle School,Tommy Canterbury,tommy.canerbury@k12.wv.us,1 Panther Way ,Belle,WV,25015,3043481978,3049491793,6-8,http://dupont.kana.k12.wv.us/
+PUBLIC,Kanawha,George C. Weimer Elementary School,Pamela Snead,pamela.snead@k12.wv.us,3040 Kanawha Terrace ,St. Albans,WV,25177,3047220205,3047220206,PK-5,http://kcs.kana.k12.wv.us/weimer/
+PUBLIC,Kanawha,Point Harmony Elementary School,Jennifer Cummings-Cochran,jcummingscochran@k12.wv.us,5312 Big Tyler Road ,Cross Lanes,WV,25313,3047763482,3047766476,K-5,http://kcs.kana.k12.wv.us/phele/
+NON-PUBLIC,Kanawha,King's Way Christian Academy,n/a,n/a,134 Jenkins Drive ,Charleston,WV,25312,7204994,n/a,n/a,n/a
+PUBLIC,Kanawha,Kanawha City Elementary School,Cathi Bradley,cathi.bradley@k12.wv.us,3601 Staunton Avenue Se ,Charleston,WV,25304,3043481985,3043486537,PK-5,http://kc.kana.k12.wv.us/
+PUBLIC,Kanawha,Carver Career Center,Phillip Calvert,phillip.calvert@k12.wv.us,4799 Midland Dr ,Charleston,WV,25306,3043481965,3043481938,n/a,http://www.carvercareercenter.edu/
+PUBLIC,Kanawha,Central Elementary School,Beth Sturgill,beth.sturgill@k12.wv.us,900 Helene Street ,St. Albans,WV,25177,3047220226,3047220227,PK-5,http://centralelem.kana.k12.wv.us/
+NON-PUBLIC,Kanawha,Charleston Montessori,n/a,n/a,319 Washington Street West,Charleston,WV,25302,3409000,n/a,n/a,http://www.charlestonmontessori.com
+PUBLIC,Kanawha,Cedar Grove Middle School,Melissa Lawrence,melissa.lawrence@k12.wv.us,Po Box J ,Cedar Grove,WV,25039,3049491642,n/a,6-8,https://sites.google.com/a/mail.kana.k12.wv.us/cedar-grove-middle-school/
+NON-PUBLIC,Kanawha,Sacred Heart Elementary,n/a,n/a,1035 Quarrier Street ,Charleston,WV,25301,3465491,n/a,n/a,n/a
+PUBLIC,Kanawha,Overbrook Elementary School,Gerald Comer,gcomer@k12.wv.us,218 Overbrook Rd ,Charleston,WV,25314,3043486179,n/a,PK-5,n/a
+NON-PUBLIC,Kanawha,Brookside Childrens Home,n/a,n/a,Po Box 112 ,Charleston,WV,25321,9259625,n/a,n/a,n/a
+PUBLIC,Kanawha,Grandview Elementary School,Sharon Brooks,sharon.brooks@k12.wv.us,959 Woodward Drive ,Charleston,WV,25312,3043481928,3047460771,PK-5,n/a
+PUBLIC,Kanawha,Chandler Academy,Wayman Wilson,wayman.wilson@k12.wv.us,1900 School Street,Charleston,WV,25312,3043486133,n/a,6-12,http://chandler.kana.k12.wv.us/
+PUBLIC,Kanawha,Bridge Elementary School,Maggie Holley,mholley@k12.wv.us,5120 Elk River Road N ,Elkview,WV,25071,3049655501,3043481125,PK-5,http://bridge.kana.k12.wv.us/
+PUBLIC,Kanawha,South Charleston Middle School,Henry Graves,henry.graves@k12.wv.us,400 Third Avenue ,South Charleston,WV,25303,3043481918,3047444869,6-8,http://kcs.kana.k12.wv.us/scms/
+PUBLIC,Kanawha,John Adams Middle School,John Moyers,jmoyers@mail.kana.k12.wv.us,2002 Presidential Dr ,Charleston,WV,25314,3486652,3486592,608,http://www.edline.net/pages/John_Adams_Junior_High_School
+PUBLIC,Kanawha,Shoals Elementary School,David Anderson,david.anderson@k12.wv.us,100 Dutch Rd ,Charleston,WV,25302,3481900,n/a,PK-5,http://shoals.kana.k12.wv.us/
+NON-PUBLIC,Kanawha,Charleston Catholic High School,n/a,n/a,1033 Virginia Street ,Charleston,WV,25311,3428415,n/a,n/a,http://www.charlestoncatholic-crw.org
+PUBLIC,Kanawha,Montrose Elementary School,Julie Hedge,jhedge@mail.kana.k12.wv.us,631 Montrose Drive ,So. Charleston,WV,25303,3481930,3477409,K-5,http://montrose.kana.k12.wv.us/
+NON-PUBLIC,Kanawha,Day Care,n/a,n/a,212 D Street ,South Charleston,WV,25303,7442845,n/a,n/a,n/a
+PUBLIC,Kanawha,Flinn Elementary School,Maria Clendenin,mariaclendenin@mail.kana.12.wv.us,2006 Mcclure Parkway ,Charleston,WV,25312,3481960,3481959,0K04,http://kcs.kana.k12.wv.us/flinn
+PUBLIC,Kanawha,Capital High School,Larry Bailey,ldbailey@mail.kana.k12.wv.us,1500 Greenbrier St ,Charleston,WV,25311,3486500,3486509,PK-12,http://www.capitalhigh.org/
+PUBLIC,Kanawha,Belle Elementary School,Amanda Mays,amays@mail.kana.k12.wv.us,401 E 6th Street ,Belle,WV,25015,9492612,9495854,PK-5,http://belle.kana.k12.wv.us/
+PUBLIC,Kanawha,Mckinley Middle School,Amy Scott,alscott@k12.wv.us,3000 Kanawha Terrace ,St. Albans,WV,25177,7220218,7220246,608,http://mckinley.kana.k12.wv.us/
+PUBLIC,Kanawha,Dunbar Intermediate Center,Jennifer Spencer,jennifer.f.spencer@k12.wv.us,1330 Myers Avenue ,Dunbar,WV,25064,7661570,n/a,PK-5,http://di.kana.k12.wv.us/
+PUBLIC,Kanawha,Ruthlawn Elementary School,Natalie Laliberty,nlaliberty@kcs.kana.k12.wv.us,Rt 8 Box 428 ,So Charleston,WV,25309,7449481,7449482,PK-5,http://kcs.kana.k12.wv.us/ruthlawn/
+NON-PUBLIC,Kanawha,Saint Agnes School,n/a,n/a,4801 Staunton Avenue Se ,Charleston,WV,25304,9254341,n/a,n/a,http://stagneswv.org
+PUBLIC,Kanawha,Mary Ingles Elementary School,Mary Rider-Wilfong,mrider-wilifong@mail.kana.k12.wv.us,Po Box 367 ,Tad,WV,25201,3481975,3481976,PK-5,http://kcs.kana.k12.wv.us/maryingles
+NON-PUBLIC,Kanawha,Fairhaven Christian School,n/a,n/a,689 Fairhaven Drive ,Charleston,WV,25306,9255954,n/a,n/a,http://www.fhcscomets.org
+PUBLIC,Kanawha,Cross Lanes Elementary School,Jodie Hypes,jhypes@mail.kana.k12.wv.us,5525 Big Tyler Road ,Charleston,WV,25313,7762022,7762029,PK-5,http://cl.kana.k12.wv.us/
+PUBLIC,Kanawha,Sissonville High School,Ron Reedy,Rreedy@k12.wv.us,6100 Sissonville Dr. ,Charleston,WV,25312,3481954,3486565,912,http://kcs.kana.k12.wv.us/sisshigh/
+PUBLIC,Kanawha,Andrews Heights Elementary School,Suzanne Armstrong,suzanne.armstrong@k12.wv.us,P O  Box 340 ,Tornado,WV,25202,7220232,7220243,PK-5,http://ah.kana.k12.wv.us/
+PUBLIC,Kanawha,Hayes Middle School,Scott Monty,scott.monty@k12.wv.us,830 Strawberry Road ,St. Albans,WV,25177,7220222,7220247,608,http://hayes.kana.k12.wv.us/
+PUBLIC,Kanawha,Bridgeview Elementary School,Mellow Lee,mdlee@k12.wv.us,5100 Ohio Street ,South Charleston,WV,25309,7660383,7660388,PK-5,http://bridgeviewelementary.weebly.com/
+PUBLIC,Kanawha,J E Robins Elementary School,Closed,n/a,915 Beech Ave ,Charleston,WV,25302,3486631,3486634,PK-5,n/a
+NON-PUBLIC,Kanawha,Bible Baptist Christian School,n/a,n/a,7020 Sissonville Drive ,Sissonville,WV,25320,9840451,9840450,n/a,n/a
+PUBLIC,Kanawha,Malden Elementary School,Julie Sayre,jesayre@k12.wv.us,4001 Salinas Drive ,Charleston,WV,25306,3481973,3481974,PK-5,http://malden.kana.k12.wv.us/
+NON-PUBLIC,Kanawha,Cross Lanes Christian School,n/a,n/a,5330 Floradale Drive ,Charleston,WV,25313,7765020,n/a,n/a,http://www.crosslanes.org
+PUBLIC,Kanawha,Chesapeake Elementary School,Marianne Annie,mannie@mail.kana.k12.wv.us,13620 Mccorkle Ave ,Chesapeake,WV,25315,9491121,9492351,PK-5,http://kcs.kana.k12.wv.us/Chesapeake/
+PUBLIC,Kanawha,Nitro High School,Jason Redman,jredman@mail.kana.k12.wv.us,1300 Park Avenue ,Nitro,WV,25143,7554321,7554345,912,http://kcs.kana.k12.wv.us/nitrohigh/
+PUBLIC,Kanawha,Alban Elementary School,Joanna Jacobs,joanna.jacobs@k12.wv.us,2030 Harrison Avenue ,St. Albans,WV,25177,7220234,7220235,PK-5,http://alban.kana.k12.wv.us/
+PUBLIC,Kanawha,East Bank Middle School,Mike Wilkinson,mwilkinson@mail.kana.k12.wv.us,Po Box 897 ,East Bank,WV,25067,5952311,5954676,608,https://sites.google.com/a/mail.kana.k12.wv.us/ebms/
+PUBLIC,Kanawha,Shawnee Community Center,Terry Sauvageot,terry.sauvageot@k12.wv.us,142 Marshall Avenue ,Dunbar,WV,25064,7660378,7660378,PKPK ,n/a
+PUBLIC,Kanawha,Pratt Elementary School,Jackie Hersch,jhersch@mail.kana.k12.wv.us,Center And Stark Street ,Pratt,WV,25162,9494838,4424541,PK-5,http://pratt.kana.k12.wv.us/
+NON-PUBLIC,Kanawha,Dollie Hill Christian Academy,n/a,n/a,Route 7 Box 112 ,South Charleston,WV,25303,7684193,n/a,n/a,n/a
+PUBLIC,Kanawha,Kenna Elementary School,Leah Earnest,leah.earnest@k12.wv.us,198 Eureka Rd ,Charleston,WV,25314,3486104,3486107,PK-5,http://kcs.kana.k12.wv.us/kenna
+PUBLIC,Kanawha,Garnet Career Center,Wendy Bailey,wbailey@mail.kana.k12.wv.us,422 Dickinson Street ,Charleston,WV,25301,3486195,3486198,n/a,http://kcs.kana.k12.wv.us/garnet/index.html
+PUBLIC,Kanawha,Chamberlain Elementary School,Phoebe McCloud,pmccloud@mail.kana.k12.wv,4901 Venable Av S E ,Charleston,WV,25304,3481969,3481970,PK-5,http://chamberlain.kana.k12.wv.us/
+PUBLIC,Kanawha,George Washington High School,George Aulenbacker,gaulenbacher@mail.kana.k12.wv.us,1522 Tennis Club Rd ,Charleston,WV,25314,3487729,3444947,912,http://gwhs.kana.k12.wv.us
+PUBLIC,Kanawha,Dunbar Middle School,Amon Gilliam,dagilliam@k12.wv.us,325 27th Street ,Dunbar,WV,25064,7660363,7660365,608,http://kcs.kana.k12.wv.us/schools/dunbar
+PUBLIC,Kanawha,Weberwood Elementary School,Mary Lou Munoz,mmunoz@mail.kana.k12.wv.us,732 Gordon Road ,So. Charleston,WV,25303,3481924,3477421,PK-5,http://weberwood.kana.k12.wv.us/
+ADMINISTRATIVE,Lewis,Lewis County Schools,Steven Casto,scasto@k12.wv.us,239 Court Avenue ,Weston,WV,26452,2698300,2698305,n/a,http://lewisboe.com
+NON-PUBLIC,Lewis,St. Patrick School,n/a,n/a,224 Center Street ,Weston,WV,26452,2695547,n/a,n/a,n/a
+PUBLIC,Lewis,Lewis County High School,Derek Lambert,drlambert@k12.wv.us,205 Minuteman Drive ,Weston,WV,26452,2698315,2698319,912,http://lewisboe.com/lchs
+PUBLIC,Lewis,Jane Lew Elementary School,Denise Sprouse,dsprouse@k12.wv.us,6536 Main Street ,Jane Lew,WV,26378,8847836,8847185,PK04,http://lewisboe.com/jles
+PUBLIC,Lewis,Roanoke Elementary School,Kristina Benedum,kbenedum@k12.wv.us,1176 Oil Creek Road ,Roanoke,WV,26447,4528887,4520438,PK04,http://lewisboe.com/res
+NON-PUBLIC,Lewis,Lewis County Christian School,n/a,n/a,Post Office Box 230 ,Weston,WV,26452,2696492,n/a,n/a,n/a
+PUBLIC,Lewis,Robert L. Bland Middle School,Julie Radcliff,julie.radcliff@k12.wv.us,358 Court Avenue ,Weston,WV,26452,2698325,2698310,508,http://lewisboe.com/rlbms
+PUBLIC,Lewis,Leading Creek Elementary,Kimberly Freeland,kdfreela@k12.wv.us,15300 US Highway 33W,Linn,WV,26384,4627127,4624925,PK06,http://lewisboe.com/lces
+PUBLIC,Lewis,Peterson-Central Elementary School,Steve Hall,swhall@k12.wv.us,509 Berlin Road ,Weston,WV,26452,2698330,2698351,PK04,http://lewisboe.com/pces
+PUBLIC,Lincoln,Duval Pk-8,Mary Patton,mapatton@k12.wv.us,5304 Straight Fork,Griffithsville,WV,25521,5242101,n/a,PK08,http://duvalyellowjackets.net
+PUBLIC,Lincoln,Lincoln County High School,Dana Snyder,drsnyder@k12.wv.us,81 Lincoln Panther Way ,Hamlin,WV,25523,8246000,n/a,912,http://boe.linc.k12.wv.us/education/school/school.php?sectionid=1
+PUBLIC,Lincoln,West Hamlin Elementary,John Roy,jwroy@k12.wv.us,114 Dairy Road,West Hamlin,WV,25571,8243630,8243630,PK-5,http://westhamlinroughriders.net
+PUBLIC,Lincoln,Midway Elementary School,Chastidy Matthews- Hoover,chastidy.hoover@k12.wv.us,267 Midway Road,Alum Creek,WV,25003,7563121,7561459,PK-5,http://midwaymustanges.net
+PUBLIC,Lincoln,Hamlin Pk-8,Don Davis,dnkdavis@k12.wv.us,8130 Court Ave ,Hamlin,WV,25523,8243036,824-2895,PK-8,http://hamlinbobcats.net
+ADMINISTRATIVE,Lincoln,Lincoln County Schools,Jeff Midkiff,jamidkif@k12.wv.us,10 Marland Avenue ,Hamlin,WV,25523,8243033,8247947,n/a,http://boe.linc.k12.wv.us
+PUBLIC,Lincoln,Guyan Valley Middle,Johnnalyn Davis,johnnalyndavis@k12.wv.us,5312 McClellan Hwy,Branchland,WV,25506,8243235,824-3459,"6,7,8",http://guyanvalleywildcats.net
+PUBLIC,Lincoln,Ranger Elementary,Christina Napier Mounts,cnapier@k12.wv.us,59 Vanatters Creek ,Ranger,WV,25557,7783454,7783454,PK-5,http://rangersrangers.net
+PUBLIC,Lincoln,Harts Pk-8,Tab Mathis,tjmathis@k12.wv.us,1246 Mcclellan Highway ,Harts,WV,25524,n/a,n/a,PK08,http://hartslions.net
+PUBLIC,Logan,Chapmanville Middle School,Kristen Dingess,kdingess@k12.wv.us,300 Vance St. ,Chapmanville,WV,25508,8558378,8551307,508,http://www.cms.logancountyschoolswv.com/
+PUBLIC,Logan,Buffalo Elementary School,Debra Holly,dholly@k12.wv.us,Po Box 310 ,Accoville,WV,25606,5839132,5837512,PK03,http://www.bes.logancountyschoolswv.com/
+PUBLIC,Logan,Man Elementary School,Doug Barrett,dbarrett@k12.wv.us,Box 269 ,Mallory,WV,25634,5838316,5837342,0K04,http://www.mes.logancountyschoolswv.com/
+PUBLIC,Logan,Omar Elementary,Martha Curry,mlradkin@k12.wv.us,Route 44 Box 590,Omar,WV,25638,9462660,9464236,PK04,http://www.oes.logancountyschoolswv.com/
+PUBLIC,Logan,Verdunville Elementary School,Eva Marcum,emarcum@k12.wv.us,Drawer J Hill Drive,Verdunville,WV,25649,7521656,7522142,PK04,http://www.ves.logancountyschoolswv.com/
+NON-PUBLIC,Logan,Beth Haven Christian School,n/a,n/a,Route 44 Box 620 ,Omar,WV,25638,9464447,n/a,n/a,n/a
+PUBLIC,Logan,Logan Elementary School,Cheryl Deskins,cdeskins@k12.wv.us,Midelburg Island ,Logan,WV,25601,7524180,7525463,PK04,http://www.les.logancountyschoolswv.com/
+PUBLIC,Logan,Man Senior High School,Patricia English,penglish@k12.wv.us,800 East Mcdonald Avenue ,Man,WV,25635,5836521,5836566,912,http://www.mhs.logancountyschoolswv.com/
+PUBLIC,Logan,Hugh Dingess Elementary School,Sammy Dalton,smdalton@k12.wv.us,Rt. 1 Box 607,Harts,WV,25524,8553585,8556600,PK04,http://www.hdes.logancountyschoolswv.com/
+PUBLIC,Logan,Chapmanville Regional High School,Kathy Moore,kimoore@k12.wv.us,200 Vance Street ,Chapmanville,WV,25508,8554522,8551911,912,http://www.crhs.logancountyschoolswv.com/
+PUBLIC,Logan,Chapmanville East Elementary School,Andrew Dotson,aldotson@k12.wv.us,P.o. Box 340 ,Chapmanville,WV,25508,8553302,8557568,PK04,http://www.eces.logancountyschoolswv.com/
+PUBLIC,Logan,Logan Middle School,Stephen Pritchard,stephen.prtichard@k12.wv.us,14 Wildcat Way ,Logan,WV,25601,7521804,7520207,508,http://www.lms.logancountyschoolswv.com/
+PUBLIC,Logan,Man Middle School,Cynthia Caldwell,ccaldwel@k12.wv.us,Box 390 ,Mallory,WV,25634,5838316,5837342,508,http://www.mms.logancountyschoolswv.com/
+PUBLIC,Logan,West Chapmanville Elementary School,Jill Barker,jillbarker@k12.wv.us,100 Vance Street Box 310,Chapmanville,WV,25508,8553209,8553376,PK04,http://www.wces.logancountyschoolswv.com/
+ADMINISTRATIVE,Logan,Logan County Schools,Patricia Lucas,ptlucas@k12.wv.us,PO Box 477,Logan,WV,25601,7922060,7523711,n/a,http://www.logancountyschoolswv.com/
+NON-PUBLIC,Logan,Truthway Christian Academy,n/a,n/a,Rr 1 Box 358 ,Chapmanville,WV,25508,8559267,n/a,n/a,n/a
+PUBLIC,Logan,South Man Elementary School,Danita Noel,ddnoel@k12.wv.us,301 East Mcdonald Avenue ,Man,WV,25635,5837522,5838046,PK03,http://www.smes.logancountyschoolswv.com/
+PUBLIC,Logan,Ralph R. Willis Vocational Center,David Adkins,gdadkins@k12.wv.us,Three Mile Curve Po Box 1747,Logan,WV,25601,7524687,7522943,n/a,n/a
+PUBLIC,Logan,Justice Elementary School,Whitney Ellis,wellis@k12.wv.us,407 Circle Dirve ,Logan,WV,25601,7523250,7525456,PK04,http://www.jes.logancountyschoolswv.com/
+PUBLIC,Logan,Logan Senior High School,Kelly Stanley,klastanl@k12.wv.us,1 Wildcat Way ,Logan,WV,25601,7526606,7526614,912,http://www.lhs.logancountyschoolswv.com/
+PUBLIC,Logan,Holden Central Elementary School,Janice Williamson,jfwillia@k12.wv.us,Box M ,Holden,WV,25625,2392771,2392514,PK04,http://www.hces.logancountyschoolswv.com/
+PUBLIC,Marion,Monongah Middle School,Claude Malnick,cmalnick@k12.wv.us,550 Camden Avenue ,Monongah,WV,26554,3672164,3672164,508,n/a
+PUBLIC,Marion,East Dale Elementary School,Melissa DeWitt,mdewitt@k12.wv.us,Rt.3  57 East Dale Road ,Fairmont,WV,26554,3672132,3662522,PK06,http://eastdale.mari.k12.wv.us
+NON-PUBLIC,Marion,Calvary Christian School,n/a,n/a,28 Fellowship Drive ,Fairmont,WV,26554,3638008,n/a,n/a,n/a
+PUBLIC,Marion,Fairview Middle School,Steve Rodriguez,srodrigu@k12.wv.us,17 Jesses Run Road ,Fairview,WV,26570,4491312,4491305,PK08,http://www.labs.net/schools/marion/fairviewmiddleschool
+PUBLIC,Marion,Barrackville Elementary/Middle School,Vicki Bombard,vbombard@k12.wv.us,P O Box 150 509 Pike Street,Barrackville,WV,26559,3672128,3672173,0K08,http://www.bvilleschool.com
+PUBLIC,Marion,Marion County Technical Center,Ray Frazier,rafrazier@k12.wv.us,2 North Marion Drive Route 250 North,Farmington,WV,26571,9863590,9863440,n/a,http://www.mctconline.com
+PUBLIC,Marion,White Hall Elementary School,Karen Rhoades,krhoades@k12.wv.us,38 Emerald Lane ,White Hall,WV,26554,3672158,3672181,PK04,n/a
+ADMINISTRATIVE,Marion,Marion County Schools,Gary Price,gprice@k12.wv.us,1516 Mary Lou Retton Drive,Fairmont,WV,26554,3672100,3672111,n/a,http://www.marionboe.com
+PUBLIC,Marion,North Marion High School,"Russelle ""Rusty"" Devito",rdevito@k12.wv.us,1 North Marion Drive ,Farmington,WV,26571,9863063,9863086,912,http://www.labs.net/schools/marion/nmhs/
+PUBLIC,Marion,Pleasant Valley Elementary School,Kimberly Middlemas,kmiddlem@k12.wv.us,1858 Valley School Road ,Pleasant Valley,WV,26554,3672148,3672175,0K06,n/a
+PUBLIC,Marion,East Fairmont High School,David Nuzum,dnuzum@12.wv.us,1993 Airport Road ,Fairmont,WV,26554,3672140,3672180,PK-12,http://www.wvonline.com/efhs
+PUBLIC,Marion,Jayenne Elementary School,Scott Morris,scmorris@k12.wv.us,1504 Country Club Road ,Fairmont,WV,26554,3672136,3672178,PK04,n/a
+PUBLIC,Marion,West Fairmont Middle School,Earl Shaffer,ershaffe@k12.wv.us,1010 Tenth Street ,Fairmont,WV,26554,3665631,3665636,508,n/a
+PUBLIC,Marion,East Park Elementary School,Mark Hoffman,mhoffman@k12.wv.us,1025 Fairfax Street ,Fairmont,WV,26554,3672134,3672187,PK06,https://sites.google.com/a/wvde.k12.wv.us/east-park-elementary-library/
+NON-PUBLIC,Marion,Fairmont Catholic Ele.,n/a,n/a,416a Madison ,Fairmont,WV,26554,3635313,n/a,n/a,n/a
+PUBLIC,Marion,Mannington Middle School,Richard Ott,rrott@k12.wv.us,113 Clarksburg Street ,Mannington,WV,26582,9861050,9861747,PK08,n/a
+PUBLIC,Marion,Rivesville Elementary/Middle School,Frank Moore,femoore@k12.wv.us,229 Phillips Avenue ,Rivesville,WV,26588,2785331,2785351,PK08,n/a
+NON-PUBLIC,Marion,Act Academy,n/a,n/a,415 Potomac Avenue ,Fairmont,WV,26554,9069950,n/a,n/a,n/a
+PUBLIC,Marion,Blackshere Elementary School,Sara Pletcher,sara.pletcher@k12.wv.us,77 Blackshere Drive ,Mannington,WV,26582,9862707,9862715,PK04,http://hometown.aol.com/kevinhaugh/index.html
+PUBLIC,Marion,Marion Co Adult And Community Ed Center,n/a,n/a,601 Locust Ave. ,Fairmont,WV,26554,3637323,3662483,912, 
+PUBLIC,Marion,Barnes Learning Center (Alc),Terri Atha,tlrichar@k12.wv.us,100 Naomi Street ,Fairmont,WV,26554,3672127,3672174,n/a,n/a
+PUBLIC,Marion,Watson Elementary School,Karen Decker,kdecker@k12.wv.us,1579 Mary Lou Retton Dr ,Fairmont,WV,26554,3672156,3660107,PK04,n/a
+PUBLIC,Marion,Fairmont Senior High School,Karen Finamore,kfinamor@k12.wv.us,Loop Park Drive ,Fairmont,WV,26554,3672150,3665988,912,http://fhs.mari.k12.wv.us/
+PUBLIC,Marion,Monongah Elementary School,Rob Moore,rwmoore@k12.wv.us,628 Walnut Street ,Monongah,WV,26554,3672159,3672188,PK04,n/a
+PUBLIC,Marion,East Fairmont Middle School,John Michael,jay.michael@k12.wv.us,221 Mason Street,Fairmont,WV,26554,3672123,3672179,708,n/a
+PUBLIC,Marion,Fairview Elementary School,Mel Coleman,mcoleman@k12.wv.us,Po Box 39 100 School Street,Fairview,WV,26570,4491752,4491866,0K04,n/a
+ADMINISTRATIVE,Marshall,Marshall County Schools,Jeffrey Crook,jcrook@k12.wv.us,PO Box 578,Moundsville,WV,26041,8434400,8434409,n/a,http://boe.mars.k12.wv.us/
+PUBLIC,Marshall,Moundsville Middle School,Sandra McAllister,ssmcallister@k12.wv.us,223 Tomlinson Avenue ,Moundsville,WV,26041,8434440,8434446,608,http://boe.mars.k12.wv.us/mjhs/index.htm
+NON-PUBLIC,Marshall,Our Lady Of Peace School,n/a,n/a,640 Old Fairmont Pike ,Wheeling,WV,26003,2421383,n/a,n/a,http://www.olpschool.org
+PUBLIC,Marshall,Washington Lands Elementary School,Michael Berner,mberner@k12.wv.us,Rr 4 Box 255 ,Moundsville,WV,26041,8434420,8434459,PK-5,http://boe.mars.k12.wv.us/washingtonlands/index.htm
+NON-PUBLIC,Marshall,St Francis Xavier School,n/a,n/a,600 Jefferson Avenue ,Moundsville,WV,26041,8452562,n/a,n/a,http://stfrancis-school.net
+PUBLIC,Marshall,Mcninch Primary School,Jane Duffy,jduffy@k12.wv.us,2600 Fourth Street ,Moundsville,WV,26041,8434431,8434461,PK-2,http://boe.mars.k12.wv.us/mcninch/index.htm
+PUBLIC,Marshall,John Marshall Adult Prep,n/a,n/a,John Marshall High School 1300 Wheeling Avenue,Glen Dale,WV,26038,8434444,8434419,n/a,n/a
+PUBLIC,Marshall,Glen Dale Elementary School,Kimberly Cain,kacain@k12.wv.us,407 Seventh Street ,Glen Dale,WV,26038,8434427,8434464,PK-5,http://www.edline.net/pages/glendale
+PUBLIC,Marshall,John Marshall High School,Cassandra Porter,crporter@k12.wv.us,1300 Wheeling Avenue ,Glen Dale,WV,26038,8434444,8434419,912,http://jmhs.mars.k12.wv.us/
+PUBLIC,Marshall,Cameron Elementary School,Wendy Clutter,wclutter@k12.wv.us,12 Church Street ,Cameron,WV,26033,6863305,6863502,PK06,http://boe.mars.k12.wv.us/cameronelem/index.htm
+PUBLIC,Marshall,Sherrard Middle School,Jason Marling,jmarling@k12.wv.us,1000 Fairmont Pike ,Wheeling,WV,26003,2333331,2336418,608,http://boe.mars.k12.wv.us/sherrard/index.htm
+PUBLIC,Marshall,Hilltop Elementary School,Cindy McCutcheon,cmmccutc@k12.wv.us,2 Ram Drive ,Wheeling,WV,26003,2328640,2321044,PK-5,n/a
+NON-PUBLIC,Marshall,St James & John School,n/a,n/a,52 Seventh Street ,Benwood,WV,26031,2321587,n/a,n/a,n/a
+PUBLIC,Marshall,Sand Hill Elementary School,Krenna Allender,kallender@k12.wv.us,169 Sand Hill Road,Dallas,WV,26036,5475041,5475041,K-5,http://boe.mars.k12.wv.us/sandhill/index.htm
+NON-PUBLIC,Marshall,Bishop Donahue Memorial High School,n/a,n/a,325 Logan Street ,Mcmechen,WV,26040,2333850,n/a,n/a,http://www.bishopdonahue.org
+PUBLIC,Marshall,Center Mcmechen Elementary School,Arica Holt,aholt@k12.wv.us,800 Marshall Street ,Mcmechen,WV,26040,2326530,2326520,PK-5,http://boe.mars.k12.wv.us/centermcmechen/index.htm
+PUBLIC,Marshall,Gateway Achievement Center,Amy Trowbridge,atrowbri@k12.wv.us,21 Park Street ,Moundsville,WV,26041,8434526,8434528,912,n/a
+PUBLIC,Marshall,Central Elementary School,Erin Cuffaro,ecuffaro@k12.wv.us,750 Tomlinson Avenue ,Moundsville,WV,26041,8434425,8434426,305,http://boe.mars.k12.wv.us/central/index.htm
+PUBLIC,Marshall,Cameron High School,Jack Cain,jccain@k12.wv.us,61 Maple Avenue ,Cameron,WV,26033,6863336,6863510,712,http://boe.mars.k12.wv.us/cameron/index.htm
+NON-PUBLIC,Mason,Wesleyan Holiness Academy,n/a,n/a,2300 Lincoln Avenue ,Point Pleasant,WV,25550,6751180,n/a,n/a,n/a
+PUBLIC,Mason,Beale Elementary School,Pat Brumfield,pbrumfie@k12.wv.us,12897 Huntington Road,Gallipolis Ferry,WV,25515,6751260,6751261,PK06,http://beale.maso.k12.wv.us
+PUBLIC,Mason,Wahama High School,Kenny Bond,jkbond@k12.wv.us,P.o. Box 348 ,Mason,WV,25260,7735539,7735216,712,http://whs.maso.k12.wv.us
+PUBLIC,Mason,Hannan High School,Dr. Karen Oldham,koldham@k12.wv.us,15638 Ashton Upland Road ,Ashton,WV,25503,7433212,7434513,712,n/a
+PUBLIC,Mason,Pt. Pleasant Primary,Vickie Workman,vlworkman@k12.wv.us,2200 Lincoln Ave ,Pt. Pleasant,WV,0,6751420,6751474,PK-2,n/a
+PUBLIC,Mason,Mason County School For Success,n/a,n/a,758 Scenic Drive,Point Pleasant,WV,25550,n/a,n/a,n/a,n/a
+PUBLIC,Mason,Roosevelt Elementary School,Tim Click,tclick@k12.wv.us,Route 2 Box 841 ,Point Pleasant,WV,25550,6753337,6757331,0K06,http://roosevelt.maso.k12.wv.us/index.html
+NON-PUBLIC,Mason,Christ Academy,n/a,n/a,P.o. Box 224 ,Point Pleasant,WV,25550,6751559,n/a,n/a,n/a
+PUBLIC,Mason,Leon Elementary School,Don Bower,dpbower@k12.wv.us,138 Aylor Street ,Leon,WV,25123,4581710,4582049,PK06,n/a
+PUBLIC,Mason,Mason County Career Center,Cheryl Moore,cjmoore@k12.wv.us,281 Scenic Drive ,Point Pleasant,WV,25550,6753039,6753413,n/a,n/a
+ADMINISTRATIVE,Mason,Mason County Schools,Jack Cullen,jcullen@k12.wv.us,1 Education Lane,Point Pleasant,WV,25550,6754540,6757226,n/a,http://boe.maso.k12.wv.us
+PUBLIC,Mason,Point Pleasant Junior/Senior High School,William Cottrill,wcottril@k12.wv.us,Rt. 1 Box 4 ,Point Pleasant,WV,25550,6751350,6757480,712,http://pphs.maso.k12.wv.us/
+PUBLIC,Mason,Pt. Pleasant Intermediate,Stacey Walton,smwalton@k12.wv.us,1 Walden Way ,Pt. Pleasant,WV,0,6751430,6752110,306,n/a
+PUBLIC,Mason,Ashton Elementary School,Alesis Green,agreen@k12.wv.us,4250 Ashton-Upland Road ,Ashton,WV,25503,5769931,5769935,PK06,http://ashton.maso.k12.wv.us
+PUBLIC,Mason,New Haven Elementary School,Walter Raynes,wraynes@k12.wv.us,P.o. Box 989 ,New Haven,WV,25265,8822025,8822037,PK06,n/a
+PUBLIC,McDowell,Sandy River Middle School,Sara Garrrett,sngarret@k12.wv.us,P.o. Box 419 ,Avondale,WV,24811,9382407,9382418,608,n/a
+PUBLIC,McDowell,Welch Elementary School,Kristy East,keast@k12.wv.us,1235 Stewart Street ,Welch,WV,24801,4364645,4364049,PK-5,n/a
+PUBLIC,McDowell,Iaeger Elementary School,Sheena Ashby,sashby@k12.wv.us,P.o. Box 359 Waters Street,Iaeger,WV,24844,9382227,9385258,PK-5,n/a
+NON-PUBLIC,McDowell,Twin Branch Pentecostal Academy,n/a,n/a,Po Box 580 ,Davy,WV,24828,6567448,n/a,n/a,n/a
+PUBLIC,McDowell,Bradshaw Elementary School,Deborah Maxwell,dmaxwell@k12.wv.us,P.o. Box 40 ,Bradshaw,WV,24817,9677700,9677701,PK-5,n/a
+PUBLIC,McDowell,Phoenix Center,n/a,n/a,275 Virginia Avenue ,Welch,WV,24801,4362336,4364773,n/a,n/a
+ADMINISTRATIVE,McDowell,McDowell County Schools,Nelson Spencer,nlspence@k12.wv.us,30 Central Avenue ,Welch,WV,24801,4368441,4364008,n/a,http://boe.mcdo.k12.wv.us/
+PUBLIC,McDowell,River View High School,Frazier McGuire,fmcguire@k12.wv.us,512 Mountaineer Highway ,Bradshaw,WV,24817,9677480,n/a,912,n/a
+PUBLIC,McDowell,Southside K-8,Cherlyl Cruey,ccruey@k12.wv.us,Po Box 730 ,War,WV,24892,8752283,8752238,PK08,n/a
+PUBLIC,McDowell,Kimball Elementary School,April Hedinger,ahedinge@k12.wv.us,Box 308 Route #52,Kimball,WV,24853,5857570,5857165,PK-5,n/a
+NON-PUBLIC,McDowell,Nazarene Christian Academy,n/a,n/a,1049 Riverside Drive ,Welch,WV,24801,4363827,n/a,n/a,n/a
+PUBLIC,McDowell,Fall River Elementary School,Lori Howington,lhowingt@k12.wv.us,Route 7 Drawer 70 ,Big Sandy,WV,24816,6567665,6567430,PK-5,n/a
+PUBLIC,McDowell,Career And Technology Center,Dennis Jarvis,djarvis@k12.wv.us,Drawer V ,Welch,WV,24801,4363488,4368063,n/a,n/a
+PUBLIC,McDowell,Anawalt Elementary School,Bonnie Campbell,bcampbell@k12.wv.us,Box 230 ,Anawalt,WV,24808,3834849,3834674,PK-5,n/a
+PUBLIC,McDowell,Mount View High School,Leon Gravely,lgravely@k12.wv.us,960 Mount View Road ,Welch,WV,24801,4362939,4364714,612,n/a
+PUBLIC,Mercer,Pikeview Middle School,Joshua Riffe,jlriffe@k12.wv.us,3550 Eads Mill Road ,Princeton,WV,24740,n/a,n/a,608,n/a
+PUBLIC,Mercer,Mercer Elementary School,Kelli Stanley,klstanle@k12.wv.us,1200 Mercer Street ,Princeton,WV,24740,4253160,4873617,305,n/a
+PUBLIC,Mercer,Princeton Primary,Ernie Adkins,eradkins@k12.wv.us,219b Old Bluefield Road ,Princeton,WV,24740,4873904,4872649,0K02,n/a
+PUBLIC,Mercer,Melrose Elementary School,Edie Bennett,eacooper@k12.wv.us,"Hc 71, Box 257 ",Princeton,WV,24740,4253757,4870819,K-5,n/a
+NON-PUBLIC,Mercer,Mercer Christian Academy,n/a,n/a,314-A Oakvale Road ,Princeton,WV,24740,4871603,4255671,n/a,http://www.mercerchristianacademy.org
+PUBLIC,Mercer,Mercer County Early Learning Center,Steven Hayes,sghayes@k12.wv.us,821 Broadway Street ,Princeton,WV,24740,4254251,4255117,PKPK ,n/a
+PUBLIC,Mercer,Glenwood School,Michael Morgan,mcmorgan@k12.wv.us,1734 Glenwood Park Road ,Princeton,WV,24740,4252445,4870047,0K08,n/a
+PUBLIC,Mercer,Pikeview High School,Mark Godfrey,mgodrrey@k12.wv.us,3566 Eads Mill Road ,Princeton,WV,24740,3847586,3847901,912,n/a
+PUBLIC,Mercer,Sun Valley Elementary School,Ashley Shumaker,ashumaker@k12.wv.us,Po Box 10 ,Lerona,WV,25971,3847441,3843114,K-5,n/a
+PUBLIC,Mercer,Brushfork Elementary School,Krissy Zickafoose,kmoses@k12.wv.us,Rt 4  Box 93 ,Bluefield,WV,24701,3257066,3252574,K-5,n/a
+PUBLIC,Mercer,Montcalm High School,Craig Havens,cmhavens@k12.wv.us,5366 Simmons River Road,Rock,WV,24747,5893719,5897140,712,n/a
+PUBLIC,Mercer,Spanishburg School,Melissa Boothe,mboothe@k12.wv.us,Po Box 7 ,Spanishburg,WV,25922,4255854,4251229,PK-5,n/a
+PUBLIC,Mercer,Athens School,Shelley Weiss,sweiss@k12.wv.us,Po Box 568 ,Athens,WV,24712,3849229,3847946,PK-5,n/a
+PUBLIC,Mercer,Princeton Middle School,David Lee,david.lee@k12.wv.us,300 N. Johnston Street ,Princeton,WV,24740,4257517,4872250,608,n/a
+PUBLIC,Mercer,Montcalm Elementary School,Jason Underwood,jrunderwood@k12.wv.us,Rt 2 Box 35 ,Rock,WV,24747,5895202,5897095,PK06,n/a
+PUBLIC,Mercer,Bluefield Middle School,Kimberly Miller,kjmiller@k12.wv.us,2002 Stadium Drive ,Bluefield,WV,24701,3252481,3252156,608,http://familyeducation.com/wv/bms/
+PUBLIC,Mercer,Memorial Primary,Becky Peery,rpeery@k12.wv.us,319  Memorial Avenue ,Bluefield,WV,24701,3278016,3273933,0K02,n/a
+PUBLIC,Mercer,Bluefield Intermediate,Jeffrey Johnson,jgjohnson@k12.wv.us,1301 Southview Drive ,Bluefield,WV,24701,3278339,3278348,305,n/a
+PUBLIC,Mercer,Lashmeet/Matoaka School,Dina Smith,dnjsmith@k12.wv.us,Po  Box 408 ,Matoaka,WV,24736,4678282,4677477,PK-5,http://www.geocities.com/lms-24736/
+PUBLIC,Mercer,Mercer County Technical Education Center,Stephen Akers,sbakers@k12.wv.us,1397 Stafford Drive ,Princeton,WV,24740,4259551,4250833,n/a,http://www.edline.net/pages/mercer_county_technical_educat
+PUBLIC,Mercer,Whitethorn Elementary School,Brittany Anderson,brittany.anderson@k12.wv.us,1919 Maryland Avenue ,Bluefield,WV,24701,3276217,3243894,0K02,n/a
+PUBLIC,Mercer,Ceres Elementary School,Mary Terry,mterry@k12.wv.us,Rt 2  Box 189 ,Bluefield,WV,24701,3256786,3275516,K-5,n/a
+PUBLIC,Mercer,Princeton Senior High School,Lori Comer,lcomer@k12.wv.us,1321 Stafford Drive ,Princeton,WV,24740,4258101,4252823,912,n/a
+PUBLIC,Mercer,Straley Elementary School,Angela Damon,angela.damon@k12.wv.us,810 Straley Avenue ,Princeton,WV,24740,4253173,4872724,305,n/a
+PUBLIC,Mercer,Bluewell Elementary School,Sarah Grose,sgrose@k12.wv.us,Rt 4  Box 480 ,Bluefield,WV,24701,5895057,5893723,PK-5,n/a
+PUBLIC,Mercer,Bluefield High School,Michael Collins,mrcollins@k12.wv.us,535 West Cumberland Road ,Bluefield,WV,24701,3259116,3250529,912,n/a
+PUBLIC,Mercer,Oakvale School,LaCosta Hodges,lhodges@k12.wv.us,2503 Goodwins Chapel Road ,Princeton,WV,24740,8983731,8982031,PK-5,n/a
+ADMINISTRATIVE,Mercer,Mercer County Schools,Deborah Akers,dsakers@k12.wv.us,1403 Honaker Avenue ,Princeton,WV,24740,4871551,4255844,n/a,http://boe.merc.k12.wv.us/
+PUBLIC,Mineral,Burlington Primary,Joyce Malcolm,jhmalcol@k12.wv.us,"Rt 1, Box 126 ",Burlington,WV,26710,2893073,2895116,PK-5,http://burlington.mine.k12.wv.us
+PUBLIC,Mineral,Keyser High School,Michael Lewis,michael.p.lewis@k12.wv.us,"Rt 4, Box 110 ",Keyser,WV,26726,7884230,7884234,912,http://khs.mine.k12.wv.us/
+PUBLIC,Mineral,Elk Garden School,Michael Saturday,msaturday@k12.wv.us,Rt. 1 Box 320 ,Elk Garden,WV,26717,4465141,4465425,PK-5,http://elkgarden.mine.k12.wv.us
+PUBLIC,Mineral,Frankfort Intermediate School,Jackie Beverlin,jbeverli@k12.wv.us,Po Box 427 ,Fort Ashby,WV,26719,2983616,2983557,PK04,http://fis.mine.k12.wv.us
+PUBLIC,Mineral,Keyser Headstart,n/a,n/a,251 West Piedmont Street ,Keyser,WV,26726,7884216,7884228,PKPK ,n/a
+PUBLIC,Mineral,New Creek Primary School,Robin McDowell,rmcdowel@k12.wv.us,"PO Box 97, 85 New Creek School Road",New Creek,WV,26743,7884249,7884208,PK04,http://boe.mine.k12.wv.us/newcreekprimaryschool_home.aspx
+PUBLIC,Mineral,Keyser Primary School,Barb Kesner,bkesner@k12.wv.us,590 Harley O. Staggers Drive,Keyser,WV,26726,7884508,7884510,n/a,n/a
+NON-PUBLIC,Mineral,Small World Academy (Ex K),n/a,n/a,Luann Miller Po Box 1460,Fort Ashby,WV,26719,2983736,n/a,n/a,n/a
+PUBLIC,Mineral,Fort Ashby Primary School,Dawn Burke,dburke@k12.wv.us,"Route 5, Box 1050 ",Ft. Ashby,WV,26719,2983632,2983200,0K02,http://fortashby.mine.k12.wv.us
+PUBLIC,Mineral,Mineral County Alternative School,Ashley Baker,ashley.baker@k12.wv.us,89 Baker Place,Keyser,WV,26726,7884213,7888423,912,n/a
+PUBLIC,Mineral,Keyser Middle School,Edward Holler,edward.holler@k12.wv.us,700 Harley Staggers Drive ,Keyser,WV,26726,7884220,7884225,0K08,n/a
+PUBLIC,Mineral,Frankfort High School,Joe Riley,jeriley@k12.wv.us,393 Falcon Way,Ridgeley,WV,26753,7264767,7268597,912,http://fhs.mine.k12.wv.us/
+ADMINISTRATIVE,Mineral,Mineral County Schools,Shawn Dilly,sdilly@k12.wv.us,One Baker Place,Keyser,WV,26726,7884200,7884204,n/a,http://boe.mine.k12.wv.us/
+PUBLIC,Mineral,Frankfort Middle School,Julie McBee,jmcbee@k12.wv.us,"Rt 3, Box 170 ",Ridgeley,WV,26753,7264339,7264339,508,http://fms.mine.k12.wv.us
+PUBLIC,Mineral,Wiley Ford Primary School,Paula Athey,pathey@k12.wv.us,Po Box 20 ,Wiley Ford,WV,26767,7380400,7383633,PK-2,http://wileyford.mine.k12.wv.us
+PUBLIC,Mineral,Fountain Primary School,Patricia Twigg,ptwigg@k12.wv.us,"Rt 5, Box 390 ",Keyser,WV,26726,7884215,7884229,PK04,n/a
+PUBLIC,Mineral,Mineral County Technical Center,Lois Spencer,lspencer@k12.wv.us,600 Harley O. Staggers Drive ,Keyser,WV,26726,7884240,7884243,n/a,http://mctc.mine.tec.wv.us/
+PUBLIC,Mingo,Mingo Career & Technical Center,NO,n/a,165 Bulldog Blvd.,Delbarton,WV,25670,4753347,4753797,1112,http://mcvtc.ming.tec.wv.us
+PUBLIC,Mingo,Kermit Area School (K-8),Deborah Starr,dstarr@k12.wv.us,300 Blue Devil Lane ,Kermit,WV,25674,3934130,3934137,PK08,n/a
+PUBLIC,Mingo,Tug Valley High School,Charles Doug Ward,cdward@k12.wv.us,555 Panther Drive ,Williamson,WV,25661,2352266,2352636,912,http://www.homestead.com/tugvalleyhigh
+PUBLIC,Mingo,Riverside Elementary School,NO,n/a,5 Parkway Drive ,Williamson,WV,25661,2352521,2352520,PK04,n/a
+PUBLIC,Mingo,Matewan High School,NO,n/a,100 Tiger Lane ,Matewan,WV,25678,4266555,4266292,912,http://www.angelfire.com/wv/matewanhigh
+PUBLIC,Mingo,Dingess Elementary School,Paula Hinkle Brown,phinkle@k12.wv.us,495 Messenger Branch,Dingess,WV,25671,7527036,7527036,PK04,n/a
+PUBLIC,Mingo,Burch High School,NO,n/a,Rt. 2 Box 521-A ,Delbarton,WV,25670,4752700,4755106,712,n/a
+PUBLIC,Mingo,Lenore K-8 School,Tamra Ferris,tferris@k12.wv.us,100 Ranger Avenue,Lenore,WV,25676,4752458,4752411,PK08,n/a
+NON-PUBLIC,Mingo,Omega Bible Academy,n/a,n/a,"Po Box 217 North Matewan, Wv",n/a,WV,0,4264235,n/a,n/a,n/a
+PUBLIC,Mingo,Burch PK-8,Leah Wireman,lwireman@k12.wv.us,275 Bulldog Blvd.,Delbarton,WV,25670,4752700,4755106,508,n/a
+NON-PUBLIC,Mingo,Sacred Heart,n/a,n/a,"Williamson, Wv 25661 ",n/a,WV,0,2353029,n/a,n/a,n/a
+PUBLIC,Mingo,Williamson PK-8,Shannon Blackburn,sblackburn@k12.wv.us,5 Parkway Drive ,Williamson,WV,25661,2353430,2355567,PK08,http://www.geocities.com/athens/pantheon/5711
+PUBLIC,Mingo,Mingo Central Comprehensive High,Daniel Dean,dndean@k12.wv.us,1000 King Coal Highway,Delbarton,WV,25670,n/a,n/a,912,n/a
+PUBLIC,Mingo,Mingo County Extended Learning Center,Thomas Hoffman,thoffman@k12.wv.us,165 Bulldog Blvd.,Delbarton,WV,25670,4753347,4753797,n/a,n/a
+PUBLIC,Mingo,Matewan Pk-8,Cynthia Calfee,ccalfee@k12.wv.us,100 Chambers Street ,Matewan,WV,25678,4264719,4264732,PK04,n/a
+PUBLIC,Mingo,Williamson High School,NO,n/a,801 Alderson Street ,Williamson,WV,25661,2352518,2356590,912,n/a
+PUBLIC,Mingo,Gilbert Elementary,"Daniel Dean, II",dmdean@k12.wv.us,21 Middle School Drive,Gilbert,WV,25621,6645042,6649723,PK04,n/a
+PUBLIC,Mingo,Gilbert Middle School,Beverly Bailey,bcbailey@k12.wv.us,1 Lion Country Way,Gilbert,WV,25621,6648197,6648249,712,n/a
+PUBLIC,Mingo,Burch Pk-6,NO,n/a,Rt. 3 Box 4-B ,Delbarton,WV,25670,4752141,4752627,PK04,n/a
+NON-PUBLIC,Mingo,Jammie Darrian Christian Academy,n/a,n/a,"Po Box 402 Gilbert, Wv 25621",n/a,WV,0,6643763,n/a,n/a,n/a
+ADMINISTRATIVE,Mingo,Mingo County Schools,Don Spence,dspence@k12.wv.us,110 Cinderella Road,Williamson,WV,25661,2353333,n/a,n/a,http://www.mingoboe.us/
+NON-PUBLIC,Mingo,Regional Christian School,n/a,n/a,Us Route 52 Po Box 236,Delbarton,WV,0,4753468,n/a,n/a,n/a
+PUBLIC,Monongalia,Technical Education Center,Jonathan Pollock,jpollock@k12.wv.us,1000 Mississippi Street ,Morgantown,WV,26501,2919240,2919247,n/a,n/a
+PUBLIC,Monongalia,Mountainview Elementary School,Karen Collins,kecollin@k12.wv.us,661 Greenbag Road ,Morgantown,WV,26508,2919255,2919254,PK-5,n/a
+PUBLIC,Monongalia,Morgantown High School,n/a,n/a,109 Wilson Avenue ,Morgantown,WV,26501,2919260,2919263,912,http://boe.mono.k12.wv.us/mhs/
+PUBLIC,Monongalia,Suncrest Elementary,Joanne Hines,jhines@k12.wv.us,523 Junior Avenue ,Morgantown,WV,26505,2919347,2849388,PK03,n/a
+NON-PUBLIC,Monongalia,St. Francis Central Catholic School,n/a,n/a,41 Gutherie Lane ,Morgantown,WV,26505,2915070,n/a,n/a,http://falcon.sfcc.pvt.k12.wv.us
+PUBLIC,Monongalia,Suncrest Middle School,Dawna Hicks,dhicks@k12.wv.us,360 Baldwin Street ,Morgantown,WV,26505,2919335,2849362,608,http://boe.mono.k12.wv.us/suncrestmiddle/
+PUBLIC,Monongalia,Ridgedale Elementary School,Sharon Petittle,spetittle@k12.wv.us,1550 Goshen Road ,Morgantown,WV,26508,2919231,2919215,PK-5,n/a
+NON-PUBLIC,Monongalia,Trinity Christian School,n/a,n/a,200 Trinity Way ,Morgantown,WV,26505,2914659,n/a,n/a,http://www.tcswv.org
+PUBLIC,Monongalia,Westwood Middle School,John Conrad,jbconrad@k12.wv.us,670 River Road ,Morgantown,WV,26501,2919300,2849368,608,http://boe.mono.k12.wv.us/westwood
+ADMINISTRATIVE,Monongalia,Monongalia County Schools,Frank Devono,fdevono@k12.wv.us,13 South High Street ,Morgantown,WV,26501,2919210,2913015,n/a,http://boe.mono.k12.wv.us
+NON-PUBLIC,Monongalia,Morgantown Learning Academy,n/a,n/a,123 Discovery Place ,Morgantown,WV,26508,2969554,n/a,n/a,http://www.learningacademy.org
+PUBLIC,Monongalia,Mylan Park Elementary School,Anne Lupo,alupo@k12.wv.us,901 Mylan Park Lane ,Morgantown,WV,26501,9837700,9837704,PK-5,n/a
+NON-PUBLIC,Monongalia,Alliance Christian School,n/a,n/a,200 Trinity Way ,Morgantown,WV,26505,2914659,n/a,n/a,n/a
+PUBLIC,Monongalia,Mason-Dixon  Elementary,Denice Corder,dcorder@k12.wv.us,7041 Mason Dixon Highway ,Blacksville,WV,26521,6626113,6626167,PK-5,http://boe.mono.k12.wv.us/mason/index.html
+PUBLIC,Monongalia,University High School,Kimberly Greene,kgreene@k12.wv.us,131 Baker`s Ridge Road ,Morgantown,WV,26508,2919270,2919248,912,http://hawks.mono.k12.wv.us/
+PUBLIC,Monongalia,Cheat Lake Elementary School,Dennis Gallon,dgallon@k12.wv.us,154 Crosby Road ,Morgantown,WV,26508,5942772,5942283,PK-5,http://boe.mono.k12.wv.us/cles
+PUBLIC,Monongalia,Clay-Battelle High School,David Cottrell,dcottrel@k12.wv.us,Drawer A ,Blacksville,WV,26521,4328208,4328189,612,n/a
+PUBLIC,Monongalia,North Elementary School,Natalie Webb,nlwebb@k12.wv.us,825 Chestnut Ridge Road ,Morgantown,WV,26505,2919280,2919213,PK-5,http://boe.mono.k12.wv.us/nes/
+PUBLIC,Monongalia,Eastwood Elementary School,DeAnn Hartshorn,dhartsho@k12.wv.us,677 201 St. Memorial Hwy,Morgantown,WV,26505,2848226,n/a,n/a,n/a
+NON-PUBLIC,Monongalia,Covenant Christian School,n/a,n/a,P.o. Box 342 ,Morgantown,WV,26507,2926050,n/a,n/a,n/a
+PUBLIC,Monongalia,South Middle School,Sandra Brown,skbrown@k12.wv.us,500 East Parkway Drive ,Morgantown,WV,26501,2919340,2919306,608,n/a
+PUBLIC,Monongalia,Brookhaven Elementary School,Davene Burks,dburks@k12.wv.us,1215 Baker Street ,Morgantown,WV,26508,2919236,2849355,PK-5,n/a
+NON-PUBLIC,Monongalia,Maranatha Christian Academy,n/a,n/a,275 Canyon Road ,Morgantown,WV,26508,5943717,n/a,n/a,n/a
+PUBLIC,Monongalia,Mountaineer Middle School,Crystal Nantz,cnantz@k12.wv.us,991 Price Street ,Morgantown,WV,26505,2842856,2842409,608,n/a
+NON-PUBLIC,Monongalia,Morgantown Early Learning Facility,n/a,n/a,302 Scott Avenue ,Morgantown,WV,26505,2915845,n/a,n/a,n/a
+PUBLIC,Monongalia,Skyview Elementary School,Jennifer Cox,jacox@k12.wv.us,668 River Road ,Morgantown,WV,26501,2842890,2842894,PK-5,n/a
+PUBLIC,Monroe,Peterstown Middle School,Angie Terry Mann,aterry@k12.wv.us,108 College Drive ,Peterstown,WV,24963,7534322,7535376,508,http://peterstown.monroe.k12.wv.us/
+PUBLIC,Monroe,Peterstown Elementary,Leigh Boggess,lboggess@k12.wv.us,36 College Drive ,Peterstown,WV,24963,7534328,7534786,PK04,http://pms.monroe.k12.wv.us/
+PUBLIC,Monroe,James Monroe High School,Susan Weikle,suweikle@k12.wv.us,Rt. 1 Box 97-1-A James Monroe Drive,Lindside,WV,24951,7535182,7535184,912,http://jmhs.monroe.k12.wv.us/
+PUBLIC,Monroe,Mountain View Elementary & Middle School,Cynthia Lee,cslee@k12.wv.us,Mt. View Drive P.o. Box 620,Union,WV,24983,7724903,7724907,PK08,http://mountainview.monroe.k12.wv.us/
+ADMINISTRATIVE,Monroe,Monroe County Schools,Joetta Basile,jsbasile@k12.wv.us,PO Box 330,Union,WV,24983,7723094,7725020,n/a,http://boe.monroe.k12.wv.us/
+PUBLIC,Monroe,Monroe County Vocational Center,Tracia King,tpking@k12.wv.us,"Route 1, Box 97 James Monroe Drive",Lindside,WV,24951,7539971,7539272,n/a,n/a
+PUBLIC,Morgan,Warm Springs Middle School,Orvis Brock,obrock@k12.wv.us,271 Warm Springs Way ,Berkeley Springs,WV,25411,2581500,2584600,608,http://www.edline.net/pages/Morgan_County_Schools/Schools
+PUBLIC,Morgan,Widmyer Elementary,Rhett Beckman,rbeckman@k12.wv.us,10 Myers Road ,Berkeley Springs,WV,25411,2582024,n/a,PK-2,n/a
+PUBLIC,Morgan,Paw Paw Elementary School,Melinda Kasekamp,mkasekam@k12.wv.us,60 Pirate Circle ,Paw Paw,WV,25434,3047425,9475513,0K06,http://www.edline.net/pages/Morgan_County_Schools/Schools
+ADMINISTRATIVE,Morgan,Morgan County Schools,Erich May,erich.may@k12.wv.us,247 Harrison Avenue ,Berkeley Springs,WV,25411,2582430,2589146,n/a,http://www.MorganSchools.net
+PUBLIC,Morgan,Berkeley Springs High School,Mitch Nida,mnida@k12.wv.us,149 Concord Avenue ,Berkeley Springs,WV,25411,2582871,2585058,912,http://www.edline.net/pages/Morgan_County_Schools/Schools
+PUBLIC,Morgan,Warm Springs Intermediate School,Dudley Cable,dcable@k12.wv.us,575 Warm Springs Way ,Berkeley Springs,WV,25411,2580031,n/a,305,n/a
+PUBLIC,Morgan,Pleasant View Elementary School,Keri Chilcote Cunningham,krcunnin@k12.wv.us,10500 Martinsburg Road ,Hedgesville,WV,25427,3042606,2587993,K-5,http://www.edline.net/pages/Morgan_County_Schools/Schools
+PUBLIC,Morgan,Greenwood Elementary School,NO,n/a,8989 Winchester Grade Road ,Berkeley Springs,WV,25411,2582372,n/a,K-5,http://www.edline.net/pages/Morgan_County_Schools/Schools
+PUBLIC,Morgan,Paw Paw High School,Melinda Kasekamp,mkasekam@k12.wv.us,60 Pirate Circle ,Paw Paw,WV,25434,9477425,9475513,712,http://www.edline.net/pages/Morgan_County_Schools/Schools
+PUBLIC,Nicholas,Nicholas County High School,Kendra Rapp,klrapp@k12.wv.us,30 Grizzly Rd ,Summersville,WV,26651,8722141,8723026,912,http://welcome.to/NCHS/
+PUBLIC,Nicholas,Cherry River Elementary School,Cyrus Lester,cyrus.lester@k12.wv.us,190 Riverside Drive ,Richwood,WV,26261,8466646,8466897,PK-5,http://cherryriver.nich.k12.wv.us/
+PUBLIC,Nicholas,Richwood Middle School,Gene Collins,gdcollin@k12.wv.us,2 Valley Avenue ,Richwood,WV,26261,8462638,8469632,608,n/a
+PUBLIC,Nicholas,Zela Elementary School,Teresa Morris,tmorris@k12.wv.us,165 Country Road ,Summersville,WV,26651,8721481,8721481,PK-5,n/a
+ADMINISTRATIVE,Nicholas,Nicholas County Schools,Donna Berge-Tetrick,dtetrick@k12.wv.us,400 Old Main Drive ,Summersville,WV,26651,8723611,8724626,n/a,http://boe.nich.k12.wv.us
+PUBLIC,Nicholas,Mt Nebo Elementary School,Glen Tyree,gtyree@k12.wv.us,Po Box 160 110 Schoolhouse Lane,Mt. Nebo,WV,26651,8722440,8722440,PK-5,n/a
+NON-PUBLIC,Nicholas,New Life Christian Academy,n/a,n/a,89 Broad Street ,Summersville,WV,26651,8721148,n/a,n/a,n/a
+PUBLIC,Nicholas,Glade Creek Elementary School,Tanya Martin,tjmartin@k12.wv.us,7950 Webster Road ,Summersville,WV,26651,8722882,8722882,PK-5,n/a
+PUBLIC,Nicholas,Richwood High School,Scott Williams,sewilliams@k12.wv.us,1 Valley Ave. ,Richwood,WV,26261,8462591,8462684,912,http://rhs.nich.k12.wv.us
+PUBLIC,Nicholas,Gauley River Elementary,Heather Nutter,hnutter@k12.wv.us,100 School Street,Craigsville,WV,26205,7425271,n/a,n/a,n/a
+PUBLIC,Nicholas,Summersville Middle School,Kristina Dotson,kjdotson@k12.wv.us,40 Grizzly Rd ,Summersville,WV,26651,8725092,8726314,608,n/a
+PUBLIC,Nicholas,Birch River Elementary School,Bronlynn Morlan,bmorlan@k12.wv.us,379 Birch River Road ,Birch River,WV,26610,6492651,6492651,PK-5,n/a
+PUBLIC,Nicholas,Panther Creek Elementary School,Angela Amick,aamick@k12.wv.us,10068 Canvas Nettie Road P.o.box 39,Nettie,WV,26681,8466808,8462144,PK-5,n/a
+PUBLIC,Nicholas,Summersville Elementary School,Jennifer Davis,j.rogers@k12.wv.us,108 Mckees Creek Rd ,Summersville,WV,26651,8721421,8721444,PK-5,n/a
+NON-PUBLIC,Nicholas,Summersville Seventh Day Adventist,n/a,n/a,70 Friends-R-Fun Drive ,Summersville,WV,26651,8720588,n/a,n/a,n/a
+PUBLIC,Nicholas,Mt Lookout Elementary School,JoAnn Gainer,jgainer@k12.wv.us,1945 Mt. Lookout Road ,Mt Lookout,WV,26678,8722731,8722731,PK-5,http://mtlookout.nich.k12.wv.us
+PUBLIC,Nicholas,Nicholas County Career/Technical Center,Tom Bayless,tbayless@k12.wv.us,215 Milam Addition Rd ,Craigsville,WV,26205,7425416,7423024,1111,http://ncctc.nich.tec.wv.us/index.htm
+PUBLIC,Nicholas,Dixie Elementary School,n/a,n/a,Po Box 288 1988 Dixie Highway,Dixie,WV,25059,6321323,6321323,PK-5,n/a
+NON-PUBLIC,Ohio,Abundant Life Christian,n/a,n/a,Rr2 - Box 445a ,Triadelphia,WV,26059,5474375,n/a,n/a,n/a
+PUBLIC,Ohio,Steenrod Elementary School,Michelle Dietrich,mdietric@k12.wv.us,100 Clarks Ln ,Wheeling,WV,26003,2430354,2430357,PK-5,n/a
+NON-PUBLIC,Ohio,Linsly School,n/a,n/a,60 Knox Ln ,Wheeling,WV,26003,2333260,n/a,n/a,http://www.linsly.org
+PUBLIC,Ohio,Middle Creek Elementary School,Katrina Lewis,kslewis@k12.wv.us,579 Middle Creek Road ,Triadelphia,WV,26059,2430369,2430371,PK-5,n/a
+NON-PUBLIC,Ohio,St Michaels School,n/a,n/a,1221 National Rd ,Wheeling,WV,26003,2423966,2435710,n/a,n/a
+PUBLIC,Ohio,Wheeling Park High School,Amy Minch,aminch@k12.wv.us,1976 Park View Rd ,Wheeling,WV,26003,2430400,2430449,912,http://wphs.ohio.k12.wv.us
+PUBLIC,Ohio,Elm Grove Elementary School,Richard Dunlevy,rbdunlev@k12.wv.us,85 Mil Acres Dr ,Wheeling,WV,26003,2430363,2430364,PK-5,http://wphs.ohio.k12.wv.us/elmgrove/index.html
+NON-PUBLIC,Ohio,Central Catholic High School,n/a,n/a,75 14th St ,Wheeling,WV,26002,2331660,2333187,n/a,n/a
+PUBLIC,Ohio,Warwood School,Robb Bauer,rvbauer@k12.wv.us,150 Viking Dr ,Wheeling,WV,26003,2430394,2430375,PK08,http://wphs.ohio.k12.wv.us/warwood/wms1.htm
+ADMINISTRATIVE,Ohio,Ohio County Schools,Kimberly Miller,ksmiller@k12.wv.us,2203 National Road ,Wheeling,WV,26003,2430300,2430328,n/a,http://boe.ohio.k12.wv.us
+NON-PUBLIC,Ohio,Sikora Montessori,n/a,n/a,2108 Lumber Avenue ,Wheeling,WV,26003,9058453,n/a,n/a,n/a
+PUBLIC,Ohio,Bridge Street Middle School,Joseph Kolb,jkolb@k12.wv.us,19 Junior Ave ,Wheeling,WV,26003,2430381,2430385,608,n/a
+NON-PUBLIC,Ohio,Augusta Levy Learning Center,n/a,n/a,99 N0rth Main Street ,Wheeling,WV,26003,2426722,n/a,n/a,n/a
+PUBLIC,Ohio,West Liberty Elementary School,Stacy Greer,sgreer@k12.wv.us,745 Van Meter Way ,Wheeling,WV,26003,3367221,3367222,K-5,n/a
+NON-PUBLIC,Ohio,Youth Services System,n/a,n/a,1000 Chapline St ,Wheeling,WV,26003,2332480,n/a,n/a,n/a
+PUBLIC,Ohio,Ritchie Elementary School,John Jorden,jjorden@k12.wv.us,3700 Wood St ,Wheeling,WV,26003,2430372,2430373,PK-5,n/a
+NON-PUBLIC,Ohio,St Vincent De Paul School,n/a,n/a,127 Key Ave ,Wheeling,WV,26003,2425844,2431624,n/a,n/a
+NON-PUBLIC,Ohio,Wheeling Country Day School,n/a,n/a,8 Park Rd ,Wheeling,WV,26003,2322430,2322434,n/a,n/a
+PUBLIC,Ohio,Madison Elementary School,Andrea Trio,andrea.trio@k12.wv.us,91 Zane St ,Wheeling,WV,26003,2430366,2430457,PK-5,n/a
+NON-PUBLIC,Ohio,Corpus Christi Grade School,n/a,n/a,1512 Warwood Ave ,Wheeling,WV,26003,2771220,2772823,n/a,n/a
+PUBLIC,Ohio,Wheeling Middle School,Richard McCardle,rmccardl@k12.wv.us,35th and Chapline St ,Wheeling,WV,26003,2430425,2430426,608,n/a
+PUBLIC,Ohio,Bethlehem Elementary School,Stacy Greer,sgreer@k12.wv.us,22 Chapel Rd ,Wheeling,WV,26003,2430350,2430351,K-5,n/a
+NON-PUBLIC,Ohio,Wheeling Catholic Elementary School,n/a,n/a,77 Fourteenth St ,Wheeling,WV,26003,2331515,2331516,n/a,n/a
+PUBLIC,Ohio,Triadelphia Middle School,Ann Coleman,awcolema@k12.wv.us,1636 National Rd ,Wheeling,WV,26003,2430387,2430392,608,n/a
+NON-PUBLIC,Ohio,Lyceum Preparatory Academy,n/a,n/a,83 14th Street ,Wheeling,WV,26003,2328088,n/a,n/a,n/a
+PUBLIC,Ohio,Woodsdale Elementary School,Ashlea Minch,arminch@k12.wv.us,1 Bethany Pike ,Wheeling,WV,26003,2430378,2430379,PK-5,n/a
+ADMINISTRATIVE,Pendleton,Pendleton County Schools,Charles Hedrick,cfhedric@k12.wv.us,PO Box 888,Franklin,WV,26807,3582207,3582936,n/a,http://www.pendletoncountyschools.com
+PUBLIC,Pendleton,North Fork Elementary School,Randolph West,rwest@k12.wv.us,"Po Box 186, 189 Price Way",Circleville,WV,26804,5673193,5673196,PK06,http://www.pendletoncountyschools.com/nfes/index.htm
+PUBLIC,Pendleton,Brandywine Elementary School,Katie McDonald,kathleen.mcdonald@k12.wv.us,11480 Blue Gray Trail P. O. Box 247,Brandywine,WV,26802,2495381,2495226,PK06,http://www.pendletoncountyschools.com/bes/index.htm
+PUBLIC,Pendleton,Pendleton County Middle/High School,Lori Moore,lkmoore@k12.wv.us,Po Box 40 409 Maple Avenue,Franklin,WV,26807,3582573,3587701,712,http://www.pendletoncountyschools.com/pchs/index.htm
+PUBLIC,Pendleton,Franklin Elementary School,Sandra Simmons,sasimmon@k12.wv.us,67 South Branch Street Po Box 848,Franklin,WV,26807,3042206,3587628,PK06,http://www.pendletoncountyschools.com/fes/index.htm
+NON-PUBLIC,Pleasants,Apostolic School,n/a,n/a,712 Sixth Street ,St. Marys,WV,26170,6847675,n/a,n/a,n/a
+PUBLIC,Pleasants,St. Marys High School,Jeff Sole,jsole@k12.wv.us,2330 N Pleasants Hwy,St Marys,WV,26170,6842421,6843859,912,http://www.pleasantscountyschools.com/smhs.aspx
+PUBLIC,Pleasants,St. Marys Elementary School,Tammy Haught,tthaugh@k12.wv.us,317 Washington Street ,St Marys,WV,26170,6843510,6842640,PK04,http://www.pleasantscountyschools.com/smes.aspx
+ADMINISTRATIVE,Pleasants,Pleasants County Schools,Mike Wells,gwells@k12.wv.us,202 Fairview Drive,St. Marys,WV,26170,6842215,6843569,n/a,http://www.pleasantscountyschools.com
+PUBLIC,Pleasants,Mid Ohio Valley Technical Institute,Ryan Haught,rkhaught@k12.wv.us,2134 N Pleasants Highway ,St Marys,WV,26170,6842464,6842544,n/a,http://www.pleasantscountyschools.com/movti.aspx
+PUBLIC,Pleasants,Pleasants County Middle School,Lori Barnhart,labarnha@k12.wv.us,510 Riverview Drive ,Belmont,WV,26134,2995275,6652451,508,http://www.pleasantscountyschools.com/pcms.aspx
+PUBLIC,Pleasants,Belmont Elementary School,Eric Croasmun,ecroasmun@k12.wv.us,512 Riverview Drive ,Belmont,WV,26134,2995274,6652408,PK04,http://www.pleasantscountyschools.com/bes.aspx
+NON-PUBLIC,Pocahontas,Lamp Of Youth Christian Academy,n/a,n/a,Po Box 157 ,Green Bank,WV,24944,4564069,n/a,n/a,n/a
+PUBLIC,Pocahontas,Marlinton Middle School,Dustin Lambert,dlambert@k12.wv.us,"Route 2, Box 52s ",Buckeye,WV,24924,7996773,7997278,508,http://pocahontas-k12.wvnet.edu/mms
+PUBLIC,Pocahontas,Green Bank Elementary-Middle School,Ricky Sharp,risharp@k12.wv.us,"Route 1, Box 5 ",Green Bank,WV,24944,4564865,4565162,PK08,http://pocahontas-k12.wvnet.edu/greenbank/
+ADMINISTRATIVE,Pocahontas,Pocahontas County Schools,Terrence Beam,tbeam@k12.wv.us,926 Fifth Avenue ,Marlinton,WV,24954,7994505,7994499,n/a,http://pocahontas-k12.wvnet.edu/boe/
+PUBLIC,Pocahontas,Pocahontas County High School,Joe Riley,jwriley@k12.wv.us,"Route 1, Box 133a ",Dunmore,WV,24934,7996565,7996893,912,http://pocahontas-k12.wvnet.edu/pchs/
+PUBLIC,Pocahontas,Marlinton Elementary School,Phillip Anderson,panderso@k12.wv.us,926a Fifth Avenue ,Marlinton,WV,24954,7996551,7996552,PK04,http://pocahontas-k12.wvnet.edu/marlinton/
+PUBLIC,Pocahontas,Hillsboro Elementary School,Rebecca Spencer,raspencer@k12.wv.us,"Hc 64, Box 399 ",Hillsboro,WV,24946,6534221,6534212,PK-5,http://pocahontas-k12.wvnet.edu/hillsboro/
+PUBLIC,Preston,Bruceton School,Belinda Moss,blkmoss@k12.wv.us,P.o. Box 141 141 Morgantown Street,Bruceton Mills,WV,26525,3792593,3794079,PK08,http://www.brucetonschool.org
+PUBLIC,Preston,Aurora Elementary,Debora Hibbs,dhibbs@k12.wv.us,125 Aurora School Road ,Aurora,WV,26705,7353781,7356805,PK08,n/a
+PUBLIC,Preston,Preston High School,Steve Plum,splum@k12.wv.us,400 Knight Drive ,Kingwood,WV,26537,3290400,3293528,912,n/a
+PUBLIC,Preston,Kingwood Elementary,Jill Zeigler ,jzeigler@k12.wv.us,207 S Price Street ,Kingwood,WV,26537,3291034,3291035,PK-5,http://glade.webs.k12.wv.us/~kinelem
+PUBLIC,Preston,Terra Alta/East Preston School,Cathern Reeves,creeves@k12.wv.us,1103 East State Avenue ,Terra Alta,WV,26764,7892344,7892596,PK08,n/a
+PUBLIC,Preston,Rowlesburg School,Pete Pell,ppell@k12.wv.us,46 Center Street ,Rowlesburg,WV,26425,4549311,4549313,PK08,n/a
+ADMINISTRATIVE,Preston,Preston County Schools,Stephen Wotring,swotring@k12.wv.us,731 Preston Drive ,Kingwood,WV,26537,3290580,3290720,n/a,http://www.prestonboe.com
+PUBLIC,Preston,South Preston School,Jim Hoit,jhoit@k12.wv.us,5258 South Preston Highway,Tunnelton,WV,26444,5682292,5682372,0K08,n/a
+PUBLIC,Preston,West Preston School,Leah Moss,leah.moss@k12.wv.us,113 Eby School Road,Arthurdale,WV,26520,8643835,8644037,n/a,n/a
+PUBLIC,Preston,Central Preston Middle School,Karen Ovesney,kovesney@k12.wv.us,500 Knight Drive ,Kingwood,WV,26537,3290033,3292389,608,n/a
+PUBLIC,Preston,Fellowsville Elementary,Gregory Cummings,gcummings@k12.wv.us,139 Fellowsville School Rd ,Tunnelton,WV,26444,8924456,8923866,PK-5,n/a
+PUBLIC,Putnam,Hurricane Middle,Mary Ann Allen,maallen@k12.wv.us,518 Midland Trail ,Hurricane,WV,25526,5629271,5627163,608,http://www.putnamschools.com/hms/
+PUBLIC,Putnam,George Washington Elementary School,Twyla Melton,tmelton@k12.wv.us,P.o. Box 680 Route 62 North,Eleanor,WV,25070,5862184,5864275,PK-5,n/a
+NON-PUBLIC,Putnam,Teays Valley Christian School,n/a,n/a,4373 Teays Valley Road ,Scott Depot,WV,25560,7579550,n/a,n/a,http://www.teaysvalleychristian.org
+PUBLIC,Putnam,Mountain View Elementary School,Jill Cox,jlcox@k12.wv.us,3967 Teays Valley Road ,Hurricane,WV,25526,n/a,n/a,PK-5,n/a
+PUBLIC,Putnam,Conner Street Elementary,Kristi Barker,n/a,445 Conner Street ,Hurricane,WV,25526,5629351,5623635,PK-5,n/a
+PUBLIC,Putnam,Putnam Career & Technical Center,C. D. Caldwell,cdcaldwe@k12.wv.us,P.o. Box 640 300 Roosevelt Bldv,Eleanor,WV,25070,5863494,5864467,n/a,n/a
+PUBLIC,Putnam,West Teays Elementary,Valerie Fowler,vfowler@k12.wv.us,3676 Teays Vly Road ,Hurricane,WV,25526,7576711,7578098,PK-5,http://www.putnamschools.com/wtes/index.htm
+PUBLIC,Putnam,Buffalo Elementary School,Sherry Craigo,scraigo@k12.wv.us,"Rt. 2, Box 93 ",Buffalo,WV,25033,9372651,9372651,PK-5,n/a
+PUBLIC,Putnam,Poca High School,David Harper,dwharper@k12.wv.us,"Rt. 1, Box 5b ",Poca,WV,25159,7555001,7555009,912,n/a
+PUBLIC,Putnam,Rock Branch Elementary,Beth Scott,beth.scott@k12.wv.us,4616 1st Avenue ,Nitro,WV,25143,7551443,n/a,PK-5,n/a
+PUBLIC,Putnam,Buffalo High School,Tawny Stilianoudakis,tstilian@k12.wv.us,3317 Buffalo Road ,Buffalo,WV,25033,9372661,9373470,912,n/a
+PUBLIC,Putnam,Lakeside Elementary,Lisa Lewis,lglewis@k12.wv.us,2550 Us Rt 60 ,Hurricane,WV,25526,5623630,5623630,PK-5,n/a
+PUBLIC,Putnam,Poca Middle School,Debbie Shrewsbury,dshrewsb@k12.wv.us,P.o. Box 647 Route 62 South,Poca,WV,25159,7557343,7558930,608,http://www.putnamschools.com/pms
+PUBLIC,Putnam,Hometown Elementary,Barbara Black,brlblack@k12.wv.us,P.o. Box 249 Route 62 North,Hometown,WV,25109,5862395,5862395,PK-5,n/a
+NON-PUBLIC,Putnam,Truth & Liberty Christian School,n/a,n/a,P.o. Box 151 ,Hurricane,WV,25526,5629740,n/a,n/a,n/a
+PUBLIC,Putnam,George Washington Middle School,Tiauna Slack,tslack@k12.wv.us,P.o. Box 660 Route 62 North,Eleanor,WV,25070,5862875,5863037,608,http://www.putnamschools.com/gwms/
+PUBLIC,Putnam,Eastbrook Elementary School,Martica Dillon,mjdillon@k12.wv.us,1600 Bills Creek Road ,Winfield,WV,25213,7559835,n/a,PK-5,n/a
+NON-PUBLIC,Putnam,Calvary Baptist Academy,n/a,n/a,3655 Teays Valley Road ,Hurricane,WV,25526,7576768,n/a,n/a,n/a
+PUBLIC,Putnam,Winfield Elementary,Candi Hatfield,chatfield@k12.wv.us,2 Wall Street ,Winfield,WV,25213,5862565,5865351,PK-5,n/a
+PUBLIC,Putnam,Confidence Elementary,Colleen Huston,chuston@k12.wv.us,Hc Box 163 ,Red House,WV,25168,5862041,5860748,PK-5,n/a
+PUBLIC,Putnam,Winfield High School,Bruce Mcgrew,bmcgrew@k12.wv.us,3022 Winfield Road ,Winfield,WV,25213,5863279,5863601,912,n/a
+PUBLIC,Putnam,Scott Teays Elementary,Melissa Isaacs,misaacs@k12.wv.us,4308 Teays Valley Road ,Scott Depot,WV,25560,7577279,7574114,PK-5,n/a
+ADMINISTRATIVE,Putnam,Putnam County Schools,John Hudson,jghudson@k12.wv.us,77 Courthouse Drive,Winfield,WV,25213,5860500,5860553,n/a,http://www.putnamschools.com
+PUBLIC,Putnam,Hurricane High School,Richard Campbell,rrcampbell@k12.wv.us,3350 Teays Valley Road ,Hurricane,WV,25526,5623991,5625460,912,n/a
+PUBLIC,Putnam,Poca Elementary,Lisa Raines,lraines@k12.wv.us,P.o. Box 430 Route 62 South,Poca,WV,25159,7557561,7557561,PK-5,n/a
+PUBLIC,Putnam,Winfield Middle School,Matt Shock,matt.shock@k12.wv.us,3280 Winfield Road ,Winfield,WV,25213,5863072,5860920,608,n/a
+PUBLIC,Putnam,Hurricane Town Elementary,Elizabeth Hoh,elizabeth.hoh@k12.wv.us,300 Harbour Lane ,Hurricane,WV,25526,5623610,5623610,PK-5,n/a
+ADMINISTRATIVE,Raleigh,Raleigh County Schools,David Price,cdprice@k12.wv.us,105 Adair Street ,Beckley,WV,25801,2564500,2564739,n/a,http://boe.rale.k12.wv.us/
+NON-PUBLIC,Raleigh,Greater Beckley Christian,n/a,n/a,P.o. Box 670 ,Prosperity,WV,25909,2551571,n/a,n/a,n/a
+PUBLIC,Raleigh,Trap Hill Middle School,Jerry Bawgus,jdbawgus@k12.wv.us,665 Coal River Road ,Glen Daniel,WV,25844,9345392,n/a,608,n/a
+PUBLIC,Raleigh,Ghent Elementary,Shanna Regester,smregester@k12.wv.us,Po Box 350 ,Ghent,WV,25843,7873631,n/a,PK-5,n/a
+PUBLIC,Raleigh,Academy Of Careers And Technology,Charles Pack,cmpack@k12.wv.us,390 Stanaford Road ,Beckley,WV,25801,2564615,n/a,n/a,n/a
+PUBLIC,Raleigh,Stratton Elementary,Tammy Acord,tacord@k12.wv.us,1129 South Fayette Street ,Beckley,WV,25801,2564604,n/a,PK-5,n/a
+PUBLIC,Raleigh,Daniels Elementary,Leslie James,aljames@k12.wv.us,Box 689 4-H Lake Road,Daniels,WV,25832,2564622,n/a,PK-5,https://www.edline.net/pages/Daniels_Elementary_School
+NON-PUBLIC,Raleigh,Teel Educational Center,n/a,n/a,219 Front Street ,Beckley,WV,25801,2539713,n/a,n/a,n/a
+PUBLIC,Raleigh,Shady Spring High,Deanna Massey,dlmassey@k12.wv.us,Po Box 2001 ,Shady Spring,WV,25918,2564647,n/a,912,n/a
+PUBLIC,Raleigh,Sophia-Soak Creek Elementary,Rebecca Hendrick,rhendric@k12.wv.us,Po Box 487 ,Sophia,WV,25921,6834541,n/a,PK-5,n/a
+PUBLIC,Raleigh,Cranberry-Prosperity Elementary,Alicia Lett,alett@k12.wv.us,4575 Robert C Byrd Dr ,Beckley,WV,25801,2564588,n/a,PK-5,n/a
+NON-PUBLIC,Raleigh,Mt. Tabor Christian School,n/a,n/a,262 Mt. Tabor Road ,Beckley,WV,25801,2529739,n/a,n/a,n/a
+PUBLIC,Raleigh,Independence High School,Rick Shupe,rcshupe@k12.wv.us,Po Box 1595 ,Coal City,WV,25823,6833228,n/a,912,n/a
+PUBLIC,Raleigh,Stanaford Elementary School,Michelle Blankenship,mblankenship@k12.wv.us,950 Stanaford Road ,Beckley,WV,25801,2564626,n/a,PK-5,n/a
+PUBLIC,Raleigh,Coal City Elementary,David Null,danull@k12.wv.us,Po Box 1240 ,Coal City,WV,25823,6835001,683-3165,PK-5,https://boe.rale.k12.wv.us/cces
+NON-PUBLIC,Raleigh,Childrens House,n/a,n/a,203 South Kanawha Street ,Beckley,WV,25801,2528569,n/a,n/a,n/a
+PUBLIC,Raleigh,Independence Middle School,Teresa Lester,tlester@k12.wv.us,Po Box 1171 ,Sophia,WV,25921,6834542,n/a,608,https://boe.rale.k12.wv.us/ims
+PUBLIC,Raleigh,Mabscott Elementary,Beverly Weiss,bweis@k12.wv.us,Box 174 ,Mabscott,WV,25871,2564583,n/a,PK-5,https://boe.rale.k12.wv.us/domain/1943
+PUBLIC,Raleigh,Bradley Elementary School,Mary McClung,mrmcclun@k12.wv.us,210 Bradley School Road ,Mt Hope,WV,25880,2564605,n/a,PK-5,https://boe.rale.k12.wv.us/bres
+NON-PUBLIC,Raleigh,Sophia Christian Academy,n/a,n/a,P.o. Box 1285 ,Sophia,WV,25921,6833227,n/a,n/a,n/a
+PUBLIC,Raleigh,Park Middle School,Jacqueline McPeake,jmcpeake@k12.wv.us,212 Park Avenue ,Beckley,WV,25801,2564586,n/a,608,https://boe.rale.k12.wv.us/pkms
+PUBLIC,Raleigh,Hollywood Elementary,Tamber Hodges,tchodges@k12.wv.us,Po Box 7 ,Macarthur,WV,25873,2564579,n/a,PK-5,https://boe.rale.k12.wv.us/Page/29
+NON-PUBLIC,Raleigh,St. Franics De Sales,n/a,n/a,622 South Oakwood ,Beckley,WV,25801,2524087,n/a,n/a,n/a
+PUBLIC,Raleigh,Raleigh-Boone Technical Center,n/a,n/a,11823 Coal River Road ,Whitesville,WV,25209,n/a,n/a,n/a,n/a
+PUBLIC,Raleigh,Beckley Elementary,Meghan Houck,mhouck@k12.wv.us,399 Gray Flats Road ,Beckley,WV,25801,2564575,2564575,PK-5,https://wv01919578.schoolwires.net/Page/9
+PUBLIC,Raleigh,Fairdale Elementary School,Shana Alderman,salderman@k12.wv.us,Po Box 10 ,Fairdale,WV,25839,9340753,n/a,PK-5,https://boe.rale.k12.wv.us/fes
+NON-PUBLIC,Raleigh,Trinity Christian Academy,n/a,n/a,P.o. Box 99 ,Macarthur,WV,25873,2528474,n/a,n/a,n/a
+PUBLIC,Raleigh,Woodrow Wilson High School,Ron Cantley,rbcantle@k12.wv.us,400 Stanaford Road ,Beckley,WV,25801,2564646,n/a,912,http://wwhs.rale.k12.wv.us
+PUBLIC,Raleigh,Marsh Fork Elementary,Melanie Morrison,mddaniels@k12.wv.us,5690 Coal River Road ,Naoma,WV,25174,8541951,n/a,PK-5,https://boe.rale.k12.wv.us/mfes
+PUBLIC,Raleigh,Crescent Elementary,Theresa Lewis,tblewis@k12.wv.us,205 Crescent Road ,Beckley,WV,25801,2564576,n/a,PK-5,https://boe.rale.k12.wv.us/ces
+NON-PUBLIC,Raleigh,House Of Prayer Christian School,n/a,n/a,P.o.box 997 ,Sophia,WV,25921,6839715,n/a,n/a,n/a
+PUBLIC,Raleigh,Liberty High School,Lori Knight,lmknight@k12.wv.us,Po Box 265 ,Glen Daniel,WV,25844,9345306,n/a,912,https://boe.rale.k12.wv.us/lhs
+PUBLIC,Raleigh,Shady Spring Elementary,Penny Carrico,pcarrico@k12.wv.us,Po Box 2009 ,Shady Spring,WV,25918,2564633,n/a,PK-5,https://boe.rale.k12.wv.us/site/Default.aspx?PageID=39
+PUBLIC,Raleigh,Crab Orchard Elementary,Rosemarie Kelly,rskelly@k12.wv.us,Po Box 727 Rt 16,Crab Orchard,WV,25827,2564577,n/a,PK-5,https://wv01919578.schoolwires.net/domain/2035
+NON-PUBLIC,Raleigh,Mabscott Christian Academy,n/a,n/a,P.o. Box 563 ,Mabscott,WV,25871,2526585,n/a,n/a,n/a
+PUBLIC,Raleigh,Beckley-Stratton Middle School,Yahon Smith,ylsmith@k12.wv.us,401 Gray Flats Road ,Beckley,WV,25801,2564616,n/a,608,https://boe.rale.k12.wv.us/site/Default.aspx?PageID=47
+PUBLIC,Raleigh,Maxwell Hill Elementary,Amanda Richmond,arichmond@k12.wv.us,1001 Maxwell Hill Road ,Beckley,WV,25801,2564599,n/a,PK-5,https://boe.rale.k12.wv.us/site/Default.aspx?PageID=37
+PUBLIC,Raleigh,Clear Fork District Elementary,Debbra Black,ddblack@k12.wv.us,P.o. Box 127 ,Clear Creek,WV,25044,8541000,n/a,PK-5,http://clearforkdistrict.rale.k12.wv.us
+NON-PUBLIC,Raleigh,Victory Baptist Academy,n/a,n/a,P.o. Box 549 ,Beaver,WV,25813,2554535,n/a,n/a,n/a
+PUBLIC,Raleigh,Shady Spring Middle School,John Henry,jjhenry@k12.wv.us,500 Flat Top Road ,Shady Spring,WV,25918,2564570,n/a,608,http://www.edline.net/pages/Shady_Spring_JHS
+https://wv01919578.schoolwires.net/Page/31,Raleigh,Lester Elementary,Shanna Regester,smregester@k12.wv.us,Box 727 ,Lester,WV,25865,9345885,n/a,PK-5,https://wv01919578.schoolwires.net/Page/31
+PUBLIC,Randolph,Valley Head Elementary School,n/a,n/a,General Delivery ,Valley Head,WV,26294,3394950,3394474,K-5,http://boe.rand.k12.wv.us/valleyhead
+ADMINISTRATIVE,Randolph,Randolph County Schools,Gabriel Devono,gjdevono@k12.wv.us,40 Eleventh Street,Elkins,WV,26241,6369150,6369157,n/a,http://boe.rand.k12.wv.us
+PUBLIC,Randolph,Midland Elementary School,Teena Wallace,tcwallac@k12.wv.us,150 Kennedy Drive ,Elkins,WV,26241,6369186,6369187,PK-5,http://boe.rand.k12.wv.us/midland
+PUBLIC,Randolph,George Ward Elementary School,Suzanne Cain,scain@k12.wv.us,P.o. Box 278 ,Mill Creek,WV,26280,3354975,3354976,PK-5,http://boe.rand.k12.wv.us/georgeward
+PUBLIC,Randolph,Randolph Technical Center,John Daniels,jhkdanie@k12.wv.us,200 Kennedy Drive ,Elkins,WV,26241,6369195,6369169,1111,http://boe.rand.k12.wv.us/rcvtc
+PUBLIC,Randolph,Jennings Randolph Elementary School,Rochelle Chenoweth,rmchenow@k12.wv.us,101 Scott Ford Road ,Elkins,WV,26241,6369181,6369166,PK-5,http://boe.rand.k12.wv.us/jenningsrandolph
+PUBLIC,Randolph,Elkins High School,Chris Hamrick,chamrick@k12.wv.us,100 Kennedy Drive ,Elkins,WV,26241,6369170,6369168,912,http://boe.rand.k12.wv.us/ehs
+PUBLIC,Randolph,Pickens Elementary/High School,Christine Long,christine.long@k12.wv.us,One Panther Place ,Pickens,WV,26230,9245525,9246460,0K12,http://boe.rand.k12.wv.us/pickens
+PUBLIC,Randolph,Elkins Middle School,Angela Wilson,avwilson@k12.wv.us,308 Robert E. Lee Avenue ,Elkins,WV,26241,6369176,6369178,608,http://boe.rand.k12.wv.us/ems
+PUBLIC,Randolph,Coalton Elementary School,Alyssa Tallman,aktallman@k12.wv.us,P.o. Box 129 ,Coalton,WV,26257,6369164,6369165,PK-5,http://boe.rand.k12.wv.us/coalton
+PUBLIC,Randolph,North Elementary School,Cynthia Bodkin,cbodkin@k12.wv.us,"Route 2, Box 320 ",Elkins,WV,26241,6369188,6369188,PK-5,http://boe.rand.k12.wv.us/north
+PUBLIC,Randolph,Homestead Elementary School,Suzanne D. Cain,scain@k12.wv.us,P.o. Box 158 ,Dailey,WV,26259,3384903,3384908,PK-5,http://boe.rand.k12.wv.us/homestead
+PUBLIC,Randolph,Elkins Third Ward Elementary School,n/a,n/a,111 Nathan Street ,Elkins,WV,26241,6369183,6369184,PK-5,http://boe.rand.k12.wv.us/thirdward
+PUBLIC,Randolph,Randolph County Alternative Center,n/a,n/a,40 11th Street ,Elkins,WV,26241,6369150,6369157,712,http://boe.rand.k12.wv.us/rcalt
+PUBLIC,Randolph,Beverly Elementary School,Paul Zickefoose,pzickefo@k12.wv.us,P.o. Box 209 ,Beverly,WV,26253,6369162,6369163,PK-5,http://boe.rand.k12.wv.us/beverly
+PUBLIC,Randolph,Tygarts Valley Middle/High School,Steve Wamsley,sewamsle@k12.wv.us,10189 Seneca Trail,Mill Creek,WV,26280,3354575,3356963,612,http://boe.rand.k12.wv.us/tvmhs
+PUBLIC,Randolph,Harman Elementary/High School,Laura Hawkins,lehawkins@k12.wv.us,Po Box 130 ,Harman,WV,26270,2274114,2273610,PK-12,http://boe.rand.k12.wv.us/harman
+PUBLIC,Ritchie,Ritchie County Middle,Katrina White,kdwhite@k12.wv.us,105 Ritchie County School Rd ,Ellenboro,WV,26346,8693512,8693519,608,http://www.ritchieschools.com/ritchiecountymiddleschool_home.aspx
+PUBLIC,Ritchie,Creed Collins Elementary,Debbie White,dbkwhite@k12.wv.us,512 Collins Avenue ,Pennsboro,WV,26415,6592140,6593322,PK-5,http://www.ritichieschools.com/creedcollinselementaryschool_home.aspx
+PUBLIC,Ritchie,Ellenboro Elementary,Vickie Williams,vickie.williams@k12.wv.us,P O Box 219 ,Ellenboro,WV,26346,8693305,8693306,PK-5,http://www.ritichieschools.com/ellenboroelementaryschool_home.aspx
+PUBLIC,Ritchie,Ritchie County High School,Kelly Waggoner,kwaggon@k12.wv.us,107 Ritchie County School Rd ,Ellenboro,WV,26346,8693526,8693031,912,http://www.ritchieschools.com/ritchiecountyhighschool_home.aspx
+PUBLIC,Ritchie,Smithville Elementary,Casey Kerns,cakerns@k12.wv.us,P O Box 30 ,Smithville,WV,26178,4773273,4773118,PK-5,http://www.ritchieschools.com/smithvilleelementaryschool_home.aspx
+PUBLIC,Ritchie,Harrisville Elementary,Laura Snodgrass,lsnodgra@k12.wv.us,1201 E Main Street ,Harrisville,WV,26362,6432220,6432710,PK-5,http://www.ritchieschools.com/harrisvilleelementaryschool_home.aspx
+ADMINISTRATIVE,Ritchie,Ritchie County Schools,Ora Coffman,ocoffman@k12.wv.us,134 South Penn Avenue,Harrisville,WV,26362,6432991,6432994,n/a,http://www.ritchieschools.com
+NON-PUBLIC,Ritchie,"The Highland School, Inc",n/a,n/a,"Rt. 83, Box 56 ",Highland,WV,26346,8693250,n/a,n/a,n/a
+PUBLIC,Roane,Roane County High,Bill Heis,wheis@k12.wv.us,One Raider Way ,Spencer,WV,25276,9276420,9276404,912,n/a
+PUBLIC,Roane,Walton Elementary/Middle School,Natalie Garner,ngarner@k12.wv.us,90 School Drive ,Walton,WV,25286,5776731,5776228,PK08,n/a
+PUBLIC,Roane,Reedy Elementary School,n/a,n/a,Roosevelt St ,Reedy,WV,25270,9276433,n/a,PK06,http://www.roanecountyschools.com/res/
+ADMINISTRATIVE,Roane,Roane County Schools,Dr. Richard Duncan,rdduncan@k12.wv.us,PO Box 609,Spencer,WV,25276,9276400,9276402,n/a,http://www.roanecountyschools.com
+PUBLIC,Roane,Roane-Jackson Technical Center,Ben Cummings,bpcummin@k12.wv.us,9450 Spencer Rd,Leroy,WV,25252,3727335,n/a,n/a,http://www.rjtcwv.com/
+PUBLIC,Roane,Spencer Middle School,Jackie Durst,jdurst@k12.wv.us,102 Chapman Avenue ,Spencer,WV,25276,9276415,9276416,508,http://www.roanecountyschools.com/sms
+PUBLIC,Roane,Spencer Elementary School,Kimberly Frum,kfrum@k12.wv.us,85 Clay Road ,Spencer,WV,25276,9276428,9276429,PK04,http://www.roanecountyschools.com/spc/
+PUBLIC,Roane,Geary Elementary School,Brenda Chadwell,bchadwel@k12.wv.us,P O Box 89 ,Left Hand,WV,25251,5653721,5653741,PK08,http://gems.roanecountyschools.com/
+NON-PUBLIC,Roane,Cross Country Christian Academy,n/a,n/a,170 Hollywood Road ,Newton,WV,25266,5653399,n/a,n/a,n/a
+PUBLIC,Summers,Summers County High School,Kari Vicars,kvicars@k12.wv.us,One Bobcat Drive ,Hinton,WV,25951,4666040,4666044,912,http://schs.summers.k12.wv.us/
+PUBLIC,Summers,Summers Middle School,Susie Hudson,mhudson@k12.wv.us,400 Temple St ,Hinton,WV,25951,4666030,4662271,508,http://sms.summers.k12.wv.us/
+PUBLIC,Summers,Hinton Area Elementary School,Angela Gumm,agumm@k12.wv.us,121 Park Avenue ,Hinton,WV,25951,4666024,4666008,PK04,http://hinton.summers.k12.wv.us/
+ADMINISTRATIVE,Summers,Summers County Schools,Kimberly J. Rodes,krodes@k12.wv.us,116 Main Street ,Hinton,WV,25951,4666000,4666008,n/a,http://boe.summers.k12.wv.us
+NON-PUBLIC,Summers,Pipestem Christian Academy,n/a,n/a,P. O. Box 49 ,Pipestem,WV,25979,4662413,4662413,n/a,n/a
+PUBLIC,Summers,Jumping Branch Elementary School,Angela Taylor,admiller@k12.wv.us,P O  Box 9 ,Jumping Branch,WV,25969,4666025,4666025,PK-5,http://jumpingbranch.summers.k12.wv.us/
+PUBLIC,Summers,Talcott Elementary School,Renae Jones,crjones@k12.wv.us,P O  Box 140 ,Talcott,WV,24981,4666029,4666004,PK-5,http://talcott.summers.k12.wv.us/
+ADMINISTRATIVE,Taylor,Taylor County Schools,Kathleen Green,kgreen@k12.wv.us,71 Utt Drive,Grafton,WV,26354,2652497,2652508,n/a,http://www.taylorcountyboe.net/
+NON-PUBLIC,Taylor,Fellowship Christian Academy,n/a,n/a,1100 W. Main Street ,Grafton,WV,26354,2655890,n/a,n/a,n/a
+PUBLIC,Taylor,Grafton High School,Lori Shumaker,lrshumak@k12.wv.us,400 Riverside Drive ,Grafton,WV,26354,2653046,2652156,912,http://www.taylorcountyboe.net/ghs
+PUBLIC,Taylor,West Taylor Elementary School,Jamison J. Fisher,j.j.fisher@k12.wv.us,200 Morrow Cross Rd,Flemington,WV,26347,8420490,8420492,PK04,http://www.taylorcountyboe.net/wtes
+PUBLIC,Taylor,Anna Jarvis Elementary School,Heather Gunderson,hmugnano@k12.wv.us,650 N. Pike Street ,Grafton,WV,26354,3044090,2652560,PK04,http://www.taylorcountyboe.net/ajes
+PUBLIC,Taylor,Taylor County Vocational Center,n/a,n/a,115 Luby St ,Grafton,WV,26354,2651050,2651058,n/a,http://www.wvonline.com/techcenter
+PUBLIC,Taylor,Taylor County Middle School,Matthew Keener,mkeener@k12.wv.us,"Rt. 2, Box 148a ",Grafton,WV,26354,2650722,2654623,508,http://www.taylorcountyboe.net/tcms
+PUBLIC,Taylor,Flemington Elementary School,Angela Keener,angela.keener@k12.wv.us,824 Simpson Rd,Flemington,WV,26347,7394749,7394671,PK04,http://www.taylorcountyboe.net/fes
+PUBLIC,Tucker,Tucker County High School,Jay Hamric,jhamric@k12.wv.us,116 Mountain Lion Way ,Hambleton,WV,26269,4782651,4784357,912,http://www.tuckercountyschools.com/tchs.htm
+PUBLIC,Tucker,Davis Thomas Elementary Middle School,Alisha Lambert,arlambert@k12.wv.us,100 Quail Ridge Rd Po Box 250,Thomas,WV,26292,4634422,4634424,PK08,http://www.tuckercountyschools.com/dtems.htm
+PUBLIC,Tucker,Tucker Valley Elementary Middle School,Teresa Brusak,tbrusak@k12.wv.us,81 Tucker Valley Road ,Hambleton,WV,26269,4783606,4784888,PK08,http://www.tuckercountyschools.com/tvems.htm
+ADMINISTRATIVE,Tucker,Tucker County Schools,"Dr. Eddie R. Campbell, Jr.",ecampbell@k12.wv.us,100 Education Lane,Parsons,WV,26287,4782771,4783422,n/a,http://www.tuckercountyschools.com
+PUBLIC,Tyler,Tyler Consolidated High School,James  Kent  Yoho,jkyoho@k12.wv.us,1993 Silver Knight Drive ,Sistersville,WV,26175,7589000,7589006,912,n/a
+PUBLIC,Tyler,Sistersville Elementary School,Krista  DeVaughn,khanood@k12.wv.us,651 Terrace Circle ,Sistersville,WV,26175,6522601,6522603,PK-5,n/a
+ADMINISTRATIVE,Tyler,Tyler County Schools,Robin Daquilante ,rdaquila@k12.wv.us,PO Box 25,Middlebourne,WV,26149,7582145,7584566,n/a,http://tylercountypublicschools.com
+PUBLIC,Tyler,Tyler Consolidated Middle School,Suzette Miller,sdmiller@k12.wv.us,1993 Silver Knight Drive ,Sistersville,WV,26175,7589000,7589006,608,http://tchs.tyle.k12.wv.us/tcms/tcms.htm
+PUBLIC,Tyler,Arthur I Boreman Elementary School,Scott Wall,srwall@k12.wv.us,P O Box 299 ,Middlebourne,WV,26149,7582152,7582148,PK-5,n/a
+PUBLIC,Upshur,Tennerton Elementary,Tristen Gray,ttgray@k12.wv.us,"Route 6, Box 513 ",Buckhannon,WV,26201,4721278,4728530,PK-5,n/a
+PUBLIC,Upshur,Hodgesville Elementary,Janet Phillips,jlphilli@k12.wv.us,"Rt.5, Box 383 ",Buckhannon,WV,26201,4723212,n/a,PK-5,n/a
+NON-PUBLIC,Upshur,Brushy Fork Christian School,n/a,n/a,P.o. Box 205 ,Buckhannon,WV,26201,4720962,n/a,n/a,n/a
+PUBLIC,Upshur,Buckhannon Academy Elementary School,Susanne Britton,sbritton@k12.wv.us,16 College Avenue ,Buckhannon,WV,26201,4723310,n/a,PK-5,n/a
+PUBLIC,Upshur,Fred Eberle Technical Center,Rebecca Call,rebecca.bowers@k12.wv.us,RR 5 Box 2,Buckhannon,WV,26201,4721259,n/a,n/a,http://fetc.upsh.tec.wv.us/
+PUBLIC,Upshur,B-U Middle School,Renee Warner ,rewarner@k12.wv.us,"Rt. 6, Box 303 ",Buckhannon,WV,26201,4721520,4726864,608,n/a
+PUBLIC,Upshur,Washington District Elementary,Jeanne Bennett,jgbennet@k12.wv.us,"Hc36, Box 234 ",Buckhannon,WV,26201,4726599,n/a,PK-5,n/a
+PUBLIC,Upshur,Rock Cave Elementary,Amanda Craig,acraig@k12.wv.us,Rt 2 Box 2f Po Box 130,Rock Cave,WV,26201,9246969,9246969,PK-5,n/a
+NON-PUBLIC,Upshur,"Child Development Center, Wvwc",n/a,n/a,P. O. 275 ,Buckhannon,WV,0,4738348,n/a,n/a,n/a
+PUBLIC,Upshur,French Creek Elementary,Kasey Baisden,kbaisden@k12.wv.us,"Rt.2, Box 305 ",French Creek,WV,26218,9246381,9246386,PK-5,n/a
+NON-PUBLIC,Upshur,Upshur County Christian Academy,n/a,n/a,176 S. Kanawha Street ,Buckhannon,WV,26201,6137827,n/a,n/a,n/a
+ADMINISTRATIVE,Upshur,Upshur County Schools,Roy Wager,rwager@k12.wv.us,102 Smithfield Street ,Buckhannon,WV,26201,4725480,4720258,n/a,http://www.upshurschools.com
+PUBLIC,Upshur,Buckhannon Upshur High School,Eddie Vincent,edvincen@k12.wv.us,50 B.u. Drive ,Buckhannon,WV,26201,4723720,4720772,912,http://buhs.upsh.k12.wv.us/
+PUBLIC,Upshur,Union Elementary School,Sara Stankus,sstankus@k12.wv.us,20 Heavener Grove Road ,Buckhannon,WV,26201,4721394,4722780,PK-5,http://www.edline.net/pages/Union_ES
+PUBLIC,Wayne,Wayne High School,Sara Stapleton,sestaple@k12.wv.us,100 Pioneer Road ,Wayne,WV,25570,2725639,2726439,912,http://www.waynepioneers.org
+PUBLIC,Wayne,Dunlow Elementary School,Kim Mills,kkmills@k12.wv.us,32800 Route 152,Dunlow,WV,25511,3854376,3851026,PK-5,n/a
+PUBLIC,Wayne,Fort Gay PreK - 8,Greg Miller,gsmiller@k12.wv.us,#1 Viking Drive,Fort Gay,WV,25514,6485404,n/a,PK08,n/a
+PUBLIC,Wayne,Wayne Middle School,Beth Webb,bjrichmo@k12.wv.us,200 Pioneer Road ,Wayne,WV,25570,2723227,2725811,608,http://www.waynemiddle.org
+ADMINISTRATIVE,Wayne,Wayne County Schools,Todd Alexander,talexand@k12.wv.us,PO Box 70,Wayne,WV,25570,2725116,2726500,n/a,http://boe.wayn.k12.wv.us/
+PUBLIC,Wayne,Buffalo Middle School,Liz Ryder,eryder@k12.wv.us,298 Buffalo Creek Road ,Kenova,WV,25530,4296062,4297245,608,http://bms.wayn.k12.wv.us
+PUBLIC,Wayne,Wayne Elementary School,Bill Preece,wpreece@k12.wv.us,80 McGinnis Drive,Wayne,WV,25570,2726342,2726450,PK-5,n/a
+PUBLIC,Wayne,Lavalette Elementary School,Allison Brewer,aljones@k12.wv.us,P.o. Box 380 ,Lavalette,WV,25535,5253221,5253245,PK-5,n/a
+PUBLIC,Wayne,Ceredo-Kenova Elementary,Deidre Farley,dfarley@k12.wv.us,1 Wonders Lane,Kenova,WV,25530,4531521,n/a,PK-5,n/a
+PUBLIC,Wayne,Tolsia High School,Reva Sanders-Wallace,rksander@k12.wv.us,#1 Rebel Drive ,Fort Gay,WV,25514,6485566,6488412,912,n/a
+PUBLIC,Wayne,Genoa Elementary School,Tony Clay,tmclay@k12.wv.us,21269 Rt 152 Road ,Genoa,WV,25517,3854421,3854427,PK-5,n/a
+PUBLIC,Wayne,Vinson Middle School,Kim Hurley,khurley@k12.wv.us,3851 Piedmont Road ,Huntington,WV,25704,4291641,4296162,608,n/a
+PUBLIC,Wayne,Buffalo Elementary School,Stephanie May,ssmay@k12.wv.us,331 Buffalo Creek Road ,Kenova,WV,25530,4292911,4293269,PK-5,n/a
+PUBLIC,Wayne,Ceredo-Kenova Middle School,Deidre Farley,dfarley@k12.wv.us,P.o. Box 705 4th St. West And High St,Ceredo,WV,25507,4533588,4534420,608,n/a
+PUBLIC,Wayne,East Lynn Elementary School,Melissa Maynard,mkmaynar@k12.wv.us,19594 East Lynn Road,East Lynn,WV,25512,8493171,8495608,PK-5,n/a
+PUBLIC,Wayne,Prichard Elementary School,Kelly Bonar,kbonar@k12.wv.us,500 Prichard Rd.,Prichard,WV,25555,4865096,4865096,PK-5,n/a
+PUBLIC,Wayne,Spring Valley High School,Tammy Forbush,tforbush@k12.wv.us,#1 Timberwolf Drive ,Huntington,WV,25704,4291699,4297315,912,n/a
+PUBLIC,Wayne,Kellogg Elementary School,Becky Richards,rbrichar@k12.wv.us,4415 Piedmont Road ,Huntington,WV,25704,4294441,4297200,PK-5,n/a
+PUBLIC,Wayne,Crum Pre K-8,Nona Newsome,nnewsome@k12.wv.us,150 Crum Road,Crum,WV,25669,3933200,3933447,PK08,n/a
+PUBLIC,Webster,Webster County High School,Stacey Cutlip,scutlip@k12.wv.us,One Highlander Drive ,Upperglade,WV,26266,2265772,2265792,912,http://glade.webs.k12.wv.us/wchs.htm
+PUBLIC,Webster,Webster Springs Elementary School,n/a,n/a,318 River Drive ,Webster Springs,WV,26288,8475321,8475364,PK08,http://glade.webs.k12.wv.us/webstersprings.htm
+PUBLIC,Webster,Glade Elementary School,Stephen White,swwhite@k12.wv.us,25 Mill St. ,Cowen,WV,26206,2265353,2263666,PK04,http://glade.webs.k12.wv.us/GladeElem.htm
+ADMINISTRATIVE,Webster,Webster County Schools,Scott Cochran,scochran@k12.wv.us,315 South Main Street ,Webster Springs,WV,26288,8475638,8472538,n/a,http://boe.webs.k12.wv.us
+PUBLIC,Webster,Glade Middle School,n/a,n/a,25 Mill Street ,Cowen,WV,26206,2265353,2263666,508,http://glade.webs.k12.wv.us
+PUBLIC,Webster,Hacker Valley Elementary School,n/a,n/a,11 School Loop Road ,Hacker Valley,WV,26222,4936488,4936489,PK08,http://hvpt.org
+PUBLIC,Webster,Diana Elementary School,n/a,n/a,Po Box 90 ,Diana,WV,26217,8472112,8472128,PK08,http://glade.webs.k12.wv.us/diana.htm
+NON-PUBLIC,Wetzel,Wetzel County Substitute Personnel,n/a,n/a,333 Foundry Street ,New Martinsville,WV,26155,4552441,n/a,n/a,n/a
+PUBLIC,Wetzel,Paden City High School,Jason Salva,jsalva@k12.wv.us,201 N Fourth Avenue ,Paden City,WV,26159,3372266,3372290,712,http://www.pcwildcats.com
+PUBLIC,Wetzel,Hundred High School,Beth Sigley ,bsigley@k12.wv.us ,P O  Box 830 ,Hundred,WV,26575,7755221,7752922,912,n/a
+PUBLIC,Wetzel,Short Line School,Linda Haugt,ljhaught@k12.wv.us,Hc 60 Box 170 ,Reader,WV,26167,3864115,3864969,PK08,n/a
+PUBLIC,Wetzel,New Martinsville School,Fay Shank,mfshank@k12.wv.us,20 E Benjamin Drive ,New Martinsville,WV,26155,4552291,4556436,0K08,http://168.216.218.20
+ADMINISTRATIVE,Wetzel,Wetzel County Schools,Ed Toman,etoman@k12.wv.us,333 Foundry Street ,New Martinsville,WV,26155,4552441,4553446,n/a,http://www.wetzelcountyschools.com
+PUBLIC,Wetzel,Valley High School,James Kimble,jckimble@k12.wv.us,One Lumberjack Lane ,Pine Grove,WV,26419,8893151,8892534,912,http://vhs.wetz.k12.wv.us
+PUBLIC,Wetzel,Magnolia High School,Kathi Schmalz,kschmalz@k12.wv.us,601 Maple Avenue ,New Martinsville,WV,26155,4551990,4555536,912,http://www.edline.net/pages/Magnolia_HS
+PUBLIC,Wetzel,Wetzel Co. Ctr. For Children & Families,n/a,n/a,Rr2 Box 107 ,New Martinsville,WV,26155,4554092,4553625,PKPK ,n/a
+PUBLIC,Wetzel,Paden City Elementary School,Tammy Chambers,tchamber@k12.wv.us,510 N Second Avenue ,Paden City,WV,26159,3372221,3379049,0K06,n/a
+PUBLIC,Wetzel,Long Drain School,Paul Huston,phuston@k12.wv.us,Rt 1 Box 108-A ,Metz,WV,26585,7754221,7754261,PK08,n/a
+NON-PUBLIC,Wirt,River Valley Academy,n/a,n/a,4273 Garfield Road ,Palistine,WV,26160,n/a,n/a,n/a,n/a
+PUBLIC,Wirt,Wirt County Middle School,Dr. David Tupper,dtupper@k12.wv.us,P O Box 699 ,Elizabeth,WV,26143,2753977,2754257,508,http://www.edline.net/pages/wirtms
+ADMINISTRATIVE,Wirt,Wirt County Schools,MaryJane Pope-Albin,malbin@k12.wv.us,PO Box 189,Elizabeth,WV,26143,2754279,2754581,n/a,http://www.edline.net/pages/WirtBOE
+PUBLIC,Wirt,Wirt County High School,Elizabeth Smith,ehardbar@k12.wv.us,P O Box 219 ,Elizabeth,WV,26143,2754241,2753271,912,http://www.edline.net/pages/wirths
+PUBLIC,Wirt,Wirt County Primary Center,Melissa Emerson,memerson@k12.wv.us,P O  Box 220 ,Elizabeth,WV,26143,2754263,2754277,PK04,http://www.edline.net/pages/wcpc
+PUBLIC,Wood,Williamstown High School,Jeff Bayles,jbayles@k12.wv.us,219 W 5th St ,Williamstown,WV,26187,3756151,3756194,712,http://www.movnet.com/whs
+PUBLIC,Wood,Williamstown Elementary School,Heather Mannix,hmannix@k12.wv.us,418 Williams Ave ,Williamstown,WV,26187,3757675,3754894,PK06,n/a
+PUBLIC,Wood,Gihon Elementary School,Lori Lowers,llowers@k12.wv.us,2000 Belmont Rd ,Parkersburg,WV,26101,4209539,4209540,PK-5,n/a
+NON-PUBLIC,Wood,Parkersburg Catholic High School,n/a,n/a,3201 Fairview Ave ,Parkersburg,WV,26104,4856341,4854697,n/a,http://www.pchs1.com
+PUBLIC,Wood,Parkersburg High School,Kenneth DeMoss,kdemoss@k12.wv.us,2101 Dudley Ave ,Parkersburg,WV,26101,4209595,4209604,912,https://www.edline.net/pages/Parkersburg_HS
+PUBLIC,Wood,Vienna Elementary School,Douglas Jones,dgajones@k12.wv.us,700 41st St ,Vienna,WV,26105,4209648,4209693,PK-5,http://www.viennaschool.com
+PUBLIC,Wood,Emerson Elementary School,Tabatha Efaw,tefaw@k12.wv.us,1605 36th St ,Parkersburg,WV,26101,4209528,4209632,K-5,http://www.netassoc.net/wcboe/emerson/index.htm
+NON-PUBLIC,Wood,North Christian School,n/a,n/a,3109 Emerson Ave ,Parkersburg,WV,26104,4850241,4283231,n/a,n/a
+PUBLIC,Wood,Jackson Middle School,Richard Summers,rpsummer@k12.wv.us,1601 34th St ,Vienna,WV,26105,4209551,2959954,608,http://jjhs.wood.k12.wv.us
+PUBLIC,Wood,Mineral Wells Elementary School,Melissa Powers,mpowers@k12.wv.us,1776 Elizabeth Pike ,Mineral Wells,WV,26150,4891670,4892637,PK-5,n/a
+PUBLIC,Wood,Blennerhassett Elementary School,Justin Hartshorn,jhartsho@k12.wv.us,448 Jewel Rd ,Parkersburg,WV,26101,8635128,8635335,PK-5,n/a
+NON-PUBLIC,Wood,Parkersburg Academy,n/a,n/a,1800 38th St ,Parkersburg,WV,26104,4856901,n/a,n/a,n/a
+PUBLIC,Wood,Edison Middle School,Jean Mewshaw,jmewshaw@k12.wv.us,1201 Hillcrest St ,Parkersburg,WV,26101,4209525,4209527,608,n/a
+PUBLIC,Wood,Madison Elementary School,Valissa Porter,vlporter@k12.wv.us,1426 32nd St ,Parkersburg,WV,26101,4209563,4209564,PK-5,http://www.wvschools.com/madisonpkb
+PUBLIC,Wood,Caperton Center For Applied Technology,Jeffrey Mennillo,jmmennil@k12.wv.us,300 Campus Dr ,Parkersburg,WV,26101,4248365,n/a,n/a,n/a
+PUBLIC,Wood,Martin Elementary School,Julie Gibson,jmgibson@k12.wv.us,1301 Hillcrest St ,Parkersburg,WV,26101,4209625,4209578,PK-5,http://members.citynet.net/mamabear/martin
+PUBLIC,Wood,Kanawha Elementary School,Matt Null,snull@k12.wv.us,6465 Staunton Tpke ,Davisville,WV,26142,4209557,4209608,PK-5,n/a
+PUBLIC,Wood,Trek Center - within County BOE,John McKown,jmckown@k12.wv.us,615 Broadway Ave ,Parkersburg,WV,26101,4209531,4209533,n/a,n/a
+PUBLIC,Wood,Worthington Elementary School,Thomas Wheeler,twheeler@k12.wv.us,2500 36th St ,Parkersburg,WV,26104,4209660,4202459,K-5,http://worthington.wood.k12.wv.us/
+PUBLIC,Wood,Greenmont Elementary School,Brett Ubbens,bubbens@k12.wv.us,209 58th St ,Vienna,WV,26105,4209544,4209543,PK-5,n/a
+PUBLIC,Wood,Parkersburg South High School,Betsy Patterson,blpatter@k12.wv.us,1511 Blizzard Dr ,Parkersburg,WV,26101,4209610,4209607,912,http://pshs.wood.k12.wv.us/
+PUBLIC,Wood,Waverly Elementary School,Steve Taylor,staylor@k12.wv.us,422 Virginia St ,Waverly,WV,26184,4644250,4644263,PK06,n/a
+PUBLIC,Wood,Fairplains Elementary School,Elizabeth Conrad,econrad@k12.wv.us,615 Broadway Ave ,Parkersburg,WV,26101,4209531,4209533,PK-5,n/a
+NON-PUBLIC,Wood,Parkersburg Catholic Elementary,n/a,n/a,810 Juliana St ,Parkersburg,WV,26101,4226694,4222469,n/a,n/a
+PUBLIC,Wood,Van Devender Middle School,Darlene Parsons,darlene.murphy@k12.wv.us,918 31st St ,Parkersburg,WV,26104,4209645,4209647,608,http://vms.wood.k12.wv.us
+PUBLIC,Wood,Neale Elementary School,Linda Brunicardi,lbrunica@k12.wv.us,2305 Grand Central Ave ,Vienna,WV,26105,4209587,4209589,PK-5,https://www.edline.net/pages/Neale_ES
+PUBLIC,Wood,Criss Elementary School,Heather Grant,hgrant@k12.wv.us,2800 22nd St ,Parkersburg,WV,26101,4209522,4209541,PK-5,n/a
+NON-PUBLIC,Wood,Wood County Christian School,n/a,n/a,113 W 9th St ,Williamstown,WV,26187,3752000,3752000,n/a,n/a
+PUBLIC,Wood,Hamilton Middle School,Kevin Campbell,jcampbell@k12.wv.us,3501 Cadillac Dr ,Parkersburg,WV,26104,4209547,4209567,608,http://hjhs.wood.k12.wv.us
+PUBLIC,Wood,Mckinley Elementary School,Allen Laugh,n/a,1130 19th St ,Parkersburg,WV,26101,4209581,4209582,PK-5,n/a
+ADMINISTRATIVE,Wood,Wood County Schools,John Flint,jflint@k12.wv.us,1210 13th St ,Parkersburg,WV,26101,4209663,4209513,n/a,http://www.woodcountyschoolswv.com
+NON-PUBLIC,Wood,Parkersburg Christian School,n/a,n/a,1093 Core Rd ,Parkersburg,WV,26104,4856654,4284444,n/a,n/a
+PUBLIC,Wood,Blennerhassett Middle School,Melanie Arthur,melanie.arthur@k12.wv.us,444 Jewel Rd ,Parkersburg,WV,26101,8633356,8633357,608,http://bjhs.wood.k12.wv.us
+PUBLIC,Wood,Lubeck Elementary School,Jeffrey Hardman,jlhardma@k12.wv.us,206 Lubeck Rd ,Parkersburg,WV,26101,8633321,8633848,PK-5,n/a
+PUBLIC,Wood,Wood Co Voc Tech Ctr,Pier Bocchini,pbocchin@k12.wv.us,1515 Blizzard Dr ,Parkersburg,WV,26101,4209501,4851048,n/a,http://wcvt.wood.tec.wv.us
+PUBLIC,Wood,Franklin Elementary Center,Lee Ann Cumpston,lcumpsto@k12.wv.us,1511 Division St Ext ,Parkersburg,WV,26101,4209534,4209537,PK-5,http://168.216.80.34/
+PUBLIC,Wood,Jefferson Elementary Center,Jodie Pierotti,jpierott@k12.wv.us,1103 Plum St ,Parkersburg,WV,26101,4209554,4209507,PK-5,n/a
+PUBLIC,Wyoming,Baileysville Elementary & Middle School,Darlene Osborne,dgosborn@k12.wv.us,Drawer 409 11618 R.d. Bailey Highway,Brenton,WV,24818,7326399,7328365,PK08,http://baileysville.wyom.k12.wv.us/
+PUBLIC,Wyoming,Oceana Middle School,Shanda Lester,srlester@k12.wv.us,Hc 65  Box 403 309 Cook Parkway,Oceana,WV,24870,6826296,6826330,508,http://oms.wyom.k12.wv.us/
+PUBLIC,Wyoming,Road Branch Elementary & Middle School,Kara Halsey,khalsey@k12.wv.us,"1165 Huff Creek Road, HC 80 Box 422",Cyclone,WV,24827,6825916,6825560,PK08,http://roadbranch.wyom.k12.wv.us/
+PUBLIC,Wyoming,Mullens Elementary School,Mallory Green,migreen@k12.wv.us,2107 Caloric Road ,Mullens,WV,25882,2945252,2947371,PK04,http://mullens.wyom.k12.wv.us/
+NON-PUBLIC,Wyoming,Turkey Ridge Independent Baptist,n/a,n/a,Po Box 130 ,Oceana,WV,24870,6826735,6826735,n/a,n/a
+PUBLIC,Wyoming,Herndon Cons Elementary & Middle School,Janet McKinney,jmmckinn@k12.wv.us,Po Box 309 4456 Herndon Road,Bud,WV,24716,2947668,2948474,PK08,http://herndon.wyom.k12.wv.us/
+PUBLIC,Wyoming,Westside High School,Keith Stewart,kastewar@k12.wv.us,Hc 65  Box 275 122 Renegade Road,Clear Fork,WV,24822,6828965,6826273,912,http://wshs.wyom.k12.wv.us/
+PUBLIC,Wyoming,Berlin Mckinney Elementary School,Robert Lyons,rlyons@k12.wv.us,Hc 65  Box 402 405 Cook Parkway,Oceana,WV,24870,6826481,6825234,PK04,http://berlinmckinney.wyom.k12.wv.us
+PUBLIC,Wyoming,Pineville Middle School,Brian Dillon,bjdillon@k12.wv.us,Po Box 470 607 River Road,Pineville,WV,24874,7326442,7326737,508,http://pms.wyom.k12.wv.us/
+ADMINISTRATIVE,Wyoming,Wyoming County Schools,Deirdre Cline,dcline@k12.wv.us,PO Box 69,Pineville,WV,24874,7326262,7327226,n/a,http://boe.wyom.k12.wv.us/
+PUBLIC,Wyoming,Mullens Middle School,Terri Smith,tlsmith@k12.wv.us,801 Moran Avenue ,Mullens,WV,25882,2945757,2945762,508,http://mms.wyom.k12.wv.us/
+PUBLIC,Wyoming,Pineville Elementary School,Donald Clay,dwclay@k12.wv.us,"Po Box 700, 541 River Road",Pineville,WV,24874,7327966,7326767,PK04,http://pineville.wyom.k12.wv.us/
+NON-PUBLIC,Wyoming,Sonlight Christian Academy,n/a,n/a,Po Box 81 ,Mullens,WV,25882,2944595,n/a,n/a,n/a
+PUBLIC,Wyoming,Huff Cons Elementary & Middle School,Carolyn Hatfield,ckhatfie@k12.wv.us,"374 Lizard Creek Rd, Drawer E",Hanover,WV,24839,6642100,6642102,PK08,http://huff.wyom.k12.wv.us
+PUBLIC,Wyoming,Wyoming County Career & Technical Center,Kim Runion,karunion@k12.wv.us,"Hcr 72 Box 200, 1201 Bear Hole Road",Pineville,WV,24874,7328050,7328332,n/a,http://wcvtc.wyom.tec.wv.us/
+PUBLIC,Wyoming,Glen Fork Elementary & Middle School,Brenda Shumate,bshumate@k12.wv.us,Po Box 50 111 Glen Fork Hollow Road,Glen Fork,WV,25845,6826423,6823160,PK08,http://glenfork.wyom.k12.wv.us/
+PUBLIC,Wyoming,Wyoming County East High School,Amanda Hylton,ahylton@k12.wv.us,"PO Box 390, 260 Warrior Way",New Richmond,WV,24867,2945200,2945600,912,http://wehs.wyom.k12.wv.us
