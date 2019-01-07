@@ -14,7 +14,7 @@ var Schools={
         AL:{spreadsheet:true},AK:{},AZ:{},AR:{},CA:{},CO:{},CT:{},DE:{},DC:{spreadsheet:true},FL:{spreadsheet:true},GA:{
         spreadsheet:true},HI:{},ID:{},IL:{spreadsheet:true},IN:{spreadsheet:true},IA:{spreadsheet:true},KS:{},KY:{},LA:{spreadsheet:true},
     ME:{},MD:{},MA:{},MI:{},MN:{},MS:{},MO:{},MT:{spreadsheet:true},NE:{},NV:{},NH:{},NJ:{},NM:{spreadsheet:true},NY:{spreadsheet:true},NC:{},ND:{},OH:{spreadsheet:true},OK:{},OR:{spreadsheet:true},
-    PA:{},RI:{},SC:{},SD:{},TN:{},TX:{},UT:{},VT:{},VA:{},WA:{},WV:{},WI:{},WY:{}};
+    PA:{},RI:{spreadsheet:true},SC:{spreadsheet:true},SD:{spreadsheet:true},TN:{spreadsheet:true},TX:{spreadsheet:true},UT:{},VT:{},VA:{},WA:{},WV:{},WI:{},WY:{}};
     /* Schools.parse_name_func parses the name partially for a school person, primarily as a helper for parse_data_func */
     Schools.parse_name_func=function(text) {
         var split_str,fname,lname,i;
@@ -591,8 +591,9 @@ Schools.parse_spreadsheet=function(doc,url,resolve,reject) {
     for(i=1;i<split_lines.length;i++) {
         curr_line=split_lines[i].split(",");
         curr_contact={};
+    //    console.log("split_lines["+i+"]="+split_lines[i]);
         for(x in title_map) curr_contact[x]=curr_line[title_map[x]];
-        if(title_map.first!==undefined&&title_map.last!==undefined) curr_contact.name=title_map.first+" "+title_map.last;
+        if(title_map.first!==undefined&&title_map.last!==undefined) curr_contact.name=curr_contact.first+" "+curr_contact.last;
         curr_contact.address=parseAddress.parseLocation(curr_contact.street+","+curr_contact.city+","+curr_contact.state+" "+curr_contact.zip);
         if(curr_contact.school.length>0 && Schools.matches_name(curr_contact.school) && Schools.matches_city(curr_contact.city)
            && curr_contact.email.indexOf("@")!==-1) Schools.contact_list.push(curr_contact);
