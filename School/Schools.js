@@ -589,7 +589,7 @@ Schools.parse_spreadsheet=function(doc,url,resolve,reject) {
     var title_map=Schools.get_spreadsheet_title_map(split_lines[0].split(",")),curr_contact,temp_contact=null,x;
     console.log("title_map="+JSON.stringify(title_map));
     for(i=1;i<split_lines.length;i++) {
-        curr_line=split_lines[i].split(",");
+        curr_line=MTP.csvToArray(split_lines[i]);
         curr_contact={};
     //    console.log("split_lines["+i+"]="+split_lines[i]);
         for(x in title_map) curr_contact[x]=curr_line[title_map[x]];
@@ -1513,3 +1513,6 @@ Schools.WY.parse_results=function(doc,url,resolve,reject) {
     }
     resolve("");
 };
+
+
+
