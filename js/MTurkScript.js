@@ -345,6 +345,7 @@ MTurkScript.prototype.is_bad_email = function(to_check)
     else if(/\.(png|jpg)$/.test(to_check)) return true;
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
     else if(/@(domain\.com|example\.com)/.test(to_check)) return true;
+    else if(/;/.test(to_check)) return true;
     else if(/@(example|email)\.com$/.test(to_check)) return true;
     return false;
 }
@@ -1329,6 +1330,22 @@ MTurkScript.prototype.matches_names=function(name1,name2) {
         if(my_split[0].toLowerCase()===other_split[0].toLowerCase() &&
            my_split[my_split.length-1].toLowerCase()===other_split[other_split.length-1].toLowerCase()) return true;
         return false;
+};
+
+MTurkScript.prototype.csvToArray=function(text) {
+    let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0, l;
+    for (l of text) {
+        if ('"' === l) {
+            if (s && l === p) row[i] += l;
+            s = !s;
+        } else if (',' === l && s) l = row[++i] = '';
+        else if ('\n' === l && s) {
+            if ('\r' === p) row[i] = row[i].slice(0, -1);
+            row = ret[++r] = [l = '']; i = 0;
+        } else row[i] += l;
+        p = l;
+    }
+    return ret;
 };
 
 
