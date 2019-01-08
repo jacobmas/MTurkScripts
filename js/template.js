@@ -22,9 +22,7 @@
 // @connect bing.com
 // @connect yellowpages.com
 // @connect *
-// @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
@@ -33,7 +31,7 @@
     'use strict';
     var my_query = {};
     var bad_urls=[];
-    var MTurk=new MTurkScript(20000,200,[],begin_script,"[TODO]");
+    var MTurk=new MTurkScript(20000,200,[],begin_script,"[TODO]",false);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
@@ -58,40 +56,23 @@
                 console.log("parsed_context="+JSON.stringify(parsed_context)); } 
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length; i++)
-            {
+            for(i=0; i < b_algo.length; i++) {
                 b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
-                p_caption="";
-                if(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) {
-                    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText;
-                }
+                p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
+                    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !is_bad_name(b_name))
-                {
-                    b1_success=true;
-                    break;
-
-                }
-
+                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !is_bad_name(b_name) && (b1_success=true)) break;
             }
-            if(b1_success)
-            {
-                /* Do shit */
-                resolve(b_url);
-                return;
-            }
+            if(b1_success && (resolve(b_url)||true)) return;
         }
-        catch(error)
-        {
+        catch(error) {
             reject(error);
             return;
         }
         reject("Nothing found");
-        //        GM_setValue("returnHit",true);
         return;
-
     }
 
     /* Search on bing for search_str, parse bing response with callback */
@@ -101,8 +82,7 @@
             encodeURIComponent(search_str)+"&first=1&rdr=1";
         GM_xmlhttpRequest({method: 'GET', url: search_URIBing,
                            onload: function(response) { callback(response, resolve, reject); },
-                           onerror: function(response) { reject("Fail"); },
-                           ontimeout: function(response) { reject("Fail"); }
+                           onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
                           });
     }
 
@@ -143,7 +123,7 @@
         var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         var dont=document.getElementsByClassName("dont-break-out");
         my_query={name,fields:{},done:{},submitted:false};
-
+	console.log("my_query="+JSON.stringify(my_query));
         var search_str;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");

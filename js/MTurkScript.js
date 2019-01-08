@@ -747,8 +747,8 @@ MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func
                  if(extra_arg!==undefined) parser(doc,response.finalUrl, resolve, reject,extra_arg);
                  else parser(doc,response.finalUrl, resolve, reject,response);
              },
-             onerror: function(response) { reject("Failed to load site "); },
-             ontimeout: function(response) { reject("Timed out loading site "); }
+             onerror: function(response) { reject("Failed to load site "+response+", "+url); },
+             ontimeout: function(response) { reject("Timed out loading site "+response+", "+url); }
             });
     });
     queryPromise.then(then_func)
