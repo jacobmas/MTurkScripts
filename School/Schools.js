@@ -1,11 +1,12 @@
 var Schools={
         contact_list:[],
-        page_regex_str:"(www\\.|\/\/)(apptegy|catapultk12|cms4schools)\\.com|crescerance\\.com|cyberschool\\.com|"+
+    page_regex_str:"(www\\.|\/\/)(apptegy|catapultk12|cms4schools)\\.com|adventistschoolconnect\\.org|"+
+	"crescerance\\.com|cyberschool\\.com|"+
         "echalk\\.com|edlio\\.com|edlioschool\\.com|edline\\.net|educationalnetworks\\.net|"+
         "eschoolview\\.com|finalsite\\.com|foxbright\\.com|gabbart\\.com|gaggle\\.net|ilearnschools\\.org|"+
         "schooldesk\\.net|schoolloop\\.com|"+
         "www\\.school(blocks|insites|messenger|pointe|webmasters)\\.com|"+
-        "socs\\.fes\\.org|www\\.zumu\\.com",
+        "socs\\.fes\\.org|www\\.(weebly|zumu)\\.com",
     page_map:{"edlioschool":"edlio"},
     title_regex:new RegExp("(^|[\\s,\\.]{1})(Director|Principal|Teacher|Assistant|Coach|Counselor|Secretary|Chief|President)($|[\\/\\n\\s,\\. ]{1}|[^A-Za-z0-9]{1})$","i"),
     title_prefix_regex:/^(Director|Mayor|Chief|Councilman|Councilwoman|Secretary|Sergeant|Patrol Officer|Lieutenant|Detective)\s+/,
