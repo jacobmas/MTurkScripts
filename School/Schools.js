@@ -6,6 +6,7 @@ var Schools={
         "schooldesk\\.net|schoolloop\\.com|"+
         "www\\.school(blocks|insites|messenger|pointe|webmasters)\\.com|"+
         "socs\\.fes\\.org|www\\.zumu\\.com",
+    page_map:{"edlioschool":"edlio"},
     title_regex:new RegExp("(^|[\\s,\\.]{1})(Director|Principal|Teacher|Assistant|Coach|Counselor|Secretary|Chief|President)($|[\\/\\n\\s,\\. ]{1}|[^A-Za-z0-9]{1})$","i"),
     title_prefix_regex:/^(Director|Mayor|Chief|Councilman|Councilwoman|Secretary|Sergeant|Patrol Officer|Lieutenant|Detective)\s+/,
     bad_stuff_re:/(\/\*)|(^Wh.*\?$)|(\sand\s)|([\d]+)|(I want to\s.*$)|(^Home.*)|(…)|((City|Town) Hall)|City Hall|Welcome to/i,
