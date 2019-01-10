@@ -310,14 +310,15 @@ MTurkScript.prototype.my_parse_address=function(to_parse)
     }
     return ret_add;
 }
-/* get_domain_only gets the domain from a url, if limit_one is true it tries to really get just the domain 
+/* get_domain_only gets the domain from a url, if lim_one is true it tries to really get just the domain 
   i.e. from http://www.fuckingnonsense.goodsite.com it would get "goodsite.com", or 
   http://www.rightfuckingnonsense.goodsite.co.uk it would get "goodsite.co.uk" */
-MTurkScript.prototype.get_domain_only=function(the_url,limit_one) {
+MTurkScript.prototype.get_domain_only=function(the_url,lim_one) {
     var httpwww_re=/https?:\/\/www\./,http_re=/https?:\/\//,slash_re=/\/.*$/;
     var ret=the_url.replace(httpwww_re,"").replace(http_re,"").replace(slash_re,"");
-    if(limit_one && /\.(co|ac|gov|com|org)\.[A-Za-z]{2}$/.test(the_url)) ret=ret.replace(/^.*\.([^\.]+\.(?:co|ac|gov)\.[A-Za-z]{2})$/,"$1");
-    else if(limit_one) ret=ret.replace(/^.*\.([^\.]+\.[^\.]+$)/,"$1");
+    if(lim_one && /\.(co|ac|gov|com|org)\.[A-Za-z]{2}$/i.test(the_url)) ret=ret.replace(/^.*\.([^\.]+\.(?:co|ac|gov)\.[A-Za-z]{2})$/,"$1");
+    else if(lim_one && /^[^\.]+\.[^\.]+(\.[a-z]{2}\.us)$/i) ret=ret;
+    else if(lim_one) ret=ret.replace(/^.*\.([^\.]+\.[^\.]+$)/,"$1");
     return ret;
 }
 MTurkScript.prototype.prefix_in_string=function(prefixes, to_check) {
