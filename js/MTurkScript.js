@@ -104,9 +104,8 @@ for (var i=0; i < defaultDiacriticsRemovalMap .length; i++){
  * requester_id is the MTurk id of the requester so it doesn't accidentally run on wrong HITs
  * is_crowd is for this new crowd shit 
  */
-function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
-{
-    var x,term_map={"return_ms":return_ms,"sites":sites,"submit_ms",submit_ms,"is_crowd":is_crowd,"query":{},"attempts":{},
+function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
+    var x,term_map={"return_ms":return_ms,"sites":sites,"submit_ms":submit_ms,"is_crowd":is_crowd,"query":{},"attempts":{},
 		    "queryList":[],"doneQueries":0,"requester_id":requester_id,globalCSS:GM_getResourceText("globalCSS")},curr_site;
     Object.assign(this,term_map);
     this.site_parser_map={"bloomberg.com/research/stocks/private/snapshot.asp":this.parseext_bloomberg_snapshot,
@@ -189,7 +188,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd)
             if(cbox.checked===false) cbox.click();
         }
     }
-}
+};
 MTurkScript.prototype.check_and_submit=function(check_function)	{
     console.log("in check");
     var submit_button=this.is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");
@@ -237,7 +236,7 @@ MTurkScript.prototype.DeCryptString = function(s)
         r += String.fromCharCode( n - z );
     }
     return r;
-}
+};
 /* DecryptX decrypts certain types of email */
 MTurkScript.prototype.DeCryptX=function(s) { return this.DeCryptString( s ); };
 /* cfDecodeEmail decodes Cloudflare encoded emails */
@@ -248,7 +247,7 @@ MTurkScript.prototype.cfDecodeEmail=function(encodedString) {
         email += String.fromCharCode(i);
     }
     return email;
-}
+};
 /* Some basic checks for improper emails beyond email_re */
 MTurkScript.prototype.is_bad_email = function(to_check)
 {
