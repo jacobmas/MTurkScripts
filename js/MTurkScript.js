@@ -575,15 +575,13 @@ MTurkScript.prototype.parseext_instagram=function(doc,instance,fragment)
 */
 MTurkScript.prototype.parse_b_context=function(b_context)
 {
-    var b_vList,i,bm_details_overlay,inner_li,b_entityTitle,b_entitySubTitle;
-    var b_hList=b_context.getElementsByClassName("b_hList"),inner_a,details;  
+    var b_vList,i,bm_details_overlay,inner_li,b_entityTitle,b_entitySubTitle,b_submodule_h2;
+    var b_hList=b_context.getElementsByClassName("b_hList"),inner_a,details,inner_li,split_exp;  
     var field_regex=/^([^:]+):\s*(.*)$/,field_match,result={};
-    var term_map={"Website":"url","Official site":"url"};
+    var term_map={"Website":"url","Official site":"url","Company":"company"};
     var field_map=function(field) { return term_map[field]!==undefined?term_map[field]:field; };
- /*   var wpc_eif=b_context.querySelectorAll("#wpc_eif li");
-    if(wpc_eif.length===2) {
-        result["Job title"]=wpc_eif[0].innerText;
-        result.Location=wpc_eif[1].innerText; }*/
+    var wpc_eif=b_context.querySelectorAll("#wpc_eif li");
+    
     b_entityTitle=b_context.getElementsByClassName("b_entityTitle");
     b_entitySubTitle=b_context.getElementsByClassName("b_entitySubTitle");
     if(b_entityTitle.length>0) result.Title=b_entityTitle[0].innerText;
@@ -599,9 +597,22 @@ MTurkScript.prototype.parse_b_context=function(b_context)
 	result.latitude=details.centerLatitude;
 	result.longitude=details.centerLongitude;
     }
-    if(b_hList.length>0 && (inner_a=b_hList[0].getElementsByTagName("a"))) {
-        for(i=0; i<inner_a.length; i++) result[field_map(inner_a[i].innerText.trim())]=inner_a[i].href;
+   
+    b_subModule_h2=b_context.querySelectorAll(".b_subModule h2");
+    for(i=0;i<b_subModule_h2.length; i++) {
+        if(/Experience/.test(b_subModule_h2[i].innerText) && b_subModule_h2[i].nextElementSibling &&
+           (inner_li=b_subModule_h2[i].nextElementSibling.querySelector("li"))) {
+            split_exp=inner_li.innerText.split("\n");
+            if(!parsed_context["Job title"]) parsed_context["Job title"]=split_exp[0].trim();
+	    if(split_exp.length>1&&!parsed_context.Company) parsed_context.Company=split_exp[1].replace(/\s*·.*$/,"");
+        }
     }
+    if(b_hList.length>0 && (inner_a=b_hList[0].getElementsByTagName("a"))) {
+        for(i=0; i<inner_a.length; i++) result[field_map(inner_a[i].innerText.trim())]=inner_a[i].href; }
+    
+/*    if(wpc_eif.length===2) {
+        result["Job title"]=wpc_eif[0].innerText;
+        result.Location=wpc_eif[1].innerText; }*/
     
     return result;
 };
