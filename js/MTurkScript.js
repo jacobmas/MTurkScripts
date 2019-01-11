@@ -269,7 +269,7 @@ MTurkScript.prototype.is_bad_email = function(to_check)
  */
 MTurkScript.prototype.is_bad_url=function(the_url, bad_urls, max_depth, max_dashes)
 {
-    var i,dash_split,do_dashes;
+    var i,dash_split,do_dashes,slash_split;
     the_url=the_url.replace(/\/$/,"");
     if(max_depth===undefined) max_depth=4;
     if(max_dashes===undefined || max_dashes===-1) do_dashes=false;
@@ -279,8 +279,10 @@ MTurkScript.prototype.is_bad_url=function(the_url, bad_urls, max_depth, max_dash
     }
     // -1 means we just check for specific bad stuff, not length
     if(max_depth!==-1 && the_url.split("/").length>max_depth) return true;
-    if(the_url.split("/").length >= 4 && do_dashes &&
-       (the_url.split("/")[3].split("-").length>max_dashes||the_url.split("/")[3].split("_").length>max_dashes)) return true;
+    if((slash_split=the_url.split("/")).length >= 4 && do_dashes) {
+	for(i=3;i<slash_split.length;i++) {
+	    if(slash_split[i].split("-").length>max_dashes||slash_split[i].split("_").length>max_dashes) return true; }
+    }
     return false;
 }
 
@@ -578,6 +580,10 @@ MTurkScript.prototype.parse_b_context=function(b_context)
     var field_regex=/^([^:]+):\s*(.*)$/,field_match,result={};
     var term_map={"Website":"url","Official site":"url"};
     var field_map=function(field) { return term_map[field]!==undefined?term_map[field]:field; };
+ /*   var wpc_eif=b_context.querySelectorAll("#wpc_eif li");
+    if(wpc_eif.length===2) {
+        result["Job title"]=wpc_eif[0].innerText;
+        result.Location=wpc_eif[1].innerText; }*/
     b_entityTitle=b_context.getElementsByClassName("b_entityTitle");
     b_entitySubTitle=b_context.getElementsByClassName("b_entitySubTitle");
     if(b_entityTitle.length>0) result.Title=b_entityTitle[0].innerText;
@@ -596,6 +602,7 @@ MTurkScript.prototype.parse_b_context=function(b_context)
     if(b_hList.length>0 && (inner_a=b_hList[0].getElementsByTagName("a"))) {
         for(i=0; i<inner_a.length; i++) result[field_map(inner_a[i].innerText.trim())]=inner_a[i].href;
     }
+    
     return result;
 };
 

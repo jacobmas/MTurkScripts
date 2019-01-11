@@ -112,7 +112,7 @@
     function submit_if_done() {
         var is_done=true,x;
         add_to_sheet();
-        for(x in my_query.done) if(!done[x]) is_done=false;
+        for(x in my_query.done) if(!my_query.done[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
 
