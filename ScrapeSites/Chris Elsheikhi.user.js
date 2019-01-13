@@ -25,7 +25,7 @@
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
@@ -128,21 +128,9 @@
             if(!ret.insta && (match=ret.description.match(/https:\/\/(www.)?instagram.com\/[A-Za-z\.0-9_\-\/]+/))) ret.insta=match[0];
             if(!ret.fb && (match=ret.description.match(/https?:\/\/([a-z]+).facebook.com\/[A-Za-z\.0-9_\-\/]+/))) ret.fb=match[0];
         }
+        if(contents.businessEmailLabel===undefined) ret.businessEmailLabel=false;
+        else ret.businessEmailLabel=true;
         return ret;
-    }
-    function parse_youtube(doc,url,resolve,reject) {
-         var scripts=doc.scripts,i,script_regex_begin=/^\s*window\[\"ytInitialData\"\] \=\s*/,text;
-        var script_regex_end=/\s*window\[\"ytInitialPlayerResponse\".*$/,ret={success:false},x,promise_list=[];
-        var email_match,match;
-        for(i=0; i < scripts.length; i++) {
-            if(script_regex_begin.test(scripts[i].innerHTML)) {
-                text=scripts[i].innerHTML.replace(script_regex_begin,"");
-                if(text.indexOf(";")!==-1) text=text.substr(0,text.indexOf("};")+1);
-                resolve(parse_youtube_inner(text));
-                return;
-            }
-        }
-        resolve(ret);
     }
 
 
@@ -164,6 +152,7 @@
                 break;
             }
         }
+        my_query.emailBusinessLabel=ret.emailBusinessLabel;
         if(ret.description && (email_match=ret.description.match(email_re)) && (my_query.fields.email=email_match[0])) submit_if_done();
         else { console.log("email_match="+email_match); }
         if(ret.description) {
@@ -230,6 +219,12 @@
         for(x in my_query.fields) { if(my_query.fields[x].length===0) is_found=false; }
         if(is_done && is_found &&!my_query.submitted && MTurk.doneQueries >= MTurk.queryList.length && (my_query.submitted=true)) MTurk.check_and_submit();
         else if(is_done && !my_query.submitted && MTurk.doneQueries >= MTurk.queryList.length) {
+            if(!my_query.emailBusinessLabel) {
+                my_query.fields.email="NULL";
+                add_to_sheet();
+                MTurk.check_and_submit();
+                return;
+            }
             console.log("Failed");
             GM_setValue("returnHit",true);
             return; }
@@ -272,9 +267,13 @@
             }
             console.log("Found email hop="+my_query.fields.email);
         }
+        if(my_query.fields.email==="jacobmas@gmail.com") my_query.fields.email="";
+
         if(phone_matches=doc.body.innerText.match(phone_re)) my_query.fields.phoneNumber=phone_matches[0];
         for(i=0; i < links.length; i++)
         {
+
+            if(my_query.fields.email.length>0) break;
             // console.log("i="+i+", text="+links[i].innerText);
             if(extension==='' && contact_regex.test(links[i].innerText) && !bad_contact_regex.test(links[i].href) &&
                !MTurk.queryList.includes(links[i].href=MTurkScript.prototype.fix_remote_url(links[i].href,url)))
@@ -303,6 +302,7 @@
             if(links[i].href.indexOf("javascript:DeCryptX(")!==-1 &&
                (encoded_match=links[i].href.match(/DeCryptX\(\'([^\)]+)\'\)/))) my_query.fields.email=MTurkScript.prototype.DecryptX(encoded_match[1]);
             if(/^tel:/.test(links[i].href)) my_query.fields.phoneNumber=links[i].href.replace(/^tel:/,"");
+            if(my_query.fields.email==="jacobmas@gmail.com") my_query.fields.email="";
         }
         console.log("* doing doneQueries++ for "+url);
         MTurk.doneQueries++;

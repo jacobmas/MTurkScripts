@@ -656,8 +656,8 @@ MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func
                  if(extra_arg!==undefined) parser(doc,response.finalUrl, resolve, reject,extra_arg);
                  else parser(doc,response.finalUrl, resolve, reject,response);
              },
-             onerror: function(response) { reject("Failed to load site "+url); },
-             ontimeout: function(response) { reject("Timed out loading site "+url); }
+             onerror: function(response) { reject("Failed to load site "+url+", "+extra_arg); },
+             ontimeout: function(response) { reject("Timed out loading site "+url+extra_arg); }
             });
     });
     queryPromise.then(then_func)
@@ -958,10 +958,8 @@ MTurkScript.prototype.parse_instagram=function(doc,url,resolve,reject)
 /* Parse FB_search parses a search for PAGES on Facebook */
 MTurkScript.prototype.parse_FB_search_page=function(doc,url,resolve,reject)
 {
-    var result={success:false,sites:[]};
-    var code=doc.body.getElementsByTagName("code"),i,j,name,desc;
-    try
-    {
+    var result={success:false,sites:[]},code=doc.body.getElementsByTagName("code"),i,j,name,desc;
+    try {
         for(i=0; i < code.length; i++) code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
         name=doc.getElementsByClassName("_32mo")
         desc=doc.getElementsByClassName("_glo");
