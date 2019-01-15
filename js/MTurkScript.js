@@ -281,7 +281,8 @@ MTurkScript.prototype.is_bad_url=function(the_url, bad_urls, max_depth, max_dash
     if(max_depth!==-1 && the_url.split("/").length>max_depth) return true;
     if((slash_split=the_url.split("/")).length >= 4 && do_dashes) {
 	for(i=3;i<slash_split.length;i++) {
-	    if(slash_split[i].split("-").length>max_dashes||slash_split[i].split("_").length>max_dashes) return true; }
+	    if(slash_split[i].split("-").length>max_dashes||slash_split[i].split("_").length>max_dashes||
+	       slash_split[i].split("+").length>max_dashes) return true; }
     }
     return false;
 }
