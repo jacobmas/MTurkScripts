@@ -142,7 +142,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
 MTurkScript.prototype.setup_worker_mturk=function() {
     GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
     var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
-    var req_id=document.querySelector(".project-detail-bar span.detail-bar-value").href.match(/requesters\/([^\/]+)/);
+    var req_id=document.querySelector(".project-detail-bar span.detail-bar-value a").href.match(/requesters\/([^\/]+)/);
     if(req_id && req_id[1]===this.requester_id) GM_setValue("req_id",req_id[1]);
     else { console.log("Wrong requester: found "+req_id[1]+", desired "+this.requester_id);
 	   return; }
