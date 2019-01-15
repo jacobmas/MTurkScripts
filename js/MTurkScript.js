@@ -136,57 +136,51 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
     }
     else if((window.location.href.indexOf("mturkcontent.com") !== -1 || window.location.href.indexOf("amazonaws.com") !== -1)
 	    && is_crowd && GM_getValue("req_id","")===this.requester_id) this.begin_crowd_script(200,0,callback,this);
-    if(window.location.href.indexOf("worker.mturk.com")!==-1) {
-        GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
-        var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
-	console.log("document.getElementsByClassName(\"project-detail-bar\")[0].innerHTML="+document.getElementsByClassName("project-detail-bar")[0]);
-	var detail_a=document.getElementsByClassName("project-detail-bar")[0].children[0]
-        .children[1].getElementsByClassName("detail-bar-value")[0].getElementsByTagName("a")[0];
-        var req_id=detail_a.href.match(/requesters\/([^\/]+)/);
-        if(req_id && req_id[1]===this.requester_id) GM_setValue("req_id",req_id[1]);
-        else { console.log("Wrong requester: found "+req_id[1]+", desired "+this.requester_id);
-	       return; }
-      
-        if(GM_getValue("automate")===undefined) GM_setValue("automate",false);
-        var btn_span=document.createElement("span"), btn_automate=document.createElement("button");
-        var btns_primary=document.getElementsByClassName("btn-primary")
-        var btns_secondary=document.getElementsByClassName("btn-secondary");
-        var my_secondary_parent=pipeline.getElementsByClassName("btn-secondary")[0].parentNode;
-	Object.assign(btn_automate,{className:"btn btn-ternary m-r-sm",innerHTML:"Automate"});
-        btn_span.appendChild(btn_automate);
-        pipeline.insertBefore(btn_span, my_secondary_parent);
-        GM_addStyle(this.globalCSS);
-        if(GM_getValue("automate") && ((btn_automate.innerHTML="Stop")||true)) {
-            /* Return automatically if still automating according to return_ms */
-            setTimeout(function() {  if(GM_getValue("automate")) btns_secondary[0].click(); }, this.return_ms);
+    if(window.location.href.indexOf("worker.mturk.com")!==-1) this.setup_worker_mturk();
+};
+
+MTurkScript.prototype.setup_worker_mturk=function() {
+    GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
+    var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
+    var req_id=document.querySelector(".project-detail-bar span.detail-bar-value").href.match(/requesters\/([^\/]+)/);
+    if(req_id && req_id[1]===this.requester_id) GM_setValue("req_id",req_id[1]);
+    else { console.log("Wrong requester: found "+req_id[1]+", desired "+this.requester_id);
+	   return; }
+    
+    if(GM_getValue("automate")===undefined) GM_setValue("automate",false);
+    var btn_span=document.createElement("span"), btn_automate=document.createElement("button");
+    var btn_primary=document.querySelector(".btn-primary"),btn_secondary=document.querySelector(".btn-secondary");
+    var my_secondary_parent=pipeline.querySelector(".btn-secondary").parentNode;
+    Object.assign(btn_automate,{className:"btn btn-ternary m-r-sm",innerHTML:"Automate"});
+    btn_span.appendChild(btn_automate);
+    pipeline.insertBefore(btn_span, my_secondary_parent);
+    GM_addStyle(this.globalCSS);
+    if(GM_getValue("automate") && ((btn_automate.innerHTML="Stop")||true)) {
+        /* Return automatically if still automating according to return_ms */
+        setTimeout(function() {  if(GM_getValue("automate")) btn_secondary.click(); }, this.return_ms);
+    }
+    btn_automate.addEventListener("click", function(e) {
+        var auto=GM_getValue("automate");
+        if(!auto) btn_automate.innerHTML="Stop";
+        else btn_automate.innerHTML="Automate";
+        GM_setValue("automate",!auto);
+    });
+    GM_setValue("returnHit",false);
+    GM_addValueChangeListener("returnHit", function() {
+        if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
+           btn_secondary && btn_secondary.innerText==="Return" && (GM_getValue("automate"))) {
+            setTimeout(function() { btn_secondary.click(); }, 0); 
         }
-        btn_automate.addEventListener("click", function(e) {
-            var auto=GM_getValue("automate");
-            if(!auto) btn_automate.innerHTML="Stop";
-            else btn_automate.innerHTML="Automate";
-            GM_setValue("automate",!auto);
-        });
-        GM_setValue("returnHit",false);
-        GM_addValueChangeListener("returnHit", function() {
-            if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
-               btns_secondary!==undefined && btns_secondary.length>0 &&
-               btns_secondary[0].innerText==="Return") {
-                if(GM_getValue("automate")) {
-                    setTimeout(function() { btns_secondary[0].click(); }, 0); }
-            }
-        });
-        if(btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Skip" &&
-           btns_primary!==undefined && btns_primary.length>0 && btns_primary[0].innerText==="Accept") {
-            /* Accept the HIT */
-            if(GM_getValue("automate")) {
-                btns_primary[0].click(); }
-        }
-        else {
-            /* Wait to return the hit */
-            var cboxdiv=document.getElementsByClassName("checkbox");
-            var cbox=cboxdiv[0].firstChild.firstChild;
-            if(cbox.checked===false) cbox.click();
-        }
+    });
+    
+    if(btn_secondary && btn_secondary.innerText==="Skip" && btn_primary && btn_primary.innerText==="Accept") {
+        /* Accept the HIT if automating */
+        if(GM_getValue("automate")) btn_primary.click(); 
+    }
+    else {
+        /* Wait to return the hit */
+        var cbox=document.querySelector(".checkbox input[type='checkbox']");
+        if(!cbox.checked) cbox.click();
     }
 };
 MTurkScript.prototype.check_and_submit=function(check_function)	{
@@ -733,11 +727,7 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
         if(/^bigPipe\.beforePageletArrive\(\"PagesProfileAboutInfoPagelet/.test(scripts[i].innerHTML) &&
 	   i < scripts.length-1) result.hours=MTurkScript.prototype.parse_hours(scripts[i+1]);
     }
-    for(i=0; i < code.length; i++)
-    {
-        //console.log("code ("+i+")");
-        code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
-    }
+    for(i=0; i < code.length; i++) code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
     var about_fields=doc.getElementsByClassName("_3-8j"),inner_field1,text;
     var _a3f=doc.getElementsByClassName("_a3f"),coord_ret; // map with coords
     if(_a3f.length>0 && (coord_ret=MTurkScript.prototype.FB_match_coords(_a3f[0].src))) {
@@ -749,8 +739,7 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
         inner_field1=about_fields[i].getElementsByClassName("_50f4");
         if(about_fields[i].className.toString().indexOf("_5aj7")!==-1 &&
            about_fields[i].className.toString().indexOf("_20ud")!==-1 &&
-           about_fields[i].getElementsByClassName("_4bl9").length>0)
-        {
+           about_fields[i].getElementsByClassName("_4bl9").length>0) {
             //console.log("Found address");
             result.address="";
             let add_fields=about_fields[i].getElementsByClassName("_2iem");
@@ -777,8 +766,7 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
 /* parse_search_script parses the script to get the search results; a helper function 
    for parse_FB_search
 */
-MTurkScript.prototype.parse_search_script=function(script)
-{
+MTurkScript.prototype.parse_search_script=function(script) {
     var result={success:true,sites:[]},parsed_text="",i,j;
     var text=script.innerHTML.replace(/^require\(\"TimeSlice\"\)\.guard\(\(function\(\)\{bigPipe\.onPageletArrive\(/,"")
         .replace(/\);\}\).*$/,"").replace(/src:\"([^\"]+)\"/g,"src:\"\"")
@@ -907,6 +895,14 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
     resolve(result);
 };
 
+/* Generic to check if an FB link is generally bad, e.g. not the actual "page" for something 
+TODO: have it repair it automatically
+*/
+MTurkScript.prototype.is_bad_fb=function(b_url,b_name) {
+        if(/\/(pages|groups|search|events)\//.test(b_url)) return true;
+        return false;
+};
+
 /**
      * parse_insta_script is a helper for parse_instagram that extracts the useful data
      */
@@ -971,20 +967,14 @@ MTurkScript.prototype.parse_FB_search_page=function(doc,url,resolve,reject)
     resolve(result);
 };
 
-MTurkScript.prototype.parse_FB_posts=function(doc,url,resolve,reject)
-{
+MTurkScript.prototype.parse_FB_posts=function(doc,url,resolve,reject) {
     var scripts=doc.scripts,i,j,code=doc.body.getElementsByTagName("code");
     var result={success:false},time;
     for(i=0; i < code.length; i++) code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
     var posts=doc.getElementsByClassName("mbm");
-    for(i=0; i < posts.length; i++) {
-        if(posts[i].getElementsByClassName("_449j").length===0) break;
-    }
+    for(i=0; i < posts.length; i++) if(posts[i].getElementsByClassName("_449j").length===0) break;
     if(i>=posts.length || !(time=posts[i].getElementsByClassName("_5ptz")) ||
-       time.length===0 || !time[0].title || time[0].title.split(" ").length<2) {
-        resolve(result);
-        return;
-    }
+       time.length===0 || !time[0].title || time[0].title.split(" ").length<2 && (resolve(result)||1)) return;
     result={success:true,date:time[0].title.split(" ")[0],time:time[0].title.split(" ")[1]};
     resolve(result);
 };
@@ -998,8 +988,7 @@ MTurkScript.prototype.fix_remote_url=function(found_url,page_url)
     var replacement=page_url.match(/^https?:\/\/[^\/]+/);
     var to_replace= window.location.href.match(/^https?:\/\/[^\/]+/)[0];
     var curr_url=window.location.href, temp_url=curr_url.replace(/\/$/,"");
-    while(temp_url.split("/").length>=3)
-    {
+    while(temp_url.split("/").length>=3) {
         found_url=found_url.replace(temp_url,replacement);
         temp_url=temp_url.replace(/\/[^\/]+$/,"");
     }
@@ -1256,5 +1245,8 @@ MTurkScript.prototype.csvToArray=function(text) {
     return ret;
 };
 
+/* Fixes the hidden emails in a document */
+MTurkScript.prototype.fix_emails=function(doc) {
+};
 
 var MTP=MTurkScript.prototype;
