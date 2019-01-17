@@ -17,9 +17,12 @@ var province_map={"Alberta": "AB", "British Columbia": "BC", "Manitoba": "MB", "
 		  "Saskatchewan": "SK","Yukon":"YT"
 		 };
 
+
 var reverse_state_map={},reverse_province_map={};
 for(let x in state_map)     reverse_state_map[state_map[x]]=x;
 for(let x in province_map)     reverse_province_map[province_map[x]]=x;
+
+var default_bad_urls=["facebook.com","youtube.com","twitter.com","instagram.com","opendi.us",".business.site","plus.google.com",".alibaba.com"];
 
 /* Regular expressions for emails, phones, faxes */
 var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%]+(\.[^<>()\[\]\\.,;:：\s@"\?]+)*)|("[^\?]+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
@@ -251,6 +254,7 @@ MTurkScript.prototype.is_bad_email = function(to_check)
     else if(/@(domain\.com|example\.com)/.test(to_check)) return true;
     else if(/;/.test(to_check)) return true;
     else if(/@(example|email)\.com$/.test(to_check)) return true;
+    else if(!to_check.match(email_re)) return true;
     return false;
 }
 /**
@@ -1244,9 +1248,46 @@ MTurkScript.prototype.csvToArray=function(text) {
     }
     return ret;
 };
-
-/* Fixes the hidden emails in a document */
-MTurkScript.prototype.fix_emails=function(doc) {
+/* Fixes the var addy type hidden emails in a document */
+MTurkScript.prototype.fix_addy_script=function(link,script) {
+    console.log("In fix_addy_script, script="+script.innerHTML);
+    var addy=script.innerHTML.match(/var (addy[\d]+\s*\=)/),split=script.innerHTML.split("\n");
+    var str_list=[""],i,addy_reg,match,email,str_reg=/\'[^\']*\'/g;
+    const reducer = (acc, curr) => acc + curr.replace(/\'/g,"");
+    const replacer = (match,p1) => String.fromCharCode(parseInt(p1));
+    if(!addy) return;
+    addy_reg=new RegExp(addy[1]);
+    for(i=0;i<split.length;i++) if(addy_reg.test(split[i]) && (match=split[i].match(str_reg))) str_list=str_list.concat(match);
+    email=str_list.reduce(reducer);
+    while(/&#([\d]+);/.test(email)) email=email.replace(/&#([\d]+);/,replacer);
+    //console.log("email="+email);
+    if(email.match(email_re)) link.href="mailto:"+email;
 };
+/* Fixes the hidden emails in a document */
+
+MTurkScript.prototype.fix_emails=function(doc,url) {
+    var i,links=doc.links,j,script;
+    var my_match,temp_email,encoded_match,match_split;
+    console.log("fix_emails: url="+url);
+    for(i=0; i < links.length; i++) {
+        //console.log("("+i+"): "+links[i].href+", "+links[i].innerText);
+        if(links[i].dataset.encEmail && (temp_email=MTurkScript.prototype.swrot13(links[i].dataset.encEmail.replace(/\[at\]/,"@")))
+           && !MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
+        else if(links[i].href.indexOf("cdn-cgi/l/email-protection#")!==-1 && (encoded_match=links[i].href.match(/#(.*)$/)) &&
+		(temp_email=MTurkScript.prototype.cfDecodeEmail(encoded_match[1]).replace(/\?.*$/,"")) &&
+		!MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
+        else if(links[i].href.indexOf("javascript:location.href")!==-1 && (temp_email="") &&
+		(encoded_match=links[i].href.match(/String\.fromCharCode\(([^\)]+)\)/)) && (match_split=encoded_match[1].split(","))) {
+            for(j=0; j < match_split.length; j++) temp_email=temp_email+String.fromCharCode(match_split[j].trim());
+            if(!MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
+        }
+        else if(links[i].href.indexOf("javascript:DeCryptX(")!==-1 &&
+		(encoded_match=links[i].href.match(/DeCryptX\(\'([^\)]+)\'\)/))) links[i].href="mailto:"+temp_email;
+        else if((script=links[i].querySelector("script")) &&
+		/var addy[\d]+/.test(script.innerHTML)) MTurkScript.prototype.fix_addy_script(links[i],script);
+        // console.log("("+i+"): "+links[i].href+", "+links[i].innerText);
+    }
+};
+
 
 var MTP=MTurkScript.prototype;
