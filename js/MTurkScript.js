@@ -904,8 +904,9 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
 TODO: have it repair it automatically
 */
 MTurkScript.prototype.is_bad_fb=function(b_url,b_name) {
-        if(/\/(pages|groups|search|events)\//.test(b_url)) return true;
-        return false;
+    if(/\/(pages|groups|search|events)\//.test(b_url)) return true;
+    if(/\/sharer\.php/.test(b_url)) return true;
+    return false;
 };
 
 /**
@@ -1104,6 +1105,8 @@ MTurkScript.prototype.contact_response=function(doc,url,extra) {
             {
                 //    console.log(short_name+": ("+i+")="+links[i].href);
             }
+	    if(links[i].dataset.domain&&links[i].dataset.username) my_query.email_list.push(links[i].dataset.username+"@"+links[i].dataset.domain);
+
             if(links[i].href.indexOf("cdn-cgi/l/email-protection#")!==-1 && (encoded_match=links[i].href.match(/#(.*)$/)) &&
               (temp_email=MTurkScript.prototype.cfDecodeEmail(encoded_match[1]).replace(/\?.*$/,"")) &&
                !MTurkScript.prototype.is_bad_email(temp_email)) my_query.fields.email=temp_email;
