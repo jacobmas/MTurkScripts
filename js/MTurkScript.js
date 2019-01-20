@@ -1140,8 +1140,8 @@ MTurkScript.prototype.parse_loc_hy=function(loc_hy) {
     var ret=[],ent_cnt=loc_hy.querySelectorAll(".ent_cnt"),add;
     ent_cnt.forEach(function(elem) {
         add=elem.querySelector("b_factrow")?elem.querySelector("b_factrow").innerText:"·";
-	ret.push({name:elem.querySelector("h2").innerText,address:add.split("·")[0].trim(),phone:add.split("·")[1].trim(),
-                  url:elem.querySelector("[aria-label='Website']").href});  });
+	    ret.push({name:elem.querySelector("h2")?elem.querySelector("h2").innerText:"",address:add.split("·")[0].trim(),phone:add.split("·")[1].trim(),
+                      url:elem.querySelector("[aria-label='Website']")?elem.querySelector("[aria-label='Website']").href:""});  });
     return ret;
 };
 
