@@ -1139,9 +1139,11 @@ MTurkScript.prototype.json_to_post=function(obj) {
 MTurkScript.prototype.parse_loc_hy=function(loc_hy) {
     var ret=[],ent_cnt=loc_hy.querySelectorAll(".ent_cnt"),add;
     ent_cnt.forEach(function(elem) {
-        add=elem.querySelector("b_factrow")?elem.querySelector("b_factrow").innerText:"·";
-	    ret.push({name:elem.querySelector("h2")?elem.querySelector("h2").innerText:"",address:add.split("·")[0].trim(),phone:add.split("·")[1].trim(),
-                      url:elem.querySelector("[aria-label='Website']")?elem.querySelector("[aria-label='Website']").href:""});  });
+	var url=elem.querySelector("a");
+        var addphone=elem.querySelectorAll(".trgr .b_factrow");
+	ret.push({name:url?url.innerText:"",
+		  address:addphone.length>0?addphone[0].innerText.trim():"",phone:addphone.length>1?addphone[1].innerText.trim():"",
+                  url:url?url.href:""});  });
     return ret;
 };
 
