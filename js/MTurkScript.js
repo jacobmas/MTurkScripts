@@ -281,7 +281,11 @@ MTurkScript.prototype.is_bad_url=function(the_url, bad_urls, max_depth, max_dash
     if((slash_split=the_url.split("/")).length >= 4 && do_dashes) {
 	for(i=3;i<slash_split.length;i++) {
 	    if(slash_split[i].split("-").length>max_dashes||slash_split[i].split("_").length>max_dashes||
-	       slash_split[i].split("+").length>max_dashes) return true; }
+	       slash_split[i].split("+").length>max_dashes) return true;
+	    
+	}
+	
+	
     }
     return false;
 }
@@ -603,8 +607,8 @@ MTurkScript.prototype.parse_b_context=function(b_context)
         if(/Experience/.test(b_subModule_h2[i].innerText) && b_subModule_h2[i].nextElementSibling &&
            (inner_li=b_subModule_h2[i].nextElementSibling.querySelector("li"))) {
             split_exp=inner_li.innerText.split("\n");
-            if(!parsed_context["Job title"]) parsed_context["Job title"]=split_exp[0].trim();
-	    if(split_exp.length>1&&!parsed_context.Company) parsed_context.Company=split_exp[1].replace(/\s*·.*$/,"");
+            if(!result["Job title"]) result["Job title"]=split_exp[0].trim();
+	    if(split_exp.length>1&&!result.Company) result.Company=split_exp[1].replace(/\s*·.*$/,"");
         }
     }
     if(b_hList.length>0 && (inner_a=b_hList[0].getElementsByTagName("a"))) {
@@ -1269,10 +1273,29 @@ MTurkScript.prototype.fix_addy_script=function(link,script) {
     //console.log("email="+email);
     if(email.match(email_re)) link.href="mailto:"+email;
 };
+MTurkScript.prototype.fix_addy_script_only=function(script) {
+        console.log("In fix_addy_script, script="+script.innerHTML);
+        var addy=script.innerHTML.match(/var (addy[\da-z]+\s*\=)/),split=script.innerHTML.split("\n");
+        var str_list=[""],i,addy_reg,match,email,str_reg=/\'[^\']*\'/g;
+        const reducer = (acc, curr) => acc + curr.replace(/\'/g,"");
+        const replacer = (match,p1) => String.fromCharCode(parseInt(p1));
+        if(!addy) return;
+        addy_reg=new RegExp(addy[1]);
+        for(i=0;i<split.length;i++) if(addy_reg.test(split[i]) && (match=split[i].match(str_reg))) str_list=str_list.concat(match);
+        email=str_list.reduce(reducer);
+        while(/&#([\d]+);/.test(email)) email=email.replace(/&#([\d]+);/,replacer);
+        console.log("email="+email);
+        if(email.match(email_re)) {
+            if(script.parentNode) script.parentNode.innerHTML=email;
+	    else script.innerHTML=email;
+//            console.log("script.parentNode="+script.parentNode);
+        }
+    };
+
 /* Fixes the hidden emails in a document */
 
 MTurkScript.prototype.fix_emails=function(doc,url) {
-    var i,links=doc.links,j,script;
+    var i,links=doc.links,j,script,scripts;
     var my_match,temp_email,encoded_match,match_split;
     console.log("fix_emails: url="+url);
     for(i=0; i < links.length; i++) {
@@ -1293,6 +1316,34 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 		/var addy[\d]+/.test(script.innerHTML)) MTurkScript.prototype.fix_addy_script(links[i],script);
         // console.log("("+i+"): "+links[i].href+", "+links[i].innerText);
     }
+    for(x=0;x<scripts.length;x++) {
+            var unesc_regex=/(?:unescape|decodeURIComponent)\((?:[\"\']{1})([^\"\"]+)(?:[\"\']{1})/;
+            //console.log("scripts["+x+"]="+scripts[x].innerHTML);
+            var match=scripts[x].innerHTML.match(unesc_regex),decoded,match2;
+            if(/var addy[\d]+/.test(scripts[x].innerHTML)) fix_addy_script_only(scripts[x]);
+            if(match&&(decoded=decodeURIComponent(match[1]))&&(match2=decoded.match(email_re)) && my_query.fields.email.length===0) {
+                console.log("Matched weird decode");
+                my_query.fields.email=match2[0];
+            }
+            scripts[x].innerHTML="";
+        }
+};
+
+MTurkScript.prototype.is_bad_page=function(doc,url) {
+    var links=doc.links,i,scripts=doc.scripts;
+    var title=doc.title;
+    if(/hugedomains\.com/.test(url)) { return "for sale."; }
+    else if(/Expired|^404|Error/.test(title)) return "dead.";
+    //    else if(doc.body.innerHTML.length<500) return " apparently empty.";
+    /*  else if(MTP.is_bad_url(url,bad_urls,4) && !((
+        my_query.url===undefined ||
+        MTP.get_domain_only(my_query.url,true)!==MTP.get_domain_only(url,true)) && (my_query.url2===undefined||
+        MTP.get_domain_only(my_query.url2,true)!==MTP.get_domain_only(url,true)))) {
+        return "dead/hijacked.";
+        }
+        else if(my_query.url2) {
+        console.log("# DOMAIN "+MTP.get_domain_only(my_query.url2,true)+", "+MTP.get_domain_only(url,true)); }*/
+    return null;
 };
 
 
