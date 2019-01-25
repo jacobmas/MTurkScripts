@@ -792,7 +792,7 @@ Gov.parse_data_func=function(text) {
 	    else if(has_pasted_title=true) ret.title=s_part.replace(/^Title:/,"").trim();
 	}
     }
-    console.log("ret="+JSON.stringify(ret));
+    //console.log("ret="+JSON.stringify(ret));
     return ret;
 };
 
