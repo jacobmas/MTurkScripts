@@ -708,7 +708,7 @@ Gov.parse_data_func=function(text) {
 
     var has_pasted_title=false,title_prefix,dept_name;
     if(!/@/.test(text)) return;
-    console.log("text="+text);
+   // console.log("text="+text);
     text=text.replace(/([a-z]{1})([A-Z][a-z]+:)/g,"$1\t$2").replace(/([a-z]{1})\s{1,}([\d]{1})/g,"$1\t$2")
 	.replace(/([\d]{1})\s{1,}([A-Za-df-wy-z]{1})/g,"$1\t$2").replace(/([A-Za-z]{1})\s([A-Za-z0-9\._]+@)/,"$1\t$2")
 	.replace(/([^\s]+)\s+([^\s@]+@[^\s@]+)/g,"$1\t$2")
@@ -721,17 +721,17 @@ Gov.parse_data_func=function(text) {
     else split_lines=split_lines_1;
     if((split_comma=split_lines[0].split(","))&&split_comma.length>1&&Gov.title_regex.test(split_comma[0])) {
 	split_lines=split_comma.concat(split_lines.slice(1)); }
-    console.log("split_lines="+JSON.stringify(split_lines));
+    //console.log("split_lines="+JSON.stringify(split_lines));
     split_lines=split_lines.filter(line => line && line.replace(/[\-\s]+/g,"").trim().length>0);
     split_lines=split_lines.map(line => line.replace(/^\s*[\(]*/,"").replace(/[\)]*\s*$/,"").trim());
 
 
     if(split_lines.length>0&&(split_comma=split_lines[0].split(","))&&split_comma.length>1&&Gov.title_regex.test(split_lines[0])) {
 	split_lines=split_comma.concat(split_lines.slice(1)); }
-    console.log("split_lines="+JSON.stringify(split_lines));
+    //console.log("split_lines="+JSON.stringify(split_lines));
     if(split_lines.length>0&&Gov.dept_name_regex.test(split_lines[0])) {
 	ret.department=split_lines[0];
-	console.log("$$ SET ret.department="+ret.department);
+//	console.log("$$ SET ret.department="+ret.department);
 	split_lines=split_lines.slice(1); }
     while(/:/.test(split_lines[0])) split_lines=split_lines[0].split(":").filter(line=>line && line.trim().length>0).concat(split_lines.slice(1));
 
@@ -747,7 +747,7 @@ Gov.parse_data_func=function(text) {
 
     var good_stuff_re=/[A-Za-z0-9]/;
     if(split_lines===null) return;
-    console.log("parse_data_func: "+JSON.stringify(split_lines));
+ //   console.log("parse_data_func: "+JSON.stringify(split_lines));
     for(j=0; j < split_lines.length; j++) {
 	if(split_lines.length>0 && split_lines[j] && split_lines[j].trim().length > 0
 	   && good_stuff_re.test(split_lines[j]) && !Gov.bad_stuff_re.test(split_lines[j])&& !(split_lines[j].match(email_re))) break;
