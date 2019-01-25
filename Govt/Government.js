@@ -355,7 +355,7 @@ Gov.parse_contact_div=function(elem,name,url) {
     var text=elem.innerText.replace(/\n\n+/,"\n");
     if((text.length>=1000 && elem.querySelector("div div")) || (text.length>=2000&&(elem.querySelector("div") || elem.querySelector("table"))) ) return 0;
     Gov.fix_emails(elem);
-    // console.log("text="+text);
+     console.log("text="+text);
     if(bolds.length>2) {
 	console.log("Found bolds, text="+text);
 	// console.log("text="+text);
