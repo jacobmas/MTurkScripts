@@ -38,7 +38,7 @@
         return false;
     }
 
-    function query_response(response,resolve,reject) {
+    function query_response(response,resolve,reject,type) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
         console.log("in query_response\n"+response.finalUrl);
@@ -76,12 +76,12 @@
     }
 
     /* Search on bing for search_str, parse bing response with callback */
-    function query_search(search_str, resolve,reject, callback) {
+    function query_search(search_str, resolve,reject, callback,type) {
         console.log("Searching with bing for "+search_str);
         var search_URIBing='https://www.bing.com/search?q='+
             encodeURIComponent(search_str)+"&first=1&rdr=1";
         GM_xmlhttpRequest({method: 'GET', url: search_URIBing,
-                           onload: function(response) { callback(response, resolve, reject); },
+                           onload: function(response) { callback(response, resolve, reject,type); },
                            onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
                           });
     }
@@ -127,7 +127,7 @@
         var search_str;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
-            query_search(search_str, resolve, reject, query_response);
+            query_search(search_str, resolve, reject, query_response,type);
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
