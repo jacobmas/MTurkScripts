@@ -342,7 +342,7 @@ Gov.regexpify_str=function(str) {
 /* Gov.parse_contact_div, will require splitting into multiple contacts */
 Gov.parse_contact_div=function(elem,name,url) {
     //  console.time("contact_div");
-    console.log("Gov.parse_contact_div,url="+url);
+    //console.log("Gov.parse_contact_div,url="+url);
     // console.log("elem.outerHTML="+elem.outerHTML);
     elem.innerHTML = elem.innerHTML.replace(/&nbsp;/g, ' - ');
     var ret,p_adds=0,add_count=0;
@@ -355,9 +355,9 @@ Gov.parse_contact_div=function(elem,name,url) {
     var text=elem.innerText.replace(/\n\n+/,"\n");
     if((text.length>=1000 && elem.querySelector("div div")) || (text.length>=2000&&(elem.querySelector("div") || elem.querySelector("table"))) ) return 0;
     Gov.fix_emails(elem);
-     console.log("text="+text);
+  //   console.log("text="+text);
     if(bolds.length>2) {
-	console.log("Found bolds, text="+text);
+//	console.log("Found bolds, text="+text);
 	// console.log("text="+text);
 	for(i=0;i<bolds.length; i++) {
 	    //console.log("bolds["+i+"]="+bolds[i].innerText);
