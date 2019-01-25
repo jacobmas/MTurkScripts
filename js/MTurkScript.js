@@ -908,7 +908,7 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
 TODO: have it repair it automatically
 */
 MTurkScript.prototype.is_bad_fb=function(b_url,b_name) {
-    if(/\/(pages|groups|search|events)\//.test(b_url)) return true;
+    if(/\/(pages|groups|search|events|directory)\//.test(b_url)) return true;
     if(/\/sharer\.php/.test(b_url)) return true;
     return false;
 };
@@ -1295,7 +1295,7 @@ MTurkScript.prototype.fix_addy_script_only=function(script) {
 /* Fixes the hidden emails in a document */
 
 MTurkScript.prototype.fix_emails=function(doc,url) {
-    var i,links=doc.links,j,script,scripts;
+    var i,links=doc.links,j,script,scripts=doc.scripts;
     var my_match,temp_email,encoded_match,match_split;
     console.log("fix_emails: url="+url);
     for(i=0; i < links.length; i++) {
