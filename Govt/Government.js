@@ -702,13 +702,14 @@ Gov.parse_name_func=function(text) {
  * Gov.parse_data_func parses text
  */
 Gov.parse_data_func=function(text) {
+    
     var ret={};
     var fname="",lname="",i=0,j=0, k=0;
     var curr_line, s_part="", second_arr,begin_name="";
 
     var has_pasted_title=false,title_prefix,dept_name;
     if(!/@/.test(text)) return;
-   // console.log("text="+text);
+    if(Gov.debug) console.log("text="+text);
     text=text.replace(/([a-z]{1})([A-Z][a-z]+:)/g,"$1\t$2").replace(/([a-z]{1})\s{1,}([\d]{1})/g,"$1\t$2")
 	.replace(/([\d]{1})\s{1,}([A-Za-df-wy-z]{1})/g,"$1\t$2").replace(/([A-Za-z]{1})\s([A-Za-z0-9\._]+@)/,"$1\t$2")
 	.replace(/([^\s]+)\s+([^\s@]+@[^\s@]+)/g,"$1\t$2")
@@ -747,7 +748,7 @@ Gov.parse_data_func=function(text) {
 
     var good_stuff_re=/[A-Za-z0-9]/;
     if(split_lines===null) return;
- //   console.log("parse_data_func: "+JSON.stringify(split_lines));
+    if(Gov.debug) console.log("parse_data_func: "+JSON.stringify(split_lines));
     for(j=0; j < split_lines.length; j++) {
 	if(split_lines.length>0 && split_lines[j] && split_lines[j].trim().length > 0
 	   && good_stuff_re.test(split_lines[j]) && !Gov.bad_stuff_re.test(split_lines[j])&& !(split_lines[j].match(email_re))) break;
@@ -1459,7 +1460,7 @@ Gov.init_Gov=function(doc,url,resolve,reject,query)
     // console.log("doc.body.innerHTML="+doc.body.innerHTML);
     if(!query.id_only) { console.log("url="+url); console.time("Gov"); }
     Gov.url=url;Gov.query=query;Gov.dept_links=[];Gov.resolve=resolve;Gov.reject=reject;Gov.contact_links=[];
-
+    Gov.debug=false;
     Gov.init_id_regex();Gov.depts={};
     Gov.promise_list=[];
     //console.log("Gov.id_regex="+Gov.id_regex);
