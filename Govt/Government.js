@@ -747,7 +747,7 @@ Gov.parse_data_func=function(text) {
 
     var good_stuff_re=/[A-Za-z0-9]/;
     if(split_lines===null) return;
- //   console.log("parse_data_func: "+JSON.stringify(split_lines));
+    console.log("parse_data_func: "+JSON.stringify(split_lines));
     for(j=0; j < split_lines.length; j++) {
 	if(split_lines.length>0 && split_lines[j] && split_lines[j].trim().length > 0
 	   && good_stuff_re.test(split_lines[j]) && !Gov.bad_stuff_re.test(split_lines[j])&& !(split_lines[j].match(email_re))) break;
