@@ -234,6 +234,7 @@ Gov.get_area_code=function(doc) {
 
 */
 Gov.parse_contact_tables=function(doc,url,resolve,reject,temp_div,dept_name) {
+    MTP.fix_emails(doc,url);
     console.time("parse_contact_tables");
     var i,table=temp_div.querySelectorAll("table"),j;
     var begin_row=0,title_map={},reverse_title_map={},x,add_count=0,span=doc.querySelectorAll("div"),row;
