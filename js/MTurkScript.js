@@ -240,7 +240,7 @@ MTurkScript.prototype.DeCryptX=function(s) { return this.DeCryptString( s ); };
 /* cfDecodeEmail decodes Cloudflare encoded emails */
 MTurkScript.prototype.cfDecodeEmail=function(encodedString) {
     var email = "", r = parseInt(encodedString.substr(0, 2), 16), n, i;
-    for (n = 2; encodedString.length - n; n += 2){
+    for (n = 2; encodedString.length<n; n += 2){
         i = parseInt(encodedString.substr(n, 2), 16) ^ r;
         email += String.fromCharCode(i);
     }
