@@ -1317,16 +1317,19 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
         // console.log("("+i+"): "+links[i].href+", "+links[i].innerText);
     }
     for(x=0;x<scripts.length;x++) {
-            var unesc_regex=/(?:unescape|decodeURIComponent)\((?:[\"\']{1})([^\"\"]+)(?:[\"\']{1})/;
-            //console.log("scripts["+x+"]="+scripts[x].innerHTML);
-            var match=scripts[x].innerHTML.match(unesc_regex),decoded,match2;
-            if(/var addy[\d]+/.test(scripts[x].innerHTML)) fix_addy_script_only(scripts[x]);
-            if(match&&(decoded=decodeURIComponent(match[1]))&&(match2=decoded.match(email_re)) && my_query.fields.email.length===0) {
-                console.log("Matched weird decode");
-                my_query.fields.email=match2[0];
-            }
-            scripts[x].innerHTML="";
+        var unesc_regex=/(?:unescape|decodeURIComponent)\((?:[\"\']{1})([^\"\"]+)(?:[\"\']{1})/;
+        //console.log("scripts["+x+"]="+scripts[x].innerHTML);
+        var match=scripts[x].innerHTML.match(unesc_regex),decoded,match2;
+        if(/var addy[\d]+/.test(scripts[x].innerHTML)) fix_addy_script_only(scripts[x]);
+        if(match&&(decoded=decodeURIComponent(match[1]))&&(match2=decoded.match(email_re)) && my_query.fields.email.length===0) {
+            console.log("Matched weird decode");
+            my_query.fields.email=match2[0];
         }
+	//if((match=/FS\.util\.insertEmail\(\"[^\"]*\",\s*\"([^\"]*)\",\s*\"([^\"]*)\"/)) {
+	    
+	
+        scripts[x].innerHTML="";
+    }
 };
 
 MTurkScript.prototype.is_bad_page=function(doc,url) {
