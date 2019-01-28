@@ -184,7 +184,7 @@ MTurkScript.prototype.setup_worker_mturk=function() {
     else {
         /* Wait to return the hit */
         var cbox=document.querySelector(".checkbox input[type='checkbox']");
-        if(!cbox.checked) cbox.click();
+        if(cbox && !cbox.checked) cbox.click();
     }
 };
 MTurkScript.prototype.check_and_submit=function(check_function)	{
