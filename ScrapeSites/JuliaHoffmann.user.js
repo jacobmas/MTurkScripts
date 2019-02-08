@@ -24,8 +24,7 @@
 // @connect *
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
@@ -33,7 +32,7 @@
     'use strict';
     var my_query = {};
     var bad_urls=[];
-    var MTurk=new MTurkScript(20000,200,[],init_Query,"A1I5FTMQYXYJ2H");
+    var MTurk=new MTurkScript(20000,200,[],begin_script,"A1I5FTMQYXYJ2H",false);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
@@ -81,10 +80,16 @@
         console.log("in parse_page, url="+url);
         var wrapper=doc.getElementsByClassName("items-wrapper");
         var title,desc,i;
+        title=doc.getElementsByClassName("item-title");
+        desc=doc.getElementsByClassName("item-description");
+        for(i=0;i<title.length&&i<4;i++) {
+            console.log("title="+title[i].innerText.trim()+", desc="+desc[i].innerText.trim());
+        }
         for(i=0;i<wrapper.length;i++) {
             title=wrapper[i].getElementsByClassName("item-title")[0];
             desc=wrapper[i].getElementsByClassName("item-description")[0];
-            console.log("desc="+desc);
+
+            //console.log("title="+title.innerText.trim()+", desc="+desc.innerText.trim());
             if(/LCCN$/.test(title.innerText)) resolve(desc.innerText);
         }
     };
@@ -109,7 +114,9 @@
     }
 
     function begin_script(timeout,total_time,callback) {
-        if(timeout===undefined) timeout=200;if(total_time===undefined) total_time=0;if(callback===undefined) callback=init_Query;
+        if(timeout===undefined) timeout=200;
+        if(total_time===undefined) total_time=0;
+        if(callback===undefined) callback=init_Query;
         if(MTurk!==undefined) { callback(); }
         else if(total_time<2000) {
             console.log("total_time="+total_time);
@@ -119,6 +126,7 @@
         }
         else { console.log("Failed to begin script"); }
     }
+
 
     function add_to_sheet() {
         var x,field;
@@ -132,6 +140,28 @@
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
 
+    function parse_book(text) {
+        var result={last:"",date:"",title:""};
+        text=text.replace(/^Book:\s*/,"");
+        var regex_parendate=/^(.*)\s*(\([\d]+\))\s*(.*)$/,match;
+        if(match=text.match(regex_parendate)) {
+            console.log("paren match="+JSON.stringify(match));
+            result.last=MTurkScript.prototype.removeDiacritics(match[1].replace(/;.*$/,""));
+            result.date=match[2];
+            result.title=match[3].replace(/^[:\.\s]*/,"").replace(/[:;\.\?\(\)]+.*$/,"").trim();
+        }
+        else {
+            if((match=text.match(/[\d]{4}/))) result.date=match[1];
+            text=text.replace(/([A-Za-z\s]*;\s*)?[A-Za-z\s\.]*: [^:]*$/,"").replace(/[^A-Za-z]*$/,"");
+            console.log("Bung text="+text);
+            result.last=MTurkScript.prototype.removeDiacritics(text.replace(/;.*$/,""));
+            if((match=text.match(/[^\.\?;]+$/))) result.title=match[0].replace(/\d.*$/,"").trim();
+        }
+        return result;
+
+    }
+
+
     function init_Query()
     {
         console.log("in init_query");
@@ -140,16 +170,20 @@
 //        var dont=document.getElementsByClassName("dont-break-out");
       console.log("datafield.innerText="+datafield.innerText);
         data_split=datafield.innerText.split("\n");
-        line_split=data_split[1].split(/\s*\|\s*/);
-        semi_split=line_split[1].split("; ");
-        my_query={last:semi_split[0].replace(/^[^:]*:\s*/,""),
+        var result=parse_book(data_split[1]);
 
-                  title:semi_split[1].match(/[\d]{4}\)?.\s*(.*)$/)[1].replace(/\..*$/,""),
-                  first_init:semi_split[1].match(/^\s*([A-Z]+)/)[1],
+       // line_split=data_split[1].split(/\s*\|\s*/);
+        //semi_split=line_split[1].split("; ");
+        my_query={last:result.last,
+                  title:"\""+result.title.replace(/\^/g,"\'")+"\"",
+                  date:result.date,
                   fields:{},done:{},submitted:false};
+        console.log("my_query="+JSON.stringify(my_query));
 
         var data={"searchArg1": my_query.last,"argType1": "all","searchCode1": "KNAM","searchType": "2",
-                  "combine2":"and","searchArg2":my_query.title.replace(/\sand\s/g," \'and\' "),"argType2":"all","searchCode2":"KTIL",
+                  "combine2":"and","searchArg2":my_query.title
+
+                  ,"argType2":"all","searchCode2":"KTIL",
 "yearOption":"defined","year":"1518-2018","fromYear":"","toYear":"","location":"all","place":"all",
 "type":"all","language":"all","recCount":"25"};
         console.log("data="+JSON.stringify(data));

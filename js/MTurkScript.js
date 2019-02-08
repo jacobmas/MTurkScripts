@@ -247,8 +247,8 @@ MTurkScript.prototype.cfDecodeEmail=function(encodedString) {
     return email;
 };
 /* Some basic checks for improper emails beyond email_re */
-MTurkScript.prototype.is_bad_email = function(to_check)
-{
+MTurkScript.prototype.is_bad_email = function(to_check) {
+    to_check=to_check.toLowerCase();
     if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1) return true;
     else if(/\.(png|jpg)$/.test(to_check)) return true;
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
@@ -1337,6 +1337,7 @@ MTurkScript.prototype.is_bad_page=function(doc,url) {
     var title=doc.title;
     if(/hugedomains\.com/.test(url)) { return "for sale."; }
     else if(/Expired|^404|Error/.test(title)) return "dead.";
+    else if(doc.querySelector("div.leftblk h3.domain_name")) return "dead.";
     //    else if(doc.body.innerHTML.length<500) return " apparently empty.";
     /*  else if(MTP.is_bad_url(url,bad_urls,4) && !((
         my_query.url===undefined ||
