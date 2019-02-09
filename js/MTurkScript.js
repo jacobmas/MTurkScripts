@@ -332,7 +332,7 @@ MTurkScript.prototype.prefix_in_string=function(prefixes, to_check) {
 }
 MTurkScript.prototype.parse_name=function(to_parse)
 {
-    console.log("Doing parse_name on "+to_parse);
+    //console.log("Doing parse_name on "+to_parse);
     var first_pos=0,j,last,ret={};
     var suffixes=["Jr","II","III","IV","CPA","CGM"],prefixes=["Mr","Ms","Mrs","Dr","Rev"],split_parse;
     var prefixes_regex=/^(Mr|Ms|Mrs|Dr|Rev|Miss)\.?\s+/gi,paren_regex=/\([^\)]*\)/g,caps_regex=/^[A-Z]+$/;
