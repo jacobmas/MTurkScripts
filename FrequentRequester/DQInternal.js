@@ -1,29 +1,39 @@
 var DQ={dealer_regex:new RegExp(
+    "www\\.360\\.agency|"+
         "www\\.allautonetwork\\.com|webstatic\\.auction123\\.com|"+
         "www\\.(auto(conx|corner|dealerwebsites|drivenmarketing|funds|jini|manager|revo|searchtech|webexpress))\\.com|"+
-        "\\/\\/auto(drivenmarketing|motiveleads)\\.com|www\\.autosalesweb\\.net|"+
+        "\\/\\/auto(drivenmarketing|motiveleads)\\.com|www\\.autosalesweb\\.net|www\\.bwebauto\\.com|"+
         "www\\.(car(base|guywebdesign|max|prolive|sforsale|think)).com|www\\.carwizard\\.net|www\\.chromacars\\.com|"+
-        "(www|static)\\.dealer\\.com|\\/dealeron\\.js|"+
+        "www\\.convertus\\.com|"+
+        "(www|static)\\.dealer\\.com|\\/dealeron\\.js|www\\.dealercity\\.(ca|com)|"+
         "www\\.(dealer(carsearch|center|eprocess|fire|inspire|on|pac|peak|scloud|specialties|spike|spiketruck|sync|websites))\\.com|"+
-        "dealerclick\\.com|www\\.dealerexpress\\.net|\\/\\/dealerleads\\.com|cdn\\.dealereprocess\\.org|"+
-        "(\\/\\/|inventoryplus\\.)dealersocket\\.com|\\/\\/dealerseo\\.net|dealer-cdn\\.dealersync\\.com|"+
-        "\\/\\/dealersolutionssoftware\\.com|www\\.(dssal|drive(dominion|time))\\.com|(www|images)\\.ebizautos\\.com|"+
-        "foxdealerinteractive\\.com|www\\.fridaynet\\.com|www\\.fzautomotive\\.com|www\\.higherturnover\\.com|"+
+        "dealerclick\\.com|www\\.dealerexpress\\.net|\\/\\/dealer(city|leads)\\.com|cdn\\.dealereprocess\\.org|"+
+        "(\\/\\/|inventoryplus\\.)dealersocket\\.com|\\/\\/dealerseo\\.net|dealersiteplus\\.ca|dealer-cdn\\.dealersync\\.com|"+
+        "\\/\\/dealersolutionssoftware\\.com|www\\.(dssal|drive(dominion|time))\\.com|www\\.d2cmedia\\.ca|"+
+        "(www|images)\\.ebizautos\\.com|"+
+        "www\\.edealer\\.ca|(www\\.|\\/\\/)evolio\\.ca|www\\.ez-results\\.ca|"+
+        "foxdealerinteractive\\.com|www\\.fridaynet\\.com|www\\.fzautomotive\\.com|www\\.goauto\\.ca|www\\.higherturnover\\.com|"+
         "www\\.interactivedms\\.com|(www|tracking)\\.hasyourcar\\.com|"+
         "www\\.jazelauto\\.com|analytics\\.jazel\\.net|(images-stag|userlogin)\\.jazelc\\.com|"+
         "www\\.(jdbyrider|lotboys|motorcarmarketing|wearefullthrottle)\\.com|"+
-        "\\/\\/kukui\\.com|(\\/\\/|www\\.)lotwizard\\.com|media-cf\\.assets-cdk\\.com|"+
-        "(www|secure[0-9])\\.motionfuze\\.com|"+
-        "(www\\.|\\/\\/)prontodealer\\.com|\\/\\/remora\\.com|(www|cdn-w)\\.v12soft(|ware)\\.com|"+
-        "(\\/\\/|www\\.)waynereaves\\.com|www\\.(wearefullthrottle|webstreak)\\.com|www\\.yourcarlot\\.com","i"
-                                  ),
-           dealer_map:{"fridaynet":"lotwizard","dealersocket":"dealerfire","dealerseo":"automotiveleads",
-                       "dealerleads":"automotiveleads","v12soft":"v12software","jazelc":"jazelauto","dealerspiketruck":"dealerspike"},
-         begin_year:1981,
-         make_rx_str:"Acura|Audi|BMW|Buick|Cadillac|Can-Am|Chevrolet|Chrysler|Dodge|Entegra|Ferrari|Fiat|Ford|GMC|"+
-          "Honda|Hummer|Hyundai|Infiniti|Isuzu|Jaguar|Jeep|Kia|Land Rover|Lexux|Lincoln|"+
-          "Mazda|Mercedes-Benz|Mercury|Mini|Mitsubishi|Nissan|Plymouth|Pontiac|Porsche|"+
-          "Ram|Saab|Saturn|Scion|Smart|Subaru|Suzuki|Toyota|Volkswagen|Volvo"};
+        "\\/\\/kukui\\.com|(\\/\\/|\\/\\/leadboxhq\\.com|"+
+        "www\\.)lotwizard\\.com|media-cf\\.assets-cdk\\.com|"+
+        "(www|secure[0-9])\\.motionfuze\\.com|(www\\.|\\/\\/)nakedlime\\.com|(www\\.|\\/\\/)obbauto\\.com|"+
+        "(www\\.|\\/\\/)prontodealer\\.com|\\/\\/remora\\.com|www\\.solutionsmedias360\\.com|"+
+        "www\\.stormdivision\\.com|strathcom\\.com|"+
+        "www\\.vicimus\\.com|(www|cdn-w)\\.v12soft(|ware)\\.com|"+
+        "(\\/\\/|www\\.)waynereaves\\.com|www\\.(wearefullthrottle|webstreak)\\.com|www\\.yourcarlot\\.com","i"),
+        
+        dealer_map:{"fridaynet":"lotwizard","dealersocket":"dealerfire","dealerseo":"automotiveleads",
+                    "dealerleads":"automotiveleads","v12soft":"v12software","jazelc":"jazelauto","dealerspiketruck":"dealerspike",
+                    "solutionsmedias360":"360"
+                   },
+        begin_year:1981,
+        make_rx_str:"Acura|Audi|BMW|Buick|Cadillac|Can-Am|Chevrolet|Chrysler|Dodge|Entegra|Ferrari|Fiat|Ford|GMC|"+
+        "Honda|Hummer|Hyundai|Infiniti|Isuzu|Jaguar|Jeep|Kia|Land Rover|Lexux|Lincoln|"+
+        "Mazda|Mercedes-Benz|Mercury|Mini|Mitsubishi|Nissan|Plymouth|Pontiac|Porsche|"+
+        "Ram|Saab|Saturn|Scion|Smart|Subaru|Suzuki|Toyota|Volkswagen|Volvo",
+        employee_list:[],email_list:[]};
     DQ.carSearchShit=function(t, n, r,doc,url) {
         function i(o, s) {
             if (!n[o]) {
@@ -1488,8 +1498,12 @@ DQ.check_if_bad=function(doc,url,resolve,reject) {
 
 DQ.find_link=function(doc,url,resolve,reject,page_type) {
     for(var i=0; i < doc.links.length; i++) {
-        if(page_type.href_rx.test(doc.links[i].href) &&
-           page_type.text_rx.test(doc.links[i].innerText)) return MTurkScript.prototype.fix_remote_url(doc.links[i].href,url);}
+        doc.links[i].href=MTurkScript.prototype.fix_remote_url(doc.links[i].href,url);
+        //  console.log("doc.links["+i+"]="+doc.links[i].href+", "+doc.links[i].innerText);
+        if(page_type.team_href_rx.test(doc.links[i].href) &&
+           page_type.team_text_rx.test(MTP.removeDiacritics(doc.links[i].innerText))
+           && (!page_type.team_bad_text_rx || !page_type.team_bad_text_rx.test(MTP.removeDiacritics(doc.links[i].innerText)))
+          ) return MTurkScript.prototype.fix_remote_url(doc.links[i].href,url);}
     return url;
 };
 DQ.find_link_carmax=function(doc,url,resolve,reject,page_type) {
@@ -1666,9 +1680,10 @@ DQ.try_carsforsale=function(doc,url,resolve,reject) {
     }
     return false;
 };
+// Identify the type of page
 DQ.id_page_type=function(doc,url,resolve,reject) {
     var page_type="none",i,match,src,copyright,item,links=doc.getElementsByTagName("link");
-    var thei=doc.getElementsByTagName("iframe");
+    var thei=doc.getElementsByTagName("iframe"),twitter;
     if((match=url.match(DQ.dealer_regex)) &&
        (page_type=match[0].replace(/\/\//,"").replace(/\.[^\.]*$/,"").toLowerCase()
         .replace(/[^\.]+\./,"").replace(/\./g,"_"))) return page_type;
@@ -1692,15 +1707,624 @@ DQ.id_page_type=function(doc,url,resolve,reject) {
            (page_type=match[0].replace(/\/\//,"").replace(/\.[^\.]*$/,"").toLowerCase()
             .replace(/[^\.]+\./,"").replace(/\./g,"_"))) return page_type; }
     if((copyright=doc.getElementsByClassName("copyrightProvider")).length>0
-       && /FordDirect/.test(copyright[0].innerText)) return "FordDirect";
+       && /FordDirect|DealerDirect/.test(copyright[0].innerText)) return "FordDirect";
     if((copyright=doc.getElementById("footer-copyright")) &&
-       /DealerDirect/.test(copyright.innerText)) return "FordDirect";
+       /FordDirect|DealerDirect/i.test(copyright.innerText)) return "FordDirect";
+    if((copyright=doc.querySelector(".legal")) &&
+       /FordDirect|DealerDirect/i.test(copyright.innerText)) return "FordDirect";
+    copyright=doc.querySelectorAll("footer");
+    for(i=0;i<copyright.length;i++) {
+        if(/FordDirect|DealerDirect/i.test(copyright[i].innerText)) return "FordDirect";
+        else if(/Driving Dealer Solutions/i.test(copyright[i].innerText)) return "drivingdealersolutions";
+    }
     if((copyright=doc.getElementsByName("copyright")).length>0
        && /^AutoCorner/i.test(copyright[0].content)) return "autocorner";
     if((copyright=doc.getElementsByClassName("copyright-wrap")).length>0 &&
        /InterActive DMS/.test(copyright[0].innerText)) return "interactivedms";
     if(doc.querySelector(".legacy-redirect")) return "waynereaves";
-
+    if((twitter=doc.getElementsByName("twitter:creator")[0]) && twitter.content==="@leadbox") return "leadboxhq";
     if(/\.hasyourcar\./.test(url)) return "hasyourcar";
     return page_type;
 };
+
+DQ.parse_team_360=function(doc,url,resolve,reject) {
+    console.log("In parse_team_360 at "+url);
+    var team=doc.querySelectorAll(".listing-employee__department-employee-item,.listing-employee__preview"),match;
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={".listing-employee__department-employee-name,[itemprop='headline']":"name",
+                      ".listing-employee__department-employee-job,[itemprop='reviewBody']":"title",
+                      ".listing-employee__department-employee-phone":"phone",".listing-employee__department-employee-email":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        DQ.employee_list.push(emp);
+
+    });
+    team=doc.querySelectorAll(".employee");
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={".employee__box-info_name,.employee-name":"name",
+                      ".employee-firstname":"firstname",".employee-lastname":"lastname",
+                      ".employee__box-info_job,.employee-job,.employee-department":"title",".employee__box-info_cta,a.cta,.employee-email a":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        if(emp.firstname && emp.lastname) emp.name=emp.firstname+" "+emp.lastname;
+        DQ.employee_list.push(emp);
+
+    });
+    team=doc.querySelectorAll(".listing-employees .card"),match;
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={".name":"name",".jobTitle":"title"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        if(dets.href && (match=dets.href.match(/mailto:\s*(.*)$/))) emp.email=match[1];
+        DQ.employee_list.push(emp);
+
+    });
+    team=doc.querySelectorAll(".employee-listing,.listing-employee-premium__department-employee-item,.departement_employee");
+    team.forEach(function(dets) {
+        Gov.fix_emails(dets,true);
+        var ret=Gov.parse_data_func(dets.innerText);
+        if(ret) DQ.employee_list.push(ret);
+    });
+    resolve("");
+};
+DQ.parse_team_assets_cdk=function(doc,url,resolve,reject) {
+    DQ.parse_employees(doc,url,resolve,reject);
+    resolve("");
+};
+DQ.parse_team_bwebauto=function(doc,url,resolve,reject) {
+    console.log("In DQ.parse_team_bwebauto,url="+url);
+    var team=doc.querySelectorAll(".team-list-item"),match;
+    team.forEach(DQ.parseEmployee);
+    team=doc.querySelectorAll(".item"),match;
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={".title":"name",".job":"title",".phone":"phone",".email a":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && field.href && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else if(term_map[x]!=="email") emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        DQ.employee_list.push(emp);
+
+    });
+    team=doc.querySelectorAll(".employee"),match;
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={".employee__name":"name","[itemprop='reviewBody']":"title",".phone":"phone","[itemprop='url']":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && field.href && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else if(term_map[x]!=="email") emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        DQ.employee_list.push(emp);
+
+    });
+    resolve("");
+};
+DQ.parse_team_convertus=function(doc,url,resolve,reject) {
+    console.log("In parse_team_convertus at "+url);
+    var scripts=doc.scripts,i,regex=/var convertusMethods/,emailMatch;
+    for(i=0;i<scripts.length;i++) if(scripts[i].innerHTML.match(regex) && (emailMatch=scripts[i].innerHTML.match(email_re))) break;
+    var team=doc.querySelectorAll(".team-info"),match;
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""},temp_email;
+        var term_map={"h4":"name","p":"title",},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && field.href && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        if(emp.name.length>0 && emailMatch.length>0 && (temp_email=DQ.match_email(emailMatch,emp.name))) emp.email=temp_email;
+        else if(emailMatch.length>0) emp.email=emailMatch[0];
+        DQ.employee_list.push(emp);
+
+    });
+    resolve("");
+};
+DQ.parse_team_d2cmedia=function(doc,url,resolve,reject) {
+    console.log("In parse_team_d2cmedia at "+url);
+    var team=doc.querySelectorAll(".mainbox291"),match,temp_email;
+    var email_items=doc.querySelectorAll("input[id*='email' i]");
+    email_items.forEach(function(item) {
+        if((match=item.value.match(email_re))) {
+            for(var i=0;i<match.length;i++) if(!DQ.email_list.includes(match[i])) DQ.email_list.push(match[i]);
+        }
+    });
+    console.log("DQ.email_list="+JSON.stringify(DQ.email_list));
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={"[itemprop='name']":"name","[itemprop='title']":"title","[itemprop='phone']":"phone","[itemprop='email']":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        if(emp.name.length>0 && (temp_email=DQ.match_email(DQ.email_list,emp.name))) emp.email=temp_email;
+        DQ.employee_list.push(emp);
+    });
+    resolve("");
+};
+DQ.parse_team_dealer=function(doc,url,resolve,reject) {
+    DQ.parse_vcard(doc,url,resolve,reject);
+    var team=doc.querySelectorAll(".mainbox291");
+    team.forEach(DQ.parseEmployee);
+    var td=doc.querySelectorAll("td");
+    td.forEach(function(elem) {
+        var ret=Gov.parse_data_func(elem.innerText);
+        if(ret) DQ.employee_list.push(ret);
+    });
+    var ddc=doc.querySelectorAll(".ddc-content .content");
+    ddc.forEach(function(elem) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var name=elem.querySelector("div span font b"),parentdiv,a,match;
+        emp.name=name?name.innerText:"";
+        if(name&&(parentdiv=name.parentNode.parentNode.parentNode.querySelector("div"))) {
+
+            var title=parentdiv.querySelector("div font");
+            emp.title=title?title.innerText:"";
+            a=parentdiv.querySelector("a");
+            if(a && a.href && (match=a.href.match(/mailto:\s*(.*)$/))) emp.email=match[1];
+        }
+        DQ.employee_list.push(emp);
+    });
+
+    resolve("");
+};
+DQ.parse_team_dealercity=function(doc,url,resolve,reject) {
+    console.log("In parse_team_dealercity at "+url);
+    var team=doc.querySelectorAll(".our-team"),match;
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={".name":"name",".position":"title",".phone":"phone",".email":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && field.href && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        DQ.employee_list.push(emp);
+
+    });
+    resolve("");
+};
+DQ.parse_team_dealerfire=function(doc,url,resolve,reject) {
+    DQ.parse_vcard(doc,url,resolve,reject);
+    var team=doc.querySelectorAll(".com-our-team-responsive2__employee");
+    team.forEach(function(dets) {
+        Gov.fix_emails(dets,true);
+        var ret=Gov.parse_data_func(dets.innerText);
+        if(ret) DQ.employee_list.push(ret);
+    });
+    resolve("");
+};
+DQ.parse_team_dealerinspire=function(doc,url,resolve,reject) {
+    console.log("In parse_team_dealerinspire at "+url);
+    var team=doc.querySelectorAll(".staff-item"),match;
+    if(!team || team.length===0) team=doc.querySelectorAll(".staff");
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={"h3":"name","h4":"title",".staffphone":"phone",".staff-email-button,.staff-button":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        DQ.employee_list.push(emp);
+
+    });
+    resolve("");
+};
+DQ.parse_team_dealeron=function(doc,url,resolve,reject) {
+    console.log("In parse_team_dealeron at "+url);
+    var team=doc.querySelectorAll(".staff-card"),match;
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={".staff-title":"name",".staff-desc":"title",".phone1":"phone",".email":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        DQ.employee_list.push(emp);
+
+    });
+    resolve("");
+};
+DQ.parse_team_dealerspike=function(doc,url,resolve,reject) {
+    console.log("In parse_team_dealerspike at "+url);
+    var team=doc.querySelectorAll(".person"),match;
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={".name":"name",".title":"title"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        DQ.employee_list.push(emp);
+
+    });
+    resolve("");
+};
+DQ.parse_team_dealersiteplus=function(doc,url,resolve,reject) {
+    var container=doc.querySelectorAll(".container");
+    container.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var ret=Gov.parse_data_func(dets.innerText);
+        if(ret) DQ.employee_list.push(ret);
+    });
+    resolve("");
+};
+DQ.parse_team_drivingdealersolutions=function(doc,url,resolve,reject) {
+    console.log("In parse_team_drivingdealersolutions at "+url);
+    var team=doc.querySelectorAll(".ourteam-usergroup ul"),match;
+    team.forEach(function(dets) {
+        var ret=Gov.parse_data_func(dets.innerText);
+        DQ.employee_list.push(ret);
+
+    });
+    resolve("");
+};
+DQ.parse_team_edealer=function(doc,url,resolve,reject) {
+    console.log("In parse_team_edealer at "+url);
+    var details=doc.querySelectorAll(".details-sect,.team-items item"),match;
+    if(details.length===0) details=doc.querySelectorAll(".member-list .box-container");
+    details.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={".name,.team-title":"name",".title,.team-position":"title",".phone-num":"phone",".email":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else if(term_map[x]!=="email") emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        if(emp.email.length===0 && (match=dets.innerText.match(email_re))) emp.email=match[0];
+        DQ.employee_list.push(emp);
+    });
+    resolve("");
+};
+DQ.parse_team_evolio=function(doc,url,resolve,reject) {
+    console.log("In parse_team_evolio at "+url);
+    var team=doc.querySelectorAll(".our-team"),a;
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={".name":"name",".position":"title",".phone":"phone",".email":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" &&
+                   ((field.href &&
+                     (match=field.href.match(/mailto:\s*(.*)$/))) || ((a=field.querySelector("a")) &&
+                                                                      (match=a.href.match(/mailto:\s*(.*)$/))
+                                                                     ))) emp[term_map[x]]=match[1];
+                else  emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        DQ.employee_list.push(emp);
+
+    });
+    team=doc.querySelectorAll(".box-inner");
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={"h2":"name","h3.tm-title":"title",".phone":"phone",".tm-member-contact a":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) emp[term_map[x]]=field.innerText.trim();
+        }
+        DQ.employee_list.push(emp);
+
+    });
+    resolve("");
+};
+DQ.parse_team_ez_results=function(doc,url,resolve,reject) {
+    console.log("In parse_team_ez_results at "+url);
+    var team=doc.querySelectorAll(".teamColumn,.team,.teamCol"),match;
+    if(team.length===0) team=doc.querySelectorAll(".wbox");
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={".teamName,.name":"name",".teamPosition,.position":"title",".teamPhone":"phone",".btn-email,.ez-btn,.emailButton":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        DQ.employee_list.push(emp);
+
+    });
+
+    resolve("");
+};
+DQ.parse_team_FordDirect=function(doc,url,resolve,reject) {
+    let temp_url=url.replace(/(https?:\/\/[^\/]*).*$/,"$1");
+    temp_url=temp_url+"/data/employees.json";
+    console.log("temp_url="+temp_url);
+    var promise=MTP.create_promise(temp_url,DQ.parse_team_FordDirect_JSON,resolve,reject);
+};
+DQ.parse_team_FordDirect_JSON=function(doc,url,resolve,reject,response) {
+    try {
+        let parsed=JSON.parse(response.responseText),x,emp,i;
+        if(!parsed.staff) {
+            // console.log("Not parsed.staff, parsed="+JSON.stringify(parsed));
+            parsed.staff=[];
+            for(i=0;i<parsed.length;i++) {
+                parsed.staff=parsed.staff.concat(parsed[i].staff); }
+        }
+
+        if(parsed&&parsed.staff) {
+            // console.log("parsed.staff="+JSON.stringify(parsed.staff));
+            for(x of parsed.staff) {
+                //console.log("x="+JSON.stringify(x));
+                emp={name:"",title:"",email:"",phone:""};
+                if(x.firstname || x.lastname) emp.name=(x.firstname?x.firstname:"")+" "+(x.lastname?x.lastname:"");
+                if(x.email) emp.email=x.email;
+                if(x.title) emp.title=x.title;
+                DQ.employee_list.push(emp);
+
+            }
+        }
+        else if(parsed) {
+            for(x in parsed) console.log("parsed["+x+"]="+JSON.stringify(parsed[x]));
+            console.log("Could not find parsed.staff");
+            reject("");
+        }
+
+    }
+    catch(error) {
+        console.log("Error parsing JSON in FordDirect "+error);
+        reject("");
+        return;
+    }
+    resolve("");
+
+
+};
+DQ.parse_team_goauto=function(doc,url,resolve,reject) {
+    console.log("In parse_team_goauto at "+url);
+    var team=doc.querySelectorAll(".staff-card"),match;
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={".name":"name",".position":"title",".contact-email":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        DQ.employee_list.push(emp);
+
+    });
+    resolve("");
+};
+DQ.parse_team_leadboxhq=function(doc,url,resolve,reject,response) {
+    var parsed,i,x,emp;
+    try {
+        parsed=JSON.parse(response.responseText);
+        for(i=0;i<parsed.length;i++) {
+            emp={name:(parsed[i].name?parsed[i].name+" ":"")+(parsed[i].lastname?parsed[i].lastname:""),
+                 title:parsed[i].title?parsed[i].title:"",email:parsed[i].email?parsed[i].email:"",
+                 phone:parsed[i].phone?parsed[i].phone:""};
+            DQ.employee_list.push(emp);
+        }
+    }
+    catch(error) { console.log("Error parsing JSON "+error);
+                   reject("");
+                   return; }
+    resolve("");
+};
+DQ.parse_team_nakedlime=function(doc,url,resolve,reject) {
+    console.log("In parse_team_nakedlime at "+url);
+    var team=doc.querySelectorAll(".staff"),match;
+    team.forEach(DQ.parseEmployee);
+    resolve("");
+};
+DQ.parse_team_stormdivision=function(doc,url,resolve,reject) {
+    console.log("In parse_team_stormdivision at "+url);
+    var team=doc.querySelectorAll(".staff"),match;
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={".sname":"name",".sjob":"title",".sphone":"phone",".semail":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        DQ.employee_list.push(emp);
+
+    });
+    DQ.parse_employees(doc,url,resolve,reject);
+    resolve("");
+};
+DQ.parse_team_strathcom=function(doc,url,resolve,reject) {
+    console.log("In parse_team_strathcom at "+url);
+    var team=doc.querySelectorAll(".staff-card,.staff-container"),match;
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={".name,.staff-name":"name",".position,.staff-title":"title",".phone1,.staff-phone":"phone",".contact-email,.staff-email":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        DQ.employee_list.push(emp);
+
+    });
+    DQ.parse_employees(doc,url,resolve,reject);
+    resolve("");
+};
+DQ.parse_team_vicimus=function(doc,url,resolve,reject) {
+    console.log("In parse_team_vicimus at "+url);
+    var team=doc.querySelectorAll(".staff-details"),match;
+    team.forEach(function(dets) {
+        var emp={name:"",title:"",phone:"",email:""};
+        var term_map={".name":"name",".position":"title",".phone":"phone",".email,.email a":"email"},x,field,match;
+        for(x in term_map) {
+            if((field=dets.querySelector(x))) {
+                if(term_map[x]==="email" && field.href && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
+                else emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        DQ.employee_list.push(emp);
+
+    });
+    resolve("");
+};
+DQ.parse_team_none=function(doc,url,resolve,reject) {
+    console.log("In parse_team_none at "+url);
+    Gov.parse_contact_elems(doc,url,resolve,reject,"");
+    DQ.employee_list=DQ.employee_list.concat(Gov.contact_list);
+    var insp_promise=new Promise((resolve,reject) => {
+        DQ.parse_team_dealerinspire(doc,url,resolve,reject); }).then(MTP.my_then_func);
+    var promise_list=[insp_promise];
+    Promise.all(promise_list).then(function(response) {
+        resolve(""); });
+
+}
+//team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|ÉQUIPE|Personnel/i
+DQ["360"]={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel|Meet .*Family/i,team_parser:DQ.parse_team_360};
+
+DQ["assets-cdk"]={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_assets_cdk};
+DQ.bwebauto={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_bwebauto};
+DQ.convertus={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
+              team_parser:DQ.parse_team_convertus};
+DQ.d2cmedia={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
+             team_parser:DQ.parse_team_d2cmedia};
+DQ.dealer={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe/i,
+           team_bad_text_rx:/(^\s*Join)|Body Shop|Collision|Finance|Parts|Service/i,
+           team_parser:DQ.parse_team_dealer};
+DQ.dealercity={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
+               team_parser:DQ.parse_team_dealercity};
+DQ.dealerfire={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_dealerfire};
+DQ.dealerinspire={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_dealerinspire};
+DQ.dealerspike={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
+                team_parser:DQ.parse_team_dealerspike};
+DQ.dealeron={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
+             team_parser:DQ.parse_team_dealeron};
+DQ.dealersiteplus={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|People/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
+                   team_parser:DQ.parse_team_dealersiteplus};
+DQ.drivingdealersolutions={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel|Meet .*Family/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
+			   team_parser:DQ.parse_team_drivingdealersolutions};
+DQ.edealer={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel|Meet .*Family/i,
+            team_bad_text_rx:/(^\s*Join)|Body Shop|Collision|Finance|Parts|Service/i,team_parser:DQ.parse_team_edealer};
+DQ.evolio={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_evolio};
+DQ["ez-results"]={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_ez_results};
+DQ.FordDirect={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_FordDirect};
+DQ.goauto={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_goauto};
+DQ.leadboxhq={team_suffix:"/resources/staff.json",team_parser:DQ.parse_team_leadboxhq};
+DQ.nakedlime={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_nakedlime};
+//  DQ.none={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,
+//           team_bad_text_rx:/(^\s*Join)|Body Shop|Collision|Finance|Parts|Service/i,
+//         team_parser:DQ.parse_team_none};
+DQ.stormdivision={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
+                  team_parser:DQ.parse_team_stormdivision};
+DQ.strathcom={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
+              team_parser:DQ.parse_team_strathcom};
+
+DQ.vicimus={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
+            team_parser:DQ.parse_team_vicimus};
+DQ.match_email=function(email_list,name) {
+    let fullname=MTP.parse_name(name),i,j;
+    let email_regexes=[new RegExp(fullname.fname.charAt(0)+fullname.lname+"@","i"),
+                       new RegExp(fullname.fname.charAt(0)+"."+fullname.lname+"@","i"),
+                       new RegExp(fullname.fname+fullname.lname+"@","i"),new RegExp(fullname.fname+"."+fullname.lname+"@","i"),
+                       new RegExp(fullname.fname+"@","i")];
+    for(i=0;i<email_list.length;i++) {
+        let temp=email_list[i];
+        for(j=0;j<email_regexes.length;j++) {
+            if(email_regexes[j].test(temp)) {
+                return temp;
+                break; }
+        }
+    }
+    return null;
+}
+DQ.parse_vcard=function(doc,url,resolve,reject) {
+    var vcard=doc.querySelectorAll(".vcard");
+    vcard.forEach(function(v) {
+        var emp={name:"",title:"",email:"",phone:""},x,field;
+        var term_map={".fn":"name",".title":"title",".email,[itemprop='email']":"email",".phone":"phone"};
+        for(x in term_map) {
+            if((field=v.querySelector(x))) {
+                //console.log("field.outerHTML="+field.outerHTML+", field.tagName="+field.tagName+", field.content="+field.content);
+                if(field.tagName==="META") emp[term_map[x]]=field.content;
+                else emp[term_map[x]]=field.innerText.trim();
+            }
+        }
+        DQ.employee_list.push(emp);
+    });
+};
+DQ.parseEmployee=function(emp) {
+    var data={name:"",title:"",email:"",phone:""},match;
+    var first=emp.querySelector("[itemprop='givenName']"),last=emp.querySelector("[itemprop='familyName']");
+    var name=emp.querySelector("[itemprop='name']");
+    var title=emp.querySelector("[itemprop='jobTitle']");
+    var email=emp.querySelector("[itemprop='email']");
+    if(first&&last) data.name=first.innerText.trim()+" "+last.innerText.trim();
+    else if(name) data.name=name.innerText.trim();
+    if(title) data.title=title.innerText.trim();
+    if(email && email.href && (match=email.href.match(/mailto:\s*(.*)$/))) data.email=match[1];
+    if(!data.email && (match=emp.innerHTML.match(email_re))) data.email=match[0];
+    DQ.employee_list.push(data);
+};
+/* parse employee schema */
+DQ.parse_employees=function(doc,url,resolve,reject) {
+    var employees=doc.querySelectorAll("[itemprop='employee']");
+    employees.forEach(DQ.parseEmployee);
+};
+
+DQ.init_teamDQ=function(doc,url,resolve,reject,response) {
+    var curr_page,curr_url,promise;
+    //  console.log(url+", response="+JSON.stringify(response));
+    //console.log("init_DQ, url="+url);
+    DQ.page_type=DQ.id_page_type(doc,url,resolve,reject);
+    console.log(url+": page_type="+DQ.page_type);
+
+    if(DQ.dealer_map[DQ.page_type]) DQ.page_type=DQ.dealer_map[DQ.page_type];
+    console.log(url+": page_type="+DQ.page_type);
+
+    curr_page=DQ[DQ.page_type];
+    //console.log(url+": curr_page="+JSON.stringify(curr_page));
+    if(curr_page) {
+        curr_url=url.replace(/(https?:\/\/[^\/]+).*$/,"$1");
+        if(curr_page.team_suffix) curr_url=curr_url+curr_page.team_suffix;
+        else if(curr_page.team_find_link) curr_url=curr_page.team_find_link(doc,url,resolve,reject,curr_page);
+        console.log("Found team page at "+curr_url);
+        if(curr_page.team_parser) promise=MTurkScript.prototype.create_promise(curr_url,curr_page.team_parser,resolve,reject);
+        else {
+            my_query.done_websites++;
+            submit_if_done();
+            return;
+        }
+    }
+    else {
+        my_query.done_websites++;
+        submit_if_done();
+        return;
+    }
+
+
+
+};
+    // Identify the typ
