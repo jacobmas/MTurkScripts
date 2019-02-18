@@ -254,7 +254,8 @@ MTurkScript.prototype.is_bad_email = function(to_check) {
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
     else if(/@(domain\.com|example\.com)/.test(to_check)) return true;
     else if(/;/.test(to_check)) return true;
-    else if(/@(example|email)\.com$/.test(to_check)) return true;
+    else if(/jacobmas@gmail\.com/.test(to_check)) return true;
+    else if(/@(example|email|wix)\.com$/.test(to_check)) return true;
    // else if(!to_check.match(email_re)) return true;
     return false;
 }
@@ -321,7 +322,7 @@ MTurkScript.prototype.my_parse_address=function(to_parse)
 MTurkScript.prototype.get_domain_only=function(the_url,lim_one) {
     var httpwww_re=/https?:\/\/www\./,http_re=/https?:\/\//,slash_re=/\/.*$/;
     var ret=the_url.replace(httpwww_re,"").replace(http_re,"").replace(slash_re,"");
-    if(lim_one && /\.(co|ac|gov|com|org)\.[A-Za-z]{2}$/i.test(the_url)) ret=ret.replace(/^.*\.([^\.]+\.(?:co|ac|gov)\.[A-Za-z]{2})$/,"$1");
+    if(lim_one && /\.(co|ac|gov|com|org)\.[A-Za-z]{2}$/i.test(ret)) ret=ret.replace(/^.*\.([^\.]+\.(?:co|ac|gov)\.[A-Za-z]{2})$/,"$1");
 //    else if(lim_one && /^[^\.]+\.[^\.]+(\.[a-z]{2}\.us)$/i) ret=ret;
     else if(lim_one) ret=ret.replace(/^.*\.([^\.]+\.[^\.]+$)/,"$1");
     return ret;
