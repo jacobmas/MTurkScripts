@@ -1331,23 +1331,15 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
         scripts[x].innerHTML="";
     }
 };
-
 MTurkScript.prototype.is_bad_page=function(doc,url) {
     var links=doc.links,i,scripts=doc.scripts;
     var title=doc.title;
-    if(/hugedomains\.com/.test(url)) { return "for sale."; }
-    else if(/Expired|^404|Error/.test(title)) return "dead.";
-    else if(doc.querySelector("div.leftblk h3.domain_name")) return "dead.";
-    //    else if(doc.body.innerHTML.length<500) return " apparently empty.";
-    /*  else if(MTP.is_bad_url(url,bad_urls,4) && !((
-        my_query.url===undefined ||
-        MTP.get_domain_only(my_query.url,true)!==MTP.get_domain_only(url,true)) && (my_query.url2===undefined||
-        MTP.get_domain_only(my_query.url2,true)!==MTP.get_domain_only(url,true)))) {
-        return "dead/hijacked.";
-        }
-        else if(my_query.url2) {
-        console.log("# DOMAIN "+MTP.get_domain_only(my_query.url2,true)+", "+MTP.get_domain_only(url,true)); }*/
-    return null;
+    if(/hugedomains\.com|qfind\.net/.test(url)) { return true; }
+    else if(/Expired|^404|Error/.test(title)) return true
+    else if(doc.querySelector("div.leftblk h3.domain_name")) return true;
+    if(/^(IIS7|404)/.test(title.trim())) return true;
+    if((doc.title===MTP.get_domain_only(url,true)&& doc.body.innerHTML.length<500)) return true;
+    return false;
 };
 
 

@@ -3,11 +3,12 @@ var Schools={
     page_regex_str:"(www\\.|\/\/)(apptegy|catapultk12|cms4schools)\\.com|(www\\.4lpi\\.com)|adventistschoolconnect\\.org|"+
 	"www\\.campussuite\\.com|crescerance\\.com|cyberschool\\.com|"+
         "echalk\\.com|(edlio(school)?\\.com)|edline\\.net|educationalnetworks\\.net|"+
-        "eschoolview\\.com|finalsite\\.com|foxbright\\.com|gabbart\\.com|gaggle\\.net|ilearnschools\\.org|"+
+        "eschoolview\\.com|\/\/factsmgt\\.com|finalsite\\.com|foxbright\\.com|gabbart\\.com|gaggle\\.net|ilearnschools\\.org|"+
+	"www\\.osvoffertory\\.com|\\.renweb\\.com|"
         "schooldesk\\.net|schoolloop\\.com|"+
         "www\\.school(blocks|insites|messenger|pointe|webmasters)\\.com|"+
         "socs\\.fes\\.org|www\\.(weebly|zumu)\\.com",
-    page_map:{"edlioschool":"edlio"},
+    page_map:{"edlioschool":"edlio","renweb":"factsmgt"},
     title_regex:new RegExp("(^|[\\s,\\.]{1})(Director|Principal|Teacher|Assistant|Coach|Counselor|Secretary|Chief|President)($|[\\/\\n\\s,\\. ]{1}|[^A-Za-z0-9]{1})$","i"),
     title_prefix_regex:/^(Director|Mayor|Chief|Councilman|Councilwoman|Secretary|Sergeant|Patrol Officer|Lieutenant|Detective)\s+/,
     bad_stuff_re:/(\/\*)|(^Wh.*\?$)|(\sand\s)|([\d]+)|(I want to\s.*$)|(^Home.*)|(…)|((City|Town) Hall)|City Hall|Welcome to/i,
