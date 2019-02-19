@@ -137,7 +137,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
 	GM_getValue("req_id","")===this.requester_id) {
 	this.submit_button=is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");
 	let assignmentId=document.querySelector("#assignmentId");
-	if(assignmentId) this.assignment_id=assignmentId[0].value;
+	if(assignmentId) this.assignment_id=assignmentId.value;
 	else { console.log("No assignmentId found"); }
 	callback();
     }
@@ -225,7 +225,7 @@ MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,se
 	self.submit_button=document.querySelector("crowd-button");
 	console.log("self.submit_button="+self.submit_button);
 	console.log(self);
-	let assignmentId=document.getElementsByName("assignmentId");
+	let assignmentId=document.querySelector("#assignmentId");
 	if(assignmentId) this.assignment_id=assignmentId.value;
 	callback();
     }
