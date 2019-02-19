@@ -1350,7 +1350,7 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 	//if((match=/FS\.util\.insertEmail\(\"[^\"]*\",\s*\"([^\"]*)\",\s*\"([^\"]*)\"/)) {
 	    
 	
-        scripts[x].innerHTML="";
+        if(scripts[x]) scripts[x].innerHTML="";
     }
 };
 MTurkScript.prototype.is_bad_page=function(doc,url) {
