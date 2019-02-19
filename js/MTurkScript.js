@@ -182,9 +182,9 @@ MTurkScript.prototype.setup_worker_mturk=function() {
     GM_setValue("returnHit"+this.assignment_id,false);
     GM_addValueChangeListener("returnHit"+this.assignment_id, function() {
 	console.log("this.assignment_id="+this.assignment_id+", arguments="+JSON.stringify(arguments));
-	GM_deleteValue(arguments[0]);
 	var assignment_id=arguments[0].replace(/^returnHit/,"");
-        if(GM_getValue(arguments[0])!==undefined && GM_getValue(arguments[0])===true &&
+	GM_deleteValue(arguments[0]);
+        if(
            btn_secondary && btn_secondary.innerText==="Return" && (GM_getValue("automate"))) {
 	   
             setTimeout(function() { btn_secondary.click(); }, 0); 
