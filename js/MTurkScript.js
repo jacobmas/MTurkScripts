@@ -140,14 +140,17 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
     }
     else if((window.location.href.indexOf("mturkcontent.com") !== -1 || window.location.href.indexOf("amazonaws.com") !== -1)
 	    && is_crowd && GM_getValue("req_id","")===this.requester_id) this.begin_crowd_script(200,0,callback,this);
-    if(window.location.href.indexOf("worker.mturk.com")!==-1) this.setup_worker_mturk();
+    if(window.location.href.indexOf("worker.mturk.com")!==-1) {
+	var match=window.location.href.match(/\?assignment_id\=([A-Z0-9]*)/);
+	this.assignment_id=match?match[1]:"";
+	console.log("this.assignment_id="+this.assignment_id);
+	this.setup_worker_mturk();
+    }
 };
 
 MTurkScript.prototype.setup_worker_mturk=function() {
     GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
-    var match=window.location.href.match(/\?assignment_id\=([A-Z0-9]*)/);
-    this.assignment_id=match?match[1]:"";
-    console.log("this.assignment_id="+this.assignment_id);
+
     var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
     var req_id=document.querySelector(".project-detail-bar span.detail-bar-value a").href.match(/requesters\/([^\/]+)/);
     if(req_id && req_id[1]===this.requester_id) GM_setValue("req_id",req_id[1]);
