@@ -1342,7 +1342,7 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
         var unesc_regex=/(?:unescape|decodeURIComponent)\((?:[\"\']{1})([^\"\"]+)(?:[\"\']{1})/;
         //console.log("scripts["+x+"]="+scripts[x].innerHTML);
         var match=scripts[x].innerHTML.match(unesc_regex),decoded,match2;
-        if(/var addy[\d]+/.test(scripts[x].innerHTML)) fix_addy_script_only(scripts[x]);
+        if(/var addy[\d]+/.test(scripts[x].innerHTML)) MTurkScript.prototype.fix_addy_script_only(scripts[x]);
         if(match&&(decoded=decodeURIComponent(match[1]))&&(match2=decoded.match(email_re)) && my_query.fields.email.length===0) {
             console.log("Matched weird decode");
             my_query.fields.email=match2[0];
