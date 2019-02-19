@@ -136,8 +136,9 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
 	 (is_crowd && document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)) &&
 	GM_getValue("req_id","")===this.requester_id) {
 	this.submit_button=is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");
-	let assignmentId=document.getElementsByName("assignmentId");
-	if(assignmentId.length>0) this.assignment_id=assignmentId[0].value;
+	let assignmentId=document.querySelector("#assignmentId");
+	if(assignmentId) this.assignment_id=assignmentId[0].value;
+	else { console.log("No assignmentId found"); }
 	callback();
     }
     else if((window.location.href.indexOf("mturkcontent.com") !== -1 || window.location.href.indexOf("amazonaws.com") !== -1)
