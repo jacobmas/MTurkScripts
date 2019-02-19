@@ -954,7 +954,10 @@ MTurkScript.prototype.parse_instagram=function(doc,url,resolve,reject)
     for(i=0; i < scripts.length; i++) {
         if(script_regex.test(scripts[i].innerHTML))  {
             parsed=JSON.parse(scripts[i].innerHTML.replace(script_regex,"").replace(/;$/,""));
-            result=MTurkScript.prototype.parse_insta_script(parsed);
+	    try {
+		result=MTurkScript.prototype.parse_insta_script(parsed);
+	    }
+	    catch(error) { console.log("Error in parse_insta_script"+error); }
             resolve(result);
             break;
         }
