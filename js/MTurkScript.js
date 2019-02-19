@@ -135,7 +135,9 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
         ((!is_crowd && document.getElementById("submitButton") && !document.getElementById("submitButton").disabled) ||
 	 (is_crowd && document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)) &&
 	GM_getValue("req_id","")===this.requester_id) {
-	this.submit_button=is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");	
+	this.submit_button=is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");
+	let assignmentId=document.getElementsByName("assignmentId");
+	if(assignmentId.length>0) this.assignment_id=assignmentId[0].value;
 	callback();
     }
     else if((window.location.href.indexOf("mturkcontent.com") !== -1 || window.location.href.indexOf("amazonaws.com") !== -1)
@@ -178,6 +180,7 @@ MTurkScript.prototype.setup_worker_mturk=function() {
     });
     GM_setValue("returnHit"+this.assignment_id,false);
     GM_addValueChangeListener("returnHit"+this.assignment_id, function() {
+	console.log("arguments="+JSON.stringify(arguments));
         if(GM_getValue("returnHit"+this.assignment_id)!==undefined && GM_getValue("returnHit"+this.assignment_id)===true &&
            btn_secondary && btn_secondary.innerText==="Return" && (GM_getValue("automate"))) {
 	    GM_deleteValue("returnHit"+this.assignment_id);
@@ -220,6 +223,8 @@ MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,se
 	self.submit_button=document.querySelector("crowd-button");
 	console.log("self.submit_button="+self.submit_button);
 	console.log(self);
+	let assignmentId=document.getElementsByName("assignmentId");
+	if(assignmentId.length>0) this.assignment_id=assignmentId[0].value;
 	callback();
     }
     else if(total_time<2000) {
