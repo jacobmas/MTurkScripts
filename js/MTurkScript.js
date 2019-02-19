@@ -203,7 +203,7 @@ MTurkScript.prototype.check_and_submit=function(check_function)	{
         console.log("bad");
         return;
     }
-    console.log("Checking and submitting");
+    console.log("Checking and submitting "+this.assignment_id);
     GM_deleteValue("returnHit"+this.assignment_id);
     if(GM_getValue("automate")) setTimeout(function() { submit_button.click(); }, this.submit_ms);
 };
