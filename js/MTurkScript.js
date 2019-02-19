@@ -145,6 +145,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
 	this.assignment_id=match?match[1]:"";
 	console.log("this.assignment_id="+this.assignment_id);
 	this.setup_worker_mturk();
+    }
 	
 };
 
