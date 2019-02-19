@@ -226,7 +226,7 @@ MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,se
 	console.log("self.submit_button="+self.submit_button);
 	console.log(self);
 	let assignmentId=document.getElementsByName("assignmentId");
-	if(assignmentId.length>0) this.assignment_id=assignmentId[0].value;
+	if(assignmentId.length>0) this.assignment_id=assignmentId.value;
 	callback();
     }
     else if(total_time<2000) {
