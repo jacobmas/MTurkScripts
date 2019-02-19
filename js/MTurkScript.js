@@ -145,7 +145,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
 	this.assignment_id=match?match[1]:"";
 	console.log("this.assignment_id="+this.assignment_id);
 	this.setup_worker_mturk();
-    }
+	
 };
 
 MTurkScript.prototype.setup_worker_mturk=function() {
@@ -198,11 +198,12 @@ MTurkScript.prototype.check_and_submit=function(check_function)	{
     console.log("in check");
     var submit_button=this.is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");
     if(check_function!==undefined && !check_function()) {
-        GM_setValue("returnHit",true);
+        GM_setValue("returnHit"+this.assignment_id,true);
         console.log("bad");
         return;
     }
     console.log("Checking and submitting");
+    GM_deleteValue("returnHit"+this.assignment_id);
     if(GM_getValue("automate")) setTimeout(function() { submit_button.click(); }, this.submit_ms);
 };
 MTurkScript.prototype.swrot13=function(str) {
