@@ -180,10 +180,11 @@ MTurkScript.prototype.setup_worker_mturk=function() {
     });
     GM_setValue("returnHit"+this.assignment_id,false);
     GM_addValueChangeListener("returnHit"+this.assignment_id, function() {
-	console.log("arguments="+JSON.stringify(arguments));
+	console.log("this.assignment_id="+this.assignment_id+", arguments="+JSON.stringify(arguments));
+	 GM_deleteValue("returnHit"+this.assignment_id);
         if(GM_getValue("returnHit"+this.assignment_id)!==undefined && GM_getValue("returnHit"+this.assignment_id)===true &&
            btn_secondary && btn_secondary.innerText==="Return" && (GM_getValue("automate"))) {
-	    GM_deleteValue("returnHit"+this.assignment_id);
+	   
             setTimeout(function() { btn_secondary.click(); }, 0); 
         }
     });
