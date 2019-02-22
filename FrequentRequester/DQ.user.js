@@ -9,6 +9,7 @@
 // @include        http://*.amazonaws.com/*
 // @include        https://*.amazonaws.com/*
 // @include https://worker.mturk.com/*
+// @include https://*trystuff.com*
 // @include *
 // @grant  GM_getValue
 // @grant GM_setValue
@@ -18,14 +19,14 @@
 // @grant GM_openInTab
 // @grant GM_getResourceText
 // @grant GM_addStyle
+// @grant GM_deleteValue
 // @connect google.com
 // @connect bing.com
 // @connect yellowpages.com
 // @connect *
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
@@ -33,38 +34,48 @@
     'use strict';
     var my_query = {};
     var bad_urls=[];
- //   var MTurk=new MTurkScript(20000,200,[],init_Query,"A4R60DG7BBK8Y");
+    var MTurk=new MTurkScript(30000,200,[],begin_script,"A4R60DG7BBK8Y",false);
     function is_bad_name(b_name)
     {
 	return false;
     }
   /* DQ.begin_year is the earliest year cars to do */
-  var DQ={dealer_regex:new RegExp(
+    var DQ={dealer_regex:new RegExp(
+        "www\\.360\\.agency|"+
         "www\\.allautonetwork\\.com|webstatic\\.auction123\\.com|"+
         "www\\.(auto(conx|corner|dealerwebsites|drivenmarketing|funds|jini|manager|revo|searchtech|webexpress))\\.com|"+
-        "\\/\\/auto(drivenmarketing|motiveleads)\\.com|www\\.autosalesweb\\.net|"+
+        "\\/\\/auto(drivenmarketing|motiveleads)\\.com|www\\.autosalesweb\\.net|www\\.bwebauto\\.com|"+
         "www\\.(car(base|guywebdesign|max|prolive|sforsale|think)).com|www\\.carwizard\\.net|www\\.chromacars\\.com|"+
-        "(www|static)\\.dealer\\.com|\\/dealeron\\.js|"+
+        "www\\.convertus\\.com|"+
+        "(www|static)\\.dealer\\.com|\\/dealeron\\.js|www\\.dealercity\\.(ca|com)|"+
         "www\\.(dealer(carsearch|center|eprocess|fire|inspire|on|pac|peak|scloud|specialties|spike|spiketruck|sync|websites))\\.com|"+
-        "dealerclick\\.com|www\\.dealerexpress\\.net|\\/\\/dealerleads\\.com|cdn\\.dealereprocess\\.org|"+
-        "(\\/\\/|inventoryplus\\.)dealersocket\\.com|\\/\\/dealerseo\\.net|dealer-cdn\\.dealersync\\.com|"+
-        "\\/\\/dealersolutionssoftware\\.com|www\\.(dssal|drive(dominion|time))\\.com|(www|images)\\.ebizautos\\.com|"+
-        "foxdealerinteractive\\.com|www\\.fridaynet\\.com|www\\.fzautomotive\\.com|www\\.higherturnover\\.com|"+
+        "dealerclick\\.com|www\\.dealerexpress\\.net|\\/\\/dealer(city|leads)\\.com|cdn\\.dealereprocess\\.org|"+
+        "(\\/\\/|inventoryplus\\.)dealersocket\\.com|\\/\\/dealerseo\\.net|dealersiteplus\\.ca|dealer-cdn\\.dealersync\\.com|"+
+        "\\/\\/dealersolutionssoftware\\.com|www\\.(dssal|drive(dominion|time))\\.com|www\\.d2cmedia\\.ca|"+
+        "(www|images)\\.ebizautos\\.com|"+
+        "www\\.edealer\\.ca|(www\\.|\\/\\/)evolio\\.ca|www\\.ez-results\\.ca|"+
+        "foxdealerinteractive\\.com|www\\.fridaynet\\.com|www\\.fzautomotive\\.com|www\\.goauto\\.ca|www\\.higherturnover\\.com|"+
         "www\\.interactivedms\\.com|(www|tracking)\\.hasyourcar\\.com|"+
         "www\\.jazelauto\\.com|analytics\\.jazel\\.net|(images-stag|userlogin)\\.jazelc\\.com|"+
         "www\\.(jdbyrider|lotboys|motorcarmarketing|wearefullthrottle)\\.com|"+
-        "\\/\\/kukui\\.com|(\\/\\/|www\\.)lotwizard\\.com|media-cf\\.assets-cdk\\.com|"+
-        "(www|secure[0-9])\\.motionfuze\\.com|"+
-        "(www\\.|\\/\\/)prontodealer\\.com|\\/\\/remora\\.com|(www|cdn-w)\\.v12soft(|ware)\\.com|"+
-        "(\\/\\/|www\\.)waynereaves\\.com|www\\.(wearefullthrottle|webstreak)\\.com|www\\.yourcarlot\\.com","i"
-                                  ),
+        "\\/\\/kukui\\.com|(\\/\\/|\\/\\/leadboxhq\\.com|"+
+        "www\\.)lotwizard\\.com|media-cf\\.assets-cdk\\.com|"+
+        "(www|secure[0-9])\\.motionfuze\\.com|(www\\.|\\/\\/)nakedlime\\.com|(www\\.|\\/\\/)obbauto\\.com|"+
+        "(www\\.|\\/\\/)prontodealer\\.com|\\/\\/remora\\.com|www\\.solutionsmedias360\\.com|"+
+        "www\\.stormdivision\\.com|strathcom\\.com|"+
+        "www\\.vicimus\\.com|(www|cdn-w)\\.v12soft(|ware)\\.com|"+
+        "(\\/\\/|www\\.)waynereaves\\.com|www\\.(wearefullthrottle|webstreak)\\.com|www\\.yourcarlot\\.com","i"),
+
            dealer_map:{"fridaynet":"lotwizard","dealersocket":"dealerfire","dealerseo":"automotiveleads",
-                       "dealerleads":"automotiveleads","v12soft":"v12software","jazelc":"jazelauto","dealerspiketruck":"dealerspike"},
+                       "dealerleads":"automotiveleads","v12soft":"v12software","jazelc":"jazelauto","dealerspiketruck":"dealerspike",
+                       "solutionsmedias360":"360"
+                      },
          begin_year:1981,
          make_rx_str:"Acura|Audi|BMW|Buick|Cadillac|Can-Am|Chevrolet|Chrysler|Dodge|Entegra|Ferrari|Fiat|Ford|GMC|"+
           "Honda|Hummer|Hyundai|Infiniti|Isuzu|Jaguar|Jeep|Kia|Land Rover|Lexux|Lincoln|"+
           "Mazda|Mercedes-Benz|Mercury|Mini|Mitsubishi|Nissan|Plymouth|Pontiac|Porsche|"+
-          "Ram|Saab|Saturn|Scion|Smart|Subaru|Suzuki|Toyota|Volkswagen|Volvo"};
+          "Ram|Saab|Saturn|Scion|Smart|Subaru|Suzuki|Toyota|Volkswagen|Volvo",
+           employee_list:[],email_list:[]};
 
     DQ.carSearchShit=function(t, n, r,doc,url) {
         function i(o, s) {
@@ -1369,7 +1380,7 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
 
         for(i=0; i < scripts.length; i++) if(scripts[i].src && /\/vehicles\?/.test(scripts[i].src)) script_url=scripts[i].src;
         if(script_url.length===0) promise=MTurkScript.prototype.create_promise(temp_url,DQ.parse_hasyourcar_Service,resolve,reject,url);
-        else promise=MTurkScript.prototype.create_promise(MTurkScript.prototypte.fix_remote_url(script_url,url),DQ.parse_hasyourcar_vehicle,resolve,reject,url);
+        else promise=MTurkScript.prototype.create_promise(MTurkScript.prototype.fix_remote_url(script_url,url),DQ.parse_hasyourcar_vehicle,resolve,reject,url);
     };
     DQ.parse_hasyourcar_Service=function(doc,url,resolve,reject,prev_url) {
         var parsed,text=doc.body.innerHTML;
@@ -1734,10 +1745,13 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
     function query_promise_then(result) {
     }
     function scrape_then(result) {
-        if(result.url) { console.log("result="+JSON.stringify(result)); }
-        else { console.log("result="+result); }
-        document.getElementById("websiteVINCount").value=result;
-       // MTurk.check_and_submit();
+        var count=0;
+        if(result.url) { console.log("result="+JSON.stringify(result));
+                       count=result.count;
+                       }
+        else { console.log("result="+result); count=result; }
+        document.getElementById("websiteVINCount").value=count;
+        MTurk.check_and_submit();
     }
     DQ.init_DQ=function(doc,url,resolve,reject,response) {
         var curr_page,curr_url,promise;
@@ -1818,6 +1832,19 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
         if(/\.hasyourcar\./.test(url)) return "hasyourcar";
         return page_type;
     };
+    function begin_script(timeout,total_time,callback) {
+        if(timeout===undefined) timeout=200;
+        if(total_time===undefined) total_time=0;
+        if(callback===undefined) callback=init_Query;
+        if(MTurk!==undefined) { callback(); }
+        else if(total_time<2000) {
+            console.log("total_time="+total_time);
+            total_time+=timeout;
+            setTimeout(function() { begin_script(timeout,total_time,callback); },timeout);
+            return;
+        }
+        else { console.log("Failed to begin script"); }
+    }
 
     function my_catch_func(response) {
         var text="";
@@ -1854,21 +1881,21 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
             }, i*1000);
         }
         console.log(y);*/
-
-   /*     var dont=document.getElementsByClassName("dont-break-out")[0].href;
+        if(!/trystuff\.com/.test(window.location.href)) {
+           var dont=document.getElementsByClassName("dont-break-out")[0].href;
         var well=document.getElementsByClassName("well");
         my_query={url:well[0].innerText.replace(/^www/,"http://www"),name:well[1].innerText};
         if(!/http/.test(my_query.url) && !/www/.test(my_query.url)) my_query.url="http://www."+my_query.url;
-        url_list.push(my_query.url);*/
+        url_list.push(my_query.url);
         GM_setValue("url_list",url_list);
-        for(i=0; i < query_list.length; i++)
-        {
-            my_query.url=query_list[i];
-            console.log("my_query="+JSON.stringify(my_query));
+    }
+        else {
+            my_query={url:"http://channelislandsautosales.com"}; }
 
-            //console.log("DQ.init_DQ="+DQ.init_DQ);
-            create_query(i);
-        }
+
+        promise=MTurkScript.prototype.create_promise(my_query.url,DQ.init_DQ,query_promise_then,my_catch_func);
+       // setTimeout(function() { promise=MTurkScript.prototype.create_promise(query_list[i],DQ.init_DQ,query_promise_then,my_catch_func); },250);
+
 
 
        
