@@ -183,12 +183,14 @@ MTurkScript.prototype.setup_worker_mturk=function() {
     GM_addValueChangeListener("returnHit"+this.assignment_id, function() {
 	console.log("this.assignment_id="+this.assignment_id+", arguments="+JSON.stringify(arguments));
 	var assignment_id=arguments[0].replace(/^returnHit/,"");
-	GM_deleteValue(arguments[0]);
-        if(
-           btn_secondary && btn_secondary.innerText==="Return" && (GM_getValue("automate"))) {
-	   
-            setTimeout(function() { btn_secondary.click(); }, 0); 
-        }
+	if(arguments[2]!==undefined) {
+	    GM_deleteValue(arguments[0]);
+            if(
+		btn_secondary && btn_secondary.innerText==="Return" && (GM_getValue("automate"))) {
+		
+		setTimeout(function() { btn_secondary.click(); }, 0); 
+            }
+	}
     });
     
     if(btn_secondary && btn_secondary.innerText==="Skip" && btn_primary && btn_primary.innerText==="Accept") {

@@ -18,13 +18,13 @@
 // @grant GM_openInTab
 // @grant GM_getResourceText
 // @grant GM_addStyle
+// @grant GM_deleteValue
 // @connect google.com
 // @connect bing.com
 // @connect yellowpages.com
 // @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
@@ -32,9 +32,11 @@
 // VCF Do something with?
 (function() {
     'use strict';
-    var url_list=GM_getValue("url_list");
-    if(url_list===undefined) url_list=[];
-    var automate=GM_getValue("automate",false);
+  // var url_list=GM_getValue("url_list");
+   // if(url_list===undefined) url_list=[];
+    var MTurk=new MTurkScript(35000,1200,[],begin_script,"A14XZUR0ZPOC3J",false);
+    var MTP=MTurkScript.prototype;
+    //var automate=GM_getValue("automate",false);
     var phone_re=/([(]?[0-9]{3}[)]?[-\s\.\/]+)?[0-9]{3}[-\s\.\/]+[0-9]{4,6}/im;
     var new_phone_re=/Phone: ([(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/im;
     var fax_re=/Fax[:]?[\s]?([\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/im;
@@ -45,10 +47,10 @@
         "Baseball":["baseball"],"Field Hockey":["fhockey","fhock"],"Football":["football"],"Men's Basketball":["mbball"],
         "Men's Rowing":["mrow"],"Men's Soccer":["msoc"],"Men's Swimming": ["mswim","swimming","swim","msd"],
         "Men's Diving":["mswimdive","mswim","swimming","swim","swimdive","m-swim","msd","mdive"],"Men's Golf":["mgolf"],"Men's Lacrosse":["mlax"],"Men's Water Polo":["mwpolo"],
-        "Men's Tennis":["mten"],"Men's Track":["mtrack","mxctf","track"],"Softball":["softball"],"Women's Basketball":["wbball"],
+        "Men's Tennis":["mten"],"Men's Track":["mtrack","mxctf","track","tf","trackandfield"],"Softball":["softball"],"Women's Basketball":["wbball"],
         "Women's Diving":["wswim","swimming","swim","wsd","wdive"],"Women's Golf":["wgolf"],"Women's Lacrosse":["wlax"],
         "Women's Rowing":["wrow"],"Women's Soccer":["wsoc"],"Women's Swimming":["wswim","swimming","swim","wsd"],
-        "Women's Volleyball":["wvball","vball","volleyball"],"Women's Tennis":["wten"],"Women's Track":["wtrack","wxctf","track"],
+        "Women's Volleyball":["wvball","vball","volleyball"],"Women's Tennis":["wten"],"Women's Track":["wtrack","wxctf","track","tf","trackandfield"],
         "Wrestling":["wrestling"],"Men's Wrestling":["wrestling"]};
     var sport_map1a={"Field Hockey":"fhock"};
     var sport_map2={"Baseball":["bsb"],"Field Hockey":["fh"],"Football":["fball","m-footbl"],"Men's Basketball":["mbkb","m-baskbl"],
@@ -161,6 +163,20 @@
         return ret;
     };
 
+    function begin_script(timeout,total_time,callback) {
+        if(timeout===undefined) timeout=200;
+        if(total_time===undefined) total_time=0;
+        if(callback===undefined) callback=init_Query;
+        if(MTurk!==undefined) { callback(); }
+        else if(total_time<2000) {
+            console.log("total_time="+total_time);
+            total_time+=timeout;
+            setTimeout(function() { begin_script(timeout,total_time,callback); },timeout);
+            return;
+        }
+        else { console.log("Failed to begin script"); }
+    }
+
     function hex_at(str, index) {
         return parseInt(str.substr(index, 2), 16);
     }
@@ -185,8 +201,9 @@
     }
     function check_and_submit() {
         console.log("Checking and submitting");
-        if(GM_getValue("automate")) setTimeout(function() { document.getElementById("submitButton").click(); }, 500);
-        return true;
+        MTurk.check_and_submit();
+       // if(GM_getValue("automate")) setTimeout(function() { document.getElementById("submitButton").click(); }, 500);
+       return true;
     }
     function is_bad_url(the_url) {
         for(var i=0; i < bad_urls.length; i++) if(the_url.indexOf(bad_urls[i])!==-1) return true;
@@ -237,7 +254,7 @@
     function setField(field, id,value) {
         if(value===undefined) return;
         if(/phone/i.test(field) && (/x/.test(value) || /ext:/i.test(value)) &&
-           my_query.phone.length>0) value=my_query.phone+" "+value;
+           my_query.phone&&my_query.phone.length>0) value=my_query.phone+" "+value;
         if(/phone/i.test(field) && (value=value.replace(/[\t\n]+/g,"")) && phone_re.test(value) &&
            value.length>=8) value=value.match(phone_re)[0];
         if(/email/i.test(field)) {
@@ -276,6 +293,7 @@
     function sports_response(response,resolve,reject) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
+        if(my_query.submitted) return;
         var i,j,k,url=response.finalUrl,temp_var,found_dbml=false,dbml_url="";
         var begin_url=url.replace(/(https?:\/\/[^\/]+).*$/,"$1/"),new_url="",sidearm=doc.getElementsByClassName("sidearm-table");
         console.log("in sports_response, url="+response.finalUrl);
@@ -300,6 +318,7 @@
             else return;
         }
         else if(response.finalUrl.indexOf("/directory/index")!==-1 && doc.getElementById("mainbody")!==null && parse_info_directory(doc)) return;
+        if(response.finalUrl.indexOf("/directory/staff")!==-1 && parse_info_directory_staff(doc)) return;
         if(response.finalUrl.indexOf("/staff.php")!==-1) {
             console.log("staff.php, doc.body.innerText="+doc.getElementById("staff-list"));
             if(doc.getElementById("staff-list")!==null && (parse_staff_php(doc.getElementById("staff-list")))) return true;
@@ -327,6 +346,7 @@
         if(doc.getElementsByClassName("staff-directory").length>0 && parse_staff_directory(doc)) return true;
         if(doc.getElementsByClassName("dataTables_scrollHead").length>0 && parse_scrollHead(doc)) return true;
         if(doc.getElementsByClassName("staff-department").length>0 && parse_staff_department(doc)) return true;
+        if(/\/staff-directory/.test(url) && parse_staff_dash_directory(doc,url)) return true;
         if(parse_generic(doc,url)) return;
         if(my_query.try_count===0) {
             console.log("Found nothing, my_query.try_count="+my_query.try_count);
@@ -342,7 +362,9 @@
                 console.log("# my_sportresult="+JSON.stringify(my_sportresult)+", sport="+my_query.sport);
                 if(my_sportresult!==undefined) {
                     for(j=0; j < my_sportresult.length; j++) {
-                       if(links[i].href.indexOf(".aspx?path="+my_sportresult[j])!==-1 ||
+                       if((links[i].href.indexOf(".aspx?path="+my_sportresult[j])!==-1
+                          && !new RegExp("\\.aspx\\?path\\="+my_sportresult[j]+"[A-Za-z]+").test(links[i].href))
+                          ||
                            links[i].href.indexOf("staff.aspx?path="+my_sportresult[j])!==-1) {
                             console.log("Found good links[i] for path="+my_sportresult[j]);
                             new_url=links[i].href.replace("index.aspx","coaches.aspx").replace("staff.aspx","coaches.aspx");
@@ -384,7 +406,7 @@
                 }
             }
             console.log("Done looping, try_count="+my_query.try_count);
-            if(found_dbml) {
+            if(found_dbml&&new_url.length===0) {
                 new_url=dbml_url.replace(/\/[^\/]+\.dbml.*$/,"/StaffDirectory.dbml");
                 console.log("new_url from dbml="+new_url);
             }
@@ -446,6 +468,18 @@
         return false;
     }
 
+    function parse_staff_dash_directory(doc,url) {
+        console.log("In parse_staff_dash_directory");
+         var i,j,roster,table;
+        var h3=doc.querySelectorAll("h2,h3");
+        for(i=0;i<h3.length;i++) {
+            if(is_right_sport(h3[i].innerText) && h3[i].nextElementSibling && (table=h3[i].nextElementSibling.querySelector("table"))) {
+                return parse_info_directory_table(table,-1,table.rows.length,{0:"name",1:"title",2:"phone",3:"email"});
+            }
+        }
+        return false;
+    }
+
     function parse_generic(doc,url) {
        // return false;
         console.log("\n**** DOING parse_generic ****\n");
@@ -488,9 +522,10 @@
         var result=Gov.parse_contact_elems(doc,url);
         if(add_gov_contacts()) return true;
         if(the_table===undefined) return false;
-       return false;// parse_generic2(the_table);
+       return false;//parse_generic2(the_table);
     }
     function parse_generic_inner(doc,the_table,typeTitle) {
+        var found_email=false;
         console.log("in parse_generic inner,length="+typeTitle.length);
         var i,j,x;
         try {
@@ -585,11 +620,12 @@
                 if(curr_ret.name.length<2 && the_table.rows[i].cells.length>0) curr_ret.name=the_table.rows[i].cells[0].innerText.trim();
                 console.log("curr_ret="+JSON.stringify(curr_ret));
                 if(curr_ret.name.length>0) {
+                    if(curr_ret.email.length>0 && curr_ret.email.match(email_re)) { console.log("ctr="+ctr+"curr_ret.email="+curr_ret.email); found_email=true; }
                     add_fields(curr_ret,ctr);
                     ctr++;
                 }
             }
-            if(!my_query.submitted && ctr>1)
+            if(!my_query.submitted && ctr>1 && found_email)
             {
                 my_query.submitted=true;
                 check_and_submit();
@@ -1116,13 +1152,46 @@
         if(the_tab.length===0) return false;
         sport_name=the_tab[0].getElementsByClassName("sport-name");
         for(i=0; i < sport_name.length; i++) {
-            if(sport_name[i].tagName==="TR" && sport_name[i].cells.length>0 && is_right_sport(sport_name[i].cells[0])) {
+            if(sport_name[i].tagName==="TR" && sport_name[i].cells.length>0 && is_right_sport(sport_name[i].cells[0].innerText)) {
+                if(the_tab[0].querySelector(".coach-name")) {
+                    return parse_dbml_coachname(the_tab[0],sport_name[i].rowIndex+1,
+                                                  i+1<sport_name.length ? sport_name[i+1].rowIndex : the_tab[0].rows.length);
+                }
+
                 return parse_info_directory_table(the_tab[0],sport_name[i].rowIndex+1,
                                                   i+1<sport_name.length ? sport_name[i+1].rowIndex : the_tab[0].rows.length);
             }
         }
         return false;
 
+    }
+    function parse_dbml_coachname(the_table,begin_row,end_row,title_map) {
+        var i,j, x,header;
+        var ct=1;
+        console.log("parse_info_directory_table,begin_row="+begin_row+",end_row="+end_row+",title_map="+title_map);
+        if(begin_row===undefined) begin_row=0;
+        if(end_row===undefined) end_row=the_table.rows.length;
+        header=the_table.rows[begin_row];
+        if(header===undefined || header===null) console.log("Error with roster-header");
+        if(!title_map) title_map=assign_title_map(header);
+        var my_title_map={".coach-name":"name",".coach-position":"title",".coach-phone":"phone",".coach-email":"email"};
+        var curr_ret={},curr_text,ctr=1,curr_elem;
+        for(i=begin_row+1; i < end_row; i++) {
+            curr_ret={};
+            print_table_row(the_table.rows[i],i);
+            for(x in my_title_map) {
+                curr_elem=the_table.rows[i].querySelector(x);
+                console.log("x="+x+", curr_elem="+curr_elem);
+                if(!curr_elem) continue;
+                if(my_title_map[x]==='email' && curr_elem.tagName==="A") curr_ret.email=curr_elem.href.replace(/^\s*mailto:\s*/,"");
+                else curr_ret[my_title_map[x]]=curr_elem.innerText.trim();
+            }
+            console.log("curr_ret="+JSON.stringify(curr_ret));
+            add_fields(curr_ret,ct++);
+            if(ct>10) break;
+        }
+        if(!my_query.submitted && (my_query.submitted=true) && check_and_submit()) return true;
+        return false;
     }
 
     function parse_dbml(doc)
@@ -1283,8 +1352,8 @@
             }
         }
         else if(info.length===0 && !my_query.submitted) {
-            console.log("Did not find mainbody, returning");
-            GM_setValue("returnHit",true);
+            console.log("Did not find mainbody, returning "+MTurk.assignment_id);
+            GM_setValue("returnHit"+MTurk.assignment_id,true);
         }
 
 
@@ -1370,11 +1439,13 @@
             reject(error);
             return; }
         console.log("Nothing found");
-        GM_setValue("returnHit",true);
+        GM_setValue("returnHit"+MTurk.assignment_id,true);
         return;
     }
     function query_promise_then(url) {
-        if(my_query.doneNewUrl) { console.log("Already tried new "); GM_setValue("returnHit",true); return; }
+        if(my_query.doneNewUrl) { console.log("Already tried new ");
+
+                                 GM_setValue("returnHit"+MTurk.assignment_id,true); return; }
         my_query.doneNewUrl=true;
         my_query.url=url;
         console.log("New query url="+my_query.url);
@@ -1513,30 +1584,62 @@
     /* parse pages with /information/directory/index */
     function parse_info_directory(doc) {
         var i,j,roster,h2_tag,mainbody=doc.getElementById("mainbody");
-        var h2=mainbody.getElementsByTagName("h2");
-        if((roster=doc.getElementsByClassName("roster")).length>0) {
+        var h2=mainbody.querySelectorAll("h2");
+        if((roster=doc.querySelector(".roster")) && roster.length>0) {
             h2=mainbody.getElementsByTagName(roster[0].previousElementSibling.tagName.toLowerCase()); }
         for(i=0; i < h2.length; i++) {
-            if(h2[i].innerText.length>0 && is_right_sport(h2[i].innerText)&&
+            if(h2[i].innerText.length>0 && is_right_sport(h2[i].innerText)&& h2[i].nextElementSibling &&
                h2[i].nextElementSibling.tagName==="TABLE") return parse_info_directory_table(h2[i].nextElementSibling);
+             if(h2[i].innerText.length>0 && is_right_sport(h2[i].innerText)&& h2[i].parentNode && h2[i].parentNode.nextElementSibling &&
+               h2[i].parentNode.nextElementSibling.tagName==="TABLE") return parse_info_directory_table(h2[i].parentNode.nextElementSibling);
         }
         console.log("Info directory failed, returning true anyway");
-        if(h2.length>=2 && !my_query.submitted && (my_query.submitted=true) && check_and_submit()) return true;
+
+  //      if(h2.length>=2 && !my_query.submitted && (my_query.submitted=true) && check_and_submit()) return true;
+        return false;
+    }
+    function parse_info_directory_staff(doc) {
+        console.log("In parse_info_directory_staff");
+        var i,j,roster,h2_tag,mainbody=doc.getElementById("mainbody");
+        var h4,table=doc.querySelector("#mainbody table"),row,cell;
+        console.log("before table");
+        if(!table) return false;
+                console.log("after table");
+
+        var title_map=null;
+        for(i=0;i<table.rows.length;i++) {
+            row=table.rows[i];
+            h4=row.querySelector("strong");
+            console.log("i="+i+",h4="+h4+", h4.innerText="+(h4?h4.innerText:""));
+            if((h4) && !title_map) title_map=assign_title_map(row);
+            else if(h4 && is_right_sport(h4.innerText)) {
+                console.log("i="+i+",h4.innerText="+h4.innerText);
+                for(j=i+1;j<table.rows.length;j++) {
+                    if((h4=table.rows[j].querySelector("h4"))) break; }
+                return parse_info_directory_table(table,i,j,title_map);
+            }
+        }
+
         return false;
     }
     function assign_title_map(header_row) {
         console.log("&&&& assign_title_map on "+header_row.innerText);
-        var ret={}, i,curr_cell,prefixMatch;
+        var ret={}, i,curr_cell,prefixMatch,suffixMatch;
+        var found={'name':false,'title':false,'phone':false,'email':false};
         for(i=0; i < header_row.cells.length; i++) {
             curr_cell=header_row.cells[i].innerText.toLowerCase();
-            if(curr_cell.indexOf("name")!==-1) ret[i]="name";
-            else if(/title|position/i.test(curr_cell)) ret[i]="title";
-            else if(/phone|ext/i.test(curr_cell)) {
+            if(curr_cell.indexOf("name")!==-1 && !found.name && (found.name=true)) ret[i]="name";
+            else if(/title|position/i.test(curr_cell)&&!found.title && (found.title=true)) ret[i]="title";
+            else if(/phone|ext/i.test(curr_cell) && !found.phone && (found.phone=true)) {
                 ret[i]="phone";
                 if((prefixMatch=curr_cell.match(/([\d]{3})\s*[\)-]{1}/))) my_query.phonePrefix=prefixMatch[1];
             }
-            else if(curr_cell.indexOf("mail")!==-1) ret[i]="email";
+            else if(curr_cell.indexOf("mail")!==-1 && !found.email && (found.email=true)) {
+                ret[i]="email";
+                if((suffixMatch=curr_cell.match(/@[A-Z0-9a-z]+\.[A-Z0-9a-z]/))) my_query.at_part=suffixMatch[0];
+            }
         }
+        console.log("assign_title_map,ret="+JSON.stringify(ret));
         return ret;
     }
 
@@ -1588,17 +1691,32 @@
             return true;
         }
     }
+    function print_table_row(the_row,pos) {
+        var i,str="";
+        if(!pos) pos="";
+        for(i=0;i<the_row.cells.length;i++) {
+            str=str+(str.length===0?";":"")+the_row.cells[i].innerHTML.trim(); }
+        console.log("row["+pos+"]="+str);
+    }
     /* parse_info_directory_table is pretty generic */
-    function parse_info_directory_table(the_table,begin_row,end_row) {
-        var i,j, x,header;
+    function parse_info_directory_table(the_table,begin_row,end_row,title_map) {
+        var i,j, x,header,a,row;
+        console.log("parse_info_directory_table,begin_row="+begin_row+",end_row="+end_row+",title_map="+title_map);
         if(begin_row===undefined) begin_row=0;
         if(end_row===undefined) end_row=the_table.rows.length;
         header=the_table.rows[begin_row];
         if(header===undefined || header===null) console.log("Error with roster-header");
-        var title_map=assign_title_map(header),curr_ret={},curr_text,ctr=1;
+        if(!title_map) title_map=assign_title_map(header);
+        var curr_ret={},curr_text,ctr=1;
         for(i=begin_row+1; i < end_row; i++) {
             curr_ret={};
-            for(x in title_map) curr_ret[title_map[x]]=the_table.rows[i].cells[x].innerText.trim();
+            row=the_table.rows[i];
+            print_table_row(row,i);
+            for(x in title_map) {
+                if(title_map[x]==="email" && (a=row.cells[x].querySelector("a")) &&
+                   /^\s*mailto:/.test(a.href)) curr_ret[title_map[x]]=a.href.replace(/^\s*mailto:\s*/,"");
+                else curr_ret[title_map[x]]=row.cells[x].innerText.trim();
+            }
             add_fields(curr_ret,i);
         }
         if(!my_query.submitted && (my_query.submitted=true) && check_and_submit()) return true;
@@ -1639,13 +1757,13 @@
             my_query.phonePrefix="("+prefixMatch[1]+")";
             console.log("my_query.phonePrefix="+my_query.phonePrefix); }
         for(i=0; i < cat.length; i++) {
-            console.log("cat[i].innerText="+cat[i].innerText.toLowerCase().trim());
+            console.log("cat["+i+"].innerText="+cat[i].innerText.toLowerCase().trim());
             if(is_right_sport(cat[i].innerText.toLowerCase().trim())) {
                 j=cat[i].rowIndex+1;
                 console.log(sidearm.rows[j].className);
-                console.log("***sidearm.rows.length="+sidearm.rows.length);
-                while(j >=0 && j < sidearm.rows.length && (sidearm.rows[j].className==="sidearm-staff-member" || sidearm.rows[j].className===""))
-                {
+                console.log("***sidearm.rows.length="+sidearm.rows.length+", j="+j);
+                while(j >=0 && j < sidearm.rows.length &&
+                      (!sidearm.rows[j].className || sidearm.rows[j].className==="" || /sidearm-staff-member/.test(sidearm.rows[j].className))) {
                     console.log("j="+j+", "+sidearm.rows[j].cells.length);
                     curr_th=sidearm.rows[j].getElementsByTagName("th")[0];
                     for(k=0; k < sidearm.rows[j].cells.length; k++)
@@ -1653,7 +1771,7 @@
                         console.log("for "+k+", "+sidearm.rows[j].cells[k].headers);
                         curr_cell=sidearm.rows[j].cells[k];
                         curr_text=curr_cell.innerText;
-                        if((inner_span=curr_cell.getElementsByTagName("span")).length>0 &&
+                        if((inner_span=curr_cell.getElementsByTagName("span")) && inner_span.length>0 &&
                            curr_text.replace(inner_span[0].innerText,"").trim().length>0) {
                             curr_text=curr_text.replace(inner_span[0].innerText,"").trim(); }
                         else if(inner_span.length>0) { console.log("inner_span[0].innerText="+inner_span[0].innerText); }
@@ -1666,11 +1784,15 @@
 
                     add_to_query(curr_name, curr_title, curr_email, curr_phone);
                     j++;
+                    console.log("Now j="+j);
                 }
+                console.log("Done loop with j");
                 break;
             }
         }
+        console.log("Done i loop");
         if(!my_query.submitted && (my_query.submitted=true) && check_and_submit()) return true;
+        console.log("MOO");
         return false;
     }
 
@@ -1696,11 +1818,13 @@
         var ctr=1;
         for(i=1; i < sidearm.rows.length; i++)
         {
+           //console.log("GADZOOKS: i="+i);
             curr_ret={};
             for(x in title_map)
             {
                 curr_cell=sidearm.rows[i].cells[x];
-                if((inner_span=curr_cell.getElementsByTagName("span")).length>0 &&
+                if(!curr_cell) continue;
+                if(curr_cell&&(inner_span=curr_cell.getElementsByTagName("span"))&&inner_span.length>0 &&
                    curr_cell.innerText.replace(inner_span[0].innerText,"").trim().length>0)
                 {
                     curr_ret[title_map[x]]=curr_cell.innerText.replace(inner_span[0].innerText,"").trim();
@@ -1720,12 +1844,16 @@
                 }
 
             }
-            add_fields(curr_ret,i);
+            try {
+                add_fields(curr_ret,i);
+            }
+            catch(error) { return false; }
         }
         if(!my_query.submitted)
         {
             my_query.submitted=true;
             check_and_submit();
+            return true;
         }
         return true;
     }
@@ -1733,7 +1861,7 @@
         console.log("Name="+name+", title="+title+", email="+email+", phone="+phone);
         my_query.curr_pos=my_query.curr_pos+1;
         if(/Main (Phone|Fax)/.test(name)) return false;
-        var the_name=parse_name(name),email_match;
+        var the_name=MTP.parse_name(name),email_match;
         if(my_query.phonePrefix.length>0 && phone.length>0) phone=my_query.phonePrefix+" "+phone;
         if(my_query.curr_pos<=10)
         {
@@ -1754,6 +1882,9 @@
     }
     function is_right_sport(sports_str) {
         if(sports_str.length===0) return false;
+        if(/^lady/i.test(sports_str)) my_query.found_lady=true;
+        sports_str=sports_str.replace(/s+\|.*$/,"").replace(/\s*(mailing )?address:.*$/,"");
+        sports_str=sports_str.replace(/^\s*M\./,"Men's").replace(/^\s*W\./,"Women's");
         sports_str=sports_str.replace(/cross country(\s*[\/-]{1}|\s*(&|and)\s*)/i,"").replace(/(\s|,)Coach[a-z]*/i,"").replace(/’/g,"'")
         .replace(/^(Head|Assistant)\s*/i,"").replace(/\\'/g,"'").replace(/\(f\).*$/,"").replace(/\|.*$/,"").trim();
         sports_str=sports_str.replace(/\s*[\d\-]+$/,"").replace(/\\\'/g,"'").replace(/\s\s+/g," ")
@@ -1772,7 +1903,8 @@
             else if(/^men/i.test(p2)) { return "Men's "+p1; }
             return p1+" "+p2;
         });
-        sports_str=sports_str.replace(/^([^\(]+)\s+\(([^\)]+)\).*$/,"$2 $1").replace(/(Outdoor )?Track (&|and) Field/i,"Track");
+        sports_str=sports_str.replace(/^([^\(]+)\s+\(([^\)]+)\).*$/,"$2 $1").replace(/(Outdoor )?Track (&|and) Field/i,"Track")
+        .replace(/indoor and outdoor track/i,"Track");
         sports_str=sports_str.replace(/^((?:Men)|(?:Women))\s/i,"$1's ");
         sports_str=sports_str.replace(/Men(\'s)?\s*(?:and|&)\s*Women(\'s)?\s*/i, function(match) {
             if(my_query.sport.indexOf("Men's")!==-1) {
@@ -1781,7 +1913,7 @@
         });
         if(/Diving/i.test(my_query.sport)) sports_str=sports_str.replace(/\s*Swimming\s+(&|and)/i,"");
         sports_str=sports_str.replace(/^.*(Baseball|Softball)/i,"$1").replace(/[\s\-]{2,}.*$/,"").replace(/^([^,]+),\s*(.*)/,"$2 $1");
-        //console.log("new sports_str="+sports_str);
+        console.log("new sports_str="+sports_str);
         if((my_query.short_sport.length>0 && my_query.short_sport.trim().toLowerCase().indexOf(sports_str.toLowerCase()) === 0) ||
            my_query.sport.trim().toLowerCase().indexOf(sports_str.trim().toLowerCase())===0
           || sports_str.trim().toLowerCase().indexOf(my_query.sport.trim().toLowerCase())===0 || (
@@ -1790,6 +1922,8 @@
             console.log("Good sport");
             return true;
         }
+        if((my_query.found_lady||/track/i.test(my_query.short_sport)) &&
+           sports_str.trim().toLowerCase().indexOf(my_query.short_sport.toLowerCase())!==-1) return true;
         return false;
     }
     function sports_search(resolve,reject) {
@@ -1827,141 +1961,8 @@
 
         });
     }
-    function setup_UI() {
-        var i;
-        var WDC=document.getElementById("WebsiteDataCollection");
-        var row=WDC.getElementsByClassName("row");
-        var x;
-        var outer_panel=document.createElement("div");
-        outer_panel.className="row";
-        outer_panel.style="margin: 10px 0px";
-        var my_panel=document.createElement("div");
-        my_panel.className="col-xs-12 col-md-12";
-
-        var second_panel=document.createElement("div");
-         var select_style="margin: 2px 6px 2px 2px";
-        second_panel.className="row";
-        second_panel.style="margin: 10px 0px";
-        var email_type_label=document.createElement("label");
-        var email_label_atts={"style": "margin: 2px 5px 2px 2px", "innerHTML": "Email Format"};
-        var email_domain_label=document.createElement("label");
-        var email_domain_atts={"style": "margin: 2px 5px 2px 2px", "innerHTML": "Email Domain"};
-        var email_domain_input=document.createElement("input");
-        var email_input_attrs={"id": "email_domain", "name": "email_domain", "style": "margin: 2px 5px 2px 2px"};
-        var guess_email_button=document.createElement("input");
-
-
-
-
-        var guess_button_attrs={"type": "button", "id": "guess_email_button", "style": "margin: 2px 10px 2px 2px","value": "Guess Emails",
-                               };
-        for(x in guess_button_attrs) guess_email_button.setAttribute(x, guess_button_attrs[x]);
-        guess_email_button.innerHTML="Guess Emails";
-        //guess_email_button.onClick=
-
-        email_type_label.innerHTML="Email Format";
-        email_domain_label.innerHTML="Email Domain";
-
-        for(x in email_label_atts) email_type_label.setAttribute(x,email_label_atts[x]);
-        for(x in email_domain_atts) email_domain_label.setAttribute(x,email_domain_atts[x]);
-        for(x in email_input_attrs) email_domain_input.setAttribute(x,email_input_attrs[x]);
-
-
-        var email_format_select=document.createElement("select");
-        var email_select_attrs={"id": "email_select", "name": "email_select", "style": select_style};
-        for(x in email_select_attrs) email_format_select.setAttribute(x, email_select_attrs[x]);
-        email_format_select.innerHTML='<option value="jsmith" selected>jsmith</option>'+
-            '<option value="smithj">smithj</option>'+
-            '<option value="john.smith">john.smith</option>'+
-            '<option value="john_smith">john_smith</option>'+
-            '<option value="smith.john">smith.john</option>'+
-            '<option value="smith_john">smith_john</option>';
-
-        second_panel.appendChild(email_type_label);
-        second_panel.appendChild(email_format_select);
-        second_panel.appendChild(email_domain_label);
-        second_panel.appendChild(email_domain_input);
-        second_panel.appendChild(guess_email_button);
-
-
-        var flip_button = document.createElement("input");
-        var no_flip_button = document.createElement("input");
-        var multiple_rows=document.createElement("input");
-        var multiple_row_atts={"type": "checkbox", "style": "margin: 2px 5px 2px 2px", "name": "mult_rows", "id": "mult_rows"};
-        for(x in multiple_row_atts) multiple_rows.setAttribute(x,multiple_row_atts[x]);
-
-        var true_label=document.createElement("label");
-        var false_label=document.createElement("label");
-        var column_label=document.createElement("label");
-        var lines_row_label=document.createElement("label");
-
-        var multrow_label=document.createElement("label");
-        var multrow_label_atts={"style": "margin: 2px 5px 2px 2px", "innerHTML": "Multiple Rows"};
-        for(x in multrow_label_atts) multrow_label.setAttribute(x,multrow_label_atts[x]);
-        multrow_label.innerHTML="Multiple Rows";
-        multrow_label.style.margin="2px 5px 2px 2px";
-        var col_select=document.createElement("select");
-
-        var col_select_attrs={"id": "col_select", "name": "col_select", "style": select_style};
-        var lines_row_select_attrs={"id": "lines_row_select", "name": "lines_row_select", "style": select_style};
-        var lines_row_select=document.createElement("select");
-        for(x in col_select_attrs) col_select.setAttribute(x, col_select_attrs[x]);
-        for(x in lines_row_select_attrs) lines_row_select.setAttribute(x, lines_row_select_attrs[x]);
-
-        lines_row_label.innerHTML="Lines/Row";
-        lines_row_label.style.margin="2px 5px 2px 2px";
-        var temp_opt;
-        for(i=0; i <= 4; i++)
-        {
-            temp_opt=document.createElement("option");
-            temp_opt.value=i;
-            temp_opt.innerHTML=i;
-            if(i==0) temp_opt.selected=true;
-            col_select.appendChild(temp_opt);
-        }
-        for(i=1; i <= 8; i++)
-        {
-            temp_opt=document.createElement("option");
-            temp_opt.value=i;
-            temp_opt.innerHTML=i;
-            if(i==1) temp_opt.selected=true;
-            lines_row_select.appendChild(temp_opt);
-        }
-        true_label.innerHTML="Flip";
-        true_label.style.margin="2px 5px";
-        false_label.innerHTML="Don't Flip";
-        false_label.style.margin="2px 5px 2px 10px";
-        column_label.innerHTML="Begin Col";
-        column_label.style.margin="2px 10px";
-        var flip_button_attr={"style": "margin: 2px 5px", "type": "radio", "name": "is_flipped", "id": "flipped_true", "value": "false"};
-        var no_flip_button_attr={"style": "margin: 2px 5px", "type": "radio", "name": "is_flipped", "id": "flipped_false", "value": "true",
-                                "checked": "true"};
-        for(x in flip_button_attr) flip_button.setAttribute(x,flip_button_attr[x]);
-        for(x in no_flip_button_attr) no_flip_button.setAttribute(x,no_flip_button_attr[x]);
-        my_panel.appendChild(flip_button);
-        my_panel.insertBefore(true_label,flip_button);
-        my_panel.appendChild(false_label);
-        my_panel.appendChild(no_flip_button);
-        my_panel.appendChild(column_label);
-        my_panel.appendChild(col_select);
-        my_panel.appendChild(multrow_label);
-        my_panel.appendChild(multiple_rows);
-        my_panel.appendChild(lines_row_label);
-        my_panel.appendChild(lines_row_select);
-
-        my_panel.innerHTML=my_panel.innerHTML+'<label style="margin: 2px 5px">Skip Nosubject</label>'+
-            '<input type="checkbox" name="skip_no" id="skip_no"></input>';
-
-        outer_panel.appendChild(my_panel);
-        WDC.insertBefore(second_panel,row[1]);
-        WDC.insertBefore(outer_panel,second_panel);
- document.getElementById("mult_rows").checked=true;
-
-    }
-    function init_TaylorFodor()
-    {
+    function init_Query() {
         var well=document.getElementsByClassName("well"),i;
-        setup_UI();
         for(i=1; i<=10; i++) {
             var curr_id=(i).toString();
             if(i < 10) curr_id=""+curr_id;
@@ -1971,9 +1972,9 @@
         }
         my_query={url: well[0].innerText, sport: well[1].innerText, short_sport: "", curr_pos: 0, try_count: 0,
                   doneRedirect: false, doneNewUrl: false, doneCoaches: false, doneSorry: false,phonePrefix:"",
-                 subQueryList:[],doneSubQueries:0};
-        url_list.push(my_query.url);
-        GM_setValue("url_list",url_list);
+                 subQueryList:[],doneSubQueries:0,at_part:"",found_lady:false};
+        //url_list.push(my_query.url);
+        //GM_setValue("url_list",url_list);
         my_query.url=my_query.url.replace("/information/directory/home","/information/directory/index")
         .replace(/http:\/\/hensallaccess\.bluehens\.com\/.*$/,"http://www.bluehens.com");
         my_query.sport=my_query.sport.replace(/Beach /,"");
@@ -2002,56 +2003,5 @@
             .then(query_promise_then).catch(function(val) { console.log("Failed dist " + val); });
         });
     }
-    if (window.location.href.indexOf("mturkcontent.com") !== -1 || window.location.href.indexOf("amazonaws.com") !== -1) {
-        if(!document.getElementById("submitButton").disabled ) init_TaylorFodor();
-    }
-    else if(window.location.href.indexOf("mturk.com")!==-1)
-    {
-        /* Should be MTurk itself */
-        var globalCSS = GM_getResourceText("globalCSS");
-        GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
-        var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
-        if(GM_getValue("automate")===undefined) GM_setValue("automate",false);
 
-        var btn_span=document.createElement("span"),btn_automate=document.createElement("button");
-        var btns_primary=document.getElementsByClassName("btn-primary"),btns_secondary=document.getElementsByClassName("btn-secondary");
-        var my_secondary_parent=pipeline.getElementsByClassName("btn-secondary")[0].parentNode;
-        btn_automate.className="btn btn-ternary m-r-sm";
-        btn_automate.innerHTML="Automate";
-        btn_span.appendChild(btn_automate);
-        pipeline.insertBefore(btn_span, my_secondary_parent);
-        GM_addStyle(globalCSS);
-        if(GM_getValue("automate")) {
-            btn_automate.innerHTML="Stop";
-            /* Return automatically if still automating */
-            setTimeout(function() {
-                if(GM_getValue("automate")) btns_secondary[0].click(); }, 35000);
-        }
-        btn_automate.addEventListener("click", function(e) {
-            var auto=GM_getValue("automate");
-            if(!auto) btn_automate.innerHTML="Stop";
-            else btn_automate.innerHTML="Automate";
-            GM_setValue("automate",!auto);
-        });
-        GM_setValue("returnHit",false);
-        GM_addValueChangeListener("returnHit", function() {
-            if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
-               btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Return"){
-                if(GM_getValue("automate")) { setTimeout(function() { btns_secondary[0].click(); }, 0); }
-            }
-        });
-        /* Regular window at mturk */
-        if(GM_getValue("stop") !== undefined && GM_getValue("stop") === true) { }
-        else if(btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Skip" &&
-                btns_primary!==undefined && btns_primary.length>0 && btns_primary[0].innerText==="Accept") {
-            /* Accept the HIT */
-            if(GM_getValue("automate")) btns_primary[0].click();
-        }
-        else
-        {
-            /* Wait to return the hit */
-            var cbox=document.getElementsByClassName("checkbox")[0].firstChild.firstChild;
-            if(cbox.checked===false) cbox.click();
-        }
-    }
 })();
