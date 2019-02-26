@@ -267,6 +267,7 @@ MTurkScript.prototype.cfDecodeEmail=function(encodedString) {
 };
 /* Some basic checks for improper emails beyond email_re */
 MTurkScript.prototype.is_bad_email = function(to_check) {
+    console.log("to_check="+to_check);
     to_check=to_check.toLowerCase();
     if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1) return true;
     else if(/\.(png|jpg|gif)$/.test(to_check)) return true;
