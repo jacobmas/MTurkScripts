@@ -267,7 +267,7 @@ MTurkScript.prototype.cfDecodeEmail=function(encodedString) {
 };
 /* Some basic checks for improper emails beyond email_re */
 MTurkScript.prototype.is_bad_email = function(to_check) {
-    console.log("to_check="+to_check);
+   // console.log("to_check="+to_check);
     to_check=to_check.toLowerCase();
     if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1) return true;
     else if(/\.(png|jpg|gif)$/.test(to_check)) return true;
@@ -1331,7 +1331,9 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
         else if(links[i].href.indexOf("cdn-cgi/l/email-protection")!==-1 && (encoded_match=links[i].href.match(/#(.*)$/)) &&
 		(temp_email=MTurkScript.prototype.cfDecodeEmail(encoded_match[1]).replace(/\?.*$/,"")) &&
 		!MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
-        else if(links[i].href.indexOf("javascript:location.href")!==-1 && (temp_email="") &&
+	else if(links[i].dataset.cfemail!==undefined && (temp_email=MTurkScript.prototype.cfDecodeEmail(encoded_match[1]).replace(/\?.*$/,"")) &&
+		!MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
+	else if(links[i].href.indexOf("javascript:location.href")!==-1 && (temp_email="") && 
 		(encoded_match=links[i].href.match(/String\.fromCharCode\(([^\)]+)\)/)) && (match_split=encoded_match[1].split(","))) {
             for(j=0; j < match_split.length; j++) temp_email=temp_email+String.fromCharCode(match_split[j].trim());
             if(!MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
