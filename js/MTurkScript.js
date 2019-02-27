@@ -1333,7 +1333,7 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 		!MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
 	else if(links[i].dataset.cfemail!==undefined && (temp_email=MTurkScript.prototype.cfDecodeEmail(links[i].dataset.cfemail).replace(/\?.*$/,"")) &&
 		!MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
-	if(links[i].dataset.cfemail===undefined) { console.log("cfemail="+links[i].dataset.cfemail+",decode="+MTurkScript.prototype.cfDecodeEmail(links[i].dataset.cfemail)); }
+	if(links[i].dataset.cfemail!==undefined) { console.log("cfemail="+links[i].dataset.cfemail+",decode="+MTurkScript.prototype.cfDecodeEmail(links[i].dataset.cfemail)); }
 	else if(links[i].href.indexOf("javascript:location.href")!==-1 && (temp_email="") && 
 		(encoded_match=links[i].href.match(/String\.fromCharCode\(([^\)]+)\)/)) && (match_split=encoded_match[1].split(","))) {
             for(j=0; j < match_split.length; j++) temp_email=temp_email+String.fromCharCode(match_split[j].trim());
