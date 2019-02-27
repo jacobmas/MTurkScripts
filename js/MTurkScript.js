@@ -259,7 +259,7 @@ MTurkScript.prototype.DeCryptX=function(s) { return this.DeCryptString( s ); };
 /* cfDecodeEmail decodes Cloudflare encoded emails */
 MTurkScript.prototype.cfDecodeEmail=function(encodedString) {
     var email = "", r = parseInt(encodedString.substr(0, 2), 16), n, i;
-    for (n = 2; encodedString.length<n; n += 2){
+    for (n = 2;n<encodedString.length; n += 2){
         i = parseInt(encodedString.substr(n, 2), 16) ^ r;
         email += String.fromCharCode(i);
     }
@@ -1333,7 +1333,7 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 		!MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
 	else if(links[i].dataset.cfemail!==undefined && (temp_email=MTurkScript.prototype.cfDecodeEmail(links[i].dataset.cfemail).replace(/\?.*$/,"")) &&
 		!MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
-	if(links[i].dataset.cfemail!==undefined) { console.log("cfemail="+links[i].dataset.cfemail+",decode="+MTurkScript.prototype.cfDecodeEmail(links[i].dataset.cfemail)); }
+	if(links[i].dataset.cfemail!==undefined) { console.log("cfemail="+links[i].dataset.cfemail+",decode="+MTurkScript.prototype.cfDecodeEmail(links[i].dataset.cfemail.toString())); }
 	else if(links[i].href.indexOf("javascript:location.href")!==-1 && (temp_email="") && 
 		(encoded_match=links[i].href.match(/String\.fromCharCode\(([^\)]+)\)/)) && (match_split=encoded_match[1].split(","))) {
             for(j=0; j < match_split.length; j++) temp_email=temp_email+String.fromCharCode(match_split[j].trim());
