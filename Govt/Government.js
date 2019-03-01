@@ -1,6 +1,6 @@
 
-var my_query = {};
-var MTP=MTurkScript.prototype;
+//var my_query = {};
+//var MTP=MTurkScript.prototype;
 /* Gov.script_loaded is a map of urls to number loaded there, script total is a map of urls to total number needed there */
 var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 	      split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s*-\s+)|\||                     |	|	|●|•|\s{3,}|\s+[*≈]+\s+/,
@@ -31,9 +31,7 @@ Gov.muni_regex_str="((City)|(Town)|(Boro(ugh)?)|(County)|(Village)|(Municipal))"
 Gov.manager_regex_str="((Manager)|(Administrator)|(Supervisor))";
 Gov.title_regex_map={"city manager":new RegExp(Gov.muni_regex_str+"\\s+"+Gov.manager_regex_str)};
 //var MTurk=new MTurkScript(20000,200,[],init_Query,"[TODO]");
-function is_bad_name(b_name) {
-    return false;
-}
+
 /* Check if a title matches a department regex */
 Gov.matches_dept_regex=function(title) {
     for(var i=0; i < Gov.query.dept_regex_lst.length; i++) if(title.match(Gov.query.dept_regex_lst[i])) return true;
