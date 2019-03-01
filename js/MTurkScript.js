@@ -223,7 +223,10 @@ MTurkScript.prototype.swrot13=function(str) {
     }
     return ret;
 };
-MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,self) {	
+MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,self) {
+    let assignmentId=document.querySelector("#assignmentId");
+    if(assignmentId) this.assignment_id=assignmentId.value;
+    else { console.log("No assignmentId found"); }
     if(document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled) {
 	self.submit_button=document.querySelector("crowd-button");
 	console.log("self.submit_button="+self.submit_button);
