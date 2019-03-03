@@ -343,7 +343,7 @@ Gov.parse_contact_div=function(elem,name,url) {
     //  console.time("contact_div");
     //console.log("Gov.parse_contact_div,url="+url);
     // console.log("elem.outerHTML="+elem.outerHTML);
-    elem.innerHTML = elem.innerHTML.replace(/&nbsp;/g, ' - ');
+    elem.innerHTML = elem.innerHTML.replace(/&nbsp;/g, ' - ').replace(/\<br\>/g,' - ');
     var ret,p_adds=0,add_count=0;
     var bolds=elem.querySelectorAll("b,strong"),i,curr_text;
 
