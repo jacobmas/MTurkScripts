@@ -273,7 +273,7 @@ MTurkScript.prototype.is_bad_email = function(to_check) {
    // console.log("to_check="+to_check);
     to_check=to_check.toLowerCase();
     if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1) return true;
-    else if(/\.(png|jpg|gif)$/.test(to_check)) return true;
+    else if(/\.(png|jpg|jpeg|gif)$/.test(to_check)) return true;
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
     else if(/@(domain\.com|example\.com)/.test(to_check)) return true;
     else if(/;/.test(to_check)) return true;
@@ -898,7 +898,7 @@ MTurkScript.prototype.pre_parse_address=function(address)
 MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
 {
     var result={success:true,fb_url:url},outer_part,_4bl9,i,j,inner_a,response,_4j7v;
-    var _a3f,coord_ret,address,name;
+    var _a3f,coord_ret,address,name,img;
     var code=doc.body.getElementsByTagName("code"),scripts=doc.scripts;
     for(i=0; i < code.length; i++) code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
     if((outer_part=doc.getElementsByClassName("_1xnd")).length===0) {
@@ -906,6 +906,7 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
         resolve(result);
         return;
     }
+    if((img=doc.querySelector("._6tb5"))) result.img_url=img.src;
     if((name=doc.getElementsByClassName("_64-f")).length>0) result.name=name[0].innerText;
     if((_a3f=doc.getElementsByClassName("_a3f")).length>0 &&
        (coord_ret=MTurkScript.prototype.FB_match_coords(_a3f[0].src))) {
@@ -1320,6 +1321,21 @@ MTurkScript.prototype.fix_addy_script_only=function(script) {
         }
 };
 
+MTurkScript.prototype.fix_escramble=function(doc,script) {
+    var regex1=/b(?:\+)?=\'([^\']*)\'/g,match,regex2=/\'([^\']*)\'/,i;
+    var ret="",match2;
+    if((match=script.innerHTML.match(regex1))) {
+        for(i=0;i<match.length;i++) {
+            if((match2=match[i].match(regex2))) ret=ret+match2[1].trim();
+        }
+    }
+    var a=doc.createElement("a");
+    a.href="mailto:"+ret;
+    a.innerHTML=ret;
+    script.parentNode.insertBefore(a,script);
+
+};
+
 
 /* Fixes the hidden emails in a document */
 
@@ -1368,7 +1384,7 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 MTurkScript.prototype.is_bad_page=function(doc,url) {
     var links=doc.links,i,scripts=doc.scripts;
     var title=doc.title;
-    if(/hugedomains\.com|qfind\.net/.test(url)) { return true; }
+    if(/hugedomains\.com|qfind\.net|\?reqp\=1&reqr\=/.test(url)) { return true; }
     else if(/Expired|^404|Error/.test(title)) return true
     else if(doc.querySelector("div.leftblk h3.domain_name")) return true;
     if(/^(IIS7|404)/.test(title.trim())) return true;
