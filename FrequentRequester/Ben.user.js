@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         FindTwitter
+// @name         Ben
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  New script
+// @description  summarize short words
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -12,9 +12,9 @@
 // @include file://*
 // @grant  GM_getValue
 // @grant GM_setValue
+// @grant GM_deleteValue
 // @grant GM_addValueChangeListener
 // @grant GM_setClipboard
-// @grant GM_deleteValue
 // @grant GM_xmlhttpRequest
 // @grant GM_openInTab
 // @grant GM_getResourceText
@@ -32,22 +32,14 @@
     'use strict';
     var my_query = {};
     var bad_urls=[];
-    var MTurk=new MTurkScript(20000,200,[],begin_script,"A2LPC19H38HEE1",false);
+    var MTurk=new MTurkScript(20000,200,[],begin_script,"A1ZTPSR8SWFK03",false);
     var MTP=MTurkScript.prototype;
-    function is_bad_name(b_name,p_caption,i)
+    function is_bad_name(b_name)
     {
-        var reg=/[-\s\'\"’]+/g,b_replace_reg=/\s+[\-\|–]{1}.*$/g;
-        var lower_b=b_name.toLowerCase().replace(reg,""),lower_my=my_query.name.replace(/\s(-|@|&|and)\s.*$/).toLowerCase().replace(reg,"");
-        if(lower_b.indexOf(lower_my)!==-1 || lower_my.indexOf(lower_b)!==-1) return false;
-        b_name=b_name.replace(b_replace_reg,"");
-        my_query.name=my_query.name.replace("’","\'");
-        console.log("b_name="+b_name+", my_query.name="+my_query.name);
-        if(MTP.matches_names(b_name,my_query.name)) return false;
-        if(i===0 && b_name.toLowerCase().indexOf(my_query.name.split(" ")[0].toLowerCase())!==-1) return false;
-        return true;
+        return false;
     }
 
-    function query_response(response,resolve,reject) {
+    function query_response(response,resolve,reject,type) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
         console.log("in query_response\n"+response.finalUrl);
@@ -85,20 +77,18 @@
     }
 
     /* Search on bing for search_str, parse bing response with callback */
-    function query_search(search_str, resolve,reject, callback) {
+    function query_search(search_str, resolve,reject, callback,type) {
         console.log("Searching with bing for "+search_str);
         var search_URIBing='https://www.bing.com/search?q='+
             encodeURIComponent(search_str)+"&first=1&rdr=1";
         GM_xmlhttpRequest({method: 'GET', url: search_URIBing,
-                           onload: function(response) { callback(response, resolve, reject); },
+                           onload: function(response) { callback(response, resolve, reject,type); },
                            onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
                           });
     }
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.fields.text=result;
-        submit_if_done();
     }
 
     function begin_script(timeout,total_time,callback) {
@@ -117,7 +107,7 @@
 
     function add_to_sheet() {
         var x,field;
-        for(x in my_query.fields) if(field=document.getElementById(x)) field.value=my_query.fields[x];
+        for(x in my_query.fields) if(field=document.getElementsByName(x)[0]) field.value=my_query.fields[x];
     }
 
     function submit_if_done() {
@@ -126,23 +116,45 @@
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
+    function parse_text() {
+        var conj_reg=/(.{6,10})\s(and|or|but|if|after|because|before|that|in|for)\s.*$/;
+        var split=my_query.text.split("\."),next,first,i;
+        var to_regex=/^.*\s(and be(?:come)|to (attend|practice|start|work|get|be(?:come)?)\s.{3,})/
+        for(i=0;i<split.length;i++) {
+            first=split[i];
+            if(to_regex.test(first)) {
+                next=first.replace(to_regex,"$1")
+                    .replace(conj_reg,"$1");
+                next=next.replace(/\smy\s/," your ").replace(/\smyself\s/," yourself ").replace(/,\s+.*$/,"");
+                my_query.fields.Q5FreeTextInput=next;
+                add_to_sheet();
+                return;
+            }
+            if(/plan (?:to|on) ([a-z]*ing)\s/i.test(first)) {
+
+                next=first.replace(/^.*\splan (?:to|on) ([a-z]*)ing/i,"$1")
+                    .replace(conj_reg,"$1");
+                next=next.replace(/\smy\s/," your ").replace(/\smyself\s/," yourself ").replace(/,\s+.*$/,"");
+                my_query.fields.Q5FreeTextInput=next;
+                add_to_sheet();
+                return;
+            }
+        }
+
+
+    }
 
     function init_Query()
     {
         console.log("in init_query");
         var i;
-        var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
+        //var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         //var dont=document.getElementsByClassName("dont-break-out");
-        my_query={name:wT.rows[0].cells[1].innerText,fields:{},done:{},submitted:false};
+        var b=document.querySelectorAll("form b");
+        my_query={text:b[1].innerText,fields:{Q5FreeTextInput:""},done:{},submitted:false};
 	console.log("my_query="+JSON.stringify(my_query));
-        var search_str=my_query.name+" baseball site:twitter.com";
-        const queryPromise = new Promise((resolve, reject) => {
-            console.log("Beginning URL search");
-            query_search(search_str, resolve, reject, query_response,"twitter");
-        });
-        queryPromise.then(query_promise_then)
-            .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
+        parse_text();
+       
     }
 
 })();
