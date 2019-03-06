@@ -640,7 +640,8 @@ MTurkScript.prototype.parse_b_context=function(b_context)
     
     if(wpc_eif.length>0) {
 	result.people=[];
-	for(i=0;i<wpc_eif.length;i+=2) {
+	for(i=0;i+1<wpc_eif.length;i+=2) {
+	    
 	    result.people.push({"Job title":wpc_eif[i].innerText,"Location":wpc_eif[i+1].innerText});
 	}
     }    
