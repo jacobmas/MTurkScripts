@@ -638,10 +638,12 @@ MTurkScript.prototype.parse_b_context=function(b_context)
     if(b_hList.length>0 && (inner_a=b_hList[0].getElementsByTagName("a"))) {
         for(i=0; i<inner_a.length; i++) result[field_map(inner_a[i].innerText.trim())]=inner_a[i].href; }
     
-    if(wpc_eif.length===2) {
-        result["Job title"]=wpc_eif[0].innerText;
-        result.Location=wpc_eif[1].innerText; }
-    
+    if(wpc_eif.length>0) {
+	result.people=[];
+	for(i=0;i<wpc_eif.length;i+=2) {
+	    result.people.push({"Job title":wpc_eif[i].innerText,"Location":wpc_eif[i+1].innerText});
+	}
+    }    
     return result;
 };
 
