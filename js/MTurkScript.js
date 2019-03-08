@@ -18,6 +18,8 @@ var province_map={"Alberta": "AB", "British Columbia": "BC", "Manitoba": "MB", "
 		 };
 
 
+
+
 var reverse_state_map={},reverse_province_map={};
 for(let x in state_map)     reverse_state_map[state_map[x]]=x;
 for(let x in province_map)     reverse_province_map[province_map[x]]=x;
@@ -153,6 +155,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
 };
 
 MTurkScript.prototype.setup_worker_mturk=function() {
+    console.log("In setup_worker_mturk, this.assignment_id="+this.assignment_id);
     GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
 
     var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
@@ -407,7 +410,7 @@ MTurkScript.prototype.parseext_bloomberg_snapshot=function(doc)
     console.log("Doing bloomberg ");
 
     var result={"phone":"","country":"",url:"","name":"","state":"","city":"","streetAddress":"","postalCode":""};
-
+   
     var address=doc.querySelector("[itemprop='address']");
     var phone=doc.querySelector("[itemprop='telephone']");
     var name=doc.querySelector("[itemprop='name']");
@@ -459,10 +462,9 @@ MTurkScript.prototype.parseext_bloomberg_snapshot=function(doc)
     GM_setValue("bloomberg.com/research/stocks/private/snapshot.asp"+"_result",result);
     return;
 
-
 }
 
-MTurkScript.prototype.parseext_bloomberg_profile=function(doc)
+MTurkScript.prototype.parseext_bloomberg_profile=function(doc,url,resolve,reject,response)
 {
     var result={"phone":"","country":"",url:"","name":"","state":"","city":"","streetAddress":"","postalCode":"",
                 sector:"","industry":"","sub_industry":"",executives:[],description:""};
