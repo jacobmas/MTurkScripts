@@ -1395,5 +1395,27 @@ MTurkScript.prototype.is_bad_page=function(doc,url) {
     return false;
 };
 
+MTurkScript.prototype.parse_vcard=function(doc,url,resolve,reject,response) {
+    function replace_addr_semicolon(match,offset,string) {
+        return offset+match.length<string.length ? ",":"";
+    }
+    var lines=response.responseText.split(/[\n]+/),i,j,k,match;
+    var regexes=[{regex:/^N:\s*([^;]*);([^;]*)/,terms:["last","first"],replace_regex:null,replacer:null},
+                 {regex:/^EMAIL[^:]*:\s*([^;]*)/,terms:["email"],replace_regex:null,replacer:null},
+                 {regex:/^TEL[^:]*:\s*([^;]*)/,terms:["phone"],replace_regex:null,replacer:null},
+                 {regex:/^ADR[^:]*:\s*(.*)/,terms:["address"],replace_regex:/;+/g,replacer:replace_addr_semicolon}];
+    var result={first:"",last:"",email:"",phone:"",address:""};
+    for(i=0;i<lines.length;i++) {
+        for(j=0;j<regexes.length;j++) {
+            if((match=lines[i].match(regexes[j].regex))) {
+                if(regexes[i].terms.length===1&& regexes[j].replace_regex &&
+                   regexes[j].replacer) match[1]=match[1].replace(regexes[j].replace_regex,regexes[j].replacer);
+                for(k=0;k<regexes[j].terms.length;k++) result[regexes[j].terms[k]]=match[k+1];
+            }
+        }
+    }
+    resolve(result);
+};
+	
 
 var MTP=MTurkScript.prototype;
