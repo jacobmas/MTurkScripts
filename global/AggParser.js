@@ -97,3 +97,47 @@ AggParser.parse_dandb=function(doc,url,resolve,reject,quality) {
     console.log("parse_dandb, result="+JSON.stringify(result));
     resolve(result);
 };
+
+AggParser.parse_whitepages=function(doc,url,resolve,reject) {
+    var h2=doc.querySelector(".module-title h2");
+    var street=doc.querySelector(".address-primary");
+    var line2=doc.querySelector(".address-location");
+    var result={company:"",address1:"",city:"",state:"",zip:""};
+    var line2_rx=/^(.*) ([A-Z]{2}) ([\d\-]+)$/,match;
+    if(h2 && !/^Owner Details$/.test(h2.innerText.trim())) result.company=h2.innerText.trim();
+    if(street) result.address1=street.innerText.trim();
+    if(line2&&(match=line2.innerText.trim().match(line2_rx))) {
+        result.city=match[1].replace(/,\s*$/,"").trim();
+        my_query.state=match[2].trim();
+        my_query.zip=match[3].trim();
+    }
+    else if(line2) { console.log("** line2.innerText.trim()="+line2.innerText.trim()); }
+    resolve(result);
+};
+
+/* Parser for npidb.org doctor stuff */
+AggParser.parse_npidb=function(doc,url,resolve,reject) {
+    console.log("parse_npidb, url="+url);
+    var physDiv=doc.querySelector("[itemtype='http://schema.org/Physician']"),x,curr,text;
+    var result={"success":true,type:"npidb"},term_map={"name":"name","address":"address","telephone":"phone","faxNumber":"fax"};
+    if(!physDiv && (resolve({success:false})||true)) return;
+    for(x in term_map) {
+        if((curr=doc.querySelector("[itemprop='"+x+"']"))&&
+           (text=curr.innerText.trim())&&text.length>0) result[term_map[x]]=text.replace(/\n+/g,",");
+    }
+    resolve(result);
+};
+
+AggParser.parse_npiprofile=function(doc,url,resolve,reject) {
+    console.log("parse_npiprofile, url="+url);
+    var the_div=doc.querySelector("#npi-addresses");
+    var match;
+    var result={success:true,type:"npiprofile"};
+    if(the_div && (match=the_div.innerText.match(/(?:(?:P:)|Phone\s*(?:[:]{1}?))\s*([\d\-\(\)\.\s]+)/i))) {
+        result.phone=match[1].replace(/[\.\s]+$/g,"");        
+    }
+    if(the_div && (match=the_div.innerText.match(/(?:(?:F:)|Fax\s*(?:[:]{1}?))\s*([\d\-\(\)\.\s]+)/i))) {
+        result.fax=match[1].replace(/[\.\s]+$/g,"");
+    }
+    resolve(result);
+};

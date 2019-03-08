@@ -55,19 +55,36 @@
         var list=doc.getElementsByClassName("search-results-list-description"),i;
         try
         {
-            
+            let reg=new RegExp(my_query.title,"i");
             for(i=0; i < list.length; i++)
             {
-                var new_url=MTP.fix_remote_url(list[i].getElementsByTagName("a")[0].href,response.finalUrl).replace(/\.gov\//,".gov/vwebv/");
-                var promise2=MTP.create_promise(new_url,parse_page,query_promise_then);
-                console.log("new_url="+new_url);
-                return;
+                var x=list[i].getElementsByTagName("a")[0];
+                console.log("list["+i+"}.innerText="+x.innerText);
+                if(reg.test(x.innerText)) {
+                    var new_url=MTP.fix_remote_url(list[i].getElementsByTagName("a")[0].href,response.finalUrl).replace(/\.gov\//,".gov/vwebv/");
+                    var promise2=MTP.create_promise(new_url,parse_page,query_promise_then);
+                    console.log("new_url="+new_url);
+                    return;
+                }
             }
            
         }
         catch(error)
         {
             reject(error);
+            return;
+        }
+        if(my_query.try_count===0) {
+            my_query.try_count++;
+            my_query.title=my_query.title.replace(/\s.*$/,"");
+            var data={"searchArg1": my_query.last,"argType1": "all","searchCode1": "KNAM","searchType": "2",
+                  "combine2":"and","searchArg2":my_query.title
+                  ,"argType2":"all","searchCode2":"KTIL",
+"yearOption":"defined","year":"1518-2018","fromYear":"","toYear":"","location":"all","place":"all",
+"type":"all","language":"all","recCount":"25"};
+            console.log("data="+JSON.stringify(data));
+            var data_str=MTurkScript.prototype.json_to_post(data).replace(/%20/g,"+");
+            query_search(data_str, resolve, reject, query_response);
             return;
         }
         reject("Nothing found");
@@ -148,14 +165,16 @@
             console.log("paren match="+JSON.stringify(match));
             result.last=MTurkScript.prototype.removeDiacritics(match[1].replace(/;.*$/,""));
             result.date=match[2];
-            result.title=match[3].replace(/^[:\.\s]*/,"").replace(/[:;\.\?\(\)]+.*$/,"").trim();
+            result.title=match[3].replace(/^[:\.\s]*/,"").replace(/[:;\.\?\(\)]+.*$/,"").replace(/^The\s+/i,"").
+            replace(/\sand\s/g," \'and\' ")
+            .trim();
         }
         else {
             if((match=text.match(/[\d]{4}/))) result.date=match[1];
             text=text.replace(/([A-Za-z\s]*;\s*)?[A-Za-z\s\.]*: [^:]*$/,"").replace(/[^A-Za-z]*$/,"");
             console.log("Bung text="+text);
             result.last=MTurkScript.prototype.removeDiacritics(text.replace(/;.*$/,""));
-            if((match=text.match(/[^\.\?;]+$/))) result.title=match[0].replace(/\d.*$/,"").trim();
+            if((match=text.match(/[^\.\?;]+$/))) result.title=match[0].replace(/\d.*$/,"").trim().replace(/[:;\.\?\(\)]+.*$/,"").trim();;
         }
         return result;
 
@@ -175,9 +194,9 @@
        // line_split=data_split[1].split(/\s*\|\s*/);
         //semi_split=line_split[1].split("; ");
         my_query={last:result.last,
-                  title:"\""+result.title.replace(/\^/g,"\'")+"\"",
+                  title:result.title.replace(/\^/g,"\'").replace(/\sand\s/g," \'and\' ").replace(/^The\s+/,"").trim(),
                   date:result.date,
-                  fields:{},done:{},submitted:false};
+                  fields:{},done:{},submitted:false,try_count:0};
         console.log("my_query="+JSON.stringify(my_query));
 
         var data={"searchArg1": my_query.last,"argType1": "all","searchCode1": "KNAM","searchType": "2",
@@ -188,7 +207,7 @@
 "type":"all","language":"all","recCount":"25"};
         console.log("data="+JSON.stringify(data));
         var data_str=MTurkScript.prototype.json_to_post(data).replace(/%20/g,"+");
-
+        my_query.data_str=data_str;
         console.log("my_query="+JSON.stringify(my_query));
         var search_str;
         const queryPromise = new Promise((resolve, reject) => {
