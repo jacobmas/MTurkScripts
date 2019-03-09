@@ -112,7 +112,7 @@ for (var i=0; i < defaultDiacriticsRemovalMap .length; i++){
  */
 function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
     var x,term_map={"return_ms":return_ms,"sites":sites,"submit_ms":submit_ms,"is_crowd":is_crowd,"query":{},"attempts":{},
-		    "queryList":[],"doneQueries":0,"requester_id":requester_id,globalCSS:GM_getResourceText("globalCSS")},curr_site;
+		    "queryList":[],"doneQueries":0,"requester_id":requester_id,globalCSS:GM_getResourceText("globalCSS"),"submitted":false},curr_site;
     Object.assign(this,term_map);
     this.site_parser_map={"bloomberg.com/research/stocks/private/snapshot.asp":this.parseext_bloomberg_snapshot,
                           "bloomberg.com/profiles/companies/":this.parseext_bloomberg_profile,
@@ -155,6 +155,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
 };
 
 MTurkScript.prototype.setup_worker_mturk=function() {
+    GM_setValue("submitted",false);
     console.log("In setup_worker_mturk, this.assignment_id="+this.assignment_id);
     GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
 
@@ -174,7 +175,7 @@ MTurkScript.prototype.setup_worker_mturk=function() {
     GM_addStyle(this.globalCSS);
     if(GM_getValue("automate") && ((btn_automate.innerHTML="Stop")||true)) {
         /* Return automatically if still automating according to return_ms */
-        setTimeout(function() {  if(GM_getValue("automate")) btn_secondary.click(); }, this.return_ms);
+        setTimeout(function() {  if(GM_getValue("automate") && !GM_getValue("submitted")) btn_secondary.click(); }, this.return_ms);
     }
     btn_automate.addEventListener("click", function(e) {
         var auto=GM_getValue("automate");
