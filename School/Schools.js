@@ -4,7 +4,7 @@ var Schools={
 	"www\\.campussuite\\.com|crescerance\\.com|cyberschool\\.com|"+
         "echalk\\.com|(edlio(school)?\\.com)|edline\\.net|educationalnetworks\\.net|"+
         "eschoolview\\.com|\/\/factsmgt\\.com|finalsite\\.com|foxbright\\.com|gabbart\\.com|gaggle\\.net|ilearnschools\\.org|"+
-	"www\\.osvoffertory\\.com|\\.renweb\\.com|"
+	"www\\.osvoffertory\\.com|\\.renweb\\.com|"+
         "schooldesk\\.net|schoolloop\\.com|"+
         "www\\.school(blocks|insites|messenger|pointe|webmasters)\\.com|"+
         "socs\\.fes\\.org|www\\.(weebly|zumu)\\.com",

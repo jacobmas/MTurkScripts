@@ -16,6 +16,7 @@
 // @grant GM_setClipboard
 // @grant GM_xmlhttpRequest
 // @grant GM_openInTab
+// @grant GM_deleteValue
 // @grant GM_getResourceText
 // @grant GM_addStyle
 // @connect google.com
@@ -34,9 +35,8 @@
     var my_query = {};
     var bad_urls=[];
     var MTurk=new MTurkScript(20000,200,[],init_Query,"AKLDE41K3WWS2");
-    function is_bad_name(b_name)
-    {
-	return false;
+    function is_bad_name(b_name) {
+        return false;
     }
 
     function query_response(response,resolve,reject) {
@@ -44,49 +44,35 @@
         .parseFromString(response.responseText, "text/html");
         console.log("in query_response\n"+response.finalUrl);
         var search, b_algo, i=0, inner_a;
-	var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
+        var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
         var b1_success=false, b_header_search,b_context;
         try
         {
             search=doc.getElementById("b_content");
             b_algo=search.getElementsByClassName("b_algo");
-	    lgb_info=doc.getElementById("lgb_info");
-	    b_context=doc.getElementById("b_context");
+            lgb_info=doc.getElementById("lgb_info");
+            b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
             for(i=0; i < b_algo.length; i++)
             {
                 b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
-		b_caption=b_algo[i].getElementsByClassName("b_caption");
-		p_caption="";
-		if(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) {
-		    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText;
-		}
-		console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-		if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !is_bad_name(b_name))
-                {
-                    b1_success=true;
-		    break;
-
+                b_caption=b_algo[i].getElementsByClassName("b_caption");
+                p_caption="";
+                if(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) {
+                    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText;
                 }
-
+                console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
+                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !is_bad_name(b_name) && (b1_success=true)) break;
             }
-	    if(b1_success)
-	    {
-		/* Do shit */
-		resolve(b_url);
-		return;
-	    }
-
-
+            if(b1_success && (resolve(b_url)||true)) return;
         }
         catch(error)
-	{
-	    reject(error);
+        {
+            reject(error);
             return;
         }
-	reject("Nothing found");
-//        GM_setValue("returnHit",true);
+        reject("Nothing found");
         return;
 
     }
@@ -107,7 +93,14 @@
         try { parsed=JSON.parse(text); }
         catch(error) { console.log("error parsing="+error+", text="+text); return; }
         tabs=parsed.contents.twoColumnBrowseResultsRenderer.tabs;
-        for(i=0; i < tabs.length; i++) if(tabs[i].tabRenderer && tabs[i].tabRenderer.title==="About" && (content=tabs[i].tabRenderer.content)) break;
+        try {
+            for(i=0; i < tabs.length; i++) {
+                if(tabs[i].tabRenderer && tabs[i].tabRenderer.title==="About" && (content=tabs[i].tabRenderer.content)) break;
+            }
+        }
+        catch(error) { console.log(error);
+                     console.log(parsed);
+                     }
         if(!content) return ret;
         contents=content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].channelAboutFullMetadataRenderer;
         if((label=contents.businessEmailLabel)===undefined) ret.email="";
@@ -148,11 +141,12 @@
                     my_query.fields.email="NULL";
                     my_query.done.web=my_query.done.fb=my_query.done.insta=true;
                     submit_if_done();
-                    return; }
+                    return;
+                }
                 break;
             }
         }
-        my_query.emailBusinessLabel=ret.emailBusinessLabel;
+        my_query.businessEmailLabel=ret.businessEmailLabel;
         if(ret.description && (email_match=ret.description.match(email_re)) && (my_query.fields.email=email_match[0])) submit_if_done();
         else { console.log("email_match="+email_match); }
         if(ret.description) {
@@ -160,6 +154,7 @@
             if(!ret.fb && (match=ret.description.match(/https?:\/\/([a-z]+).facebook.com\/[A-Za-z\.0-9_\-\/]+/))) ret.fb=match[0];
         }
         console.log("ret="+JSON.stringify(ret));
+        console.log("my_query="+JSON.stringify(my_query));
 
         if(ret.insta) promise_list.push(MTurkScript.prototype.create_promise(ret.insta,MTurkScript.prototype.parse_instagram,parse_insta_then));
         else if(my_query.done["insta"]=true) submit_if_done();
@@ -178,7 +173,7 @@
         console.log("insta_result: "+JSON.stringify(result));
         if(result.success && result.email) { my_query.fields.email=result.email; }
         if(result.biography && (match=result.biography.match(email_re))) my_query.fields.email=match[0];
-        my_query.done["insta"]=true;
+        my_query.done.insta=true;
         submit_if_done();
 
     }
@@ -219,14 +214,15 @@
         for(x in my_query.fields) { if(my_query.fields[x].length===0) is_found=false; }
         if(is_done && is_found &&!my_query.submitted && MTurk.doneQueries >= MTurk.queryList.length && (my_query.submitted=true)) MTurk.check_and_submit();
         else if(is_done && !my_query.submitted && MTurk.doneQueries >= MTurk.queryList.length) {
-            if(!my_query.emailBusinessLabel) {
+            if(!my_query.businessEmailLabel) {
+                console.log("no business label, setting to null");
                 my_query.fields.email="NULL";
                 add_to_sheet();
                 MTurk.check_and_submit();
                 return;
             }
             console.log("Failed");
-            GM_setValue("returnHit",true);
+            GM_setValue("returnHit"+MTurk.assignment_id,true);
             return; }
     }
 
@@ -255,6 +251,7 @@
         var extension=extra.extension,callback=extra.callback;
         if(extension===undefined) extension='';
         console.log("in contact_response "+url);
+        MTP.fix_emails(doc,url);
         var short_name=url.replace(my_query.url,""),links=doc.links,email_matches,phone_matches;
         var replacement=url.match(/^https?:\/\/[^\/]+/)[0];
         var contact_regex=/(Contact|About|Privacy|Legal)/i,bad_contact_regex=/^\s*(javascript|mailto):/i;
@@ -317,16 +314,13 @@
         else if(total_time<2000) {
             console.log("total_time="+total_time);
             total_time+=timeout;
-
             setTimeout(function() { begin_script(timeout,total_time,callback); },timeout);
             return;
         }
-        else { console.log("Failed to begin script"); }
+        else console.log("Failed to begin script");
     }
 
-    function init_Query()
-    {
-
+    function init_Query() {
         console.log("in init_query");
         var i;
         var wT=document.getElementById("workContent").getElementsByTagName("table")[0];
@@ -341,7 +335,7 @@
         queryPromise.then(query_promise_then
         )
         .catch(function(val) {
-           console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+           console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
     }
 
 })();

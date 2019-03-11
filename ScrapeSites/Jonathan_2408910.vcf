@@ -1,0 +1,16 @@
+BEGIN:VCARD
+VERSION:2.1
+N:Rosenfeld;Jonathan;
+
+FN: Jonathan  Rosenfeld 
+
+ORG: Rosenfeld Injury Lawyers LLC 
+
+TITLE:
+
+ADR;ADDRESS;ENCODING=QUOTED-PRINTABLE:;;225 W Wacker Dr=0D=0A#1760=0D=0AChicago, Illinois 60606
+TEL;WORK;VOICE:847-835-8895 
+URL;WORK:https://www.rosenfeldinjurylawyers.com/jonathan-rosenfeld.html
+
+NOTE:
+END:VCARD
