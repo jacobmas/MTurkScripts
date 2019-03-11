@@ -232,7 +232,7 @@ MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,se
     let assignmentId=window.location.href.match(/assignmentId\=([A-Z0-9]*)/);
     if(assignmentId) this.assignment_id=assignmentId[1];
     else { console.log("No assignmentId found"); }
-    if((document.querySelector("crowd-form") || (document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)) {
+    if(document.querySelector("crowd-form") || (document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)) {
 	self.submit_button=document.querySelector("crowd-button");
 	console.log("self.submit_button="+self.submit_button);
 	console.log(self);
