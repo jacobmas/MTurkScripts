@@ -783,7 +783,7 @@ Gov.parse_data_func=function(text) {
 	s_part=second_arr[second_arr.length-1].trim();
 	//console.log("s_part="+s_part);
 	if(email_re.test(s_part) && !found_email &&(found_email=true)) ret.email=s_part.match(email_re)[0];
-	else if(phone_re.test(s_part)&& !found_phone && (found_phone=true)) ret.phone=s_part.match(phone_re)[0];
+	else if((phone_re.test(s_part)||/^ext\. /.test(s_part)) && !found_phone && (found_phone=true)) ret.phone=s_part.match(phone_re)[0];
 	else if(s_part.length>10 && !found_phone && s_part.substr(0,10)==="Phone Icon" &&
 		phone_re.test(s_part.substr(11)) && (found_phone=true)) ret.phone=s_part.substr(11).match(phone_re)[0];
 	else if((s_part.trim().length>0  && !has_pasted_title) || s_part.indexOf("Title:")!==-1)
