@@ -210,7 +210,7 @@ MTurkScript.prototype.setup_worker_mturk=function() {
 MTurkScript.prototype.check_and_submit=function(check_function)	{
     console.log("in check");
     var submit_button=this.is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");
-    if(!submit_button) submit_button=document.querySelector("[type='submit']");
+    if(!submit_button) submit_button=document.querySelector("input[type='submit']");
     if(check_function!==undefined && !check_function()) {
         GM_setValue("returnHit"+this.assignment_id,true);
         console.log("bad");
