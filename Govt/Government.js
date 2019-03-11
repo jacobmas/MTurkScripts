@@ -707,7 +707,7 @@ Gov.parse_data_func=function(text) {
     var curr_line, s_part="", second_arr,begin_name="";
 
     var has_pasted_title=false,title_prefix,dept_name;
-    if(!/@/.test(text)) return;
+   // if(!/@/.test(text)) return;
     if(Gov.debug) console.log("text="+text);
     text=text.replace(/([a-z]{1})([A-Z][a-z]+:)/g,"$1\t$2").replace(/([a-z]{1})\s{1,}([\d]{1})/g,"$1\t$2")
 	.replace(/([\d]{1})\s{1,}([A-Za-df-wy-z]{1})/g,"$1\t$2").replace(/([A-Za-z]{1})\s([A-Za-z0-9\._]+@)/,"$1\t$2")
