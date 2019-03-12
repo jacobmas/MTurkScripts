@@ -333,6 +333,15 @@ Schools.matches_address=function(parsed_add) {
         }
         resolve("Finished appsstaff");
     };
+
+    Schools.fix_generator=function(generator_str) {
+        var match,gen_regex=/(?:^|[^A-Za-z]{1})(Joomla|Drupal|Starfield Technologies|One\.com|Wix\.com)(?:$|[^A-Za-z]{1})/;
+        if(match=generator_str.match(gen_regex)) return match[1].replace(/\.com/g,"");
+        generator_str=generator_str.replace(/(^|;)Powered By /ig,"$1");
+        generator_str=generator_str.replace(/\s(v\.)?[\d]+\.[\d]+[\.\d]*\s*/g,"");
+        if(/^WordPress/i.test(generator_str)) generator_str=generator_str.replace(/;WordPress/ig,"");
+        return generator_str;
+    };
    
     /* Followup function for appsstaff_contactpage_then, doesn't need to be in original that should be an argument */
     function appsstaff_contactpage_then(result) {
