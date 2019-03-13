@@ -1377,7 +1377,7 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
         var match=scripts[x].innerHTML.match(unesc_regex),decoded,match2;
         if(/var addy[\d]+/.test(scripts[x].innerHTML)) MTurkScript.prototype.fix_addy_script_only(scripts[x]);
 	if(/function escramble/.test(scripts[x].innerHTML)) MTurkScript.prototype.fix_escramble(doc,scripts[x]);
-        if(match&&(decoded=decodeURIComponent(match[1]))&&(match2=decoded.match(email_re)) && my_query.fields.email.length===0) {
+        if(match&&(decoded=decodeURIComponent(match[1]))&&(match2=decoded.match(email_re))) {
             console.log("Matched weird decode");
 	    
             //my_query.fields.email=match2[0];
