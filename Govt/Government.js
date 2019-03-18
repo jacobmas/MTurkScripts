@@ -688,7 +688,7 @@ Gov.fix_table=function(table,type) {
 /* Gov.parse_name_func is a helper function for parse_data_func */
 Gov.parse_name_func=function(text) {
     var split_str,fname,lname,i;
-    var appell=[/^Mr\.?\s+/,/^Mrs\.?\s*/,/^Ms\.?\s*/,/^Miss\s*/,/^Dr\.?\s*/],suffix=[/,?\s*Jr\.?/];
+    var appell=[/^Mr([\.\s]{1})\s*/,/^Mrs\.?\s*/,/^Ms\.?\s*/,/^Miss\s*/,/^Dr\.?\s*/],suffix=[/,?\s*Jr\.?/];
     for(i=0; i < appell.length; i++) text=text.replace(appell[i],"");
     if(text!==undefined && /[a-z]{2,}/.test(text)) {
 	while(text!==undefined && /(,?\s*[A-Z]+)$/.test(text)) {
