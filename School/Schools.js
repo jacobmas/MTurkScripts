@@ -3,7 +3,7 @@ var Schools={
     page_regex_str:"(www\\.|\/\/)(apptegy|catapultk12|cms4schools)\\.com|(www\\.4lpi\\.com)|adventistschoolconnect\\.org|"+
 	"www\\.campussuite\\.com|crescerance\\.com|cyberschool\\.com|"+
         "echalk\\.com|(edlio(school)?\\.com)|edline\\.net|educationalnetworks\\.net|"+
-        "eschoolview\\.com|\/\/factsmgt\\.com|finalsite\\.com|foxbright\\.com|gabbart\\.com|gaggle\\.net|ilearnschools\\.org|"+
+        "eschoolview\\.com|\/\/factsmgt\\.com|finalsite\\.com|foxbright\\.com|gabbart\d\.com|gaggle\\.net|ilearnschools\\.org|"+
 	"www\\.osvoffertory\\.com|\\.renweb\\.com|"+
         "schooldesk\\.net|schoolloop\\.com|"+
         "www\\.school(blocks|insites|messenger|pointe|webmasters)\\.com|"+
