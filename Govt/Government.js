@@ -644,7 +644,7 @@ Gov.find_col=function(table,type) {
 /* Strip honorifics and treat them as title row if necessary */
 Gov.fix_table=function(table,type) {
     var i,j,row,cell,to_fix,result,new_col_str,old_col_str,match,temp_str;
-    console.log("Fixing "+type);
+   // console.log("Fixing "+type);
     if((to_fix=Gov.find_col(table,type))<0) return;
     console.log("Fixing "+type+", col="+to_fix);
     for(i=0;i<table.rows.length;i++) {
@@ -685,7 +685,7 @@ Gov.fix_table=function(table,type) {
 /* Gov.parse_name_func is a helper function for parse_data_func */
 Gov.parse_name_func=function(text) {
     var split_str,fname,lname,i;
-    var appell=[/^Mr([\.\s]{1})\s*/,/^Mrs\.?\s*/,/^Ms\.?\s*/,/^Miss\s*/,/^Dr\.?\s*/],suffix=[/,?\s*Jr\.?/];
+    var appell=[/^Mr([\.\s]{1})\s*/,/^Mrs\.?\s*/,/^Ms\.?\s*/,/^Miss\s*/,/^Dr([\.\s]{1})\s*/],suffix=[/,?\s*Jr\.?/];
     for(i=0; i < appell.length; i++) text=text.replace(appell[i],"");
     if(text!==undefined && /[a-z]{2,}/.test(text)) {
 	while(text!==undefined && /(,?\s*[A-Z]+)$/.test(text)) {
