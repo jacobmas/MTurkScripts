@@ -6,7 +6,7 @@ var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 	      split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s*-\s+)|\||                     |	|	|●|•|\s{3,}|\s+[*≈]+\s+/,
 	      id_map:{"ahaconsulting":"municodeweb","seamlessgov":"seamlessdocs","townwebdesign":"townweb","civicasoft":"granicus"},
 	      title_regex:new RegExp("(^|[\\s,\\.]{1})(Director|Department|Supervisor|Manager|Clerk|Administrator|Inspector|Assistant|"+
-				     "Council Member|Attorney|Recorder|Official|Coordinator|Mayor|Planner|Engineer|Police|Fire|&|Specialist|"+
+				     "Council Member|Attorney|Recorder|Official|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|"+
 				     "Superintendent|Marshal|Public|Clerk|Code Enforcement|Building Services|Operations|Sgt\.|Det\.|"+
 				     "Foreman|Secretary|Chief|President)($|[\\/\\n\\s,\\. ]{1}|[^A-Za-z0-9]{1})$","i"),
 	      title_prefix_regex:/^(Director|Mayor|Chief|Councilman|Councilwoman|Secretary|Sergeant|Patrol Officer|Lieutenant|Detective)\s+/,
@@ -240,17 +240,14 @@ Gov.parse_contact_tables=function(doc,url,resolve,reject,temp_div,dept_name) {
     if(dept_name===undefined||dept_name===null) dept_name="";
     console.log("in parse_contact_tables for "+url+", dept_name="+dept_name+", table.length="+table.length);
     for(i=0;i<span.length;i++) { span[i].parentNode.insertBefore(document.createElement("br"),span[i].nextSibling); }
-    for(i=0; i < table.length; i++)
-    {
+    for(i=0; i < table.length; i++) {
 	if(table[i].rows.length>0) {
 	    for(j=0; j < table[i].rows.length; j++) if((row=table[i].rows[j]).cells.length>0 && (!row.cells[0].colSpan || row.cells[0].colSpan===1)) break;
 	    if(j<table[i].rows.length) title_map=Gov.guess_title_map(table[i].rows[j]);
 	    else continue;
 	}
-
 	if((title_map.name===undefined&&(title_map.first===undefined||title_map.last===undefined))||
-	   (title_map.title===undefined&&title_map.department===undefined))
-	{
+	   (title_map.title===undefined&&title_map.department===undefined)) {
 	    Gov.fix_emails(table[i]);
 	    if(!table[i].querySelector("table")) {
 		table[i].querySelectorAll("td").forEach(function(elem) {
@@ -770,15 +767,13 @@ Gov.parse_data_func=function(text) {
 	ret.name=Gov.parse_name_func(begin_name?begin_name:"");
     }
 
-    for(i=j+1; i < split_lines.length; i++)
-    {
-	//   found_email=false;
+    for(i=j+1; i < split_lines.length; i++) {
 	if(split_lines[i]===undefined || !good_stuff_re.test(split_lines[i])) continue;
 	//  console.log("i="+i+", split_lines[i]="+split_lines[i]);
 	curr_line=split_lines[i].trim();
 
 	second_arr=curr_line.split(/:\s+/);
-	if(/Title:/.test(curr_line) && (ret.title=curr_line.replace(/.*Title:\s*/,"").trim())) continue;
+	if(/Title:/.test(curr_line) && (ret.title=curr_line.replace(/.*Title:\s*/,"").trim()) && (has_pasted_title=true)) continue;
 	//  console.log("curr_line="+curr_line+", second_arr.length="+second_arr.length);
 	s_part=second_arr[second_arr.length-1].trim();
 	//console.log("s_part="+s_part);
@@ -786,11 +781,12 @@ Gov.parse_data_func=function(text) {
 	else if((phone_re.test(s_part)||/^ext\./i.test(s_part)) && !found_phone && (found_phone=true)) ret.phone=s_part.match(phone_re) ? s_part.match(phone_re)[0]:s_part;
 	else if(s_part.length>10 && !found_phone && s_part.substr(0,10)==="Phone Icon" &&
 		phone_re.test(s_part.substr(11)) && (found_phone=true)) ret.phone=s_part.substr(11).match(phone_re)[0];
-	else if((s_part.trim().length>0  && !has_pasted_title) || s_part.indexOf("Title:")!==-1)
-	{
+	else if((s_part.trim().length>0  && !has_pasted_title) || s_part.indexOf("Title:")!==-1) {
 	    if(/^ext/.test(s_part)) ret.phone=(ret.phone+" "+s_part.trim()).trim();
-	    else if(has_pasted_title=true) ret.title=s_part.replace(/^Title:/,"").trim();
+	    else if((has_pasted_title=true)) ret.title=s_part.replace(/^Title:/,"").trim();
 	}
+	else if(has_pasted_title && ret.title && !Gov.matches_title_regex(ret.title) &&
+		Gov.matches_title_regex(s_part)) ret.title=s_part.trim();
     }
     //console.log("ret="+JSON.stringify(ret));
     return ret;
