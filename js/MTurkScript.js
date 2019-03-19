@@ -1348,7 +1348,7 @@ MTurkScript.prototype.fix_timwilliams=function(doc,script) {
     var coded,key,shift,link="",i,ltr;
     var docwrite_re=/\'([^\']+)\'\s*\+\s*\'\<\/a\>\'\);/,matchname;
     
-    if((m_code=script.innerHTML.match(coded_re))&&(m_key=script.innerHTML.match(coded_re))&&
+    if((m_code=script.innerHTML.match(coded_re))&&(m_key=script.innerHTML.match(key_re))&&
        (coded=m_code[1])&&(key=m_key[1])&&(matchname=script.innerHTML.match(docwrite_re))) {	
 	shift=coded.length;
 	for (i=0; i<coded.length; i++) {
