@@ -1358,6 +1358,7 @@ MTurkScript.prototype.fix_timwilliams=function(doc,script) {
 		link += (key.charAt(ltr));
 	    }
 	}
+	console.log("Found, link="+link.toLowerCase()+", matchname="+matchname);
 	var a=doc.createElement("a");
 	a.href="mailto:"+link.toLowerCase();
 	a.innerHTML=matchname[1];
