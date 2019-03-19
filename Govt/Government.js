@@ -786,7 +786,7 @@ Gov.parse_data_func=function(text) {
 	    else if((has_pasted_title=true)) ret.title=s_part.replace(/^Title:/,"").trim();
 	}
 	else if(has_pasted_title && ret.title && !Gov.matches_title_regex(ret.title) &&
-		Gov.matches_title_regex(s_part)) ret.title=s_part.trim();
+		Gov.title_regex.test(s_part)) ret.title=s_part.trim();
     }
     //console.log("ret="+JSON.stringify(ret));
     return ret;
