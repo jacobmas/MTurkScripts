@@ -785,7 +785,7 @@ Gov.parse_data_func=function(text) {
 	    if(/^ext/.test(s_part)) ret.phone=(ret.phone+" "+s_part.trim()).trim();
 	    else if((has_pasted_title=true)) ret.title=s_part.replace(/^Title:/,"").trim();
 	}
-	else if(has_pasted_title && ret.title && !Gov.matches_title_regex(ret.title) &&
+	else if(has_pasted_title && ret.title && !Gov.title_regex.test(ret.title) &&
 		Gov.title_regex.test(s_part)) ret.title=s_part.trim();
     }
     //console.log("ret="+JSON.stringify(ret));
