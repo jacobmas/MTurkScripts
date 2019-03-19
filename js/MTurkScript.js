@@ -1345,7 +1345,7 @@ MTurkScript.prototype.fix_escramble=function(doc,script) {
 
 MTurkScript.prototype.fix_timwilliams=function(doc,script) {
     var coded_re=/coded\s*\=\s*\"([^\"]*)\"/,key_re=/key\s*\=\s*\"([^\"]*)\"/,m_code,m_key;
-    var coded,key,shift,link="",i;
+    var coded,key,shift,link="",i,ltr;
     var docwrite_re=/\'([^\']+)\'\s*\+\s*\'\<\/a\>\'\);/,matchname;
     
     if((m_code=script.innerHTML.match(coded_re))&&(m_key=script.innerHTML.match(coded_re))&&
