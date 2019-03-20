@@ -345,8 +345,8 @@ Gov.parse_contact_div=function(elem,name,url) {
 
     var curr_bold=0,match,curr_regexp;
     var text=elem.innerText.replace(/\n\n+/,"\n");
-    var nodelist=elem.childNodes;
-    text="",curr_node;
+    var nodelist=elem.childNodes,curr_node;
+    text="";
     for(i=0;i<nodelist.length;i++) {
 	curr_node=nodelist[i];
 	if(curr_node.nodeType===Node.TEXT_NODE) text=text+"\n"+curr_node.textContent;
