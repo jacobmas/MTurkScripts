@@ -307,7 +307,6 @@ Gov.parse_contact_elems=function(doc,url,resolve,reject,name) {
     console.log("in parse_contact_elems for "+url+", "+name);
 
     var div=doc.querySelectorAll("div,li"),i,add_count=0;
-
     doc.querySelectorAll("p").forEach(function(inner_p) {
 	var ret,span=inner_p.querySelectorAll("span"),text;
 	//  console.log("inner_p.innerText="+inner_p.innerText);
@@ -1442,8 +1441,10 @@ Gov.init_nlp=function() {
 };
 /** Gov.init_Gov will initialize government search being given a url (string) and a query (object)
  *
- * query:{dept_regex_lst:array,title_regex_lst:array} for now querytype should always be search, dept_regex_lst
+ * query:{dept_regex_lst:array,title_regex_lst:array,id_only:boolean,default_none:boolean} for now querytype should always be search, dept_regex_lst
  * should be a list of regular expressions that correspond to good either department or title
+ * id_only says whether we just want to id the page type 
+ * default_scrape says whether or not to default to scrape_none (for use outside government)
  */
 Gov.init_Gov=function(doc,url,resolve,reject,query)
 {
@@ -1464,7 +1465,7 @@ Gov.init_Gov=function(doc,url,resolve,reject,query)
 
     if(!Gov.query.id_only) {
 	console.log("Gov.id="+Gov.id);
-	if(Gov["scrape_"+Gov.id]!==undefined) Gov["scrape_"+Gov.id](doc,url,resolve,reject);
+	if(!Gov.query.default_scrape && Gov["scrape_"+Gov.id]!==undefined) Gov["scrape_"+Gov.id](doc,url,resolve,reject);
 	else Gov.scrape_none(doc,url,resolve,reject);
     }
     else resolve({url:url,id:Gov.id,pop:query.pop,city:query.city,old_url:query.url,html_length:doc.body.innerHTML.length});
