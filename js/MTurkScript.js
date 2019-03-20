@@ -282,7 +282,7 @@ MTurkScript.prototype.is_bad_email = function(to_check) {
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
     else if(/@(domain\.com|example\.com)/.test(to_check)) return true;
     else if(/;/.test(to_check)) return true;
-    else if(/jacobmas@gmail\.com||user@domain\.name/.test(to_check)) return true;
+    else if(/jacobmas@gmail\.com|user@domain\.name/.test(to_check)) return true;
     else if(/@(example|email|wix)\.com$/.test(to_check)) return true;
    // else if(!to_check.match(email_re)) return true;
     return false;
