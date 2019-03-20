@@ -347,6 +347,8 @@ Gov.parse_contact_div=function(elem,name,url) {
     var text=elem.innerText.replace(/\n\n+/,"\n");
     var nodelist=elem.childNodes,curr_node;
     text="";
+    Gov.fix_emails(elem);
+
     for(i=0;i<nodelist.length;i++) {
 	curr_node=nodelist[i];
 	if(curr_node.nodeType===Node.TEXT_NODE) text=text+"\n"+curr_node.textContent;
@@ -357,7 +359,6 @@ Gov.parse_contact_div=function(elem,name,url) {
 
    
     if((text.length>=1000 && elem.querySelector("div div")) || (text.length>=2000&&(elem.querySelector("div") || elem.querySelector("table"))) ) return 0;
-    Gov.fix_emails(elem);
   //   console.log("text="+text);
     if(bolds.length>2) {
 //	console.log("Found bolds, text="+text);
