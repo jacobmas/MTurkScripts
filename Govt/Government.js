@@ -344,10 +344,18 @@ Gov.parse_contact_div=function(elem,name,url) {
     var bolds=elem.querySelectorAll("b,strong"),i,curr_text;
 
     var curr_bold=0,match,curr_regexp;
-
-
-
     var text=elem.innerText.replace(/\n\n+/,"\n");
+    var nodelist=elem.childNodes;
+    text="",curr_node;
+    for(i=0;i<nodelist.length;i++) {
+	curr_node=nodelist[i];
+	if(curr_node.nodeType===Node.TEXT_NODE) text=text+"\n"+curr_node.textContent;
+	else if(curr_node.nodeType===Node.ELEMENT_NODE) text=text+"\n"+curr_node.innerText;
+    }
+
+
+
+   
     if((text.length>=1000 && elem.querySelector("div div")) || (text.length>=2000&&(elem.querySelector("div") || elem.querySelector("table"))) ) return 0;
     Gov.fix_emails(elem);
   //   console.log("text="+text);
