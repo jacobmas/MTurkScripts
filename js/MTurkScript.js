@@ -155,6 +155,8 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
 };
 
 MTurkScript.prototype.setup_worker_mturk=function() {
+    var self=this;
+    this.submitted=false;
     GM_setValue("submitted",false);
     console.log("In setup_worker_mturk, this.assignment_id="+this.assignment_id);
     GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
@@ -189,7 +191,7 @@ MTurkScript.prototype.setup_worker_mturk=function() {
 	var assignment_id=arguments[0].replace(/^returnHit/,"");
 	if(arguments[2]!==undefined) {
 	    GM_deleteValue(arguments[0]);
-            if(
+            if(!self.submitted && 
 		btn_secondary && btn_secondary.innerText==="Return" && (GM_getValue("automate"))) {
 		
 		setTimeout(function() { btn_secondary.click(); }, 0); 
