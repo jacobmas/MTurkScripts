@@ -760,7 +760,7 @@ Gov.parse_data_func=function(text) {
 
     var good_stuff_re=/[A-Za-z0-9]/;
     if(split_lines===null) return;
-    if(Gov.debug) console.log("parse_data_func: "+JSON.stringify(split_lines));
+    
     for(j=0; j < split_lines.length; j++) {
 	if(split_lines.length>0 && split_lines[j] && split_lines[j].trim().length > 0
 	   && good_stuff_re.test(split_lines[j]) && !Gov.bad_stuff_re.test(split_lines[j])&& !(split_lines[j].match(email_re))) break;
@@ -782,7 +782,7 @@ Gov.parse_data_func=function(text) {
 	   && j+1 < split_lines.length) begin_name=begin_name+" "+split_lines[(j++)+1];
 	ret.name=Gov.parse_name_func(begin_name?begin_name:"");
     }
-
+    if(Gov.debug) console.log("parse_data_func: "+JSON.stringify(split_lines)+", j="+j);
     for(i=j+1; i < split_lines.length; i++) {
 	if(split_lines[i]===undefined || !good_stuff_re.test(split_lines[i])) continue;
 	//  console.log("i="+i+", split_lines[i]="+split_lines[i]);
