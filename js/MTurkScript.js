@@ -365,7 +365,7 @@ MTurkScript.prototype.parse_name=function(to_parse)
 {
     //console.log("Doing parse_name on "+to_parse);
     var first_pos=0,j,last,ret={};
-    var suffixes=["Jr","II","III","IV","CPA","CGM"],prefixes=["Mr","Ms","Mrs","Dr","Rev"],split_parse;
+    var suffixes=["Jr","II","III","IV","CPA","CGM","Sr"],prefixes=["Mr","Ms","Mrs","Dr","Rev"],split_parse;
     var prefixes_regex=/^(Mr|Ms|Mrs|Dr|Rev|Miss)\.?\s+/gi,paren_regex=/\([^\)]*\)/g,caps_regex=/^[A-Z]+$/;
     to_parse=to_parse.replace(paren_regex,"").replace(prefixes_regex,"");
     split_parse=to_parse.split(" ");
@@ -1401,9 +1401,9 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
         //console.log("scripts["+x+"]="+scripts[x].innerHTML);
         var match=scripts[x].innerHTML.match(unesc_regex),decoded,match2;
         if(/var addy[\d]+/.test(scripts[x].innerHTML)) MTurkScript.prototype.fix_addy_script_only(scripts[x]);
-	if(/function escramble/.test(scripts[x].innerHTML)) MTurkScript.prototype.fix_escramble(doc,scripts[x]);
-	if(scripts[x].innerHTML.indexOf("// Email obfuscator script 2.1 by Tim Williams")!==-1) MTurkScript.prototype.fix_timwilliams(doc,scripts[x]);
-        if(match&&(decoded=decodeURIComponent(match[1]))&&(match2=decoded.match(email_re))) {
+	else if(/function escramble/.test(scripts[x].innerHTML)) MTurkScript.prototype.fix_escramble(doc,scripts[x]);
+	else if(scripts[x].innerHTML.indexOf("// Email obfuscator script 2.1 by Tim Williams")!==-1) MTurkScript.prototype.fix_timwilliams(doc,scripts[x]);
+        else if(match&&(decoded=decodeURIComponent(match[1]))&&(match2=decoded.match(email_re))) {
             console.log("Matched weird decode");
 	    
             //my_query.fields.email=match2[0];
