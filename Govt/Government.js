@@ -308,13 +308,21 @@ Gov.parse_contact_elems=function(doc,url,resolve,reject,name) {
 
     var div=doc.querySelectorAll("div,li"),i,add_count=0;
     doc.querySelectorAll("p").forEach(function(inner_p) {
-	var ret,span=inner_p.querySelectorAll("span"),text;
+	var ret,span=inner_p.querySelectorAll("span"),text,nodelist;
+	let i;
 	//  console.log("inner_p.innerText="+inner_p.innerText);
 	if(inner_p.querySelector("p")) return;
 	Gov.fix_emails(inner_p);
-	text=inner_p.innerText;
-	span.forEach(function(elem) {
-	    text=text.replace(new RegExp(Gov.regexpify_str(elem.innerText)),"$&\t"); });
+	nodelist=inner_p.childNodes;
+//	text=inner_p.innerText;
+	for(i=0;i<nodelist.length;i++) {
+	    curr_node=nodelist[i];
+	    if(curr_node.nodeType===Node.TEXT_NODE) text=text+"\n"+curr_node.textContent;
+	    else if(curr_node.nodeType===Node.ELEMENT_NODE) text=text+"\n"+curr_node.innerText;
+	}
+
+	/*span.forEach(function(elem) {
+	    text=text.replace(new RegExp(Gov.regexpify_str(elem.innerText)),"$&\t"); });*/
 
 	//console.log("p.innerText="+text);
 	if((ret=Gov.parse_data_func(text)) && ret.name && ret.title
