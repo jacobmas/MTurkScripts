@@ -308,7 +308,7 @@ Gov.parse_contact_elems=function(doc,url,resolve,reject,name) {
 
     var div=doc.querySelectorAll("div,li"),i,add_count=0;
     doc.querySelectorAll("p").forEach(function(inner_p) {
-	var ret,span=inner_p.querySelectorAll("span"),text,nodelist;
+	var ret,span=inner_p.querySelectorAll("span"),text="",nodelist;
 	let i;
 	//  console.log("inner_p.innerText="+inner_p.innerText);
 	if(inner_p.querySelector("p")) return;
