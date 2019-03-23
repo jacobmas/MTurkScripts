@@ -375,7 +375,7 @@ MTurkScript.prototype.parse_name=function(to_parse)
            !(split_parse.length>0 && /[A-Z][a-z]/.test(split_parse[0]) && /^[^a-z]+$/.test(split_parse[last]))) break;
     }
     if(last>=2 && /Van|de/.test(split_parse[last-1])) ret.lname=split_parse[last-1]+" "+split_parse[last];
-    else ret.lname=split_parse[last];
+    else ret.lname=split_parse[last].replace(/[^A-Za-z\']+$/,"");
     ret.fname=split_parse[0];
     if(last>=2 && split_parse[1].length>=1) ret.mname=split_parse[1].substring(0,1);
     else ret.mname="";
@@ -393,7 +393,7 @@ MTurkScript.prototype.shorten_company_name=function(name)
     name=name.replace(/\s*Corporation$/i,"").replace(/\s*Corp\.?$/i,"");
     name=name.replace(/\s*Incorporated$/i,"").replace(/\s*Inc\.?$/i,"");
     name=name.replace(/\s*LLC$/i,"").replace(/\s*Limited$/i,"").replace(/\s*Ltd\.?$/i,"").trim();
-    name=name.replace(/,\s*$/,"");
+    name=name.replace(/,\s*$/,"").replace(/\s*LLP$/,"");;
     name=name.replace(/\s+Pte$/i,"").replace(/ AG$/i,"");
     name=name.replace(/\s+S\.?A\.?$/i,"").replace(/\s+L\.?P\.?$/i,"");
     name=name.replace(/\s+GmbH$/i,"").replace(/\s+SRL/i,"")
@@ -1369,11 +1369,26 @@ MTurkScript.prototype.fix_timwilliams=function(doc,script) {
 };
 
 
+   /* TODO: add these three to MTurkScript */
+MTurkScript.prototype.reverse_str=function(str) {
+        var ret="",i;
+        for(i=str.length-1;i>=0;i--) ret+=str.charAt(i);
+        return ret;
+};
+
+MTurkScript.prototype.fix_insertEmail=function(script,match) {
+    console.log("in fix_insertEmail, match="+match);
+    var parent=script.parentNode;
+    var email=MTurkScript.prototype.reverse_str(match[2])+"@"+MTurkScript.prototype.reverse_str(match[1]);
+    parent.innerHTML=email;
+};
+
 /* Fixes the hidden emails in a document */
 
 MTurkScript.prototype.fix_emails=function(doc,url) {
     var i,links=doc.links,j,script,scripts=doc.scripts;
     var my_match,temp_email,encoded_match,match_split;
+    var insertEmailRegex=/insertEmail\([\'\"]{1}([^\'\"]+)[\'\"]{1},\s*[\'\"]{1}([^\'\"]+)[\'\"]{1}\)/;
     console.log("fix_emails: url="+url);
     for(i=0; i < links.length; i++) {
         //console.log("("+i+"): "+links[i].href+", "+links[i].innerText);
@@ -1408,6 +1423,7 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 	    
             //my_query.fields.email=match2[0];
         }
+	else if((match=scripts[i].innerHTML.match(insertEmailRegex))) MTurkScript.prototype.fix_insertEmail(scripts[i],match);
 	//if((match=/FS\.util\.insertEmail\(\"[^\"]*\",\s*\"([^\"]*)\",\s*\"([^\"]*)\"/)) {
 	    
 	

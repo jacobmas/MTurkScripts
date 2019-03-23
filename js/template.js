@@ -9,9 +9,9 @@
 // @include        http://*.amazonaws.com/*
 // @include        https://*.amazonaws.com/*
 // @include https://worker.mturk.com/*
-// @include file://*
 // @grant  GM_getValue
 // @grant GM_setValue
+// @grant GM_deleteValue
 // @grant GM_addValueChangeListener
 // @grant GM_setClipboard
 // @grant GM_xmlhttpRequest
@@ -127,7 +127,7 @@
         var search_str;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
-            query_search(search_str, resolve, reject, query_response,type);
+            query_search(search_str, resolve, reject, query_response,"query");
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
