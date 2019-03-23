@@ -1423,7 +1423,7 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 	    
             //my_query.fields.email=match2[0];
         }
-	else if((match=scripts[i].innerHTML.match(insertEmailRegex))) MTurkScript.prototype.fix_insertEmail(scripts[i],match);
+	else if((match=scripts[x].innerHTML.match(insertEmailRegex))) MTurkScript.prototype.fix_insertEmail(scripts[i],match);
 	//if((match=/FS\.util\.insertEmail\(\"[^\"]*\",\s*\"([^\"]*)\",\s*\"([^\"]*)\"/)) {
 	    
 	
