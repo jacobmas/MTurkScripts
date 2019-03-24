@@ -11,6 +11,7 @@
 // @include https://worker.mturk.com/*
 // @include file://*
 // @grant  GM_getValue
+// @grant GM_deleteValue
 // @grant GM_setValue
 // @grant GM_addValueChangeListener
 // @grant GM_setClipboard
@@ -216,7 +217,7 @@
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
     }
 
 })();
