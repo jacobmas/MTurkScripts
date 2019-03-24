@@ -118,14 +118,23 @@
     }
 
     function submit_if_done() {
-        var is_done=true,x;
+        var is_done=true,x,is_done_dones;
         add_to_sheet();
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
+        is_done_dones=is_done;
+        for(x in my_query.result) if(!my_query.result[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
+        else if(is_done_dones&&!is_done) {
+            console.log("Failed, returning");
+            GM_setValue("returnHit"+MTurk.assignment_id,true);
+            return;
+        }
+
     }
     function parse_FB_event_ret() {
         console.log("IN parse_FB_event_ret, arguments="+JSON.stringify(arguments));
         var result=arguments[2],x,field;
+        my_query.result=result;
         for(x in result) if(field=document.getElementById(x)) field.value=result[x];
         submit_if_done();
 
