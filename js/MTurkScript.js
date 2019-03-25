@@ -1434,7 +1434,7 @@ MTurkScript.prototype.is_bad_page=function(doc,url) {
     var links=doc.links,i,scripts=doc.scripts;
     var title=doc.title;
     if(/hugedomains\.com|qfind\.net|\?reqp\=1&reqr\=/.test(url)) { return true; }
-    else if(/Expired|^404|Error/.test(title)) return true
+    else if(/Expired|^404|^Error|is for sale/.test(title)) return true;
     else if(doc.querySelector("div.leftblk h3.domain_name")) return true;
     if(/^(IIS7|404)/.test(title.trim())) return true;
     if((doc.title===MTP.get_domain_only(url,true)&& doc.body.innerHTML.length<500)) return true;
@@ -1461,6 +1461,44 @@ MTurkScript.prototype.parse_vcard=function(doc,url,resolve,reject,response) {
         }
     }
     resolve(result);
+};
+
+MTurkScript.prototype.longest_common_subsequence=function(set1, set2) {
+    // Init LCS matrix.
+    const lcsMatrix = Array(set2.length + 1).fill(null).map(() => Array(set1.length + 1).fill(null));
+    var columnIndex,rowIndex;
+    // Fill first row with zeros.
+    for (columnIndex = 0; columnIndex <= set1.length; columnIndex += 1) lcsMatrix[0][columnIndex] = 0;;
+    // Fill first column with zeros.
+    for (rowIndex = 0; rowIndex <= set2.length; rowIndex += 1) lcsMatrix[rowIndex][0] = 0;
+    // Fill rest of the column that correspond to each of two strings.
+    for (rowIndex = 1; rowIndex <= set2.length; rowIndex += 1) {
+        for (columnIndex = 1; columnIndex <= set1.length; columnIndex += 1) {
+            if (set1[columnIndex - 1] === set2[rowIndex - 1]) {
+                lcsMatrix[rowIndex][columnIndex] = lcsMatrix[rowIndex - 1][columnIndex - 1] + 1;
+            } else {
+                lcsMatrix[rowIndex][columnIndex] = Math.max(lcsMatrix[rowIndex - 1][columnIndex],
+                    lcsMatrix[rowIndex][columnIndex - 1]);
+            }
+        }
+    }
+    // Calculate LCS based on LCS matrix.
+    if (!lcsMatrix[set2.length][set1.length])  return [''];
+
+    const longestSequence = [];
+    columnIndex = set1.length;
+    rowIndex = set2.length;
+    while (columnIndex > 0 || rowIndex > 0) {
+        if (set1[columnIndex - 1] === set2[rowIndex - 1]) {
+            // Move by diagonal left-top.
+            longestSequence.unshift(set1[columnIndex - 1]);
+            columnIndex -= 1;
+            rowIndex -= 1;
+        }
+	else if (lcsMatrix[rowIndex][columnIndex] === lcsMatrix[rowIndex][columnIndex - 1]) columnIndex -= 1;
+        else rowIndex -= 1;
+    }
+    return longestSequence;
 };
 	
 
