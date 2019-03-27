@@ -663,7 +663,7 @@ MTurkScript.prototype.parse_lgb_info=function(lgb_info) {
     if(b_entityTitle.length>0 && (result.name=b_entityTitle[0].innerText) &&
        (inner_a=b_entityTitle[0].getElementsByTagName("a")).length>0) result.url=inner_a[0].href;
     for(i=0; i < b_factrow.length; i++) {
-        if(phone_re.test(b_factrow[i].innerText)) result.phone=b_factrow[i].innerText;
+        if(phone_re.test(b_factrow[i].innerText)||/^\+/.test(b_factrow[i].innerText)) result.phone=b_factrow[i].innerText;
     }
     return result;
 };
