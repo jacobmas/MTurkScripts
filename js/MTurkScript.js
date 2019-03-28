@@ -773,7 +773,7 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
     }
     
     for(i=0; i < code.length; i++) code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
-    if((closed=doc.querySelector("._14-5"))) result.is_closed=closed.innerText;
+    if((closed=doc.querySelector("._14-5")) && /Permanently Closed/i.test(closed.innerText)) result.is_closed=true;
     var about_fields=doc.getElementsByClassName("_3-8j"),inner_field1,text;
     var _a3f=doc.getElementsByClassName("_a3f"),coord_ret; // map with coords
     if(_a3f.length>0 && (coord_ret=MTurkScript.prototype.FB_match_coords(_a3f[0].src))) {
