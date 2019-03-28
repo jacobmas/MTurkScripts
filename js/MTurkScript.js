@@ -735,7 +735,7 @@ MTurkScript.prototype.parse_hours=function(script)
 	.replace(/\);\}\).*$/,"")
     text=text.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\"$2\":").replace(/\\x3C/g,"<");
     var parsed_text=JSON.parse(text), instances=parsed_text.jsmods.instances;
-    console.log("parsed_text="+JSON.stringify(parsed_text));
+   // console.log("parsed_text="+JSON.stringify(parsed_text));
 
     if(!instances || instances===undefined) { return result; }
     var x,i,j,good_instance,hr_match;
@@ -765,12 +765,13 @@ MTurkScript.prototype.FB_match_coords = function(src) {
      * parse_FB_about is a create_promise style parser for a FB about page
      */
 MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
-    var result={},code=doc.body.getElementsByTagName("code"),i,j,scripts=doc.scripts;
+    var result={},code=doc.body.getElementsByTagName("code"),i,j,scripts=doc.scripts,closed;
     if(doc.querySelector("#pageTitle")) result.pageTitle=doc.querySelector("#pageTitle").innerText.replace(/\s+-\s+About$/,"");
     for(i=0; i < scripts.length; i++) {
         if(/^bigPipe\.beforePageletArrive\(\"PagesProfileAboutInfoPagelet/.test(scripts[i].innerHTML) &&
 	   i < scripts.length-1) result.hours=MTurkScript.prototype.parse_hours(scripts[i+1]);
     }
+    if((closed=doc.querySelector("._14-5")) && /Permanently closed/i.test(closed.innerText)) result.is_closed=true;
     for(i=0; i < code.length; i++) code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
     var about_fields=doc.getElementsByClassName("_3-8j"),inner_field1,text;
     var _a3f=doc.getElementsByClassName("_a3f"),coord_ret; // map with coords
