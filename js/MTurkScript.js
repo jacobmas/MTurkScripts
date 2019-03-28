@@ -1433,6 +1433,10 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 MTurkScript.prototype.is_bad_page=function(doc,url) {
     var links=doc.links,i,scripts=doc.scripts;
     var title=doc.title;
+    var iframes=doc.querySelectorAll("iframe");
+    for(i=0;i<iframes.length;i++) {
+        if(iframes[i].src&&/parked\-content\.godaddy\.com/.test(iframes[i].src)) return "for sale.";
+    }
     if(/hugedomains\.com|qfind\.net|\?reqp\=1&reqr\=/.test(url)) { return true; }
     else if(/Expired|^404|Error|is for sale/.test(title)) return true;
     else if(doc.querySelector("div.leftblk h3.domain_name")) return true;

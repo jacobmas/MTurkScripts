@@ -18,13 +18,14 @@
 // @grant GM_openInTab
 // @grant GM_getResourceText
 // @grant GM_addStyle
+// @grant GM_deleteValue
 // @connect google.com
 // @connect bing.com
 // @connect yellowpages.com
 // @connect *
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/5b4b85e3be09b3f46e052579e9c696293d209540/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/ddb7809592746c7c491afcb1f08c6fa8d89ed046/js/MTurkScript.js
 // @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
 // @require https://raw.githubusercontent.com/adamhooper/js-priority-queue/master/priority-queue.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
@@ -130,7 +131,13 @@
             reject(error);
             return;
         }
-        if(type==="yelp") {
+        if(type==="yelp" && my_query.try_count[type]===0) {
+            my_query.try_count[type]++;
+            search_str="+\""+my_query.name+"\" "+my_query.address+" site:yelp.com";
+            query_search(search_str,resolve,reject,query_response,type);
+            return;
+        }
+        else if(type==="yelp") {
             resolve(""); return;
         }
         if(type==="fb" && my_query.try_count[type]===0) {
@@ -172,7 +179,6 @@
             return;
         }
         reject("Nothing found");
-        //        GM_setValue("returnHit",true);
         return;
 
     }
@@ -241,7 +247,7 @@
     function yelp_promise_then(url) {
         if(url.length===0) {
             console.log("Yelp failed");
-            GM_setValue("returnHit",true);
+            GM_setValue("returnHit"+MTurk.assignment_id,true);
             return;
         }
         var base_search_str="+\""+my_query.name+"\" "+(reverse_state_map[my_query.state]?my_query.city+" "+
@@ -332,7 +338,7 @@
     }
 
     function begin_script(timeout,total_time,callback) {
-        if(MTurk!==undefined) { callback(); }
+        if(MTurk!==undefined) { callback();  }
         else if(total_time<5000) {
             console.log("total_time="+total_time);
             total_time+=timeout;
@@ -381,7 +387,7 @@
         add_to_sheet();
          if(MTurk.queryList.length>0 && MTurk.doneQueries>=MTurk.queryList.length) {
             my_query.done.url=true; }
-        console.log("my_query="+JSON.stringify(my_query)+"\ndoneQueries="+MTurk.doneQueries+", total="+MTurk.queryList.length);
+        console.log("my_query.done="+JSON.stringify(my_query.done)+"\ndoneQueries="+MTurk.doneQueries+", total="+MTurk.queryList.length);
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
 
         console.log("is_done="+is_done+", MTurk.queryList.length="+MTurk.queryList.length);
@@ -390,34 +396,12 @@
             if(my_query.fields.email.length>0 || my_query.fields.Q6MultiLineTextInput.length>0) MTurk.check_and_submit();
             else {
                 console.log("Insufficient info found, returning");
-                GM_setValue("returnHit",true);
+                GM_setValue("returnHit"+MTurk.assignment_id,true);
                 return;
             }
         }
     }
-    var call_contact_page=function(url,callback,extension) {
-        console.log("in call_contact_page, url="+url+", extension="+extension);
-        if(extension===undefined || extension==='') { extension='';
-                                   MTurk.queryList.push(url); }
-        GM_xmlhttpRequest({method: 'GET', url: url,onload: function(response) {
-            var doc = new DOMParser().parseFromString(response.responseText, "text/html");
-            contact_response(doc,response.finalUrl,{extension:extension,callback:callback}); },
-                           onerror: function(response) {
-                               console.log("Fail");
-                               if(my_query.fields.Q6MultiLineTextInput.length===0) {
-                                   my_query.fields.Q6MultiLineTextInput="Appears closed. "+url+" is dead";
-                                   if(my_query.fields.email.length===0 && my_query.fields["first name"].length>0) my_query.fields["first name"]="";
-                               }
-                               MTurk.doneQueries++;
-                               callback();
-                           },
-                           ontimeout: function(response) {
-                               console.log("Fail timeout");
-                               MTurk.doneQueries++;
-                               callback(); }
-                          });
-    };
-
+   
     /* Do the nlp part */
     var do_nlp=function(text,url) {
         var nlp_temp,j,k,i;
@@ -495,19 +479,42 @@
 
     function is_bad_page(doc,title,url) {
         var links=doc.links,i,scripts=doc.scripts;
-        if(/hugedomains\.com/.test(url)) { return "for sale."; }
-        else if(/Expired|^404|Error/.test(title)) return "dead.";
-    //    else if(doc.body.innerHTML.length<500) return " apparently empty.";
-      /*  else if(MTP.is_bad_url(url,bad_urls,4) && !((
-            my_query.url===undefined ||
-            MTP.get_domain_only(my_query.url,true)!==MTP.get_domain_only(url,true)) && (my_query.url2===undefined||
-                                   MTP.get_domain_only(my_query.url2,true)!==MTP.get_domain_only(url,true)))) {
-            return "dead/hijacked.";
+        var iframes=doc.querySelectorAll("iframe");
+        for(i=0;i<iframes.length;i++) {
+            if(iframes[i].src&&/parked\-content\.godaddy\.com/.test(iframes[i].src)) return "for sale.";
         }
-        else if(my_query.url2) {
-            console.log("# DOMAIN "+MTP.get_domain_only(my_query.url2,true)+", "+MTP.get_domain_only(url,true)); }*/
+        if(/hugedomains\.com|qfind\.net|\?reqp\=1&reqr\=/.test(url)||/is for sale/.test(title)) { return "for sale."; }
+        else if(/Expired|^404|Error/.test(title)) return "dead.";
+        else if(doc.querySelector("div.leftblk h3.domain_name")) return "dead.";
+        if(/^(IIS7|404)/.test(title.trim())) return "dead.";
+        if((doc.title===MTP.get_domain_only(url,true)&& doc.body.innerHTML.length<500)) return "dead.";
+
         return null;
     }
+
+     var call_contact_page=function(url,callback,extension) {
+        console.log("in call_contact_page, url="+url+", extension="+extension);
+        if(extension===undefined || extension==='') { extension='';
+                                   MTurk.queryList.push(url); }
+        GM_xmlhttpRequest({method: 'GET', url: url,onload: function(response) {
+            var doc = new DOMParser().parseFromString(response.responseText, "text/html");
+            contact_response(doc,response.finalUrl,{extension:extension,callback:callback}); },
+                           onerror: function(response) {
+                               console.log("Fail");
+                               if(my_query.fields.Q6MultiLineTextInput.length===0) {
+                                   my_query.fields.Q6MultiLineTextInput="Appears closed. "+url+" is dead";
+                                   if(my_query.fields.email.length===0 && my_query.fields["first name"].length>0) my_query.fields["first name"]="";
+                               }
+                               MTurk.doneQueries++;
+                               callback();
+                           },
+                           ontimeout: function(response) {
+                               console.log("Fail timeout");
+                               MTurk.doneQueries++;
+                               callback(); }
+                          });
+    };
+
 
 
     /**
@@ -583,22 +590,16 @@
                 continue;
             }
             //if(my_query.fields.email.length>0) continue;
-            if(links[i].dataset.encEmail && (temp_email=MTurkScript.prototype.swrot13(links[i].dataset.encEmail.replace(/\[at\]/,"@")))
-               && !MTurkScript.prototype.is_bad_email(temp_email)) my_query.email_list.push(temp_email.toString());
-            if(links[i].href.indexOf("amazonaws.com")===-1 && links[i].href.indexOf("mturkcontent.com")===-1)
-            {
-                if(links[i].dataset) { console.log("links[i].dataset="+JSON.stringify(links[i].dataset)); }
-
-                //    console.log(short_name+": ("+i+")="+links[i].href);
-            }
+            if(links[i].dataset.encEmail && (temp_email=MTP.swrot13(links[i].dataset.encEmail.replace(/\[at\]/,"@")))
+               && !MTP.is_bad_email(temp_email)) my_query.email_list.push(temp_email.toString());
             if(links[i].href.indexOf("cdn-cgi/l/email-protection#")!==-1 && (encoded_match=links[i].href.match(/#(.*)$/)) &&
-               (temp_email=MTurkScript.prototype.cfDecodeEmail(encoded_match[1]).replace(/\?.*$/,"")) &&
+               (temp_email=MTP.cfDecodeEmail(encoded_match[1]).replace(/\?.*$/,"")) &&
                !MTurkScript.prototype.is_bad_email(temp_email)) my_query.email_list.push(temp_email.toString());
             else if(links[i].dataset!==undefined && links[i].dataset.cfemail!==undefined && (encoded_match=links[i].dataset.cfemail) &&
                (temp_email=MTurkScript.prototype.cfDecodeEmail(encoded_match[1]).replace(/\?.*$/,"")) &&
                !MTurkScript.prototype.is_bad_email(temp_email)) my_query.email_list.push(temp_email.toString());
             if((temp_email=links[i].href.replace(/^mailto:\s*/,"").match(email_re)) &&
-               !MTurkScript.prototype.is_bad_email(temp_email)) my_query.email_list.push(temp_email.toString());
+               !MTurkScript.prototype.is_bad_email(temp_email[0])) my_query.email_list.push(temp_email.toString());
             if(links[i].href.indexOf("javascript:location.href")!==-1 && (temp_email="") &&
                (encoded_match=links[i].href.match(/String\.fromCharCode\(([^\)]+)\)/)) && (match_split=encoded_match[1].split(","))) {
                 for(j=0; j < match_split.length; j++) temp_email=temp_email+String.fromCharCode(match_split[j].trim());
@@ -726,7 +727,7 @@
         var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         //var dont=document.getElementsByClassName("dont-break-out");
         my_query={name:wT.rows[0].cells[1].innerText,address:wT.rows[1].cells[1].innerText,city:"",state:"",
-                  phone:wT.rows[2].cells[1].innerText,try_count:{url:0,fb:0},
+                  phone:wT.rows[2].cells[1].innerText,try_count:{url:0,fb:0,yelp:0},
                   email_list:[],url:"",
                   fields:{email:"","first name":"","last name":"","Q6MultiLineTextInput":""},url_list:[],
                   fb_url:"",
