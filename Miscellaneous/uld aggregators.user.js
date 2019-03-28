@@ -21,7 +21,6 @@
 // @connect bing.com
 // @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
@@ -30,7 +29,7 @@
     'use strict';
     var my_query = {};
     var bad_urls=[];
-    var MTurk=new MTurkScript(10000,200,[],begin_script,"A1HIKAC09CE64A");
+    var MTurk=new MTurkScript(10000,200,[],begin_script,"A1HIKAC09CE64A",false);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
@@ -52,7 +51,7 @@
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context)); } 
+                console.log("parsed_context="+JSON.stringify(parsed_context)); }
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
             for(i=0; i < b_algo.length; i++)
@@ -109,7 +108,7 @@
 
     function begin_script(timeout,total_time,callback) {
         if(timeout===undefined) timeout=200;
-        if(total_time===undefined) total_time=0; 
+        if(total_time===undefined) total_time=0;
         if(callback===undefined) callback=init_Query;
         if(MTurk!==undefined) { callback(); }
         else if(total_time<2000) {
@@ -133,25 +132,7 @@
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
 
-    function init_Query()
-    {
-        console.log("in init_query");
-        var i;
-        var wT=document.getElementById("workContent").getElementsByTagName("table")[0];
-        var dont=decodeURIComponent(document.getElementsByClassName("dont-break-out")[0].href.replace("http://www.google.com/search?q=",""));
-        my_query={name,fields:{},done:{},submitted:false,original:dont};
-        var split_reg=/^([^,]*),\s*(.*),\s*USA$/,match;
-        match=my_query.original.match(split_reg);
-        console.log("match="+JSON.stringify(match));
-        if(!match) { GM_setValue("returnHit",true); return; }
-        my_query.name=match[1];
-        my_query.address=fix_cell(match[2]);
-        my_query.address=fix_address_initial(my_query.address);
-        my_query.parsed_add=parseAddress.parseLocation(my_query.address);
-        my_query.parsed_add.street=fix_street(my_query.parsed_add.street);
-        console.log("my_query="+JSON.stringify(my_query));
-        check_table(wT);
-    }
+    
     function fix_address_initial(address) {
         return address.replace(/^[^\d,]+,\s*/,"");
     }
@@ -174,7 +155,7 @@
         console.log("my_name="+my_name+", other_name="+other_name);
         if(final_my===final_other || final_my.indexOf(final_other)!==-1 || final_other.indexOf(final_my)!==-1) return true;
         for(i=0;i<final_my.length;i++) if(final_my.charAt(i)!==final_other.charAt(i)) break;
-        if(i*3/2>=final_my.length) return true;
+        if(i*5/3>=final_my.length) return true;
         var my_split=my_name.split(" ");
         var other_split=other_name.split(" ");
         if(my_split[0].toLowerCase()===other_split[0].toLowerCase() &&
@@ -187,19 +168,18 @@
     }
     function fix_address_str(add) {
     }
-    function matches_parsed_add(other) {
+    function matches_parsed_add(add1,add2) {
         var x;
         var equiv_units;
         var count_bad=0;
-        for(x in other) {
+        for(x in add2) {
             if(x==="sec_unit_type") continue;
-            if(!my_query.parsed_add[x]) continue;
-            else if(my_query.parsed_add[x].replace(/[-\s]+/g,"").toLowerCase()!==other[x].replace(/[-\s]+/g,"").toLowerCase())
+            if(!add1[x]) continue;
+            else if(add1[x].replace(/[-\s]+/g,"").toLowerCase()!==add2[x].replace(/[-\s]+/g,"").toLowerCase())
             {
                 count_bad++;
                 console.log("Failed to match addressses on "+x);
-                if((x==="street" && my_query.parsed_add[x].indexOf(other[x])===-1 && other[x].indexOf(my_query.parsed_add[x])===-1) || count_bad>=2) return false;
-
+                if((x==="street" && add1[x].indexOf(add2[x])===-1 && add2[x].indexOf(add1[x])===-1) || count_bad>=2) return false;
                 //return false;
             }
         }
@@ -276,6 +256,65 @@
         }
         console.log("Failed");
         GM_setValue("returnHit",true);
+    }
+    function do_checkboxes() {
+        var has_checked=false,i,j;
+        var checkboxes=document.querySelectorAll("#workContent .checkbox");
+        var pairs=[],split,parsed1,parsed2,name,address,parsed_add,pair_lst;
+        for(i=0;i<checkboxes.length-1;i++) {
+            split=checkboxes[i].innerText.split("\n");
+            pair_lst=[];
+            for(j=0;j<split.length;j++) {
+                name=split[j].replace(/^([^,]+),.*$/,"$1");
+                address=fix_address_initial(split[j].replace(new RegExp("^"+name+","),"").replace(/,\s*USA\s*$/,""));
+                console.log("("+i+","+j+"), name="+name+", address="+address);
+                parsed_add=parseAddress.parseLocation(address);
+                pair_lst.push({name:name,address:parsed_add});
+            }
+            pairs.push(pair_lst);
+        }
+        console.log("pairs="+JSON.stringify(pairs));
+        if(!compare_checkboxes(pairs)) {
+            checkboxes[checkboxes.length-1].querySelector("input").checked=true;
+        }
+        MTurk.check_and_submit();
+        //console.log("pairs="+JSON.stringify(pairs));
+
+    }
+
+    function compare_checkboxes(pairs) {
+        var count=0,i;
+        var checkboxes=document.querySelectorAll("#workContent .checkbox");
+        for(i=0;i<pairs.length;i++) {
+            if(MTP.matches_names(pairs[i][0].name,pairs[i][1].name) &&
+               matches_parsed_add(pairs[i][0].address,pairs[i][1].address)) {
+                checkboxes[i].querySelector("input").checked=true;
+                count++;
+            }
+        }
+        return count>0;
+    }
+
+    function init_Query()
+    {
+        console.log("in init_query");
+        var i;
+        do_checkboxes();
+        return;
+        var wT=document.getElementById("workContent").getElementsByTagName("table")[0];
+        var dont=decodeURIComponent(document.getElementsByClassName("dont-break-out")[0].href.replace("http://www.google.com/search?q=",""));
+        my_query={name,fields:{},done:{},submitted:false,original:dont};
+        var split_reg=/^([^,]*),\s*(.*),\s*USA$/,match;
+        match=my_query.original.match(split_reg);
+        console.log("match="+JSON.stringify(match));
+        if(!match) { GM_setValue("returnHit",true); return; }
+        my_query.name=match[1];
+        my_query.address=fix_cell(match[2]);
+        my_query.address=fix_address_initial(my_query.address);
+        my_query.parsed_add=parseAddress.parseLocation(my_query.address);
+        my_query.parsed_add.street=fix_street(my_query.parsed_add.street);
+        console.log("my_query="+JSON.stringify(my_query));
+        check_table(wT);
     }
 
 
