@@ -771,7 +771,7 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
         if(/^bigPipe\.beforePageletArrive\(\"PagesProfileAboutInfoPagelet/.test(scripts[i].innerHTML) &&
 	   i < scripts.length-1) result.hours=MTurkScript.prototype.parse_hours(scripts[i+1]);
     }
-    if((closed=doc.querySelector("._14-5")) && /Permanently closed/i.test(closed.innerText)) result.is_closed=true;
+    if((closed=doc.querySelector("._14-5"))) result.is_closed=closed.innerText;
     for(i=0; i < code.length; i++) code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
     var about_fields=doc.getElementsByClassName("_3-8j"),inner_field1,text;
     var _a3f=doc.getElementsByClassName("_a3f"),coord_ret; // map with coords
