@@ -736,6 +736,7 @@ MTurkScript.prototype.parse_hours=function(script)
     text=text.replace(/([\{,]{1})([A-Za-z0-9_]+):/g,"$1\"$2\":").replace(/\\x3C/g,"<");
     var parsed_text=JSON.parse(text), instances=parsed_text.jsmods.instances;
     if(!instances || instances===undefined) { return result; }
+    console.log("parsed_text="+JSON.stringify(parsed_text));
     var x,i,j,good_instance,hr_match;
     var hr_regex=/^([A-Za-z]+):\s*(?:CLOSED|([\d]{1,2}):([\d]{2})\s*([A-Z]{2})\s*-\s*([\d]{1,2}):([\d]{2})\s*([A-Z]{2}))/i;
     for(i=0; i < instances.length; i++) {
