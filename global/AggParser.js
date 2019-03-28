@@ -1,10 +1,19 @@
+// File with various useful site parsers 
 var AggParser={};
 AggParser.parse_buzzfile=function(doc,url,resolve,reject,quality) {
     console.log("in parse_buzzfile, url="+url);
     var div=doc.querySelector("[itemtype='https://schema.org/PostalAddress']");
+    var divorg=doc.querySelector("[itemtype='https://schema.org/Organization']"),employee,title;
+    
     var result={success:true,site:"buzzfile",quality:quality,fields:{}};
-    if(!div && (resolve({success:false,site:"buzzfile"})||true)) return; 
-    result.address=AggParser.parse_postal_elem(div,4);
+    if(!div && !divorg && (resolve({success:false,site:"buzzfile"})||true)) return;
+    if(div) {
+	result.address=AggParser.parse_postal_elem(div,4);
+    }
+    if(divorg && (employee=divorg.querySelector("[itemprop='employee']")) &&
+       (title=divorg.querySelector("[itemprop='contactType']"))) {
+	Object.assign(result,{name:employee.innerText.trim(),title:title.innerText.trim()});
+    }
     console.log("parse_buzzfile, result="+JSON.stringify(result));
     resolve(result);
 };
@@ -127,7 +136,7 @@ AggParser.parse_npidb=function(doc,url,resolve,reject) {
     }
     resolve(result);
 };
-
+/* Parser for npiprofile.org doctor stuff */
 AggParser.parse_npiprofile=function(doc,url,resolve,reject) {
     console.log("parse_npiprofile, url="+url);
     var the_div=doc.querySelector("#npi-addresses");
@@ -140,4 +149,67 @@ AggParser.parse_npiprofile=function(doc,url,resolve,reject) {
         result.fax=match[1].replace(/[\.\s]+$/g,"");
     }
     resolve(result);
+};
+/* Parser for providerdata.org doctor stuff */
+AggParser.parse_providerdata=function(doc,url,resolve,reject) {
+    console.log("parse_providerdata, url="+url);
+    var fax=doc.querySelector(".contactFax");
+    var result={"success":true,type:"providerdata"};
+    if(fax) {
+        result.fax=fax.innerText.replace(/^\s*Fax\s*:\s*/,"").trim();
+        console.log("* Found fax="+my_query.fields.fax+" in parse_providerdata");
+    }
+    resolve(result);
+};
+
+/* For a script to run on owler.com in window to enable continued scraping without having to dig through distil again */
+AggParser.reload_for_owler=function() {
+    var try_count_fails=GM_getValue("try_count_fails",0);
+    if(/owler\.com/.test(window.location.href)) {
+        var time=20000;
+        GM_addValueChangeListener("try_count_fails",function() {
+            try_count_fails=arguments[2];
+            console.log("Need to reload owler ");
+            window.location.reload(true); });
+        console.log("Setting reload for "+time);
+        //setTimeout(function() { window.location.reload(true) },time);
+        return;
+    }
+};
+
+AggParser.array_to_str=function(arr) {
+    var ret="",i;
+    for(i=0;i<arr.length;i++) ret+=(i>0?",":"")+arr[i];
+    return ret;
+};
+
+AggParser.parse_owler_json=function(text) {
+    var parsed,state,x,counter=1,i,ret={success:true};
+    try {
+        parsed=JSON.parse(text);
+        state=parsed.props.pageProps.initialState;
+        console.log(JSON.stringify(state));
+	Object.assign(ret,{companyName:state.companyName||"N/A",Description:state.description||"N/A",
+		      websiteURL:state.website||"N/A",revenue:state.revenue||"N/A",employees:state.employeeCount||"N/A",
+		      sic:state.sicCode?(array_to_str(state.sicCode)||"N/A"):"N/A",street:state.street1Address||"N/A",
+		      city:state.city||"N/A",state:state.state||"N/A",zip:state.zipcode||"N/A",phone:state.phoneNumber||"N/A"});
+        if(state.sicCode) console.log("state.sicCode="+JSON.stringify(state.sicCode));
+        for(x in state.competitorDetails) ret["competitor"+(counter++)]=state.competitorDetails[x].name;
+        for(i=counter;i<=10;i++) ret["competitor"+i]="N/A";
+        return ret;
+    }
+    catch(error) { console.log("Error parsing json "+error); }
+    return {success:false};
+};
+AggParser.parse_owler=function(doc,url,resolve,reject,term_map) {
+    var ret={found_script:false};
+    var scripts=doc.scripts,regex=/__NEXT_DATA__ \=\s*([^\n]+)/,match,i;
+    for(i=0;i<scripts.length;i++) {
+        if(match=scripts[i].innerHTML.match(regex) && (ret.found_script=true)) {
+            console.log("Matched regex at "+i);
+            Object.assign(ret,parse_owler_json(match[1]));
+            break;
+        }
+    }
+    resolve(ret);
 };
