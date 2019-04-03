@@ -125,7 +125,7 @@ Address.cmp=function(add1,add2) {
     else if(add1.priority>add2.priority) return 1;
     else return 0;
 };
-Address.phone_re=/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}(\s*x\s*[\d]{1,3})?/ig;
+Address.phone_re=/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}(\s*x\s*[\d]{1,3})?/i;
 
 Address.queryList=[];
 Address.addressList=[];
@@ -199,7 +199,7 @@ Address.find_phones=function(doc,div,type) {
     if(tel&&tel.length>0) {
 	for(i=0;i<tel.length;i++) {
 	    if((match=tel[i].innerText.match(Address.phone_re))) {
-		Address.phoneList.push({phone:tel[i].innerText.trim(),priority:2});
+		Address.phoneList.push({phone:match[0].trim(),priority:2});
 	    }
 	}
     }
