@@ -783,6 +783,7 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
     {
         //  console.log("about_fields["+i+"].className="+about_fields[i].className);
         inner_field1=about_fields[i].getElementsByClassName("_50f4");
+	if((p_match=/^\s*Call (.*)$/.test(about_fields[i].innerText))) result.phone=p_match[1];
         if(about_fields[i].className.toString().indexOf("_5aj7")!==-1 &&
            about_fields[i].className.toString().indexOf("_20ud")!==-1 &&
            about_fields[i].getElementsByClassName("_4bl9").length>0) {
