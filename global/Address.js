@@ -150,7 +150,7 @@ Address.parse_postal_elem=function(elem,priority,site) {
     if(ret.address1&&ret.city&&ret.state&&ret.zip) {
         //text=ret.address1+","+ret.city+", "+ret.state+" "+ret.zip;
         console.log("* Adding address in parse_postal_elem for "+site+", text");
-        Address.address_list.push(new Address(ret,priority));
+        Address.addressList.push(new Address(ret,priority));
     }
 };
 /* Extra has some kinda of type field and a depth field indicating the depth */
