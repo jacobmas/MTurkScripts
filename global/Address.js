@@ -122,8 +122,11 @@ Address.cmp=function(add1,add2) {
     else if(add1.priority>add2.priority) return 1;
     else return 0;
 };
+Address.phone_re=/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}(\s*x\s*[\d]{1,3})?/ig;
+
 Address.queryList=[];
 Address.addressList=[];
+Address.phoneList=[];
 Address.addressStrList=[];
 Address.parse_postal_elem=function(elem,priority,site) {
     var ret={},text;
@@ -186,13 +189,26 @@ Address.scrape_address_page=function(doc,url,resolve,reject,type) {
     for(i=0;i<divs.length;i++) if(!divs[i].querySelector("div")) Address.scrape_address_elem(doc,divs[i],type);
     resolve("");
 };
+Address.find_phones=function(doc,div,type) {
+    var tel=div.querySelectorAll("a[href^='tel'");
+    var phoneMatch=div.innerText.match(/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}(\s*x\s*[\d]{1,3})?/ig);
+    var i,match;
+    for(i=0;i<tel.length;i++) {
+	if((match=tel[i].innerText.match(Address.phone_re))) {
+	    Address.phoneList.push({phone:tel[i].innerText,priority:2});
+	}
+    }
+    for(i=1;i<phoneMatch.length;i++) Address.phoneList.push({phone:tel[i].innerText,priority:1});
+};
 Address.scrape_address_elem=function(doc,div,type) {
     var scripts=div.querySelectorAll("script,style"),i;
     var heads=doc.querySelectorAll("h1,h2,h3,h4,h5");
     for(i=0;i<heads.length;i++) heads[i].innerHTML="";
+    
     var add_regex1=/Address: (.*)$/,match,add_elem=div.querySelector("address"),text,jsonstuff;
     // console.log("Begin scrape_address_elem on "+div.innerText);
     for(i=0;i<scripts.length;i++) scripts[i].innerHTML="";
+    Address.find_phones(doc,div,type);
     // console.log("Done removing scripts");
     if(div.innerText.length>500) return;
     try {
