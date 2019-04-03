@@ -189,7 +189,7 @@ Address.scrape_address_page=function(doc,url,resolve,reject,type) {
     var posts=doc.querySelectorAll("[itemtype='https://schema.org/PostalAddress']");
     posts.forEach(function(elem) { Address.parse_postal_elem(elem,1,type); });
     var divs=doc.querySelectorAll("div,p,span,td"),i;
-    for(i=0;i<divs.length;i++) if(!divs[i].querySelector("div")) Address.scrape_address_elem(doc,divs[i],type);
+    for(i=0;i<divs.length;i++) Address.scrape_address_elem(doc,divs[i],type);
     resolve("");
 };
 Address.find_phones=function(doc,div,type) {
