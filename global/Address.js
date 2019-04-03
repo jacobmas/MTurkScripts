@@ -193,12 +193,16 @@ Address.find_phones=function(doc,div,type) {
     var tel=div.querySelectorAll("a[href^='tel'");
     var phoneMatch=div.innerText.match(/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}(\s*x\s*[\d]{1,3})?/ig);
     var i,match;
-    for(i=0;i<tel.length;i++) {
-	if((match=tel[i].innerText.match(Address.phone_re))) {
-	    Address.phoneList.push({phone:tel[i].innerText,priority:2});
+    if(tel&&tel.length>0) {
+	for(i=0;i<tel.length;i++) {
+	    if((match=tel[i].innerText.match(Address.phone_re))) {
+		Address.phoneList.push({phone:tel[i].innerText,priority:2});
+	    }
 	}
     }
-    for(i=1;i<phoneMatch.length;i++) Address.phoneList.push({phone:tel[i].innerText,priority:1});
+    if(phoneMatch&&phoneMatch.length>0) {
+	for(i=1;i<phoneMatch.length;i++) Address.phoneList.push({phone:tel[i].innerText,priority:1});
+    }
 };
 Address.scrape_address_elem=function(doc,div,type) {
     var scripts=div.querySelectorAll("script,style"),i;
