@@ -9,11 +9,11 @@ function Address(text,priority,location) {
     else this.priority=(1 << 25);;
 }
 Address.prototype.parse_address=function(text) {
-    if(this.parse_address_US(text)) return 0;
-    if(this.parse_address_Canada(text)) return 0;
-    if(/[^A-Za-z]Sweden$/.test(text) && this.parse_address_Sweden(text)) return 0;
-    if(/[^A-Za-z](UK|United Kingdom)$/.test(text) && this.parse_address_UK(text)) return 0;
-    if(/[^A-Za-z](Belgium)$/.test(text) && this.parse_address_Belgium(text)) return 0;
+    if(this.parse_address_US(text)) return 1;
+    if(this.parse_address_Canada(text)) return 1;
+    if(/[^A-Za-z]Sweden$/.test(text) && this.parse_address_Sweden(text)) return 1;
+    if(/[^A-Za-z](UK|United Kingdom)$/.test(text) && this.parse_address_UK(text)) return 1;
+    if(/[^A-Za-z](Belgium)$/.test(text) && this.parse_address_Belgium(text)) return 1;
     if(this.parse_address_Europe(text)) {
 	return 2; }
     return 1<<25;
