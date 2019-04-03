@@ -1,19 +1,22 @@
 /* Text can be an object or a string with address text */
 function Address(text,priority,location) {
     console.log("# In address for "+text);
+    this.priority=priority;
+    var ret;
     if(typeof(text)==='object' &&
        this.set_address(text.address1,text.address2,text.city,text.state,text.postcode,text.country)) this.priority=priority;
-    else if(this.parse_address(text.trim())) this.priority=priority;
+    else if((ret=this.parse_address(text.trim()))||true) this.priority=this.priority+ret;
     else this.priority=(1 << 25);;
 }
 Address.prototype.parse_address=function(text) {
-    if(this.parse_address_US(text)) return true;
-    if(this.parse_address_Canada(text)) return true;
-    if(/[^A-Za-z]Sweden$/.test(text) && this.parse_address_Sweden(text)) return true;
-    if(/[^A-Za-z](UK|United Kingdom)$/.test(text) && this.parse_address_UK(text)) return true;
-    if(/[^A-Za-z](Belgium)$/.test(text) && this.parse_address_Belgium(text)) return true;
-    if(this.parse_address_Europe(text)) return true;
-    return false;
+    if(this.parse_address_US(text)) return 0;
+    if(this.parse_address_Canada(text)) return 0;
+    if(/[^A-Za-z]Sweden$/.test(text) && this.parse_address_Sweden(text)) return 0;
+    if(/[^A-Za-z](UK|United Kingdom)$/.test(text) && this.parse_address_UK(text)) return 0;
+    if(/[^A-Za-z](Belgium)$/.test(text) && this.parse_address_Belgium(text)) return 0;
+    if(this.parse_address_Europe(text)) {
+	return 2; }
+    return 1<<25;
 };
 // Set the address of something directly */
 Address.prototype.set_address=function(address1,address2,city,state,postcode,country) {
@@ -196,12 +199,12 @@ Address.find_phones=function(doc,div,type) {
     if(tel&&tel.length>0) {
 	for(i=0;i<tel.length;i++) {
 	    if((match=tel[i].innerText.match(Address.phone_re))) {
-		Address.phoneList.push({phone:tel[i].innerText,priority:2});
+		Address.phoneList.push({phone:tel[i].innerText.trim(),priority:2});
 	    }
 	}
     }
     if(phoneMatch&&phoneMatch.length>0) {
-	for(i=1;i<phoneMatch.length;i++) Address.phoneList.push({phone:phoneMatch[i],priority:1});
+	for(i=1;i<phoneMatch.length;i++) Address.phoneList.push({phone:phoneMatch[i].trim(),priority:1});
     }
 };
 Address.scrape_address_elem=function(doc,div,type) {
