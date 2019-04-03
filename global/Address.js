@@ -211,13 +211,22 @@ Address.scrape_address_elem=function(doc,div,type) {
     var scripts=div.querySelectorAll("script,style"),i;
     var heads=doc.querySelectorAll("h1,h2,h3,h4,h5");
     for(i=0;i<heads.length;i++) heads[i].innerHTML="";
-    
+    var div_text;
+     var nodelist=elem.childNodes,curr_node;
+    text="";
+    Gov.fix_emails(elem);
+
+    for(i=0;i<nodelist.length;i++) {
+	curr_node=nodelist[i];
+	if(curr_node.nodeType===Node.TEXT_NODE) div_text=div_text+"\n"+curr_node.textContent;
+	else if(curr_node.nodeType===Node.ELEMENT_NODE) div_text=div_text+"\n"+curr_node.innerText;
+    }
     var add_regex1=/Address: (.*)$/,match,add_elem=div.querySelector("address"),text,jsonstuff;
     // console.log("Begin scrape_address_elem on "+div.innerText);
     for(i=0;i<scripts.length;i++) scripts[i].innerHTML="";
     Address.find_phones(doc,div,type);
     // console.log("Done removing scripts");
-    if(div.innerText.length>500) return;
+    if(div_text.length>1000) return;
     try {
         if(div.tagName==="DIV" && /sqs-block-map/.test(div.className) && (jsonstuff=JSON.parse(div.dataset.blockJson))) {
             Address.addressList.push(new Address(jsonstuff.location.addressLine1+","+jsonstuff.location.addressLine2,0));
@@ -225,8 +234,8 @@ Address.scrape_address_elem=function(doc,div,type) {
     }
     catch(error) { console.log("Error parsing jsonstuff"); }
     //    console.log("Past block map");
-    if(((match=div.innerText.match(add_regex1))&&(text=match[1])) || (add_elem && (text=Address.fix_address_text(add_elem.innerText))) ||
-       (text=Address.fix_address_text_full(doc,div))
+    if(((match=div_text.match(add_regex1))&&(text=match[1])) || (add_elem && (text=Address.fix_address_text(add_elem.innerText))) ||
+       (text=Address.fix_address_text_full(doc,div_text))
       )  {
         console.log("scrape_elem, text="+text);
         text=text.replace(/\n([\t\s\n])+/g,"\n").replace(/,\s*USA/,"").replace(/\n/g,",").replace(/,[\s,]*/g,",");
@@ -253,10 +262,10 @@ Address.scrape_address_elem=function(doc,div,type) {
         }
     }
 }
-Address.fix_address_text_full=function(doc,div) {
+Address.fix_address_text_full=function(doc,div_text) {
     var text="";
-    if(div.innerText.trim().length===0) return null;
-    text=div.innerText.match(/(.{1,100}\n+)?(.*(Suite|Ste).*\n+)?.*,\s*[A-Za-z\s]+(,)?\s+[\d\-]+/i);
+    if(div_text.trim().length===0) return null;
+    text=div_text.match(/(.{1,100}\n+)?(.*(Suite|Ste).*\n+)?.*,\s*[A-Za-z\s]+(,)?\s+[\d\-]+/i);
     if(text) text[0]=text[0].replace(/^.*Address:[\s,]*/i,"");
     if(text) return text[0].replace(/\n/g,",");
     return null; }
