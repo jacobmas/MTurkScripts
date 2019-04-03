@@ -801,7 +801,7 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
         else if(/instagram\.com/i.test(text)) result.insta_url=text;
         else if(/pinterest\.com/i.test(text)) result.pinterest_url=text;
         else if(phone_re.test(text)) result.phone=text.match(phone_re)[0];
-	else if((p_match=/Call (\+.*)$/.test(text))) result.phone=p_match[1];
+	else if((p_match=/Call (.*)$/.test(text))) result.phone=p_match[1];
         else if(/^About$/i.test(text) && about_fields[i].getElementsByClassName("_3-8w").length>0) {
             result.about=about_fields[i].getElementsByClassName("_3-8w")[0].innerText; }
     }
