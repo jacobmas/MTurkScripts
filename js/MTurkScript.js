@@ -775,7 +775,7 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
     for(i=0; i < code.length; i++) code[i].innerHTML=code[i].innerHTML.replace(/^<!-- /,"").replace(/-->$/,"");
     if((closed=doc.querySelector("._14-5")) && /Permanently Closed/i.test(closed.innerText)) result.is_closed=true;
     var about_fields=doc.getElementsByClassName("_3-8j"),inner_field1,text;
-    var _a3f=doc.getElementsByClassName("_a3f"),coord_ret; // map with coords
+    var _a3f=doc.getElementsByClassName("_a3f"),coord_ret,p_match; // map with coords
     if(_a3f.length>0 && (coord_ret=MTurkScript.prototype.FB_match_coords(_a3f[0].src))) {
         for(i in coord_ret) result[i]=coord_ret[i];
     }
@@ -801,6 +801,7 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
         else if(/instagram\.com/i.test(text)) result.insta_url=text;
         else if(/pinterest\.com/i.test(text)) result.pinterest_url=text;
         else if(phone_re.test(text)) result.phone=text.match(phone_re)[0];
+	else if((p_match=/Call (\+.*)$/.test(text))) result.phone=p_match[1];
         else if(/^About$/i.test(text) && about_fields[i].getElementsByClassName("_3-8w").length>0) {
             result.about=about_fields[i].getElementsByClassName("_3-8w")[0].innerText; }
     }
