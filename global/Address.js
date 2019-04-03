@@ -212,9 +212,8 @@ Address.scrape_address_elem=function(doc,div,type) {
     var heads=doc.querySelectorAll("h1,h2,h3,h4,h5");
     for(i=0;i<heads.length;i++) heads[i].innerHTML="";
     var div_text;
-     var nodelist=elem.childNodes,curr_node;
-    text="";
-    Gov.fix_emails(elem);
+     var nodelist=div.childNodes,curr_node;
+    div_text="";
 
     for(i=0;i<nodelist.length;i++) {
 	curr_node=nodelist[i];
