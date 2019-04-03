@@ -220,13 +220,14 @@ Address.scrape_address_elem=function(doc,div,type) {
 	if(curr_node.nodeType===Node.TEXT_NODE) div_text=div_text+"\n"+curr_node.textContent.trim();
 	else if(curr_node.nodeType===Node.ELEMENT_NODE) div_text=div_text+"\n"+curr_node.innerText.trim();
     }
-    div_text=div_text.trim().replace(/\n\n+/g,"\n");
+    div_text=div_text.trim().replace(/\n\n+/g,"\n").replace(/(\s)\s+/g,"$1");
     var add_regex1=/Address: (.*)$/,match,add_elem=div.querySelector("address"),text,jsonstuff;
-    console.log("Begin scrape_address_elem on "+div_text);
+   
     for(i=0;i<scripts.length;i++) scripts[i].innerHTML="";
     Address.find_phones(doc,div,type);
     // console.log("Done removing scripts");
     if(div_text.length>1000) return;
+    console.log("Begin scrape_address_elem on "+div_text);
     try {
         if(div.tagName==="DIV" && /sqs-block-map/.test(div.className) && (jsonstuff=JSON.parse(div.dataset.blockJson))) {
             Address.addressList.push(new Address(jsonstuff.location.addressLine1+","+jsonstuff.location.addressLine2,0));
