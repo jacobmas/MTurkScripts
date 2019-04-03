@@ -201,7 +201,7 @@ Address.find_phones=function(doc,div,type) {
 	}
     }
     if(phoneMatch&&phoneMatch.length>0) {
-	for(i=1;i<phoneMatch.length;i++) Address.phoneList.push({phone:tel[i].innerText,priority:1});
+	for(i=1;i<phoneMatch.length;i++) Address.phoneList.push({phone:phoneMatch[i],priority:1});
     }
 };
 Address.scrape_address_elem=function(doc,div,type) {
