@@ -1201,7 +1201,8 @@ MTurkScript.prototype.parse_yellowpages=function(doc,url,resolve,reject) {
     for(i=0;i<mdm.length;i++) {
         var name=mdm[i].querySelector(".business-name"),addr=mdm[i].querySelector(".adr"),parsed_add,phone;
         phone=mdm[i].querySelector(".phone");
-        if(addr&&(result.parsed_add=parseAddress.parseLocation(addr.innerText)) && name && (result.name=name.innerText)) {
+        if(addr&&(result.address=addr.innerText) &&
+	   (result.parsed_add=parseAddress.parseLocation(addr.innerText)) && name && (result.name=name.innerText)) {
             result.phone=phone?phone.innerText:"";
             if(cats=mdm[i].querySelector(".categories")) result.categories=cats.innerText;
             if(new_url=mdm[i].querySelector(".track-visit-website")) result.url=new_url.href;
