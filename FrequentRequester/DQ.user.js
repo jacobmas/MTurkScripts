@@ -1129,6 +1129,14 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
            (num=crumb[0].getElementsByClassName("section-title")[0].innerText.match(/^[\d,]+/))) {
             resolve({count:num[0],url:url});
             return; }
+        var base=url.replace(/(https?:\/\/[^\/]*).*$/,"$1");
+        var promise=MTurk.create_promise(base+"/cars-for-sale",DQ.parse_carsforsale2,resolve,reject);
+//        resolve({count:"0",url:url,error:true});
+    };
+    DQ.parse_carsforsale2=function(doc,url,resolve,reject) {
+                console.log("in DQ.parse_carsforsale2 at url="+url);
+        var cars=doc.querySelector(".inventory-result-count"),num;
+        if(cars && (num=cars.innerText.match(/[\d,]+/)) && (resolve({count:num[0],url:url}))) return;
         resolve({count:"0",url:url,error:true});
     };
     DQ.parse_carwizard=function(doc,url,resolve,reject) {
@@ -1528,6 +1536,7 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
         if(DQ.check_if_bad(doc,url,resolve,reject) && (resolve({count:"0",url:url,bad_url:true}))) return;
         url_list=DQ.find_links_none(doc,url,resolve,reject);
         console.log("url_list="+JSON.stringify(url_list));
+        reject("");
     };
     DQ.check_if_bad=function(doc,url,resolve,reject) {
         var links=doc.links,i;
@@ -1762,11 +1771,19 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
         console.log(url+": page_type="+DQ.page_type);
         curr_page=DQ[DQ.page_type];
         //console.log(url+": curr_page="+JSON.stringify(curr_page));
-        if(curr_page) {
+        if(DQ.page_type==="none") {
+            var carpromise=MTP.create_promise(url,DQ.try_carsforsale,resolve,reject);
+
+            return;
+        }
+        else if(curr_page) {
             curr_url=url.replace(/(https?:\/\/[^\/]+).*$/,"$1");
             if(curr_page.suffix) curr_url=curr_url+curr_page.suffix;
             else if(curr_page.find_link) curr_url=curr_page.find_link(doc,url,resolve,reject,curr_page);
-            if(curr_page.parser) promise=MTurkScript.prototype.create_promise(curr_url,curr_page.parser,scrape_then,my_catch_func);
+            if(curr_page.parser) promise=MTurkScript.prototype.create_promise(curr_url,curr_page.parser,scrape_then,function() {
+                console.log("FAiled");
+                GM_setValue("returnHit"+MTurk.assignment_id,true); }
+                );
             else if(curr_page.parser_special) curr_page.parser_special(curr_url);
         }
         
@@ -1789,6 +1806,10 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
                 }
 
             }
+        }
+        else {
+            console.log("FAiled in none, not carsforsale");
+            reject("");
         }
         return false;
     };
@@ -1893,7 +1914,11 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
             my_query={url:"http://channelislandsautosales.com"}; }
 
 
-        promise=MTurkScript.prototype.create_promise(my_query.url,DQ.init_DQ,query_promise_then,my_catch_func);
+        promise=MTurkScript.prototype.create_promise(my_query.url,DQ.init_DQ,query_promise_then,function() {
+            console.log("BLOO");
+            GM_setValue("returnHit"+MTurk.assignment_id,true); }
+
+            );
        // setTimeout(function() { promise=MTurkScript.prototype.create_promise(query_list[i],DQ.init_DQ,query_promise_then,my_catch_func); },250);
 
 
