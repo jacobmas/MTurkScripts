@@ -43,6 +43,16 @@ Gov.matches_title_regex=function(title) {
     return false;
 };
 
+Gov.find_phone=function(doc,url) {
+    var schoolphone,phone,match;
+    var phone_re_str_begin="(?:Tel|Telephone|Phone|Ph|P|T):\\s*";
+    var phone_re_str_end="([(]?[0-9]{3}[)]?[-\\s\\.\\/]+[0-9]{3}[-\\s\\.\\/]+[0-9]{4,6}(\\s*(x|ext\\.?)\\s*[\\d]{1,5})?)";
+    var ext_phone_re=new RegExp(phone_re_str_begin+phone_re_str_end,"i");
+    if((schoolphone=doc.querySelector("a[href^='tel:']"))) phone=schoolphone.innerText.trim();
+    else if(!phone && (match=doc.body.innerHTML.match(ext_phone_re))) phone=match[1];
+    // else if((match=doc.body.innerHTML.match(phone_re))) console.log("phone alone match="+match);
+    return phone;
+};
 
 
 /** Gov.scrape_none scrapes a generic government website for employees */
@@ -50,9 +60,14 @@ Gov.scrape_none=function(doc,url,resolve,reject) {
 
     console.log("In Gov.scrape_none");
     Gov.get_contact_links(doc,url,resolve,reject);
+    var temp_phone;
     var promise_list=[],i;
+    if((temp_phone=Gov.find_phone(doc,url))) Gov.phone=temp_phone;
+    else Gov.phone="";
+   
     /* Load the front page too happens once in a while */
     Gov.contact_links.push({url:url,name:"Home"});
+    
     for(i=0; i < Gov.contact_links.length; i++) {
 
 	/* First load the scripts and tables into a non-displayed temp_div (there will be several), this should hopefully unhide the emails
