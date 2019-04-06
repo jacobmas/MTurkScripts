@@ -1511,7 +1511,7 @@ Gov.init_Gov=function(doc,url,resolve,reject,query)
     // console.log("doc.body.innerHTML="+doc.body.innerHTML);
     if(!query.id_only) { console.log("url="+url); console.time("Gov"); }
     Gov.url=url;Gov.query=query;Gov.dept_links=[];Gov.resolve=resolve;Gov.reject=reject;Gov.contact_links=[];
-    Gov.debug=false;
+    Gov.debug=query.debug||false;
     Gov.init_id_regex();Gov.depts={};
     Gov.promise_list=[];
     //console.log("Gov.id_regex="+Gov.id_regex);
