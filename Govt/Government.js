@@ -1058,18 +1058,18 @@ Gov.get_granicus_staff_directory=function(doc,url,resolve,reject,response) {
     try {
 	parsed=JSON.parse(text);
 
-/*	console.log("parsed="+JSON.stringify(parsed));
+	console.log("parsed="+JSON.stringify(parsed));
 	var i,j,curr_elem,dept,curr_person;
 	for(i=0;i<parsed.length;i++) {
 	    dept=parsed[i].SubGroupName||"";
 	    if(!parsed[i].contacts) continue;
-	    for(j=0;j<parsed[i].contacts.length;j++) {
+/*	    for(j=0;j<parsed[i].contacts.length;j++) {
 		curr_elem=parsed[i].contacts[j];
 		curr_person={name:curr_elem.name||"",title:curr_elem.title||"",phone:curr_elem.phone||"",
 			     email:curr_elem.Emails?curr_elem.Emails.replace(/,.*$/,"")||"",department:dept};
 		Gov.contact_list.push(curr_person);
-	    }
-	}*/
+	    }*/
+	}
 		
     }
     catch(error) { console.log("error "+error); }
