@@ -1058,7 +1058,7 @@ Gov.get_granicus_staff_directory=function(doc,url,resolve,reject,response) {
     try {
 	parsed=JSON.parse(text);
 
-	console.log("parsed="+JSON.stringify(parsed));
+/*	console.log("parsed="+JSON.stringify(parsed));
 	var i,j,curr_elem,dept,curr_person;
 	for(i=0;i<parsed.length;i++) {
 	    dept=parsed[i].SubGroupName||"";
@@ -1069,7 +1069,7 @@ Gov.get_granicus_staff_directory=function(doc,url,resolve,reject,response) {
 			     email:curr_elem.Emails?curr_elem.Emails.replace(/,.*$/,"")||"",department:dept};
 		Gov.contact_list.push(curr_person);
 	    }
-	}
+	}*/
 		
     }
     catch(error) { console.log("error "+error); }
