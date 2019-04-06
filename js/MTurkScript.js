@@ -1442,8 +1442,9 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 	else if((match=scripts[x].innerHTML.match(insertEmailRegex))) MTurkScript.prototype.fix_insertEmail(scripts[i],match);
 	//if((match=/FS\.util\.insertEmail\(\"[^\"]*\",\s*\"([^\"]*)\",\s*\"([^\"]*)\"/)) {
 	else if(w_match && x_match) {
+	    console.log("Found w_match="+w_match+", x_match="+x_match);
 	    let a=doc.createElement("a");
-	    a.href="mailto:"+link.toLowerCase();
+	    a.href="mailto:"+w_match[1]+"@"+x_match[1];
 	    a.innerHTML=matchname[1];
 	    scripts[x].parentNode.insertBefore(a,scripts[x]);
 	}
