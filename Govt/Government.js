@@ -473,6 +473,7 @@ Gov.fix_emails=function(div,is_civic) {
  * Special civic decoding
  */
 Gov.fix_emails_civic=function(div) {
+    if(Gov.debug) console.log("** fix_emails_civic");
     var w_match,x_match,fix_count=0;
     w_match=div.innerText.match(/var\s*w\s*\=\s*\'([^\']+)\'/);
     x_match=div.innerText.match(/var\s*x\s*\=\s*\'([^\']+)\'/);
