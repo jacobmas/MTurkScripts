@@ -1422,8 +1422,17 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
         var unesc_regex=/(?:unescape|decodeURIComponent)\((?:[\"\']{1})([^\"\"]+)(?:[\"\']{1})/;
         //console.log("scripts["+x+"]="+scripts[x].innerHTML);
         var match=scripts[x].innerHTML.match(unesc_regex),decoded,match2;
+	var w_match,x_match,fix_count=0;
+	w_match=scripts[i].innerHTML.match(/var\s*w\s*\=\s*\'([^\']+)\'/);
+	x_match=scripts[i].innerHTML.match(/var\s*x\s*\=\s*\'([^\']+)\'/);
+
         if(/var addy[\d]+/.test(scripts[x].innerHTML)) MTurkScript.prototype.fix_addy_script_only(scripts[x]);
+
+   
 	else if(/function escramble/.test(scripts[x].innerHTML)) MTurkScript.prototype.fix_escramble(doc,scripts[x]);
+
+   
+
 	else if(scripts[x].innerHTML.indexOf("// Email obfuscator script 2.1 by Tim Williams")!==-1) MTurkScript.prototype.fix_timwilliams(doc,scripts[x]);
         else if(match&&(decoded=decodeURIComponent(match[1]))&&(match2=decoded.match(email_re))) {
             console.log("Matched weird decode");
@@ -1432,8 +1441,12 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
         }
 	else if((match=scripts[x].innerHTML.match(insertEmailRegex))) MTurkScript.prototype.fix_insertEmail(scripts[i],match);
 	//if((match=/FS\.util\.insertEmail\(\"[^\"]*\",\s*\"([^\"]*)\",\s*\"([^\"]*)\"/)) {
-	    
-	
+	else if(w_match && x_match) {
+	    let a=doc.createElement("a");
+	    a.href="mailto:"+link.toLowerCase();
+	    a.innerHTML=matchname[1];
+	    scripts[x].parentNode.insertBefore(a,scripts[x]);
+	}
         if(scripts[x]) scripts[x].innerHTML="";
     }
 };
