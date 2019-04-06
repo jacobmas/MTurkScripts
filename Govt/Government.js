@@ -427,6 +427,7 @@ function utf8_to_str(a) {
 Gov.fix_emails=function(div,is_civic) {
     var inner_a=div.querySelectorAll("a"),cf_email,result,fix_count=0,match,email,scripts=div.querySelectorAll("script");
     //console.log("Begin fix_emails, div.innerText="+div.innerHTML);
+      if(is_civic||Gov.id==="civicplus") { fix_count=fix_count+Gov.fix_emails_civic(div); }
     scripts.forEach(function(elem) {
 	var mail_regex=/mail[^\s\n]*\(\'([^\']*)\',\s*\'([^\']*)\'\)/,match;
 	if((match=elem.innerHTML.match(mail_regex))) {
@@ -464,7 +465,8 @@ Gov.fix_emails=function(div,is_civic) {
 	   ((match=/\/cdn-cgi\/l\/email-protection\#(.*)$/)&&(email=match[1]))
 	  ) elem.innerHTML=MTurkScript.prototype.cfDecodeEmail(email);
     });
-    if(is_civic||Gov.id==="civicplus") { fix_count=fix_count+Gov.fix_emails_civic(div); }
+    Gov.fix_emails_civic(div);
+  
     //console.log("End fix_emails, div.innerText="+div.innerHTML);
 
     return fix_count;
@@ -494,6 +496,7 @@ Gov.print_row=function(curr_row,i) {
  * TODO: fix to work with guess_table_map to deal with more complicated tables
  */
 Gov.parse_table=function(table,title_map,begin_row,end_row,dept) {
+   
     console.log("In parse_table");
     console.time("parse_table");
     var i,j,x,curr_row,curr_contact,inner_a,title,reverse_title_map={};
