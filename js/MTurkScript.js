@@ -1423,8 +1423,8 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
         //console.log("scripts["+x+"]="+scripts[x].innerHTML);
         var match=scripts[x].innerHTML.match(unesc_regex),decoded,match2;
 	var w_match,x_match,fix_count=0;
-	w_match=scripts[i].innerHTML.match(/var\s*w\s*\=\s*\'([^\']+)\'/);
-	x_match=scripts[i].innerHTML.match(/var\s*x\s*\=\s*\'([^\']+)\'/);
+	w_match=scripts[x].innerHTML.match(/var\s*w\s*\=\s*\'([^\']+)\'/);
+	x_match=scripts[x].innerHTML.match(/var\s*x\s*\=\s*\'([^\']+)\'/);
 
         if(/var addy[\d]+/.test(scripts[x].innerHTML)) MTurkScript.prototype.fix_addy_script_only(scripts[x]);
 
