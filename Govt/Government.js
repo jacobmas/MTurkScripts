@@ -174,7 +174,9 @@ Gov.load_scripts=function(doc,url,resolve,reject,dept_name) {
 	    for(k=0;k<script_list.length;k++) {
 		script_list[k].innerHTML=script_list[k].innerHTML.replace(/document\./,"document.querySelector(\"#temp_div_id\").");
 	    }
-	    setTimeout(function() { Gov.parse_contact_tables(doc,url,resolve,reject,temp_div,dept_name); }, 100);
+	    setTimeout(function() {
+		MTP.fix_emails(doc,url);
+		Gov.parse_contact_tables(doc,url,resolve,reject,temp_div,dept_name); }, 100);
 	    return true;
 	}
 
@@ -232,7 +234,7 @@ Gov.get_area_code=function(doc) {
 
 */
 Gov.parse_contact_tables=function(doc,url,resolve,reject,temp_div,dept_name) {
-    MTP.fix_emails(doc,url);
+ //   MTP.fix_emails(doc,url);
     console.time("parse_contact_tables");
     var i,table=temp_div.querySelectorAll("table"),j;
     var begin_row=0,title_map={},reverse_title_map={},x,add_count=0,span=doc.querySelectorAll("div"),row;
