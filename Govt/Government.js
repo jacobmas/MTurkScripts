@@ -464,7 +464,7 @@ Gov.fix_emails=function(div,is_civic) {
 	   ((match=/\/cdn-cgi\/l\/email-protection\#(.*)$/)&&(email=match[1]))
 	  ) elem.innerHTML=MTurkScript.prototype.cfDecodeEmail(email);
     });
-    if(is_civic) { fix_count=fix_count+Gov.fix_emails_civic(div); }
+    if(is_civic||Gov.id==="civicplus") { fix_count=fix_count+Gov.fix_emails_civic(div); }
     //console.log("End fix_emails, div.innerText="+div.innerHTML);
 
     return fix_count;
