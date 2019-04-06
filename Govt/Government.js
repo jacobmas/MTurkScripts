@@ -5,7 +5,7 @@
 var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 	      split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s*-\s+)|\||                     |	|	|●|•|\s{3,}|\s+[*≈]+\s+/,
 	      id_map:{"ahaconsulting":"municodeweb","seamlessgov":"seamlessdocs","townwebdesign":"townweb","civicasoft":"granicus"},
-	      title_regex:new RegExp("(^|[\\s,\\.]{1})(Director|Department|Supervisor|Manager|Clerk|Administrator|Inspector|Assistant|"+
+	      title_regex:new RegExp("(^|[\\s,\\.]{1})(Head of School|Director|Department|Supervisor|Manager|Clerk|Administrator|Inspector|Assistant|"+
 				     "Council Member|Attorney|Recorder|Official|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|"+
 				     "Superintendent|Marshal|Public|Clerk|Code Enforcement|Building Services|Operations|Sgt\.|Det\.|"+
 				     "Foreman|Secretary|Chief|President)($|[\\/\\n\\s,\\. ]{1}|[^A-Za-z0-9]{1})$","i"),
@@ -557,10 +557,10 @@ Gov.parse_table=function(table,title_map,begin_row,end_row,dept) {
 /* Gov.parse_contacts_then is called after a single contact page is parsed */
 Gov.parse_contacts_then=function(result) {
     var i;
-    console.log("Gov.parse_contacts_then: "+result);
+  //  console.log("Gov.parse_contacts_then: "+result);
     for(i=0; i < Gov.contact_list.length; i++)
     {
-	console.log("contact_list["+i+"]="+JSON.stringify(Gov.contact_list[i]));
+//	console.log("contact_list["+i+"]="+JSON.stringify(Gov.contact_list[i]));
     }
 
 };
