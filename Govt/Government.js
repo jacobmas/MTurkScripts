@@ -91,7 +91,10 @@ Gov.scrape_none=function(doc,url,resolve,reject) {
     console.log("scrape_none: promise_list.length="+promise_list.length);
     Promise.all(promise_list).then(function(response) {
 	console.log("Finished scrape_none promises "+response);
-	resolve("MOOOOOOOOOOOO "+response); });
+	resolve("MOOOOOOOOOOOO "+response); })
+	.catch(function(response) {
+	console.log("Error scrape_none promises "+response);
+	    resolve("MOOOOOOOOOOOO "+response); });
 };
 Gov.grab_department_pages=function(doc,url,resolve,reject) {
     console.log("## in Gov.grab_department_pages, url="+url);

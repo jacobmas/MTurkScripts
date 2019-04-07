@@ -1445,7 +1445,7 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 	    console.log("Found w_match="+w_match+", x_match="+x_match);
 	    let a=doc.createElement("a");
 	    a.href="mailto:"+w_match[1]+"@"+x_match[1];
-	    a.innerHTML=matchname[1];
+	    a.innerHTML=w_match[1]+"@"+x_match[1];
 	    scripts[x].parentNode.insertBefore(a,scripts[x]);
 	}
         if(scripts[x]) scripts[x].innerHTML="";
