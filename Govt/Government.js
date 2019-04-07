@@ -746,7 +746,7 @@ Gov.parse_data_func=function(text) {
 
     var has_pasted_title=false,title_prefix,dept_name;
    // if(!/@/.test(text)) return;
-    //if(Gov.debug) console.log("text="+text);
+    if(Gov.debug) console.log("text="+text);
     text=text.replace(/ (?:has served as|is) the ([A-Z]+)/,",$1");
     text=text.replace(/([a-z]{1})([A-Z][a-z]+:)/g,"$1\t$2").replace(/([a-z]{1})\s{1,}([\d]{1})/g,"$1\t$2")
 	.replace(/([\d]{1})\s{1,}([A-Za-df-wy-z]{1})/g,"$1\t$2").replace(/([A-Za-z]{1})\s([A-Za-z0-9\._]+@)/,"$1\t$2")
@@ -760,14 +760,14 @@ Gov.parse_data_func=function(text) {
     else split_lines=split_lines_1;
     if((split_comma=split_lines[0].split(","))&&split_comma.length>1&&Gov.title_regex.test(split_comma[0])) {
 	split_lines=split_comma.concat(split_lines.slice(1)); }
-    //console.log("split_lines="+JSON.stringify(split_lines));
+    if(Gov.debug) console.log("split_lines="+JSON.stringify(split_lines));
     split_lines=split_lines.filter(line => line && line.replace(/[\-\s]+/g,"").trim().length>0);
     split_lines=split_lines.map(line => line.replace(/^\s*[\(]*/,"").replace(/[\)]*\s*$/,"").trim());
 
 
     if(split_lines.length>0&&(split_comma=split_lines[0].split(","))&&split_comma.length>1&&Gov.title_regex.test(split_lines[0])) {
 	split_lines=split_comma.concat(split_lines.slice(1)); }
-    //console.log("split_lines="+JSON.stringify(split_lines));
+    if(Gov.debug) console.log("split_lines="+JSON.stringify(split_lines));
     if(split_lines.length>0&&Gov.dept_name_regex.test(split_lines[0])) {
 	ret.department=split_lines[0];
 //	console.log("$$ SET ret.department="+ret.department);

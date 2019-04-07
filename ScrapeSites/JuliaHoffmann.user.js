@@ -161,7 +161,7 @@
     function parse_book(text) {
         var result={last:"",date:"",title:""};
         text=text.replace(/^Book:\s*/,"");
-        var regex_parendate=/^(.*)\s*(\([\d]+\))\s*(.*)$/,match;
+        var regex_parendate=/^(.*)\s*(\(\s*[\d]+\s*\))\s*(.*)$/,match;
         if(match=text.match(regex_parendate)) {
             console.log("paren match="+JSON.stringify(match));
             result.last=MTurkScript.prototype.removeDiacritics(match[1].replace(/;.*$/,""));
@@ -172,10 +172,19 @@
         }
         else {
             if((match=text.match(/[\d]{4}/))) result.date=match[1];
-            text=text.replace(/([A-Za-z\s]*;\s*)?[A-Za-z\s\.]*: [^:]*$/,"").replace(/[^A-Za-z]*$/,"");
+            let temp_text;
+            temp_text=text.replace(/([A-Za-z\s]*;\s*)?[A-Za-z\s\.]*: [^:]*$/,"").replace(/[^A-Za-z]*$/,"");
+            if(temp_text.length>8) text=temp_text;
+            else {
+                text=text.replace(/^[^\d]*[\d]{4}[\.\s]*/,"");
+                result.title=text.replace(/[:;\.\?\(\)]+.*$/,"").trim();;
+            }
             console.log("Bung text="+text);
-            result.last=MTurkScript.prototype.removeDiacritics(text.replace(/;.*$/,""));
-            if((match=text.match(/[^\.\?;]+$/))) result.title=match[0].replace(/\d.*$/,"").trim().replace(/[:;\.\?\(\)]+.*$/,"").trim();;
+            result.last=MTurkScript.prototype.removeDiacritics(temp_text.replace(/;.*$/,""));
+           // text=text.replace(/^[^\d]*[\d]{4}[\.\s]*/,"");
+            console.log("mung text="+text);
+
+            if((match=text.match(/[^\.\?;]+$/))&&result.title.length===0) result.title=match[0].replace(/\d.*$/,"").trim().replace(/[:;\.\?\(\)]+.*$/,"").trim();;
         }
         return result;
 
