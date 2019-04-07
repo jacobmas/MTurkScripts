@@ -51,6 +51,7 @@ Gov.find_phone=function(doc,url) {
     if((schoolphone=doc.querySelector("a[href^='tel:']"))) phone=schoolphone.innerText.trim();
     else if(!phone && (match=doc.body.innerHTML.match(ext_phone_re))) phone=match[1];
     // else if((match=doc.body.innerHTML.match(phone_re))) console.log("phone alone match="+match);
+    console.log("Phone="+phone);
     return phone;
 };
 
@@ -1265,12 +1266,14 @@ Gov.parse_egovstrategies_page=function(doc,url,resolve,reject,page_num) {
     if(!table && (resolve("")||true)) return;
     for(i=1;i<table.rows.length;i++) {
 	row=table.rows[i];
-	curr_contact={name:Gov.parse_name_func(row.cells[0].innerText),title:row.cells[1].innerText,
-		      department:row.cells[2].innerText,phone:row.cells[4].innerText};
-	if(match=row.cells[3].innerHTML.match(/EmailDecode\(\'([^\']*)/)) curr_contact.email=Gov.egov_strategies_EmailDecode(match[1]);
-	//console.log("("+page_num+", "+i+"), curr_contact="+JSON.stringify(curr_contact));
+	if(row&&row.cells.length>4) {
+	    curr_contact={name:Gov.parse_name_func(row.cells[0].innerText),title:row.cells[1].innerText,
+			  department:row.cells[2].innerText,phone:row.cells[4].innerText};
+	    if(match=row.cells[3].innerHTML.match(/EmailDecode\(\'([^\']*)/)) curr_contact.email=Gov.egov_strategies_EmailDecode(match[1]);
+	    //console.log("("+page_num+", "+i+"), curr_contact="+JSON.stringify(curr_contact));
 
-	if(Gov.matches_dept_regex(curr_contact.department)&&Gov.matches_title_regex(curr_contact.title)) Gov.contact_list.push(curr_contact);
+	    if(Gov.matches_dept_regex(curr_contact.department)&&Gov.matches_title_regex(curr_contact.title)) Gov.contact_list.push(curr_contact);
+	}
     }
     //        console.log("Resolving on page "+page_num);
     resolve("Done with "+url);
