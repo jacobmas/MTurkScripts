@@ -762,7 +762,7 @@ Gov.parse_data_func=function(text) {
 	split_lines=split_comma.concat(split_lines.slice(1)); }
     if(Gov.debug) console.log("split_lines="+JSON.stringify(split_lines));
     split_lines=split_lines.filter(line => line && line.replace(/[\-\s]+/g,"").trim().length>0);
-    split_lines=split_lines.map(line => line.replace(/^\s*[\(]*/,"").replace(/[\)]*\s*$/,"").trim());
+    split_lines=split_lines.map(line => line.replace(/^\s*[\(]*(\s*[^\d]+)/,"$1").replace(/[\)]*\s*$/,"").trim());
 
 
     if(split_lines.length>0&&(split_comma=split_lines[0].split(","))&&split_comma.length>1&&Gov.title_regex.test(split_lines[0])) {
