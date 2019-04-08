@@ -17,7 +17,7 @@ var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 	      dept_name_regex:/^(Department of )?(Parks (and|&) Recreation|Library|CPED|Public Works|Police|Sanitation|Administration|Parks|Recreation|Information Technology|Human Resources|Civil Rights)\s*(Department)?$/i,
 
 	      contact_regex:/Contact|Email|Directory|(^About)|(^Departments)|Staff|Officials|^(Town|City) Hall\s*$|(^Government)|(Our Team)|(Personnel)/i};
-Gov.bad_out_link_regex=/(\/|\.)(facebook|twitter|youtube|constantcontact|activecommunities)\.com|(coderedweb\.net)|(\.edu\/)|(chamber-of-commerce)|(youtu.be)/i;
+Gov.bad_out_link_regex=/(\/|\.)(facebook|twitter|youtube|constantcontact|activecommunities)\.com|(coderedweb\.net)|(chamber-of-commerce)|(youtu.be)/i;
 Gov.scrapers={"ahaconsulting":null,"alphadogsolutions":null,"blackboard":null,"civicasoft":null,"civiclive":null,"civicplus":null,"combusser":null,
 	      "egovlink":null,
 	      "edlio":null, "egovstrategies":null,"evogov":null,"govfresh":null,"govoffice":null,"govsites":null,"granicus":null,"igovwebsites":null,
@@ -907,7 +907,7 @@ Gov.get_contact_links=function(doc,url,resolve,reject) {
     for(i=0; i < doc.links.length; i++) {
 	doc.links[i].href=MTurkScript.prototype.fix_remote_url(doc.links[i].href,url).replace(/^https:/,"http:").replace(/\/$/,"");
 	out_str=doc.links[i].href+", "+doc.links[i].innerText+": ";
-	// console.log("links["+i+"]={url:"+doc.links[i].href+",name:"+doc.links[i].innerText.trim());
+	if(Gov.debug) console.log("links["+i+"]={url:"+doc.links[i].href+",name:"+doc.links[i].innerText.trim());
 	// || contacthref_regex.test(doc.links[i].href)
 	if((Gov.contact_regex.test(doc.links[i].innerText)) &&
 	   !Gov.bad_contact_regex.test(doc.links[i].innerText)&&
