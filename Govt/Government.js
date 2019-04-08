@@ -325,7 +325,7 @@ Gov.parse_contact_tables=function(doc,url,resolve,reject,temp_div,dept_name) {
  * parse individual elements for contacts
  */
 Gov.parse_contact_elems=function(doc,url,resolve,reject,name) {
-    console.log("in parse_contact_elems for "+url+", "+name);
+    if(Gov.debug) console.log("in parse_contact_elems for "+url+", "+name);
 
     var div=doc.querySelectorAll("div,li"),i,add_count=0;
     doc.querySelectorAll("p").forEach(function(inner_p) {
@@ -366,7 +366,7 @@ Gov.regexpify_str=function(str) {
 /* Gov.parse_contact_div, will require splitting into multiple contacts */
 Gov.parse_contact_div=function(elem,name,url) {
     //  console.time("contact_div");
-    //console.log("Gov.parse_contact_div,url="+url);
+    if(Gov.debug) console.log("Gov.parse_contact_div,url="+url);
     // console.log("elem.outerHTML="+elem.outerHTML);
     elem.innerHTML = elem.innerHTML.replace(/&nbsp;/g, ' - ').replace(/\<br\>/g,' - ');
     var ret,p_adds=0,add_count=0;
@@ -383,10 +383,6 @@ Gov.parse_contact_div=function(elem,name,url) {
 	if(curr_node.nodeType===Node.TEXT_NODE) text=text+"\n"+curr_node.textContent;
 	else if(curr_node.nodeType===Node.ELEMENT_NODE) text=text+"\n"+curr_node.innerText;
     }
-
-
-
-   
     if((text.length>=1000 && elem.querySelector("div div")) || (text.length>=2000&&(elem.querySelector("div") || elem.querySelector("table"))) ) return 0;
   //   console.log("text="+text);
     if(bolds.length>2) {
