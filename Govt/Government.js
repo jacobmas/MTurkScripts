@@ -117,7 +117,11 @@ Gov.grab_department_pages=function(doc,url,resolve,reject) {
 	    Gov.dept_links[i].url,Gov.parse_department,Gov.parse_contacts_then,MTurkScript.prototype.my_catch_func,Gov.dept_links[i]));
     }
     Promise.all(promise_list).then(function(response) {
-	console.log("! Done Gov.grab_department_pages"); resolve(response); });
+	console.log("! Done Gov.grab_department_pages"); resolve(response); })
+	.catch(function(response) {
+	console.log("Error grab_department_pages promises "+response);
+	    resolve("MOOOOOOOOOOOO "+response); });
+	      
 };
 
 /** Gov.parse_department parses a specific department page
