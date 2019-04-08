@@ -274,8 +274,9 @@ Gov.parse_contact_tables=function(doc,url,resolve,reject,temp_div,dept_name) {
 		table[i].querySelectorAll("td").forEach(function(elem) {
 		    var ret,add_count=0;
 		    if(!elem.innerText.match(email_re)) return;
+		    let elem_text=Gov.textify_elem(elem);
 		    //  console.log("elem.innerText="+elem.innerText);
-		    if((ret=Gov.parse_data_func(elem.innerText)) && ret.name && ret.title
+		    if((ret=Gov.parse_data_func(elem_text)) && ret.name && ret.title
 		       && ret.email && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:dept_name})); });
 	    }
 
@@ -363,6 +364,18 @@ Gov.regexpify_str=function(str) {
     return str;
 }
 
+/* Gov.textify_elem converts the inner elements into text nicely, returns the text */
+Gov.textify_elem=function(elem) {
+    var text="";
+    var nodelist=elem.childNodes,curr_node,i;
+    for(i=0;i<nodelist.length;i++) {
+	curr_node=nodelist[i];
+	if(curr_node.nodeType===Node.TEXT_NODE) text=text+"\n"+curr_node.textContent;
+	else if(curr_node.nodeType===Node.ELEMENT_NODE) text=text+"\n"+curr_node.innerText;
+    }
+    return text;
+};
+
 /* Gov.parse_contact_div, will require splitting into multiple contacts */
 Gov.parse_contact_div=function(elem,name,url) {
     //  console.time("contact_div");
@@ -375,14 +388,15 @@ Gov.parse_contact_div=function(elem,name,url) {
     var curr_bold=0,match,curr_regexp;
     var text=elem.innerText.replace(/\n\n+/,"\n");
     var nodelist=elem.childNodes,curr_node;
-    text="";
     Gov.fix_emails(elem);
+    text=Gov.textify_elem(elem);
+    
 
-    for(i=0;i<nodelist.length;i++) {
+/*    for(i=0;i<nodelist.length;i++) {
 	curr_node=nodelist[i];
 	if(curr_node.nodeType===Node.TEXT_NODE) text=text+"\n"+curr_node.textContent;
 	else if(curr_node.nodeType===Node.ELEMENT_NODE) text=text+"\n"+curr_node.innerText;
-    }
+    }*/
     if((text.length>=1000 && elem.querySelector("div div")) || (text.length>=2000&&(elem.querySelector("div") || elem.querySelector("table"))) ) return 0;
   //   console.log("text="+text);
     if(bolds.length>2) {
