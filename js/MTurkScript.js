@@ -276,7 +276,7 @@ MTurkScript.prototype.cfDecodeEmail=function(encodedString) {
     return email;
 };
 /* Some basic checks for improper emails beyond email_re */
-MTurkScript.prototype.is_bad_email = function(to_check) {
+MTurkScript.prototype.is_bad_email=function(to_check) {
    // console.log("to_check="+to_check);
     to_check=to_check.toLowerCase();
     if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1) return true;
@@ -284,7 +284,7 @@ MTurkScript.prototype.is_bad_email = function(to_check) {
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
     else if(/@(domain\.com|example\.com)/.test(to_check)) return true;
     else if(/;/.test(to_check)) return true;
-    else if(/jacobmas@gmail\.com|user@domain\.name/.test(to_check)) return true;
+    else if(/(jacobmas|democraticluntz|fredthelinkedinfred|siviliamshumpkins)@gmail\.com|user@domain\.name/.test(to_check)) return true;
     else if(/@(example|email|wix)\.com$/.test(to_check)) return true;
    // else if(!to_check.match(email_re)) return true;
     return false;
