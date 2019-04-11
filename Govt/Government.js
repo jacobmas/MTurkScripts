@@ -749,8 +749,25 @@ Gov.parse_name_func=function(text) {
     for(i=0; i < suffix.length; i++) text=text.replace(suffix[i],"");
     return text.replace(/^([^,]+),\s*(.*)$/,"$2 $1");
 };
+
+/* 
+ * Yucky initial functions to clean up text to make parsing easier */
+Gov.initial_cleanup_text_for_parse=function(text) {
+    text=text.replace(/ (?:has served as|is) the ([A-Z]+)/,",$1");
+    text=text.replace(/([a-z]{1})([A-Z][a-z]+:)/g,"$1\t$2").replace(/([a-z]{1})\s{1,}([\d]{1})/g,"$1\t$2")
+	.replace(/([\d]{1})\s{1,}([A-Za-df-wy-z]{1})/g,"$1\t$2").replace(/([A-Za-z]{1})\s([A-Za-z0-9\._]+@)/,"$1\t$2")
+	.replace(/([^\s]+)\s+([^\s@]+@[^\s@]+)/g,"$1\t$2")
+	.replace(/(-[\d]+)([a-zA-Z]+)/g,"$1\t$2").replace(/([a-zA-Z]+)([\d]+-)/g,"$1\t$2");
+    return text.trim();
+};
+
+Gov.parsed_ret_is_bad=function(ret) {
+    if(ret && ret.name && /\s+for\s+/.test(ret.name)) return true;
+    return false;
+};
+
 /**
- * Gov.parse_data_func parses text
+ * Gov.parse_data_func parses text into name,title,phone,email
  */
 Gov.parse_data_func=function(text) {
     
@@ -761,11 +778,7 @@ Gov.parse_data_func=function(text) {
     var has_pasted_title=false,title_prefix,dept_name;
    // if(!/@/.test(text)) return;
     if(Gov.debug) console.log("text="+text);
-    text=text.replace(/ (?:has served as|is) the ([A-Z]+)/,",$1");
-    text=text.replace(/([a-z]{1})([A-Z][a-z]+:)/g,"$1\t$2").replace(/([a-z]{1})\s{1,}([\d]{1})/g,"$1\t$2")
-	.replace(/([\d]{1})\s{1,}([A-Za-df-wy-z]{1})/g,"$1\t$2").replace(/([A-Za-z]{1})\s([A-Za-z0-9\._]+@)/,"$1\t$2")
-	.replace(/([^\s]+)\s+([^\s@]+@[^\s@]+)/g,"$1\t$2")
-	.replace(/(-[\d]+)([a-zA-Z]+)/g,"$1\t$2").replace(/([a-zA-Z]+)([\d]+-)/g,"$1\t$2");;
+    text=Gov.initial_cleanup_text_for_parse(text);
     if((text=text.trim()).length===0) return ret;
     var split_lines_1=(text=text.trim()).split(Gov.split_lines_regex),split_lines=[],temp_split_lines,new_split;
     var found_email=false,split_comma,found_phone=false;
@@ -777,8 +790,6 @@ Gov.parse_data_func=function(text) {
     if(Gov.debug) console.log("split_lines="+JSON.stringify(split_lines));
     split_lines=split_lines.filter(line => line && line.replace(/[\-\s]+/g,"").trim().length>0);
     split_lines=split_lines.map(line => line.replace(/^\s*[\(]*(\s*[^\d]+)/,"$1").replace(/[\)]*\s*$/,"").trim());
-
-
     if(split_lines.length>0&&(split_comma=split_lines[0].split(","))&&split_comma.length>1&&Gov.title_regex.test(split_lines[0])) {
 	split_lines=split_comma.concat(split_lines.slice(1)); }
     if(Gov.debug) console.log("split_lines="+JSON.stringify(split_lines));
@@ -845,6 +856,7 @@ Gov.parse_data_func=function(text) {
 		Gov.title_regex.test(s_part)) ret.title=s_part.trim();
     }
     //console.log("ret="+JSON.stringify(ret));
+    if(Gov.parsed_ret_is_bad(ret)) return {};
     return ret;
 };
 
