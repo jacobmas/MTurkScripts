@@ -282,7 +282,7 @@ MTurkScript.prototype.is_bad_email=function(to_check) {
     if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1) return true;
     else if(/\.(png|jpg|jpeg|gif)$/.test(to_check)) return true;
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
-    else if(/@(domain\.com|example\.com)/.test(to_check)) return true;
+    else if(/(@(domain\.com|example\.com))|(^example@)/.test(to_check)) return true;
     else if(/;/.test(to_check)) return true;
     else if(/(jacobmas|democraticluntz|fredthelinkedinfred|siviliamshumpkins)@gmail\.com|user@domain\.name/.test(to_check)) return true;
     else if(/@(example|email|wix)\.com$/.test(to_check)) return true;
