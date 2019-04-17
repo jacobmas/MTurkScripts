@@ -766,6 +766,17 @@ Gov.parsed_ret_is_bad=function(ret) {
     return false;
 };
 
+Gov.fix_bad_title_data_func=function(ret) {
+    let split_title=ret.title.split(",");
+    console.log("# split_title="+split_title);
+    if(split_title.length===2 && !Gov.title_regex.test(split_title[0]) && Gov.title_regex.test(split_title[1]) &&
+       nlp(split_title[0]).people().out('terms').length>0) {
+	ret.name=split_title[0];
+	ret.title=split_title[1];
+    }
+
+};
+
 /**
  * Gov.parse_data_func parses text into name,title,phone,email
  */
@@ -852,18 +863,14 @@ Gov.parse_data_func=function(text) {
 	    if(/^ext/.test(s_part)) ret.phone=(ret.phone+" "+s_part.trim()).trim();
 	    else if((has_pasted_title=true)) {
 		ret.title=s_part.replace(/^Title:/,"").trim();
-		if(/,/.test(ret.title)) {
-		    let split_title=ret.title.split(",");
-		    if(split_title.length===2 && !Gov.title_regex.test(split_title[0]) && Gov.title_regex.test(split_title[1]) &&
-		       nlp(split_title[0]).people().out('terms').length>0) {
-			ret.name=split_title[0];
-			ret.title=split_title[1];
-		    }
-		}
+		if(/,/.test(ret.title)) Gov.fix_bad_title_data_func(ret);
 	    }
 	}
 	else if(has_pasted_title && ret.title && !Gov.title_regex.test(ret.title) &&
-		Gov.title_regex.test(s_part)) ret.title=s_part.trim();
+		Gov.title_regex.test(s_part)) {
+	    ret.title=s_part.trim();
+	    if(/,/.test(ret.title)) Gov.fix_bad_title_data_func(ret);
+	}
     }
     //console.log("ret="+JSON.stringify(ret));
     if(Gov.parsed_ret_is_bad(ret)) return {};
