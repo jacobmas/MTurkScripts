@@ -854,7 +854,7 @@ Gov.parse_data_func=function(text) {
 		ret.title=s_part.replace(/^Title:/,"").trim();
 		if(/,/.test(ret.title)) {
 		    let split_title=ret.title.split(",");
-		    if(split_title.length===2 && !title_regex.test(split_title[0]) && title_regex.test(split_title[1]) &&
+		    if(split_title.length===2 && !Gov.title_regex.test(split_title[0]) && Gov.title_regex.test(split_title[1]) &&
 		       nlp(split_title[0]).people().out('terms').length>0) {
 			ret.name=split_title[0];
 			ret.title=split_title[1];
