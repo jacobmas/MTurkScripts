@@ -768,8 +768,8 @@ Gov.parsed_ret_is_bad=function(ret) {
 
 Gov.fix_bad_title_data_func=function(ret) {
     let split_title=ret.title.split(",");
-    console.log("# split_title="+JSON.stringify(split_title)+", test1="+ Gov.title_regex.test(split_title[1].trim()));
-    console.log("# test2="+nlp(split_title[0].trim()).people().out('terms').length);
+   // console.log("# split_title="+JSON.stringify(split_title)+", test1="+ Gov.title_regex.test(split_title[1].trim()));
+    //console.log("# test2="+nlp(split_title[0].trim()).people().out('terms').length);
     if(split_title.length===2 && Gov.title_regex.test(split_title[1].trim()) &&
        nlp(split_title[0].trim()).people().out('terms').length>0) {
 	ret.name=split_title[0].trim();
