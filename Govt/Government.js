@@ -6,7 +6,7 @@ var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 	      split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s*-\s+)|\||                     |	|	|●|•|\s{3,}|\s+[*≈]+\s+|(\s+\/\s+)/,
 	      id_map:{"ahaconsulting":"municodeweb","seamlessgov":"seamlessdocs","townwebdesign":"townweb","civicasoft":"granicus"},
 	      title_regex:new RegExp("(^|[\\s,\\.]{1})(Clerk[\/\-]+Treasurer|Officer|Head of School|Director|Department|Supervisor|Manager|Clerk|Administrator|Inspector|Assistant|"+
-				     "Council Member|Attorney|Recorder|Official|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|"+
+				     "Council Member|Clerk|Attorney|Recorder|Official|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|"+
 				     "Superintendent|Marshal|Public|Clerk|Code Enforcement|Building Services|Operations|Sgt\.|Det\.|"+
 				     "Foreman|Secretary|Chief|President)($|[\\/\\n\\s,\\. ]{1}|[^A-Za-z0-9]{1})$","i"),
 	      title_prefix_regex:/^(Director|Mayor|Chief|Councilman|Councilwoman|Secretary|Sergeant|Patrol Officer|Lieutenant|Detective)\s+/,
@@ -850,7 +850,17 @@ Gov.parse_data_func=function(text) {
 		phone_re.test(s_part.substr(11)) && (found_phone=true)) ret.phone=s_part.substr(11).match(phone_re)[0];
 	else if((s_part.trim().length>0  && !has_pasted_title) || s_part.indexOf("Title:")!==-1) {
 	    if(/^ext/.test(s_part)) ret.phone=(ret.phone+" "+s_part.trim()).trim();
-	    else if((has_pasted_title=true)) ret.title=s_part.replace(/^Title:/,"").trim();
+	    else if((has_pasted_title=true)) {
+		ret.title=s_part.replace(/^Title:/,"").trim();
+		if(/,/.test(ret.title)) {
+		    let split_title=ret.title.split(",");
+		    if(split_title.length===2 && !title_regex.test(split_title[0]) && title_regex.test(split_title[1]) &&
+		       nlp(split_title[0]).people().out('terms').length>0) {
+			ret.name=split_title[0];
+			ret.title=split_title[1];
+		    }
+		}
+	    }
 	}
 	else if(has_pasted_title && ret.title && !Gov.title_regex.test(ret.title) &&
 		Gov.title_regex.test(s_part)) ret.title=s_part.trim();
