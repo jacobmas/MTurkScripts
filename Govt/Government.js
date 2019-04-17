@@ -5,10 +5,10 @@
 var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 	      split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s*-\s+)|\||                     |	|	|●|•|\s{3,}|\s+[*≈]+\s+|(\s+\/\s+)/,
 	      id_map:{"ahaconsulting":"municodeweb","seamlessgov":"seamlessdocs","townwebdesign":"townweb","civicasoft":"granicus"},
-	      title_regex:new RegExp("(^|[\\s,\\.]{1})(Clerk[\/\-]+Treasurer|Officer|Head of School|Director|Department|Supervisor|Manager|Clerk|Administrator|Inspector|Assistant|"+
+	      title_regex:new RegExp("(^|[^A-Za-z]{1})(Clerk[\/\-]+Treasurer|Officer|Head of School|Director|Department|Supervisor|Manager|Clerk|Administrator|Inspector|Assistant|"+
 				     "Council Member|Clerk|Attorney|Recorder|Official|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|"+
 				     "Superintendent|Marshal|Public|Clerk|Code Enforcement|Building Services|Operations|Sgt\.|Det\.|"+
-				     "Foreman|Secretary|Chief|President)($|[\\/\\n\\s,\\. ]{1}|[^A-Za-z0-9]{1})$","i"),
+				     "Foreman|Secretary|Chief|President)($|[^A-Za-z0-9]{1})","i"),
 	      title_prefix_regex:/^(Director|Mayor|Chief|Councilman|Councilwoman|Secretary|Sergeant|Patrol Officer|Lieutenant|Detective)\s+/,
 	      bad_stuff_re:/(\/\*)|(^Wh.*\?$)|(\sand\s)|([\d]+)|(I want to\s.*$)|(^Home.*)|(…)|((City|Town) Hall)|City Hall|Welcome to/i
 	      ,bad_stuff_re2:/(Contact( Us)?)$|Navigation|Email|Search|Economic|Quick Links|Choose |function\(|var |\/.*\//i, //Menu([^A-Za-z0-9]|$)
