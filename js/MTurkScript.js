@@ -25,7 +25,7 @@ for(let x in state_map)     reverse_state_map[state_map[x]]=x;
 for(let x in province_map)     reverse_province_map[province_map[x]]=x;
 
 var default_bad_urls=["facebook.com","youtube.com","twitter.com","instagram.com","opendi.us",".business.site","plus.google.com",".alibaba.com",
-		      ".trystuff.com",".mturkcontent.com",".amazonaws.com"];
+		      ".trystuff.com",".mturkcontent.com",".amazonaws.com",".medium.com",".google.com",".opencorporates.com",".thefreedictionary.com",".dictionary.com"];
 
 /* Regular expressions for emails, phones, faxes */
 var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%\*]{1,40}(\.[^<>\/()\[\]\\.,;:：\s\*@"\?]{1,40}){0,5}))@((([a-zA-Z\-0-9]{1,30}\.){1,8}[a-zA-Z]{2,20}))/g;
@@ -284,6 +284,7 @@ MTurkScript.prototype.is_bad_email=function(to_check) {
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
     else if(/(@(domain\.com|example\.com))|(^example@)/.test(to_check)) return true;
     else if(/;/.test(to_check)) return true;
+    else if(/(^root@)|localhost\.localhost/.test(to_check)) return true;
     else if(/(jacobmas|democraticluntz|fredthelinkedinfred|siviliamshumpkins)@gmail\.com|user@domain\.name/.test(to_check)) return true;
     else if(/@(example|email|wix)\.com$/.test(to_check)) return true;
    // else if(!to_check.match(email_re)) return true;
