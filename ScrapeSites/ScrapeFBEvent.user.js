@@ -131,36 +131,61 @@
         }
 
     }
+    function parse_date(to_parse) {
+       var date_map={"January":"01","February":"02","March":"03","April":"04","May":"05","June":"06","July":"07","August":"08","September":"09",
+                     "October":"10","November":"11","December":"12"};
+        var date_map2={"Jan":"01","Feb":"02","Mar":"03","Apr":"04","May":"05","Jun":"06","Jul":"07","Aug":"08","Sep":"09",
+                     "Oct":"10","Nov":"11","Dec":"12"};
+        var split=to_parse.split(" at "),ret={date:"",time:""};
+        var date_re=/([^\s]*) ([^,]*),\s*(.*)$/,date_match,time_re=/([^\s]*)\s+([^\s]*)/,time_match;
+        date_match=split[0].match(date_re);
+        time_match=split[1].match(time_re);
+                console.log("Glunk0");
+        var mapped_date=date_map[date_match[1]]?date_map[date_match[1]]:date_map2[date_match[1]];
+        ret.date=date_match[3]+"-"+mapped_date+"-"+(date_match[2].length===1?"0":"")+date_match[2];
+        var hr=parseInt(time_match[1].split(":")[0]);
+        console.log("Glunk1");
+        var min=time_match[1].split(":").length>1?time_match[1].split(":")[1]:"00";
+        if(time_match[2]==="PM" && hr<12) hr+=12;
+                console.log("Glunk2");
+
+        var str_hr=hr.toString();
+        ret.time=(str_hr.length<2?"0":"")+str_hr+":"+min;
+         console.log("Glunk3");
+
+        return ret;
+    }
     function parse_FB_event_ret() {
-        console.log("IN parse_FB_event_ret, arguments="+JSON.stringify(arguments));
-        var result=arguments[2],x,field;
+       // console.log("IN parse_FB_event_ret, arguments="+JSON.stringify(arguments));
+        var result=arguments[2],x,field,ret,datefield,timefield,new_x;
         my_query.result=result;
-        for(x in result) if(field=document.getElementById(x)) field.value=result[x];
+        for(x in result) {
+            field=document.getElementById(x);
+            console.log("x="+x+", "+field+", "+JSON.stringify(result[x]));
+            if(field) field.value=result[x];
+            else if(x==="FBstarttime"||x==="FBendtime") {
+                new_x=x.replace(/FB/,"").replace(/time/,"").replace(/^([a-z])(.*)$/,function(match,p1,p2) { return p1.toUpperCase()+p2 });
+                console.log("new_x="+new_x);
+                ret=parse_date(result[x]);
+                console.log("ret="+JSON.stringify(ret));
+                datefield=document.getElementById(new_x+"date");
+                timefield=document.getElementById(new_x+"time");
+                if(datefield) {
+                    console.log("datefield add");
+                    datefield.value=ret.date;
+                }
+                if(timefield) {
+                    console.log("timefield add");
+                    timefield.value=ret.time;
+                }
+
+            }
+        }
         submit_if_done();
 
     }
 
-    function init_Query()
-    {
-        console.log("in init_query");
-        var i;
-        //var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
-        var dont=document.getElementsByClassName("dont-break-out");
-        my_query={fb_event_url:dont[0].href,fields:{},done:{},submitted:false};
-	console.log("my_query="+JSON.stringify(my_query));
-         GM_setValue("fb_event_url","");
-       /* var search_str;
-        const queryPromise = new Promise((resolve, reject) => {
-            console.log("Beginning URL search");
-            query_search(search_str, resolve, reject, query_response,"query");
-        });
-        queryPromise.then(query_promise_then)
-            .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });*/
-        GM_addValueChangeListener("fb_event_ret",parse_FB_event_ret);
-        GM_setValue("fb_event_url",my_query.fb_event_url);
-
-    }
+   
     function get_hrs_str(val) {
         return (val<10?"0":"")+val.toString();
     }
@@ -193,6 +218,7 @@
         var UTC_re=/UTC(.*)$/,UTC_match,UTC_int=0;
         var content_re=/^([^\s]*)\sto\s([^\s]*)$/,content_match,begin_str,end_str;
         var text_re=/^([^,]+),\s*([^–]*)\s*–\s*(.*)\s*UTC(.*)$/,match;
+        var text_re2=/^([^–]+)\s*–\s*(.*)\s*UTC(.*)$/;
         if((UTC_match=text.match(UTC_re))) UTC_int=parseInt(UTC_match[1]);
         function replace_time(match,p1,p2) {
             intp1=parseInt(p1);
@@ -215,6 +241,23 @@
             console.log("end_date="+end_date);
 
             result.FBendtime=end_date+" at "+match[3];
+        }
+        else if((match=text.match(text_re2))) {
+            result.match=match;
+           // begin_str=content_match[1].replace(/([\d]{2}):([\d]+)$/,replace_time);
+           // end_str=content_match[1].replace(/([\d]{2}):([\d]+)$/,replace_time);
+            result.FBstarttime=match[1].trim().replace(/ at/,","+new Date().getFullYear()+" at");
+            let begin_date=match[1].replace(/\sat\s.*$/,""),date_match;
+            let end_date;
+            let date_re=/^([^\s]*)\s([\d]*),\s*([\d]+)/;
+            if((date_match=begin_date.match(date_re)) && match[3].match(/ AM/) && match[1].match(/PM/)) {
+                end_date=get_next_day(date_match,begin_date);
+            }
+            else end_date=begin_date;
+
+            console.log("end_date="+end_date);
+
+            result.FBendtime=match[2].trim().replace(/ at/,","+new Date().getFullYear()+" at");
         }
         else {
             console.log("failed, content_match="+content_match+", match="+match);
@@ -247,15 +290,17 @@
         if((match=window.location.href.match(regex))) result.FBeventid=match[1];
         if((title=document.querySelector("._5gmx"))) result.FBeventtitle=title.innerText.trim();
         if((img=document.querySelector("._3ojl img"))&&img.src!==undefined) result.FBcoverimg=img.src;
-        var host=document.querySelector("._b9- a");
+        var host
         var content_match;
-        if(host) result.FBeventhost=host.href;
+        if(host=document.querySelector("._3xd0 a._5xhk")) result.FBeventhost=host.href;
+        else if(host=document.querySelector("._b9- a")) result.FBeventhost=host.href;
+
         if((times=document.querySelector("._2ycp")))
         {
             console.log("times.outerHTML="+times.outerHTML);
             content_match=times.outerHTML.match(/content\=\"([^\"]*)\"/);
             if(content_match) {
-                console.log("Parsing fb_times "+times.content+", "+times.innerText);
+                console.log("Parsing fb_times "+content_match[1]+", "+times.innerText);
                 parse_FB_times(result,content_match[1],times.innerText);
             }
         }
@@ -274,6 +319,28 @@
             my_query.count=0;
             begin_parse_FB_event();
         }
+    }
+
+    function init_Query()
+    {
+        console.log("in init_query");
+        var i;
+        //var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
+        var dont=document.getElementsByClassName("dont-break-out");
+        my_query={fb_event_url:dont[0].href,fields:{},done:{},submitted:false};
+	console.log("my_query="+JSON.stringify(my_query));
+         GM_setValue("fb_event_url","");
+       /* var search_str;
+        const queryPromise = new Promise((resolve, reject) => {
+            console.log("Beginning URL search");
+            query_search(search_str, resolve, reject, query_response,"query");
+        });
+        queryPromise.then(query_promise_then)
+            .catch(function(val) {
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });*/
+        GM_addValueChangeListener("fb_event_ret",parse_FB_event_ret);
+        GM_setValue("fb_event_url",my_query.fb_event_url);
+
     }
 
 
