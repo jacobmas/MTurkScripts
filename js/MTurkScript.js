@@ -642,8 +642,12 @@ MTurkScript.prototype.parse_b_context=function(b_context)
 	    if(split_exp.length>1&&!result.Company) result.Company=split_exp[1].replace(/\s*·.*$/,"");
         }
     }
-    if(b_hList.length>0 && (inner_a=b_hList[0].getElementsByTagName("a"))) {
-        for(i=0; i<inner_a.length; i++) result[field_map(inner_a[i].innerText.trim())]=inner_a[i].href; }
+    if(b_hList.length>0) {
+	for(j=0;j<2;j++) {
+	    inner_a=b_hList[j].getElementsByTagName("a");
+            for(i=0; i<inner_a.length; i++) result[field_map(inner_a[i].innerText.trim())]=inner_a[i].href;
+	}
+    }
     
     if(wpc_eif.length>0) {
 	result.people=[];
