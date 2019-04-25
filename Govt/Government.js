@@ -6,7 +6,7 @@ var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 	      split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s*-\s+)|\||                     |	|	|●|•|\s{3,}|\s+[*≈]+\s+|(\s+\/\s+)/,
 	      id_map:{"ahaconsulting":"municodeweb","seamlessgov":"seamlessdocs","townwebdesign":"townweb","civicasoft":"granicus"},
 	      title_regex:new RegExp("(^|[^A-Za-z]{1})(Clerk[\/\-]+Treasurer|Officer|Head of School|Director|Department|Supervisor|Manager|Clerk|Administrator|Inspector|Assistant|"+
-				     "Council Member|Clerk|Attorney|Recorder|Official|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|"+
+				     "Council Member|Commissioner|Clerk|Attorney|Recorder|Official|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|"+
 				     "Superintendent|Marshal|Public|Clerk|Code Enforcement|Building Services|Operations|Sgt\.|Det\.|"+
 				     "Foreman|Secretary|Chief|President)($|[^A-Za-z0-9]{1})","i"),
 	      title_prefix_regex:/^(Director|Mayor|Chief|Councilman|Councilwoman|Secretary|Sergeant|Patrol Officer|Lieutenant|Detective)\s+/,
@@ -441,7 +441,7 @@ Gov.strip_bad_contacts=function() {
 /* Check for a bad contact */
 Gov.is_bad_contact=function(contact,temp_list,temp_push) {
     var bad_name_regex=/…|\n|((^|[^A-Za-z])(Contact|Department|Address|Staff|question|information|E(-)?mail)($|[^A-Za-z]))/i;
-    if(phone_re.test(contact.name)  || temp_list.includes(temp_push) ||
+    if(!contact.name || !contact.title || phone_re.test(contact.name)  || temp_list.includes(temp_push) ||
        contact.name.length>60 || contact.title.length>60 || bad_name_regex.test(contact.name) || Gov.title_regex.test(contact.name) ||
        contact.name===contact.department) return true;
     return false;
