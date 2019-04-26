@@ -332,7 +332,7 @@ Gov.parse_contact_tables=function(doc,url,resolve,reject,temp_div,dept_name) {
 Gov.parse_contact_elems=function(doc,url,resolve,reject,name) {
     if(Gov.debug) console.log("in parse_contact_elems for "+url+", "+name);
 
-    var div=doc.querySelectorAll("div,li"),i,add_count=0;
+    var div=doc.querySelectorAll("div,li,td"),i,add_count=0;
     doc.querySelectorAll("p").forEach(function(inner_p) {
 	var ret,span=inner_p.querySelectorAll("span"),text="",nodelist;
 	let i;
@@ -442,7 +442,7 @@ Gov.strip_bad_contacts=function() {
 Gov.is_bad_contact=function(contact,temp_list,temp_push) {
     var bad_name_regex=/…|\n|((^|[^A-Za-z])(Contact|Department|Address|Staff|question|information|E(-)?mail)($|[^A-Za-z]))/i;
     if(!contact.name || !contact.title || phone_re.test(contact.name)  || temp_list.includes(temp_push) ||
-       contact.name.length>60 || contact.title.length>60 || bad_name_regex.test(contact.name) || Gov.title_regex.test(contact.name) ||
+       contact.name.length>60 || contact.title.length>75 || bad_name_regex.test(contact.name) || Gov.title_regex.test(contact.name) ||
        contact.name===contact.department) return true;
     return false;
 }
