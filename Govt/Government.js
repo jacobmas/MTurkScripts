@@ -7,7 +7,7 @@ var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 	      id_map:{"ahaconsulting":"municodeweb","seamlessgov":"seamlessdocs","townwebdesign":"townweb","civicasoft":"granicus"},
 	      title_regex:new RegExp("(^|[^A-Za-z]{1})(Clerk[\/\-]+Treasurer|Officer|Head of School|Director|Department|Supervisor|Manager|Clerk|Administrator|Inspector|Assistant|"+
 				     "Council Member|Commissioner|Clerk|Attorney|Recorder|Official|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|"+
-				     "Superintendent|Marshal|Public|Clerk|Code Enforcement|Building Services|Operations|Sgt\.|Det\.|"+
+				     "Superintendent|Advisor|Marshal|Public|Clerk|Code Enforcement|Building Services|Operations|Sgt\.|Det\.|"+
 				     "Foreman|Secretary|Chief|President)($|[^A-Za-z0-9]{1})","i"),
 	      title_prefix_regex:/^(Director|Mayor|Chief|Councilman|Councilwoman|Secretary|Sergeant|Patrol Officer|Lieutenant|Detective)\s+/,
 	      bad_stuff_re:/(\/\*)|(^Wh.*\?$)|(\sand\s)|([\d]+)|(I want to\s.*$)|(^Home.*)|(…)|((City|Town) Hall)|City Hall|Welcome to/i
@@ -332,7 +332,7 @@ Gov.parse_contact_tables=function(doc,url,resolve,reject,temp_div,dept_name) {
 Gov.parse_contact_elems=function(doc,url,resolve,reject,name) {
     if(Gov.debug) console.log("in parse_contact_elems for "+url+", "+name);
 
-    var div=doc.querySelectorAll("div,li,td"),i,add_count=0;
+    var div=doc.querySelectorAll("div,li,td,section"),i,add_count=0;
     doc.querySelectorAll("p").forEach(function(inner_p) {
 	var ret,span=inner_p.querySelectorAll("span"),text="",nodelist;
 	let i;
@@ -742,6 +742,7 @@ Gov.parse_name_func=function(text) {
     var split_str,fname,lname,i;
     var appell=[/^Mr([\.\s]{1})\s*/,/^Mrs\.?\s*/,/^Ms\.?\s*/,/^Miss\s*/,/^Dr([\.\s]{1})\s*/],suffix=[/,?\s*Jr\.?/];
     for(i=0; i < appell.length; i++) text=text.replace(appell[i],"");
+    if(text!==undefined) text=text.replace(/^Name\s*/i,"");
     if(text!==undefined && /[a-z]{2,}/.test(text)) {
 	while(text!==undefined && /(,?\s*[A-Z]+)$/.test(text)) {
 	    text=text.replace(/(,?\s*[A-Z]+)$/,""); }
