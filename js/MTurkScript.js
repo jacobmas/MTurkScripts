@@ -1441,10 +1441,10 @@ MTurkScript.prototype.fix_emails_in_scripts=function(doc,url,the_script) {
 //	a.innerHTML=w_match[1]+"@"+x_match[1];
 //	the_script.parentNode.insertBefore(a,the_script);
     }
-    else if(scripts[x].innerHTML.length<100000&&
-            (match=scripts[x].innerHTML.match(/[\'\"]{1}([\<\>^\'\"\n\s\t;\)\(]+@[^\>\<\'\"\s\n\t;\)\(]+\.[^\<\>\'\"\s\n\t;\)\(]+)[\'\"]{1}/))) {
+    else if(the_script.innerHTML.length<100000&&
+            (match=the_script.innerHTML.match(/[\'\"]{1}([\<\>^\'\"\n\s\t;\)\(]+@[^\>\<\'\"\s\n\t;\)\(]+\.[^\<\>\'\"\s\n\t;\)\(]+)[\'\"]{1}/))) {
         if((match2=match[1].match(email_re)) && !MTP.is_bad_email(match2[0])) {
-            console.log("Found email in scripts "+scripts[x].innerHTML);
+            console.log("Found email in scripts "+the_script.innerHTML);
             MTurkScript.prototype.insert_email_before(the_script,match2[0],match2[0]);
         }
                // console.timeEnd("search");
