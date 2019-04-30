@@ -1,7 +1,6 @@
 /**
  * Defines the School class 
  */
-
 /* LinkQual ranks link quality */
 function LinkQual(href,innerText) {
     this.href=href;
@@ -26,7 +25,7 @@ function LinkQual(href,innerText) {
 function School(query,then_func,catch_func) {
     var x;
     this.contact_list=[];
-    this.bad_urls=[".adventistdirectory.org","/alumnius.net",".areavibes.com",".biz/",".buzzfile.com",".chamberofcommerce.com",".city-data.com",".donorschoose.org",".dreambox.com",".edmodo.com",
+    this.bad_urls=[".adventistdirectory.org","/alumnius.net",".areavibes.com",".biz/",".buzzfile.com",".chamberofcommerce.com",".city-data.com",".donorschoose.org",".dreambox.com",".edmodo.com","privateschoolreview.com",
                    ".educationbug.org",".elementaryschools.org",".estately.com",".facebook.com",".greatschools.org","//high-schools.com",
                    ".hometownlocator.com",".localschooldirectory.com",".maxpreps.com",".mapquest.com",".myatlantaareahome.com",".niche.com",
                    ".nonprofitfacts.com",".pinterest.com",".prekschools.org",
@@ -34,7 +33,7 @@ function School(query,then_func,catch_func) {
                    ".schoolbug.org",".schoolfamily.com",".schooldigger.com","//twitter.com",".youtube.com",
                    ".teacherlists.com",".trueschools.com",".trulia.com",".usnews.com",
                    ".wagenersc.com",".wikipedia.org",".wikispaces.com",".wyzant.com",
-                   ".yellowbook.com",".yellowpages.com",".yelp.com",".zillow.com"];
+                   ".yellowbook.com",".yellowpages.com",".yelp.com",".zillow.com",".usa.com"];
     this.query=query;
     this.name="";this.city="";this.state="";
     this.base="";
@@ -44,16 +43,37 @@ function School(query,then_func,catch_func) {
     this.blackboard={parser:this.parse_blackboard,find_directory:this.find_dir_bb,href_rx:/.*/i,
                      text_rx:/(^Directory)|((Staff|Employee) Directory(\s|$|,))|(^Faculty$)|(^Faculty\s*(&|and)\s*Staff$)|(^Staff$)|(^Staff Contacts)/i,
                      find_base:this.find_base_blackboard};
-    this.cyberschool={parser:this.parse_cyberschool,href_rx:/.*/i,text_rx:/(^Staff$)|Staff Directory/i,find_directory:this.find_dir};
+    this.catapultk12={parser:this.parse_catapultk12,find_directory:this.find_dir,href_rx:/\/Staff-Directory/,text_rx:/Directory/i};
+    this.cyberschool={parser:this.parse_cyberschool,suffix:/\/District\/Staff/};
     this.edlio={parser:this.parse_edlio,suffix:"/apps/staff"};
     this.educationalnetworks={parser:this.parse_educationalnetworks,suffix:"/apps/staff"};
+    this.eschoolview={parser:this.parse_eschoolview,find_directory:this.find_dir_eschoolview};
     this.finalsite={parser:this.parse_finalsite,href_rx:/.*/i,text_rx:/Staff Directory*/i,find_directory:this.find_dir};
+    this.foxbright={parser:this.parse_foxbright,href_rx:/.*/i,text_rx:/Staff Directory*/i,find_directory:this.find_dir};
+
     this.gabbart={parser:this.parse_gabbart,href_rx:/.*/i,text_rx:/.*Directory/i,find_directory:this.find_dir};
     this.campussuite={parser:this.parse_campussuite,href_rx:/staff-directory/i,text_rx:/.*/,find_directory:this.find_dir};
     this.schoolblocks={parser:this.parse_schoolblocks,suffix:"/staff"};
+    this.schoolpointe={parser:this.parse_schoolpointe,suffix:"/staff"};
     this.schoolmessenger={parser:this.parse_schoolmessenger,href_rx:/.*/i,text_rx:/^(Staff )?Directory/,find_directory:this.find_dir};
+    this.page_regex_str="(www\\.|\/\/)(apptegy|catapultk12|cms4schools)\\.com|(www\\.4lpi\\.com)|adventistschoolconnect\\.org|"+
+	"www\\.campussuite\\.com|crescerance\\.com|cyberschool\\.com|"+
+        "echalk\\.com|(edlio(school)?\\.com)|edline\\.net|educationalnetworks\\.net|"+
+        "eschoolview\\.com|\/\/factsmgt\\.com|finalsite\\.com|foxbright\\.com|gabbart\\.com|gaggle\\.net|ilearnschools\\.org|"+
+	"www\\.osvoffertory\\.com|\\.renweb\\.com|"+
+        "schooldesk\\.net|schoolloop\\.com|"+
+        "www\\.school(blocks|insites|messenger|pointe|webmasters)\\.com|"+
+        "socs\\.fes\\.org|www\\.(weebly|zumu)\\.com";
+    this.page_map={"edlioschool":"edlio","renweb":"factsmgt"};
+    this.script_regex_lst=[{regex:/apptegy_cms\//,name:"apptegy"}];
     for(x in query) this[x]=query[x];
     this.name=this.name.replace(/\s*\(.*$/,"");
+    var title_str_dept="^(";
+    if(this.title_str) {
+        for(x of this.title_str) title_str_dept+=(title_str_dept.length>2?"|":"")+x;
+        title_str_dept+=")";
+        this.title_str_regex=new RegExp(title_str_dept);
+    }
     // console.log("this.title_regex.length="+this.title_regex.length);
     var self={bad_urls:this.bad_urls};
     var promise=new Promise((resolve,reject) => {
@@ -68,22 +88,35 @@ School.prototype.is_bad_link=function(url) {
     if(/^mailto|javascript|tel/.test(url)||/\.pdf([^a-z]+|$)/.test(url)) return true;
     return false;
 };
-School.prototype.parse_none=function(doc,url,resolve,reject,self) {
-    var promise_list=[],i,links=doc.links,query_list=[],schoolphone,phone;
-    phone=self.find_phone(doc,url);
-
+/**
+ * Do a search for links, up to a certain depth */
+School.prototype.search_none=function(doc,url,resolve,reject,extra) {
+    var self=extra.self,depth=extra.depth;
+    console.log("search_none,url="+url+", depth="+depth);
+    var MAX_QUERIES=15;
+    var good_link_str="(^(Admin|District|Central|Personnel|Employee))|Contact|Directory|Staff|About|Leadership|Team|Departments";
+    if(depth>0) good_link_str="(^(Admin|District|Central|Personnel|Employee|Contact|Directory|Staff|About|Leadership|Team|Departments))";
+    var good_link_re=new RegExp(good_link_str,"i");
+    var i,links=doc.links,promise_list=[];
     for(i=0;i<links.length;i++) {
         links[i].href=MTP.fix_remote_url(links[i].href,url).replace(/\/$/,"");
+	links[i].innerText=links[i].innerText.trim();
         //console.log("links["+i+"].innerText="+links[i].innerText+", href="+links[i].href);
         if(MTP.get_domain_only(links[i].href,true)===MTP.get_domain_only(url,true) &&
+           links[i].href.indexOf(self.base)!==-1 &&
 
-           (self.matches_title_regex(links[i].innerText) || /(^(Admin|Contact))|Directory|Staff|About/i.test(links[i].innerText)) && !self.is_bad_link(links[i].href)
-           && !query_list.includes(links[i].href)
+           (self.title_str_regex.test(links[i].innerText.trim()) ||
+            good_link_re.test(links[i].innerText.trim())) && links[i].innerText.length<30 && !self.is_bad_link(links[i].href)
+           && !self.query_list.includes(links[i].href) && self.query_list.length<MAX_QUERIES
           ) {
-            console.log("@@: links["+i+"].innerText="+links[i].innerText+", href="+links[i].href+", TITLE_MATCH="+(self.matches_title_regex(links[i].innerText)));
-            query_list.push(links[i].href);
-            promise_list.push(MTP.create_promise(links[i].href,Gov.load_scripts,MTP.my_then_func,
-                                                 MTP.my_catch_func,{})); }
+            console.log("@@: links["+i+"].innerText="+links[i].innerText+", href="+links[i].href+", TITLE_MATCH="+(self.title_str_regex.test(links[i].innerText)));
+            self.query_list.push(links[i].href);
+            promise_list.push(MTP.create_promise(links[i].href,Gov.load_scripts,function() { console.log("Resolved at depth"+depth); },
+                                                 MTP.my_catch_func,{}));
+            if(depth<1) {
+                promise_list.push(MTP.create_promise(links[i].href,self.search_none,MTP.my_then_func,MTP.my_catch_func,{self:self,depth:depth+1}));
+            }
+        }
     }
     //console.log("query_list="+JSON.stringify(query_list));
     Promise.all(promise_list).then(function(ret) {
@@ -92,25 +125,149 @@ School.prototype.parse_none=function(doc,url,resolve,reject,self) {
             curr=Gov.contact_list[i];
             console.log("Gov.contact_list["+i+"]="+JSON.stringify(curr));
             if(curr.title && self.matches_title_regex(curr.title)) {
-                if(!curr.phone && phone) curr.phone=phone;
+                if(!curr.phone && self.phone) curr.phone=self.phone;
                 if(match=curr.email.match(email_re)) curr.email=match[0];
                 self.contact_list.push(curr);
             }
         }
         resolve(self);
-
-    });
-
+    }).catch(function(error) {
+        console.log("Error: "+error); });
 
 };
+School.prototype.parse_none=function(doc,url,resolve,reject,self) {
+    self.query_list=[];
+    var title_str_dept="^(",x;
+    for(x of self.title_str) title_str_dept+=(title_str_dept.length>2?"|":"")+x;
+    title_str_dept+=")";
+    self.title_str_regex=new RegExp(title_str_dept);
+    console.log("* self.title_str_regex="+self.title_str_regex);
+    var promise_list=[],i,links=doc.links,query_list=[],schoolphone,phone;
+    self.phone=self.find_phone(doc,url);
+    var promise=MTP.create_promise(url,self.search_none,resolve,reject,{self:self,depth:0});
+};
+School.prototype.parse_foxbright=function(doc,url,resolve,reject,self) {
+    console.log("parse_foxbright,url="+url);
+    var headers={"Content-Type":"application/x-www-form-urlencoded","host":self.base.replace(/https?:\/\//,""),
+                 "origin":self.base,"referer":url,
+                 "Upgrade-Insecure-Requests": "1"};
+    var data_str="FromStaffSearchPage=true&SearchFirst=False&SearchString=&BuildingId=&DepartmentId=&PositionId=3";
+    var pos_select=doc.querySelector("#fbcms_staff_search_position"),promise_list=[],i,pos_list=[],temp_promise;
+    if(!pos_select && (resolve(self)||true)) return;
+    for(i=0;i<pos_select.options.length;i++) {
+        if(self.matches_title_regex(pos_select.options[i].innerText.trim())) pos_list.push(pos_select.options[i].value);
+    }
+    for(i=0;i<pos_list.length;i++) {
+        data_str="FromStaffSearchPage=true&SearchFirst=False&SearchString=&BuildingId=&DepartmentId=&PositionId="+(pos_list[i].toString());
+        temp_promise=new Promise((resolve1,reject1) => {
+            GM_xmlhttpRequest({method: 'POST', url:url,data:data_str,headers:headers,
+                               onload: function(response) {
+                                   var doc = new DOMParser().parseFromString(response.responseText, "text/html");
+                                   self.parse_foxbright_response(doc,response.finalUrl,resolve1,reject1,self) },
+                               onerror: function(response) { reject("Fail"); },
+                               ontimeout: function(response) { reject("Fail"); }
+                              });
+        }).then(MTP.my_then_func).catch(MTP.my_catch_func);
+        promise_list.push(temp_promise);
+    }
+    Promise.all(promise_list).then(function(result) {
+        resolve(self); });
+};
+School.prototype.parse_foxbright_response=function(doc,url,resolve,reject,self) {
+    console.log("parse_foxbright_response,url="+url);
+    var domain=MTP.get_domain_only(self.base,true);
+    var elem,data=doc.querySelectorAll(".fbcms_staff_search_results .data"),curr,x,field;
+    var term_map={".name":"name",".position":"title",".phone":"phone",".department":"department"};
+    for(elem of data) {
+        curr={};
+        for(x in term_map) {
+            if((field=elem.querySelector(x))) curr[term_map[x]]=field.innerText.trim();
+            if(x===".name" && (field=elem.querySelector(x))) curr[term_map[x]]=field.innerText.trim().replace(/^([^,]*),\s*([^,]*)/,"$2 $1");
+        }
+        let fullname=MTP.parse_name(curr.name);
+        curr.email=fullname.fname.toLowerCase().charAt(0)+fullname.lname.toLowerCase()+"@"+domain;
+        self.contact_list.push(curr);
+    }
+    resolve("");
+
+};
+School.prototype.parse_schoolpointe=function(doc,url,resolve,reject,self) {
+    var headers={"Content-Type": "application/x-www-form-urlencoded","host":self.base.replace(/https?:\/\//,"").replace(/\/.*$/,""),
+                 "origin":self.base,
+                 "referer":url};
+    self.phone=self.find_phone(doc,url);
+
+    //console.log("headers="+JSON.stringify(headers));
+    var form=doc.querySelector("form[id='aspnetForm']"),x;
+    var data={},inp=form.querySelectorAll("input[name^='ctl00'][type='text'],input[name^='ctl00'][type='hidden'],select[name^='ctl00'],input[type='hidden']"),i,data_str;
+    for(i=0;i<inp.length;i++) data[inp[i].name]=inp[i].value;
+    //console.log("data="+JSON.stringify(data));
+    var submit=doc.querySelector("[title='Submit']");
+    if(!submit) {
+        let promise=MTP.create_promise(self.base,self.parse_none,resolve,reject,self);
+        return;
+    }
+    var rect=submit.getBoundingClientRect();
+    //for(x in data) { console.log(x+"="+data[x].substr(0,100)+" ?...?"); }
+    data["ctl00$ctl00$MasterContent$ContentColumnRight$ctl01$ib_submit.x"]=rect.x+rect.width/2
+    data["ctl00$ctl00$MasterContent$ContentColumnRight$ctl01$ib_submit.y"]=rect.y+rect.height/2
+    data_str=MTP.json_to_post(data).replace(/%20/g,"+");
+    GM_xmlhttpRequest({method: 'POST', url: url,data:data_str,headers:headers,
+                       onload: function(response) {
+                           console.log("BEGIN_DIR: response="+JSON.stringify(response));
+                           var doc = new DOMParser().parseFromString(response.responseText, "text/html");
+                           self.parse_schoolpointe_response(doc,response.finalUrl, resolve, reject,self); },
+                       onerror: function(response) { reject("Fail"); },
+                       ontimeout: function(response) { reject("Fail"); }
+                      });
+};
+School.prototype.parse_schoolpointe_response=function(doc,url,resolve,reject,self) {
+    console.log("in parse_schoolpointe_response, url="+url);
+    var table=doc.querySelector(".staff-table"),row,cell,i,curr,split,fullname,promise_list=[],a;
+    if(table) {
+	//            console.log("table="+table.innerText);
+        for(i=0;i<table.rows.length;i++) {
+            curr={};
+            row=table.rows[i];
+            split=row.cells[0].innerText.trim().split(/\s+-\s+/);
+            fullname=MTP.parse_name(split[0].trim());
+            if(fullname) curr.name=fullname.fname+" "+fullname.lname;
+            if(split.length>1) curr.title=split[1].trim();
+            a=row.cells[2].querySelector("a");
+            a.href=MTP.fix_remote_url(a.href,url);
+            if(curr.title&&self.matches_title_regex(curr.title)) {
+                promise_list.push(MTP.create_promise(a,self.parse_schoolpointe_profile,MTP.my_then_func,MTP.my_catch_func,self)); }
+        }
+    }
+    Promise.all(promise_list).then(function() { resolve(self); });
+};
+School.prototype.parse_schoolpointe_profile=function(doc,url,resolve,reject,self) {
+    var curr={},fields=doc.querySelectorAll(".field"),i,label,content,label_text;
+    var terms=["name","title","phone","email","department","buildings"];
+    for(i=0;i<fields.length;i++) {
+        label=fields[i].querySelector(".field-label");
+        content=fields[i].querySelector(".field-content");
+        if(label && content && (label_text=label.innerText.trim().replace(/:.*$/,"").toLowerCase()) && terms.includes(label_text)) {
+
+            curr[label_text]=content.innerText.trim();
+        }
+    }
+    if(!curr.phone && self.phone) curr.phone=self.phone;
+    else if(self.phone&&curr.phone&curr.phone.length<7) curr.phone=self.phone+(/[A-Za-z]+/.test(curr.phone)?" ":" x")+curr.phone;
+    self.contact_list.push(curr);
+    resolve();
+};
+
 
 School.prototype.find_phone=function(doc,url) {
     var schoolphone,phone,match;
     var phone_re_str_begin="(?:Tel|Telephone|Phone|Ph|P|T):\\s*";
     var phone_re_str_end="([(]?[0-9]{3}[)]?[-\\s\\.\\/]+[0-9]{3}[-\\s\\.\\/]+[0-9]{4,6}(\\s*(x|ext\\.?)\\s*[\\d]{1,5})?)";
-    var ext_phone_re=new RegExp(phone_re_str_begin+phone_re_str_end+"i");
+    var ext_phone_re=new RegExp(phone_re_str_begin+phone_re_str_end,"i");
     if((schoolphone=doc.querySelector("a[href^='tel:']"))) phone=schoolphone.innerText.trim();
-    if(!phone && (match=doc.body.innerHTML.match(ext_phone_re))) phone=match[1];
+    else if(!phone && (match=doc.body.innerHTML.match(ext_phone_re))) phone=match[1];
+    // else if((match=doc.body.innerHTML.match(phone_re))) console.log("phone alone match="+match);
+    if(phone) this.phone=phone;
     return phone;
 };
 
@@ -142,15 +299,25 @@ School.prototype.parse_cyberschool=function(doc,url,resolve,reject,self) {
     console.log("in School.prototype.parse_cyberschool at url="+url);
     var staff=doc.querySelectorAll(".staffContainer"),i,curr,name,staffInfo,title;
     var promise_list=[],a;
-    for(i=0;i<staff.length;i++) {
-        staffInfo=staff[i].querySelector(".staffInfo").parentNode;
-        title=staffInfo.innerText.replace(/^[^:]*:\s*/,"");
-        if(self.matches_title_regex(title) && (a=staff[i].querySelector("a"))) {
-            a.href=MTP.fix_remote_url(a.href,url);
-            promise_list.push(MTP.create_promise(a.href,self.parse_cyberschool_profile,MTP.my_then_func,MTP.my_catch_func,self));
+    try {
+        for(i=0;i<staff.length;i++) {
+            staffInfo=staff[i].querySelector(".staffInfo").parentNode;
+            title=staffInfo.innerText.replace(/^[^:]*:\s*/,"");
+            if(self.matches_title_regex(title) && (a=staff[i].querySelector("a"))) {
+                a.href=MTP.fix_remote_url(a.href,url);
+                promise_list.push(MTP.create_promise(a.href,self.parse_cyberschool_profile,MTP.my_then_func,MTP.my_catch_func,self));
+            }
         }
     }
-    Promise.all(promise_list).then(function() { resolve(self); });
+    catch(error) {
+        console.log("error="+error);
+        let temp_promise=MTP.create_promise(self.base,self.parse_none,resolve,reject,self);
+        return;
+    }
+    Promise.all(promise_list).then(function() {
+        resolve(self);
+        //let promise=MTP.create_promise(self.base,self.parse_none,resolve,reject,self);
+    });
 };
 /* Parse an individual cyberschool profile */
 School.prototype.parse_cyberschool_profile=function(doc,url,resolve,reject,self) {
@@ -164,15 +331,65 @@ School.prototype.parse_cyberschool_profile=function(doc,url,resolve,reject,self)
     if(curr.name && curr.title && curr.email) self.contact_list.push(curr);
     resolve("");
 };
+School.prototype.parse_catapultk12=function(doc,url,resolve,reject,self) {
+    var i,scripts=doc.scripts;
+    function padStr(i) { return (i < 10) ? "0" + i : "" + i; }
+    function printDate() {
+        var t = new Date();
+        return padStr(t.getFullYear())+padStr(1+t.getMonth())+padStr(t.getDate())+
+            padStr(t.getHours())+padStr(t.getMinutes())+padStr(t.getSeconds());
+    }
+    console.log("In parse_catapultk12 at "+url);
+    var token,t_match,t_reg=/\'AuthorizationToken\':\s*\'([^\']+)\'/;
+    var prog_url,p_match,p_reg=/\'ProgramUrl\':\s*'([^\']+)\'/;
+    for(i=0;i<scripts.length;i++) {
+        if(/^\s*CatapultSD/.test(scripts[i].innerHTML)) {
+            console.log("scripts["+i+"].innerHTML="+scripts[i].innerHTML);
+            if((p_match=scripts[i].innerHTML.match(p_reg)) && (prog_url=p_match[1]) &&
+               (t_match=scripts[i].innerHTML.match(t_reg)) && (token=t_match[1])) break;
+        }
+    }
+    if(token && prog_url) { console.log("token="+token); console.log("prog_url="+prog_url); }
+    var full_url=prog_url+"/Connector/StaffList/All/LastName/All/false/NotSet/NotSet?"+printDate()+"&{}";
+    var headers={'Content-Type':'application/json; charset=utf-8','CatapultSDAuthToken':token};
+    console.log("full_url="+full_url);
+    GM_xmlhttpRequest({method: 'GET', url: full_url,headers:headers,
+                       onload: function(response) { self.parse_catapultk12_finish(response, resolve, reject,self); },
+                       onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }});
+};
+/* Schools.parse_catapultk12_finish is a JSON list */
+School.prototype.parse_catapultk12_finish=function(response,resolve,reject,self) {
+    var result=[],i,curr_field,sites,temp_contact_list;
+    try {
+        temp_contact_list=JSON.parse(response.responseText); }
+    catch(error) { console.log("Error parsing catapultk12, "+error);
+                   // console.log("response.responseText="+response.responseText);
+                   var promise=MTP.create_promise(self.base,self.parse_none,resolve,reject,self);
+
+                   return; }
+    console.log(response.responseText);
+    for(i=0;i<temp_contact_list.length;i++) {
+        //console.log("temp_contact_list["+i+"]="+JSON.stringify(temp_contact_list[i]));
+        if(temp_contact_list[i].StaffSites===undefined || temp_contact_list[i].StaffSites.length===0) continue;
+        else sites=temp_contact_list[i].StaffSites[0];
+        curr_field={first:temp_contact_list[i].FirstName,last:temp_contact_list[i].LastName,
+                    name:temp_contact_list[i].FirstName+" "+temp_contact_list[i].LastName,
+                    title:sites.Position,phone:sites.SitePhoneNumber+(sites.PhoneExt && sites.PhoneExt.length>0 ? ' x'+sites.PhoneExt : ''),
+                    email:temp_contact_list[i].Email,department:sites.department,school:sites.SiteName};
+        // console.log("curr_field["+i+"]="+JSON.stringify(curr_field));
+        if(self.matches_title_regex(curr_field.title)) self.contact_list.push(curr_field);
+    }
+    resolve(self);
+};
 
 
 School.prototype.parse_finalsite=function(doc,url,resolve,reject,self) {
     console.log("in School.prototype.parse_finalsite at url="+url);
     var items=doc.querySelectorAll(".fsElementPagination a"),promise_list=[],i;
+    self.phone=self.find_phone(doc,url);
     promise_list.push(new Promise((resolve1,reject1) =>
                                   { self.parse_finalsite_fsPageLayout(doc,url,resolve1,reject1,self); }).then(MTP.my_then_func).catch(MTP.my_catch_func));
     var my_a=doc.querySelector(".fsLastPageLink"),last,curr_href;
-
     if(my_a) {
         my_a.href=url+my_a.href.replace(/^[^\?]*/,"");
         last=parseInt(my_a.dataset.page);
@@ -182,14 +399,9 @@ School.prototype.parse_finalsite=function(doc,url,resolve,reject,self) {
             console.log("curr_href="+curr_href);
             promise_list.push(MTP.create_promise(curr_href,self.parse_finalsite_fsPageLayout,MTP.my_then_func,MTP.my_catch_func,self));
         }
-
-
     }
-
     console.log((promise_list.length>0?"RIGHT":"WRONG")+" TYPE of finalsite, "+promise_list.length);
-
     Promise.all(promise_list).then(function() { resolve(self); });
-
 };
 School.prototype.parse_finalsite_fsPageLayout=function(doc,url,resolve,reject,self) {
     console.log("in School.prototype.parse_finalsite_fsPageLayout at url="+url);
@@ -206,6 +418,7 @@ School.prototype.parse_finalsite_fsPageLayout=function(doc,url,resolve,reject,se
         if((emailscript=items[i].querySelector(".fsEmail script")) &&
            (match=emailscript.innerHTML.match(fsemail_re))) curr.email=match[3].split("").reverse().join("")+"@"+match[2].split("").reverse().join("");;
         console.log("("+i+"), curr="+JSON.stringify(curr));
+        if(!curr.phone && self.phone) curr.phone=self.phone;
         if(curr.title && self.matches_title_regex(curr.title)) self.contact_list.push(curr);
     }
     resolve("");
@@ -257,6 +470,18 @@ School.prototype.parse_gabbart_page=function(doc,url,resolve,reject,self) {
 
 School.prototype.parse_campussuite=function(doc,url,resolve,reject,self) {
     console.log("in School.prototype.parse_campussuite at url="+url);
+    var i,x,temp;
+    var term_map={".cs-profile-li-name":"name",".cs-profile-li-title":"title",".cs-profile-li-meta-phone":"phone",
+                  ".cs-profile-li-meta-email":"email"};
+    var profiles=doc.querySelectorAll(".cs-profile-li"),curr,name,title,phone,email;
+    for(i=0;i<profiles.length;i++) {
+        curr={};
+        for(x in term_map) {
+            if((temp=profiles[i].querySelector(x))) curr[term_map[x]]=temp.innerText.trim();
+        }
+        if(curr.title && self.matches_title_regex(curr.title)) self.contact_list.push(curr);
+    }
+    resolve(self);
 
 };
 
@@ -289,15 +514,14 @@ School.prototype.convert_ednetworks_email=function(text) {
 School.prototype.parse_edlio=function(doc,url,resolve,reject,self) {
     console.log("in School.prototype.parse_edlio at url="+url);
     var schoolphone,phone;
-    if((schoolphone=doc.querySelector("a[href^='tel:']"))) phone=schoolphone.innerText.trim();
+
+    //        if((schoolphone=doc.querySelector("a[href^='tel:']"))) phone=schoolphone.innerText.trim();
+    phone=self.find_phone(doc,url);
     var footer=doc.querySelector("footer"),match,promise_list=[],i,curr={},curr_elem,x;
-    self.schoolPhone="";
+    self.phone=self.schoolPhone=phone?phone:"";
     var my_phone_re=/(?:Phone|Tel|T):\?\s*([(]?[0-9]{3}[)]?[-\\s\\.\\/]+[0-9]{3}[-\\s\\.\\/]+[0-9]{4,6})/;
-    if(footer && (match=footer.innerText.match(my_phone_re))) self.schoolPhone=match[1];
-    else {
-        let a=footer.querySelectorAll("a"),i;
-        for(i=0;i<a.length;i++) if(/^tel/.test(a[i].href) && (self.schoolPhone=a[i].innerText)) break;
-    }
+    // if(footer && (match=footer.innerText.match(my_phone_re))) self.schoolPhone=match[1];
+    
     var staff=doc.querySelectorAll(".staff");
     for(i=0;i<staff.length;i++) {
         // console.log("("+i+"): "+staff[i].innerHTML);
@@ -320,6 +544,7 @@ School.prototype.parse_edlio=function(doc,url,resolve,reject,self) {
 
                 curr.email=match[1];
                 if(!curr.phone && phone) curr.phone=phone;
+                //  else if(curr.phone&&curr.phone.length<6 && phone) curr.phone=phone+(/[A-Za-z]/.test(phone)?" ":" x")+curr.phone;
                 self.contact_list.push(curr);
             }
             else {
@@ -437,6 +662,12 @@ School.prototype.parse_apptegy_field=function(elem,self) {
     var f_n={"name":"name","title":"title","phone-number":"phone","department":"department","email":"email"};
     var curr_c={},x,curr_f;
     for(x in f_n) if((curr_f=elem.getElementsByClassName(x)).length>0) curr_c[f_n[x]]=curr_f[0].innerText.trim();
+    var ext;
+    if(curr_c.name && (ext=curr_c.name.match(/\s*Ext.*/i))) {
+        if(curr_c.phone) curr_c.phone=curr_c.phone+" "+ext[0];
+        curr_c.name=curr_c.name.replace(/\s*Ext.*/i,"");
+    }
+
     if(curr_c.title && self.matches_title_regex(curr_c.title)) self.contact_list.push(curr_c);
     // else console.log("curr_c.title="+curr_c.title);
 };
@@ -464,7 +695,7 @@ School.prototype.parse_bing_then=function(result) {
     promise=MTP.create_promise(self.url,self.init_SchoolSearch,self.resolve,self.reject,self);
 };
 School.prototype.matches_school_names=function(name1,name2) {
-    var replace_list=[{re:/Independent School District/,str:"ISD"}];
+    var replace_list=[{re:/Independent School District/,str:"ISD"},{re:/(Central|Consolidated) School District/,str:"CSD"}];
     var i;
     if(MTP.matches_names(name1,name2)) return true;
     for(i=0;i<replace_list.length;i++) {
@@ -493,8 +724,12 @@ School.prototype.parse_bing=function(doc,url,resolve,reject,self) {
             console.log("parsed_context="+JSON.stringify(parsed_context));
             if(parsed_context.url&&parsed_context.Title&&!(parsed_context.SubTitle && parsed_context.SubTitle==="County") &&
                self.matches_school_names(self.query.name,parsed_context.Title)
-               &&!MTP.is_bad_url(parsed_context.url,self.bad_urls,6,3)&&
-               (resolve({url:parsed_context.url,self:self})||true)) return;
+               &&!MTP.is_bad_url(parsed_context.url,self.bad_urls,6,3)) {
+                if(b_algo.length>0 && (b_url=b_algo[i].querySelector("a").href) &&
+                   b_url===parsed_context.url.replace(/^(https?:\/\/)([^\.]*)/,"$1www")) parsed_context.url=b_url;
+                resolve({url:parsed_context.url,self:self})||true;
+                return;
+            }
         }
         if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info)) && parsed_lgb.url&&parsed_lgb.url.length>0 &&
            MTP.get_domain_only(window.location.href,true)!==MTP.get_domain_only(parsed_lgb.url,true)&&!MTP.is_bad_url(parsed_lgb.url,self.bad_urls,6,3)) {
@@ -506,7 +741,7 @@ School.prototype.parse_bing=function(doc,url,resolve,reject,self) {
         for(i=0; i < b_algo.length&&i<10; i++)
         {
             b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
-            b_url=b_algo[i].getElementsByTagName("a")[0].href;
+            b_url=b_algo[i].getElementsByTagName("a")[0].href.replace(/\/Domain\/.*$/,"");
             b_caption=b_algo[i].getElementsByClassName("b_caption");
             p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0)?b_caption[0].getElementsByTagName("p")[0].innerText:"";
             if(self.query.debug) console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
@@ -532,7 +767,6 @@ School.prototype.matches_title_regex=function(title) {
     //console.log("this.title_regex="+this.title_regex);
     for(var i=0; i < this.title_regex.length; i++) {
 	//            console.log("this.title_regex["+i+"]="+this.title_regex[i]);
-
         if(title.match(this.title_regex[i])) return true; }
     return false;
 };
@@ -547,10 +781,23 @@ School.prototype.matches_name=function(name) {
 };
 /* Schools.call_parser is a helper function to create a promise for the school parser */
 School.prototype.call_parser=function(result) {
-    var self=result.self,url=result.url,promise;
+    var self=result.self,url=result.url,promise,promise_list=[],i;
+    var done_count=0;
     console.log("url="+result.url+", base="+self.base);
     // console.log("self="+JSON.stringify(self));
-    if(result.url!==self.base) promise=MTP.create_promise(url,self[self.page_type].parser,self.resolve,self.reject,self);
+    if(!result.url && result.url_lst) {
+        for(i=0;i<result.url_lst.length;i++) {
+            console.log("url_lst["+i+"].href="+result.url_lst[i].href);
+            promise_list.push(MTP.create_promise(result.url_lst[i].href,self[self.page_type].parser,function(result) {
+                console.log("!! Done "+(++done_count));
+            }
+						 ,MTP.my_catch_func,self));
+        }
+        console.log("Done pushing promises");
+        Promise.all(promise_list).then(self.resolve);
+        return;
+    }
+    else if(result.url!==self.base) promise=MTP.create_promise(url,self[self.page_type].parser,self.resolve,self.reject,self);
     else promise=MTP.create_promise(url,self.parse_none,self.resolve,self.reject,self);
 };
 School.prototype.find_base_blackboard=function(doc,url,resolve,reject,self) {
@@ -583,6 +830,7 @@ School.prototype.find_dir=function(doc,url,resolve,reject,self) {
     var curr_type=self[self.page_type];
     var links=doc.links,i;
     var domain=MTP.get_domain_only(url);
+    var good_links=[];
 
     for(i=0;i<links.length;i++) {
         links[i].href=MTP.fix_remote_url(links[i].href,url);
@@ -590,8 +838,11 @@ School.prototype.find_dir=function(doc,url,resolve,reject,self) {
         if(curr_type.href_rx.test(links[i].href) &&
            curr_type.text_rx.test(links[i].innerText.trim())) {
             console.log(domain+": resolving on "+links[i].innerText+",url="+links[i].href);
-            resolve({url:links[i].href,self:self}); return; }
+            good_links.push(new LinkQual(links[i].href,links[i].innerText));
+            //    resolve({url:links[i].href,self:self}); return;
+        }
     }
+    if(good_links.length>0 && (resolve({url_lst:good_links,self:self})||true)) return;
     console.log(domain+": could not find, resolving on base "+url);
     resolve({url:url,self:self});
 };
@@ -599,41 +850,65 @@ School.prototype.find_dir=function(doc,url,resolve,reject,self) {
 
 
 /* TODO: add priority for links */
-School.prototype.find_dir_bb=function(doc,url,resolve,reject,self) {
-
+School.prototype.find_dir_bb=function(doc,url,resolve,reject,extra) {
+    var depth=0,self=extra.self?extra.self:extra;
+    if(extra.bb_depth) depth=extra.bb_depth;
     var links=doc.links,i,scripts=doc.getElementsByTagName("script");
+    var k;
     var domain=MTP.get_domain_only(url);
     var contact,new_url;
-    var good_links=[];
+    if(self.bb_links===undefined) self.bb_links=[];
+
+    var promise_list=[];
     var curr_type=self[self.page_type];
     console.log(domain+":curr_type="+JSON.stringify(curr_type)+", "+curr_type.text_rx);
     //  console.log(domain+"self="+JSON.stringify(self));
     for(i=0;i<links.length;i++) {
-        links[i].href=MTP.fix_remote_url(links[i].href,url);
+        links[i].href=MTP.fix_remote_url(links[i].href,url).replace(/\/$/,"");
         //  console.log(domain+": links["+i+"].innerText="+links[i].innerText.trim());
         if(MTP.get_domain_only(links[i].href)!==domain) continue;
-        if(/Contact Us/.test(links[i].innerText)) contact=links[i].href;
-        if(
-            curr_type.text_rx.test(links[i].innerText.trim()) && !/\.pdf$/.test(links[i].href)) {
+        //if() contact=links[i].href;
+        if((/Contact Us/.test(links[i].innerText)||curr_type.text_rx.test(links[i].innerText.trim()))
+           && !/\.pdf$/.test(links[i].href)) {
             console.log(domain+": found good  "+links[i].innerText+",url="+links[i].href);
-            good_links.push(new LinkQual(links[i].href,links[i].innerText));
-            //    resolve({url:links[i].href,self:self}); return;
+            let found_link=false;
+            for(k=0;k<self.bb_links.length;k++) {
+                //console.log("good_links["+k+"]="+good_links[k].href);
+                if(links[i].href===self.bb_links[k].href) found_link=true; }
+            if(!found_link) {
+                console.log("Pushing "+links[i].href+", text="+links[i].innerText);
+                self.bb_links.push(new LinkQual(links[i].href,links[i].innerText));
+                if(depth===0) {
+                    promise_list.push(
+                        MTP.create_promise(links[i].href,self.find_dir_bb,MTP.my_then_func,MTP.my_catch_func,{self:self,bb_depth:depth+1}));
+                }
+		//    resolve({url:links[i].href,self:self}); return;
+            }
         }
     }
-    if(good_links.length>0) {
-        good_links.sort(function(link1,link2) {
-            return link2.quality-link1.quality; });
-        console.log("good_links="+JSON.stringify(good_links));
-        resolve({url:good_links[0].href,self:self}); return;
-    }
-    if(contact) console.log(domain+": resolving on contact "+contact);
-    else if((new_url=self.find_dir_bb_scripts(scripts,url,self))) {
-        console.log(domain+": resolving from scripts "+new_url);
-        resolve({url:new_url,self:self}); }
-    else {
+    if(depth>0 && (resolve("")||true)) return;
+    Promise.all(promise_list).then(function(result) {
+        if(self.bb_links.length>0) {
+            self.bb_links.sort(function(link1,link2) {
+                return link2.quality-link1.quality; });
+            console.log("self.bb_links="+JSON.stringify(self.bb_links));
+            resolve({url_lst:self.bb_links,self:self}); return;
+        }
 
-        console.log(domain+": could not find, resolving on base "+url);
-        resolve({url:url,self:self}); }
+        if((new_url=self.find_dir_bb_scripts(scripts,url,self))) {
+            if(!/http/.test(new_url)) new_url=self.base+(/^\//.test(new_url)?"":"/")+new_url;
+            console.log(domain+": resolving from scripts "+new_url);
+
+            resolve({url:new_url,self:self}); }
+        else if(contact) {
+            console.log(domain+": resolving on contact "+contact);
+            resolve({url:contact,self:self});
+        }
+        else {
+
+            console.log(domain+": could not find, resolving on base "+url);
+            resolve({url:url,self:self}); }
+    });
 };
 /* Returns url if found in scripts, null otherwise */
 School.prototype.find_dir_bb_scripts=function(scripts,url,self) {
@@ -659,10 +934,8 @@ School.prototype.parse_blackboard=function(doc,url,resolve,reject,self) {
     var domain=MTP.get_domain_only(url),match;
     if(!footer && !(footer=doc.querySelector("#gb-footer"))) footer=doc.querySelector("footer");
     //console.log("footer.innerHTML="+footer.innerHTML);
-
-    if(footer && (match=footer.innerText.match(/(\d{3}-\d{3}-\d{4})|(\(\d{3}\)\s*\d{3}-\d{4})/i))) self.phone=match[0].trim();
-    else self.phone="";
-    if(match=self.phone.match(/^(?:\()?([\d]{3})/)) self.area_code=match[1];
+    self.phone=self.find_phone(doc,url);
+    if(self.phone && (match=self.phone.match(/^(?:\()?([\d]{3})/))) self.area_code=match[1];
     else self.area_code="";
     console.log("self.phone="+self.phone+", self.area_code="+self.area_code);
     if((staffdirectory||(staffdirectory=doc.querySelector(".cs-staffdirectorydiv"))) &&
@@ -671,7 +944,8 @@ School.prototype.parse_blackboard=function(doc,url,resolve,reject,self) {
     else if(swdirectory) self.parse_bb_swdirectory(doc,url,resolve,reject,self);
     else {
         console.log(domain+":Could not identify blackboard directory type "+url);
-        self.parse_none(doc,url,resolve,reject,self);
+        resolve(self);
+        //self.parse_none(doc,url,resolve,reject,self);
 
     }
     // console.log("parse_blackboard, url="+url);
@@ -691,14 +965,18 @@ School.prototype.parse_bb_staffdirectory=function(doc,url,resolve,reject,self) {
 
             if((match=inner_a[j].outerHTML.match(click_regex))) {
                 new_url=url_begin+match[5]+"&ViewID="+match[1]+url_end;
-                promise=MTP.create_promise(new_url,self.parse_bb_staffdirectory_results,MTP.my_try_func,MTP.my_catch_func,self);
+                promise=MTP.create_promise(new_url,self.parse_bb_staffdirectory_results,function(result) { console.log("Done results bbstaffdirectory"); }
+                                           ,MTP.my_catch_func,self);
                 break;
             }
         }
         if(promise===undefined) { console.log(domain+": Could not find SearchButtonClick and create promise"); }
         promise_list.push(promise);
     }
-    Promise.all(promise_list).then(function() { resolve(self); });
+    Promise.all(promise_list).then(function() {
+        console.log("Done all promises of bb_staffdirectory");
+
+        resolve(self); });
 
 };
 /* TODO: deal with area codes, otherwise done */
@@ -734,6 +1012,7 @@ School.prototype.parse_bb_minibase=function(doc,url,resolve,reject,self) {
     var detail=minibase.querySelector(".ui-widget-detail"),url_begin,url_end,new_url,field_num,ui_li,k;
     var filter="&FilterFields="+encodeURIComponent("comparetype:E:S;comparetype:E:S;"),promise;
     var flexitem=minibase.querySelectorAll(".sw-flex-item"),matched_school=false,matched_title=false;
+    var inputs=minibase.querySelectorAll(".minibase table input");
     var promise_list=[];
     var fields=doc.querySelectorAll("[name^='Field']");
     var missing_field=-1;
@@ -749,7 +1028,7 @@ School.prototype.parse_bb_minibase=function(doc,url,resolve,reject,self) {
         for(i=0;i<flexitem.length;i++) {
             ui_lbl=flexitem[i].querySelector(".ui-lbl-inline");
             ui_dropdown=flexitem[i].querySelector("ul");
-            if(!matched_school && /School|Location/i.test(ui_lbl.innerText) && ui_dropdown && (ui_li=ui_dropdown.querySelectorAll("li"))) {
+            if(!matched_school && /School/i.test(ui_lbl.innerText) && ui_dropdown && (ui_li=ui_dropdown.querySelectorAll("li"))) {
 
                 field_num=ui_dropdown.id && ui_dropdown.id.match(/[\d]+$/) ? ui_dropdown.id.match(/[\d]+$/)[0] : i.toString();
                 for(j=0;j<ui_li.length;j++) {
@@ -757,7 +1036,31 @@ School.prototype.parse_bb_minibase=function(doc,url,resolve,reject,self) {
                        (filter=filter+encodeURIComponent(field_num+":C:"+ui_li[j].innerText.trim()+";"))) break;
                 }
             }
-            if(/Title|Position/i.test(ui_lbl.innerText) &&(matched_title=true)) filter=filter+encodeURIComponent((i).toString()+":C:"+self.title_str[k]+";");
+            if(/Title|Position/i.test(ui_lbl.innerText) &&(matched_title=true)) {
+                let textfield=flexitem[i].querySelector("input[type='text']"),j,field_pos=0,found_text=true;
+                var selfield=flexitem[i].querySelector("ul[id^='sel-sw']"),sel_li,good_text;
+                if(!textfield) {
+                    found_text=false;
+                    textfield=flexitem[i].querySelector("input"); }
+                for(j=0;j<inputs.length;j++) {
+                    if(inputs[j]===textfield) {
+                        console.log("Found field at "+j);
+                        field_pos=j;
+                        break;
+                    }
+                }
+                if(found_text||true) {
+                    filter=filter+encodeURIComponent((field_pos).toString()+":C:"+self.title_str[k]+";");
+                }
+                /* else if(selfield) {
+                   console.log("# Found selfield");
+                   for(j=0;j<selfield.children.length;j++) {
+                   if(self.title_str_regex&&self.title_str_regex.test(selfield.children[j].innerText.trim())) {
+                   good_text=
+
+                   }*/
+
+            }
         }
         /* If a field was missing and there was no title field, hopefully that was the title field */
         if(!matched_title && missing_field>=0) filter=filter+encodeURIComponent((missing_field).toString()+":C:"+self.title_str[k]+";");
@@ -777,7 +1080,7 @@ School.prototype.parse_bb_minibase_results=function(doc,url,resolve,reject,extra
     var title_str=extra.title_str,self=extra.self;
     var page=self.page[title_str];
     var curr_contact,lst=doc.querySelectorAll(".sw-flex-item-list"),i,j,label,items,x;
-    var term_map={"first":/First/i,"last":/Last/i,"title":/^(Position|Title)/i,"email":/^E(-)?mail/i,
+    var term_map={"first":/First/i,"last":/Last/i,"title":/^(Position|Title|Job)/i,"email":/^E(-)?mail/i,
                   "phone":/^(Phone|Tel)/i,"ext":/^(Ext)/i,"school":/School/i,"name":/Name/i};
     console.log("parse_bb_minibase_results,url="+url+", title_str="+title_str);
     for(i=0;i<lst.length;i++) {
@@ -799,8 +1102,93 @@ School.prototype.parse_bb_minibase_results=function(doc,url,resolve,reject,extra
 };
 
 School.prototype.parse_bb_swdirectory=function(doc,url,resolve,reject,self) {
-    console.log("parse_bb_swdirectory,url="+url);
+    console.log("parse_bb_swdirectory,url="+url+", resolving immediately for now");
+    resolve("");
 };
+
+/* TODO: needs work other possible locations of staff directory exist */
+School.prototype.find_dir_eschoolview=function(doc,url,resolve,reject,self) {
+    if(self.count===undefined || typeof(self.count)==="object") self.count=0;
+    console.log("in find_dir_eschoolview, url="+url+" ,count="+self.count);
+    var links=doc.links,i,promise;
+    for(i=0;i<links.length;i++) {
+        links[i].href=MTP.fix_remote_url(links[i].href,url);
+        if(/Staff Directory/i.test(links[i].innerText)) {
+            console.log("Resolving on "+links[i].href); resolve({url:links[i].href,self:self}); return; }
+    }
+    console.log("Done for");
+    if(self.count++===0 && (promise=MTP.create_promise(self.base+"/ContactUs.aspx",self.find_dir_eschoolview,resolve,reject,self))) return;
+    else { console.log("Resolving on StaffDirectory.aspx"); resolve({url:self.base+"/StaffDirectory.aspx",self:self}); }
+
+};
+/* TODO: Have it choose the school to select */
+School.prototype.parse_eschoolview=function(doc,url,resolve,reject,self) {
+    console.log("in parse_eschoolview, url="+url);
+    self.phone=self.find_phone(doc,url);
+    console.log("self.phone="+self.phone);
+    if(/The resource cannot be found|An Error/i.test(doc.title)) {
+        let temp_promise=MTP.create_promise(self.base,self.parse_none,resolve,reject,self);
+        return;
+    }
+
+    var form=doc.querySelector("form"),query_url,scripts=doc.scripts,i,footer=doc.querySelector("footer");
+    var inp=form.getElementsByTagName("input"),sel=form.getElementsByTagName("select"),match;
+    var script_rx=/PageRequestManager\._initialize\('([^\']+)\'[^\[]*\[\'([^\']*)/,name_sel=form.querySelector("select");
+    var data={},ops,data_str,promise,scriptm;
+    if(self.try_count===undefined) self.try_count=0;
+    var headers={"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                 "Host": self.base.replace(/^https?:\/\//,"").replace(/\/$/,""),
+                 "Origin": self.base,"Referer": "http://www.gmsdk12.org/StaffDirectory.aspx","X-Requested-With": "XMLHttpRequest"};
+    //console.log("headers="+JSON.stringify(headers));
+    if(/GeneralError/.test(url) && self.try_count++===0) {
+        promise=MTP.create_promise(self.base,self.parse_none,resolve,reject,self);
+        return; }
+    query_url=MTP.fix_remote_url(form.action,url);
+    //if(!footer) footer=doc.querySelector("#footerDiv");
+    // if(footer && (match=footer.innerText.match(/Phone:\s*([\(\)-\s\d\/]+)/i))) self.phone=match[1].trim();
+    //else self.phone="";
+    ops=name_sel.options;
+    for(i=0;i<scripts.length;i++) {
+        if((match=scripts[i].innerHTML.match(script_rx)) && (scriptm=match[1]) && (data[scriptm]=match[2].replace(/^t/,""))) break;
+    }
+    for(i=0;i<inp.length;i++) {
+        if(inp[i].type==="text" || inp[i].type==="hidden") data[inp[i].name]=inp[i].value;
+        else if(inp[i].type==="submit" && /search/i.test(inp[i].value) &&
+                (data[inp[i].name]=inp[i].value)) data[scriptm]=data[scriptm]+"|"+inp[i].name;
+    }
+    for(i=0;i<ops.length;i++) if(self.matches_name(ops[i].innerText)) data[name_sel.name]=ops[i].value;
+    data.__ASYNCPOST=true;
+    data_str=MTP.json_to_post(data).replace(/%20/g,"+");
+    // console.log("data="+JSON.stringify(data));
+    GM_xmlhttpRequest({method: 'POST', url: query_url,data:data_str,headers:headers,
+                       onload: function(response) {
+                           console.log("response="+JSON.stringify(response));
+                           var doc = new DOMParser().parseFromString(response.responseText, "text/html");
+                           self.parse_eschoolview_response(doc,response.finalUrl, resolve, reject,self); },
+                       onerror: function(response) { reject("Fail"); },
+                       ontimeout: function(response) { reject("Fail"); }
+                      });
+};
+School.prototype.parse_eschoolview_response=function(doc,url,resolve, reject,self) {
+    console.log("in parse_eschoolview_response, url="+url);
+    var results=doc.querySelector(".results"),curr_contact;
+    console.log("results.innerText="+results.innerText);
+    var main_div=results.parentNode.nextElementSibling;
+    //console.log("main_div.innerHTML="+main_div.innerHTML);
+    var spans=main_div.children,i;
+    for(i=0;i<spans.length;i++) {
+        //console.log("spans["+i+"].innerHTML="+spans[i].innerHTML);
+        curr_contact={name:spans[i].querySelector(".scName")?Gov.parse_name_func(spans[i].querySelector(".scName").innerText.trim()):"",
+                      title:spans[i].querySelector(".scTitle")?spans[i].querySelector(".scTitle").innerText.trim():"",
+                      phone:spans[i].querySelector(".scPhone")&&spans[i].querySelector(".scPhone").innerText.length>0
+                      ?spans[i].querySelector(".scPhone").innerText.trim():self.phone,
+                      email:spans[i].querySelector(".scEmail")?spans[i].querySelector(".scEmail").innerText.trim():""};
+        if(curr_contact.title && self.matches_title_regex(curr_contact.title)) self.contact_list.push(curr_contact);
+    }
+    if(spans.length===0) { console.log("doc.body.innerHTML="+doc.body.innerHTML); }
+    resolve(self);
+};
+
 
 School.prototype.parse_schoolmessenger=function(doc,url,resolve,reject,self) {
     self.do_west_react(doc,url,resolve,reject,self);
@@ -825,7 +1213,14 @@ School.prototype.do_west_react=function(doc,url,resolve,reject,self) {
     }
 
     var scripts=doc.scripts,i,div=document.createElement("div"),script_list=[],curr_script;
-    self.portletInstanceId=doc.getElementsByClassName("staffDirectoryComponent")[0].dataset.portletInstanceId;
+    try {
+        self.portletInstanceId=doc.getElementsByClassName("staffDirectoryComponent")[0].dataset.portletInstanceId;
+    }
+    catch(error) {
+        console.log("Error with West "+error);
+        var promise=MTP.create_promise(self.base,self.parse_none,resolve,reject,self);
+        return;
+    }
     if(appendElement!==undefined) appendElement.appendChild(doc.getElementsByClassName("staffDirectoryComponent")[0]);
     var good_scripts=doc.querySelectorAll("script[id*='ctl']"), head=document.getElementsByTagName("head")[0];
     self.totalWestScripts=good_scripts.length;
@@ -939,13 +1334,15 @@ School.prototype.getWestPrivateEmail=function(doc,url,resolve,reject,extra) {
     resolve(i);
 };
 School.prototype.init_SchoolSearch=function(doc,url,resolve,reject,self) {
+    var refresh=Gov.needs_refresh(doc,url),temp_promise;
+    if(refresh && (temp_promise=MTP.create_promise(refresh,self.init_SchoolSearch,resolve,reject,self)||1)) return;
     var curr_school,promise,parse_url;
     self.base=url.replace(/\/$/,"")
     self.url=url.replace(/(https?:\/\/[^\/]*).*$/,"$1");
 
     self.resolve=resolve;self.reject=reject;
     self.page_type=self.id_page_type(doc,url,resolve,reject,self);
-    if(Schools.page_map[self.page_type]!==undefined) self.page_type=Schools.page_map[self.page_type];
+    if(self.page_map[self.page_type]!==undefined) self.page_type=self.page_map[self.page_type];
     // Schools.curr_school=Schools[Schools.page_type];
 
     /*console.log("School.prototype.init_SchoolSearch, url="+url+", query="+JSON.stringify(self.query));
@@ -954,7 +1351,7 @@ School.prototype.init_SchoolSearch=function(doc,url,resolve,reject,self) {
     //return;
     /* Base is the base page for a school if we're in a district/system page */
     if((curr_school=self[self.page_type])&&curr_school.find_base&&self.type==="school") {
-        console.log("searching for base "+JSON.stringify(Schools[self.page_type]));
+        console.log("searching for base "+JSON.stringify(self[self.page_type]));
         self.base=curr_school.find_base(doc,url+(curr_school.base_suffix?curr_school.base_suffix:""),resolve,reject,self).replace(/\/$/,""); }
     console.log("self.base="+self.base);
 
@@ -970,18 +1367,17 @@ School.prototype.init_SchoolSearch=function(doc,url,resolve,reject,self) {
         console.log("School page_type not defined parsing yet, trying parse_none");
         self.parse_none(doc,url,resolve,reject,self);
     }
-    else { console.log("Weird shouldn't be here");
-           for(var x in curr_school) {
-               console.log("curr_school["+x+"]="+curr_school[x]); }
-
-
-         }
+    else {
+        console.log("Weird shouldn't be here");
+        for(var x in curr_school) {
+            console.log("curr_school["+x+"]="+curr_school[x]); }
+    }
 };
 
 /**Schools.id_page_type identifies the CMS/etc for the school website */
 School.prototype.id_page_type=function(doc,url,resolve,reject,self) {
     var page_type="none",i,j,match,copyright,sites_google_found=false,generator="",gen_content,gen_list=doc.querySelectorAll("meta[name='generator' i]");
-    var page_type_regex2=/Apptegy/,copyright_regex=/Blackboard, Inc/,page_type_regex=new RegExp(Schools.page_regex_str,"i");
+    var page_type_regex2=/Apptegy/,copyright_regex=/Blackboard, Inc/,page_type_regex=new RegExp(self.page_regex_str,"i");
     for(i=0; i < gen_list.length; i++) {
         if(gen_list[i].content) { generator+=(generator.length>0?";":"")+gen_list[i].content.replace(/ - [^;]*/g,""); }
     }
@@ -989,8 +1385,9 @@ School.prototype.id_page_type=function(doc,url,resolve,reject,self) {
     var lst=[doc.links,doc.querySelectorAll("link")];
     for(j=0;j<lst.length;j++) {
         for(i=0; i < lst[j].length; i++) {
-            lst[j][i].href=MTP.fix_remote_url(lst[j][i].href,url);
 
+            lst[j][i].href=MTP.fix_remote_url(lst[j][i].href,url);
+            // console.log("lst["+j+"]["+i+"].href="+lst[j][i].href+", text="+lst[j][i].innerText);
             if((match=lst[j][i].href.match(page_type_regex)) || (match=lst[j][i].innerText.match(page_type_regex2))) {
                 page_type=match[0].replace(/\.[^\.]*$/,"").toLowerCase().replace(/www\./,"").replace(/\./g,"_").replace(/^\/\//,"");
                 break; }
@@ -1006,8 +1403,8 @@ School.prototype.id_page_type=function(doc,url,resolve,reject,self) {
     else if(page_type==="none"&& sites_google_found) page_type="sites_google";
     if(page_type==="none") {
         doc.querySelectorAll("script").forEach(function(curr_script) {
-            for(i=0; i < Schools.script_regex_lst.length;i++) {
-                if(curr_script.src&&Schools.script_regex_lst[i].regex.test(curr_script.src)) page_type=Schools.script_regex_lst[i].name;
+            for(i=0; i < self.script_regex_lst.length;i++) {
+                if(curr_script.src&&self.script_regex_lst[i].regex.test(curr_script.src)) page_type=self.script_regex_lst[i].name;
                 //  else if(curr_script.innerHTML.indexOf("_W.configDomain = \"www.weebly.com\"")!==-1) console.log("generator=weebly.com");
             }
         });

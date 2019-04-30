@@ -375,7 +375,7 @@ MTurkScript.prototype.parse_name=function(to_parse)
         if(!this.prefix_in_string(suffixes,split_parse[last]) &&
            !(split_parse.length>0 && /[A-Z][a-z]/.test(split_parse[0]) && /^[^a-z]+$/.test(split_parse[last]))) break;
     }
-    if(last>=2 && /Van|de/.test(split_parse[last-1])) ret.lname=split_parse[last-1]+" "+split_parse[last];
+    if(last>=2 && /Van|de|Le/i.test(split_parse[last-1])) ret.lname=split_parse[last-1]+" "+split_parse[last];
     else ret.lname=split_parse[last].replace(/[^A-Za-z\']+$/,"");
     ret.fname=split_parse[0];
     if(last>=2 && split_parse[1].length>=1) ret.mname=split_parse[1].substring(0,1);
@@ -1119,67 +1119,75 @@ MTurkScript.prototype.call_contact_page=function(url,callback,extension) {
 };
 
 
+
 /**
  * contact_response Here it searches for an email TODO:FIX */
-MTurkScript.prototype.contact_response=function(doc,url,extra) {
-        var i,j, my_match,temp_email,encoded_match,match_split;
-        var extension=extra.extension,callback=extra.callback;
-        if(extension===undefined) extension='';
-        if(extension==='') get_name_from_title(doc,url);
-        console.log("in contact_response "+url);
-        var short_name=url.replace(my_query.url,""),links=doc.links,email_matches,phone_matches;
-        var replacement=url.match(/^https?:\/\/[^\/]+/)[0];
-        var contact_regex=/(Contact|About|Legal)/i,bad_contact_regex=/^\s*(javascript|mailto):/i;
-        console.log("replacement="+replacement);
-        var temp_url,curr_url;
-        if(email_matches=doc.body.innerHTML.match(email_re)) {
-            for(j=0; j < email_matches.length; j++) {
-                if(!MTurk.is_bad_email(email_matches[j]) && email_matches[j].length>0 &&
-                   (my_query.fields.email=email_matches[j])) break;
-            }
-            console.log("Found email hop="+my_query.fields.email);
-        }
-        if(phone_matches=doc.body.innerText.match(phone_re)) my_query.fields.phoneNumber=phone_matches[0];
-        for(i=0; i < links.length; i++)
-        {
-            // console.log("i="+i+", text="+links[i].innerText);
-            if(extension==='' && contact_regex.test(links[i].innerText) && !bad_contact_regex.test(links[i].href) &&
-               !MTurk.queryList.includes(links[i].href=MTurkScript.prototype.fix_remote_url(links[i].href,url)))
-            {
-                MTurk.queryList.push(links[i].href);
-                console.log("*** Following link labeled "+links[i].innerText+" to "+links[i].href);
-                call_contact_page(links[i].href,callback,"NOEXTENSION");
-                continue;
-            }
-            if(links[i].dataset.encEmail && (temp_email=MTurkScript.prototype.swrot13(links[i].dataset.encEmail.replace(/\[at\]/,"@")))
-               && !MTurkScript.prototype.is_bad_email
-	       (temp_email)) my_query.fields.email=temp_email;
-            if(links[i].href.indexOf("amazonaws.com")===-1 && links[i].href.indexOf("mturkcontent.com")===-1)
-            {
-                //    console.log(short_name+": ("+i+")="+links[i].href);
-            }
-	    if(links[i].dataset.domain&&links[i].dataset.username) my_query.email_list.push(links[i].dataset.username+"@"+links[i].dataset.domain);
+MTurkScript.prototype.contact_response=function(doc,url,extra,email_list,phone_list) {
+    console.log("in contact_response,url="+url);
+    
+    var i,j, my_match,temp_email,encoded_match,match_split;
+    var extension=extra.extension,callback=extra.callback,nlp_temp;
+    var title_result;
+    if(extension===undefined) extension='';
+    var x,scripts=doc.scripts,style=doc.querySelectorAll("style");
+    MTP.fix_emails(doc,url);
+    for(x=0;x<style.length;x++) { style[x].innerHTML=""; }
 
-            if(links[i].href.indexOf("cdn-cgi/l/email-protection#")!==-1 && (encoded_match=links[i].href.match(/#(.*)$/)) &&
-              (temp_email=MTurkScript.prototype.cfDecodeEmail(encoded_match[1]).replace(/\?.*$/,"")) &&
-               !MTurkScript.prototype.is_bad_email(temp_email)) my_query.fields.email=temp_email;
-            if((temp_email=links[i].href.replace(/^mailto:\s*/,"").match(email_re)) &&
-               !MTurkScript.prototype.is_bad_email(temp_email)) my_query.fields.email=temp_email;
-            if(links[i].href.indexOf("javascript:location.href")!==-1 && (temp_email="") &&
-               (encoded_match=links[i].href.match(/String\.fromCharCode\(([^\)]+)\)/)) && (match_split=encoded_match[1].split(","))) {
-                for(j=0; j < match_split.length; j++) temp_email=temp_email+String.fromCharCode(match_split[j].trim());
-                my_query.fields.email=temp_email;
-            }
-            if(links[i].href.indexOf("javascript:DeCryptX(")!==-1 &&
-               (encoded_match=links[i].href.match(/DeCryptX\(\'([^\)]+)\'\)/))) my_query.fields.email=MTurkScript.prototype.DecryptX(encoded_match[1]);
-            if(/^tel:/.test(links[i].href)) my_query.fields.phoneNumber=links[i].href.replace(/^tel:/,"");
+    console.log("in contact_response "+url);
+    var short_name=url.replace(my_query.url,""),links=doc.links,email_matches,phone_matches;
+    var replacement=url.match(/^https?:\/\/[^\/]+/)[0];
+    var contact_regex=/(Contact|About|Legal|Team|Staff|Faculty|Teacher)/i,bad_contact_regex=/^\s*(javascript|mailto|tel):/i;
+    console.log("replacement="+replacement);
+    var temp_url,curr_url;
+    doc.body.innerHTML=doc.body.innerHTML.replace(/\s*([\[\(]{1})\s*at\s*([\)\]]{1})\s*/,"@")
+        .replace(/\s*([\[\(]{1})\s*dot\s*([\)\]]{1})\s*/,".");
+    MTP.fix_emails(doc,url);
+    if((email_matches=doc.body.innerHTML.match(email_re))) {
+        my_query.email_list=my_query.email_list.concat(email_matches);
+        for(j=0; j < email_matches.length; j++) {
+            if(!MTurk.is_bad_email(email_matches[j]) && email_matches[j].length>0 &&
+               (my_query.fields.email=email_matches[j])) break;
         }
-        console.log("* doing doneQueries++ for "+url);
-        MTurk.doneQueries++;
-        //add_to_sheet();
-        //submit_if_done();
-        callback();
-        return;
+        console.log("Found email hop="+my_query.fields.email);
+    }
+
+    if(phone_matches=doc.body.innerText.match(phone_re)) my_query.fields.phoneNumber=phone_matches[0];
+    for(i=0; i < links.length; i++)
+    {
+        if(/instagram\.com\/.+/.test(links[i].href) && !/instagram\.com\/[^\/]+\/.+/.test(links[i].href) && my_query.done["insta"]===undefined) {
+            my_query.done["insta"]=false;
+            console.log("***** FOUND INSTAGRAM "+links[i].href);
+            var temp_promise=MTP.create_promise(links[i].href,MTP.parse_instagram,parse_insta_then); }
+        if(/facebook\.com\/.+/.test(links[i].href) && !MTP.is_bad_fb(links[i].href) &&
+           my_query.fb_url.length===0 && !my_query.found_fb) {
+            my_query.found_fb=true;
+            my_query.done.fb=false;
+            my_query.fb_url=links[i].href;
+            fb_promise_then(links[i].href);
+        }
+        //console.log("i="+i+", text="+links[i].innerText);
+        if(extension==='' &&
+           (contact_regex.test(links[i].innerText)||/\/(contact|about)/i.test(links[i].href))
+           && !bad_contact_regex.test(links[i].href) &&
+           !MTurk.queryList.includes(links[i].href=MTurkScript.prototype.fix_remote_url(links[i].href,url))) {
+            MTurk.queryList.push(links[i].href);
+            console.log("*** Following link labeled "+links[i].innerText+" to "+links[i].href);
+            call_contact_page(links[i].href,callback,"NOEXTENSION");
+            continue;
+        }
+        //if(my_query.fields.email.length>0) continue;
+        if((temp_email=links[i].href.replace(/^\s*mailto:\s*/,"").match(email_re)) &&
+           !MTurkScript.prototype.is_bad_email(temp_email[0])) my_query.email_list.push(temp_email.toString());
+        if(/^tel:/.test(links[i].href)) my_query.fields.phoneNumber=links[i].href.replace(/^tel:/,"");
+        //if(email_re.test(temp_email) && !my_query.email_list.includes(temp_email)) my_query.email_list.push(temp_email);
+
+    }
+    console.log("* doing doneQueries++ for "+url);
+    MTurk.doneQueries++;
+    if(begin_email.length===0 && my_query.fields.email.length>0) my_query.fields.url=url;
+    console.log("Calling evaluate emails from contact_response");
+    evaluate_emails(callback);
+    return;
 };
 /* Converts json to unencoded form for POST */
 MTurkScript.prototype.json_to_post=function(obj) {
@@ -1293,6 +1301,8 @@ MTurkScript.prototype.matches_names=function(name1,name2) {
         return false;
 };
 
+
+/* Converts csv to an array */
 MTurkScript.prototype.csvToArray=function(text) {
     let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0, l;
     for (l of text) {
@@ -1395,12 +1405,58 @@ MTurkScript.prototype.fix_insertEmail=function(script,match) {
     parent.innerHTML=email;
 };
 
-/* Fixes the hidden emails in a document */
+/* inserts an href with mailto:email, and innerHTML text before elem; 
+ * if elem has no parent node, does nothing, note that text defaults to the email */
+MTurkScript.prototype.insert_email_before=function(elem,email,text) {
+    if(text===undefined) text=email;
+    let a=doc.createElement("a");
+    a.href="mailto:"+email;
+    a.innerHTML=text;
+    if(elem.parentNode) elem.parentNode.insertBefore(a,elem);
+};
 
+/** Fixes the emails obfuscated in scripts */
+MTurkScript.prototype.fix_emails_in_scripts=function(doc,url,the_script) {
+    var unesc_regex=/(?:unescape|decodeURIComponent)\((?:[\"\']{1})([^\"\"]+)(?:[\"\']{1})/;
+    var match=the_script.innerHTML.match(unesc_regex),decoded,match2;
+    var w_match,x_match,fix_count=0;
+    var insertEmailRegex=/insertEmail\([\'\"]{1}([^\'\"]+)[\'\"]{1},\s*[\'\"]{1}([^\'\"]+)[\'\"]{1}\)/;
+
+    w_match=the_script.innerHTML.match(/var\s*w\s*\=\s*\'([^\']+)\'/);
+    x_match=the_script.innerHTML.match(/var\s*x\s*\=\s*\'([^\']+)\'/);
+    if(/var addy[\d]+/.test(the_script.innerHTML)) MTurkScript.prototype.fix_addy_script_only(the_script);
+    else if(/function escramble/.test(the_script.innerHTML)) MTurkScript.prototype.fix_escramble(doc,the_script);
+    else if(the_script.innerHTML.indexOf("// Email obfuscator script 2.1 by Tim Williams")!==-1) MTurkScript.prototype.fix_timwilliams(doc,the_script);
+    else if(match&&(decoded=decodeURIComponent(match[1]))&&(match2=decoded.match(email_re))) {
+        console.log("Matched weird decode");
+	MTurkScript.prototype.insert_email_before(the_script,match2[0],match2[0]);
+    }
+    else if((match=the_script.innerHTML.match(insertEmailRegex))) MTurkScript.prototype.fix_insertEmail(scripts[i],match);
+    //if((match=/FS\.util\.insertEmail\(\"[^\"]*\",\s*\"([^\"]*)\",\s*\"([^\"]*)\"/)) {
+    else if(w_match && x_match) {
+	console.log("Found w_match="+w_match+", x_match="+x_match);
+	MTurkScript.prototype.insert_email_before(the_script,w_match[1]+"@"+x_match[1],w_match[1]+"@"+x_match[1]);
+//	let a=doc.createElement("a");
+//	a.href="mailto:"+w_match[1]+"@"+x_match[1];
+//	a.innerHTML=w_match[1]+"@"+x_match[1];
+//	the_script.parentNode.insertBefore(a,the_script);
+    }
+    else if(scripts[x].innerHTML.length<100000&&
+            (match=scripts[x].innerHTML.match(/[\'\"]{1}([\<\>^\'\"\n\s\t;\)\(]+@[^\>\<\'\"\s\n\t;\)\(]+\.[^\<\>\'\"\s\n\t;\)\(]+)[\'\"]{1}/))) {
+        if((match2=match[1].match(email_re)) && !MTP.is_bad_email(match2[0])) {
+            console.log("Found email in scripts "+scripts[x].innerHTML);
+            MTurkScript.prototype.insert_email_before(the_script,match2[0],match2[0]);
+        }
+               // console.timeEnd("search");
+    }
+    if(the_script) the_script.innerHTML="";
+};
+
+/* Fixes the hidden emails in a document
+ */
 MTurkScript.prototype.fix_emails=function(doc,url) {
     var i,links=doc.links,j,script,scripts=doc.scripts;
     var my_match,temp_email,encoded_match,match_split;
-    var insertEmailRegex=/insertEmail\([\'\"]{1}([^\'\"]+)[\'\"]{1},\s*[\'\"]{1}([^\'\"]+)[\'\"]{1}\)/;
     console.log("fix_emails: url="+url);
     for(i=0; i < links.length; i++) {
         //console.log("("+i+"): "+links[i].href+", "+links[i].innerText);
@@ -1423,38 +1479,7 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 		/var addy[\d]+/.test(script.innerHTML)) MTurkScript.prototype.fix_addy_script(links[i],script);
         // console.log("("+i+"): "+links[i].href+", "+links[i].innerText);
     }
-    for(x=0;x<scripts.length;x++) {
-        var unesc_regex=/(?:unescape|decodeURIComponent)\((?:[\"\']{1})([^\"\"]+)(?:[\"\']{1})/;
-        //console.log("scripts["+x+"]="+scripts[x].innerHTML);
-        var match=scripts[x].innerHTML.match(unesc_regex),decoded,match2;
-	var w_match,x_match,fix_count=0;
-	w_match=scripts[x].innerHTML.match(/var\s*w\s*\=\s*\'([^\']+)\'/);
-	x_match=scripts[x].innerHTML.match(/var\s*x\s*\=\s*\'([^\']+)\'/);
-
-        if(/var addy[\d]+/.test(scripts[x].innerHTML)) MTurkScript.prototype.fix_addy_script_only(scripts[x]);
-
-   
-	else if(/function escramble/.test(scripts[x].innerHTML)) MTurkScript.prototype.fix_escramble(doc,scripts[x]);
-
-   
-
-	else if(scripts[x].innerHTML.indexOf("// Email obfuscator script 2.1 by Tim Williams")!==-1) MTurkScript.prototype.fix_timwilliams(doc,scripts[x]);
-        else if(match&&(decoded=decodeURIComponent(match[1]))&&(match2=decoded.match(email_re))) {
-            console.log("Matched weird decode");
-	    
-            //my_query.fields.email=match2[0];
-        }
-	else if((match=scripts[x].innerHTML.match(insertEmailRegex))) MTurkScript.prototype.fix_insertEmail(scripts[i],match);
-	//if((match=/FS\.util\.insertEmail\(\"[^\"]*\",\s*\"([^\"]*)\",\s*\"([^\"]*)\"/)) {
-	else if(w_match && x_match) {
-	    console.log("Found w_match="+w_match+", x_match="+x_match);
-	    let a=doc.createElement("a");
-	    a.href="mailto:"+w_match[1]+"@"+x_match[1];
-	    a.innerHTML=w_match[1]+"@"+x_match[1];
-	    scripts[x].parentNode.insertBefore(a,scripts[x]);
-	}
-        if(scripts[x]) scripts[x].innerHTML="";
-    }
+    for(x=0;x<scripts.length;x++) MTurkScript.prototype.fix_emails_in_script(doc,url,scripts[x]);
 };
 MTurkScript.prototype.is_bad_page=function(doc,url) {
     var links=doc.links,i,scripts=doc.scripts;
@@ -1493,6 +1518,7 @@ MTurkScript.prototype.parse_vcard=function(doc,url,resolve,reject,response) {
     resolve(result);
 };
 
+/* Finds longest common subsequence of two strings */
 MTurkScript.prototype.longest_common_subsequence=function(set1, set2) {
     // Init LCS matrix.
     const lcsMatrix = Array(set2.length + 1).fill(null).map(() => Array(set1.length + 1).fill(null));
