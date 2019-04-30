@@ -1479,7 +1479,7 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 		/var addy[\d]+/.test(script.innerHTML)) MTurkScript.prototype.fix_addy_script(links[i],script);
         // console.log("("+i+"): "+links[i].href+", "+links[i].innerText);
     }
-    for(x=0;x<scripts.length;x++) MTurkScript.prototype.fix_emails_in_script(doc,url,scripts[x]);
+    for(x=0;x<scripts.length;x++) MTurkScript.prototype.fix_emails_in_scripts(doc,url,scripts[x]);
 };
 MTurkScript.prototype.is_bad_page=function(doc,url) {
     var links=doc.links,i,scripts=doc.scripts;
