@@ -10,6 +10,7 @@
 // @include        https://*.amazonaws.com/*
 // @include https://worker.mturk.com/*
 // @include https://*facebook.com/*
+// @grant GM_deleteValue
 // @grant  GM_getValue
 // @grant GM_setValue
 // @grant GM_addValueChangeListener
@@ -33,7 +34,7 @@
 (function() {
     var my_query = {};
     var bad_urls=[];
-    var MTurk=new MTurkScript(30000,200,[],begin_script,"A21TF4I3UH0NQ7");
+    var MTurk=new MTurkScript(30000,200,[],begin_script,"A2TQXTGJ2H2WND");
     var MTP=MTurkScript.prototype;
     function check_function()
     {
