@@ -1407,7 +1407,7 @@ MTurkScript.prototype.fix_insertEmail=function(script,match) {
 
 /* inserts an href with mailto:email, and innerHTML text before elem; 
  * if elem has no parent node, does nothing, note that text defaults to the email */
-MTurkScript.prototype.insert_email_before=function(elem,email,text) {
+MTurkScript.prototype.insert_email_before=function(doc,elem,email,text) {
     if(text===undefined) text=email;
     let a=doc.createElement("a");
     a.href="mailto:"+email;
@@ -1429,13 +1429,13 @@ MTurkScript.prototype.fix_emails_in_scripts=function(doc,url,the_script) {
     else if(the_script.innerHTML.indexOf("// Email obfuscator script 2.1 by Tim Williams")!==-1) MTurkScript.prototype.fix_timwilliams(doc,the_script);
     else if(match&&(decoded=decodeURIComponent(match[1]))&&(match2=decoded.match(email_re))) {
         console.log("Matched weird decode");
-	MTurkScript.prototype.insert_email_before(the_script,match2[0],match2[0]);
+	MTurkScript.prototype.insert_email_before(doc,the_script,match2[0],match2[0]);
     }
     else if((match=the_script.innerHTML.match(insertEmailRegex))) MTurkScript.prototype.fix_insertEmail(scripts[i],match);
     //if((match=/FS\.util\.insertEmail\(\"[^\"]*\",\s*\"([^\"]*)\",\s*\"([^\"]*)\"/)) {
     else if(w_match && x_match) {
 	console.log("Found w_match="+w_match+", x_match="+x_match);
-	MTurkScript.prototype.insert_email_before(the_script,w_match[1]+"@"+x_match[1],w_match[1]+"@"+x_match[1]);
+	MTurkScript.prototype.insert_email_before(doc,the_script,w_match[1]+"@"+x_match[1],w_match[1]+"@"+x_match[1]);
 //	let a=doc.createElement("a");
 //	a.href="mailto:"+w_match[1]+"@"+x_match[1];
 //	a.innerHTML=w_match[1]+"@"+x_match[1];
@@ -1445,7 +1445,7 @@ MTurkScript.prototype.fix_emails_in_scripts=function(doc,url,the_script) {
             (match=the_script.innerHTML.match(/[\'\"]{1}([\<\>^\'\"\n\s\t;\)\(]+@[^\>\<\'\"\s\n\t;\)\(]+\.[^\<\>\'\"\s\n\t;\)\(]+)[\'\"]{1}/))) {
         if((match2=match[1].match(email_re)) && !MTP.is_bad_email(match2[0])) {
             console.log("Found email in scripts "+the_script.innerHTML);
-            MTurkScript.prototype.insert_email_before(the_script,match2[0],match2[0]);
+            MTurkScript.prototype.insert_email_before(doc,the_script,match2[0],match2[0]);
         }
                // console.timeEnd("search");
     }
