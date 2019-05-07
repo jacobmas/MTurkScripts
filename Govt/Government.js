@@ -253,7 +253,7 @@ Gov.get_area_code=function(doc) {
 
 /* Gov.is_good_person tries to verify if it's a good person */
 Gov.is_good_person=function(ret) {
-    if(Gov.debug) console.log("ret="+JSON.stringify(ret));
+    if(Gov.debug) console.log("Gov.is_good_person, ret="+JSON.stringify(ret));
     if(!(ret.name && ret.title)) return false;
     if(!(ret.name&&ret.name.split(/\s+/).length<=4)) return false;
     if(nlp(ret.name).people().out('terms').length===0 && !(ret.email&&email_re.test(ret.email))) return false;
@@ -422,7 +422,7 @@ Gov.parse_contact_div=function(elem,name,url) {
 		new RegExp("("+Gov.regexpify_str(bolds[i].innerText)+"[^]*)","i");
 	    //  console.log("curr_regexp="+curr_regexp);
 	    if((match=text.match(curr_regexp)) && match.length>=2 && match[1]!==undefined && (ret=Gov.parse_data_func(match[1].replace(/\n\n+/g,"\n")))
-	       && ret.name && ret.title && ret.email && ++add_count) {
+	       && Gov.is_good_person(ret) && ++add_count) {
 		//console.log("match["+i+"]="+JSON.stringify(match));
 		Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:name})); }
 	}
