@@ -428,7 +428,7 @@ Gov.parse_contact_div=function(elem,name,url) {
 	}
     }
 
-    if((add_count===0) && (ret=Gov.parse_data_func(text)) && ret.name && ret.title && ret.email
+    if((add_count===0) && (ret=Gov.parse_data_func(text)) && Gov.is_good_person(ret)
        && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:name}));
 
     Gov.strip_bad_contacts();
