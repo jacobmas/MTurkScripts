@@ -10,8 +10,8 @@ var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 				     "Superintendent|Advisor|Marshal|Public|Clerk|Code Enforcement|Building Services|Operations|Sgt\.|Det\.|"+
 				     "Foreman|Secretary|Chief|President)($|[^A-Za-z0-9]{1})","i"),
 	      title_prefix_regex:/^(Director|Mayor|Chief|Councilman|Councilwoman|Secretary|Sergeant|Patrol Officer|Lieutenant|Detective)\s+/,
-	      bad_stuff_re:/(\/\*)|(^Wh.*\?$)|(\sand\s)|([\d]+)|(I want to\s.*$)|(^Home.*)|(…)|((City|Town) Hall)|City Hall|Welcome to/i
-	      ,bad_stuff_re2:/(Contact( Us)?)$|Navigation|Email|Search|Economic|Quick Links|Choose |function\(|var |\/.*\//i, //Menu([^A-Za-z0-9]|$)
+	      bad_stuff_re:/(\/\*)|(^Wh.*\?$)|(\sand\s)|([\d]+)|(I want to\s.*$)|Printer-Friendly|(^Home.*)|(…)|((City|Town) Hall)|City Hall|Welcome to/i
+	      ,bad_stuff_re2:/(Contact( Us)?)$|Navigation|Email|Search|Printer-Friendly|Economic|Quick Links|Choose |function\(|var |\/.*\//i, //Menu([^A-Za-z0-9]|$)
 	      bad_link_regex:/(^\s*(javascript|mailto|tel):)|(\/(cdn-cgi|tag|event|events)\/)|(\/#email)|(#$)|(\/login)|(\/events)|(-schedule(-|\/))|(\.pdf$)/i,
 	      bad_contact_regex:/Webmaster|Employee Email|(^|\s)Login|Email Notifications|Business .*Directory|(State|Federal).*Contacts/i,
 	      dept_name_regex:/^(Department of )?(Parks (and|&) Recreation|Library|CPED|Public Works|Police|Sanitation|Administration|Parks|Recreation|Information Technology|Human Resources|Civil Rights)\s*(Department)?$/i,
