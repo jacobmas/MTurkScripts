@@ -762,7 +762,7 @@ Gov.parse_name_func=function(text) {
 /* 
  * Yucky initial functions to clean up text to make parsing easier */
 Gov.initial_cleanup_text_for_parse=function(text) {
-    var job_re=/^([^a-zA-Z]+)(Mayor|Administrator|Director|Supervisor|Alderman|Superintendent|Manager)\s+/g;
+    var job_re=/^([^a-zA-Z]+)(Mayor|Administrator|Director|Supervisor|Alderman|Superintendent|Manager)\s+/ig;
     text=text.replace(/ (?:has served as|is) the ([A-Z]+)/,",$1");
     text=text.replace(/([a-z]{1})([A-Z][a-z]+:)/g,"$1\t$2").replace(/([a-z]{1})\s{1,}([\d]{1})/g,"$1\t$2")
 	.replace(/([\d]{1})\s{1,}([A-Za-df-wy-z]{1})/g,"$1\t$2").replace(/([A-Za-z]{1})\s([A-Za-z0-9\._]+@)/,"$1\t$2")
@@ -800,9 +800,10 @@ Gov.parse_data_func=function(text) {
     var curr_line, s_part="", second_arr,begin_name="";
 
     var has_pasted_title=false,title_prefix,dept_name;
-   // if(!/@/.test(text)) return;
+    // if(!/@/.test(text)) return;
+        text=Gov.initial_cleanup_text_for_parse(text);
+
     if(Gov.debug) console.log("text="+text);
-    text=Gov.initial_cleanup_text_for_parse(text);
     if((text=text.trim()).length===0) return ret;
     var split_lines_1=(text=text.trim()).split(Gov.split_lines_regex),split_lines=[],temp_split_lines,new_split;
     var found_email=false,split_comma,found_phone=false;
