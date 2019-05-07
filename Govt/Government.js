@@ -253,6 +253,7 @@ Gov.get_area_code=function(doc) {
 
 /* Gov.is_good_person tries to verify if it's a good person */
 Gov.is_good_person=function(ret) {
+    if(Gov.debug) console.log("ret="+JSON.stringify(ret));
     if(!(ret.name && ret.title)) return false;
     if(!(ret.name&&ret.name.split(/\s+/).length<=4)) return false;
     if(nlp(ret.name).people().out('terms').length===0 && !(ret.email&&email_re.test(ret.email))) return false;
