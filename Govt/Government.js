@@ -257,6 +257,7 @@ Gov.is_good_person=function(ret) {
     if(!(ret.name&&ret.name.split(/\s+/).length<=4)) return false;
     if(nlp(ret.name).people().out('terms').length===0 && !(ret.email&&email_re.test(ret.email))) return false;
     if(!(ret.email&&email_re.test(ret.email)) && !Gov.matches_title_regex(ret.title)) return false;
+    if(/^[^A-Z]+/.test(ret.title)) return false;
 //    ret.name && ret.title
     //		       && ret.email
     return true;
