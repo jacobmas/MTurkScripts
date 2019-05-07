@@ -251,6 +251,17 @@ Gov.get_area_code=function(doc) {
     else return "";
 };
 
+/* Gov.is_good_person tries to verify if it's a good person */
+Gov.is_good_person=function(ret) {
+    if(!(ret.name && ret.title)) return false;
+    if(!(ret.name&&ret.name.split(/\s+/).length<=4)) return false;
+    if(nlp(ret.name).people().out('terms').length===0 && !(ret.email&&email_re.test(ret.email))) return false;
+    if(!(ret.email&&email_re.test(ret.email)) && !Gov.matches_title_regex(ret.title)) return false;
+//    ret.name && ret.title
+    //		       && ret.email
+    return true;
+};
+
 /** Gov.parse_contact_tables parses all the contact tables in a temporary div (temp_div) created at the bottom of the page for
     parsing purposes, with all scripts being loaded
     Fix to do if things are in individual divs
@@ -280,8 +291,7 @@ Gov.parse_contact_tables=function(doc,url,resolve,reject,temp_div,dept_name) {
 		    if(!elem.innerText.match(email_re)) return;
 		    let elem_text=Gov.textify_elem(elem);
 		    //  console.log("elem.innerText="+elem.innerText);
-		    if((ret=Gov.parse_data_func(elem_text)) && ret.name && ret.title
-		       && ret.email && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:dept_name})); });
+		    if((ret=Gov.parse_data_func(elem_text)) && Gov.is_good_person(ret) && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:dept_name})); });
 	    }
 
 	    //console.time("add_columns");
@@ -311,8 +321,7 @@ Gov.parse_contact_tables=function(doc,url,resolve,reject,temp_div,dept_name) {
 	    table[i].querySelectorAll("td").forEach(function(elem) {
 		var ret,add_count=0;
 
-		if((ret=Gov.parse_data_func(elem.innerText)) && ret.name && ret.title
-		   && ret.email && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:dept_name})); });
+		if((ret=Gov.parse_data_func(elem.innerText)) && Gov.is_good_person(ret) && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:dept_name})); });
 	}
     }
     /* No asynchronous calls so won't happen till after tables finish parsing right? */
@@ -351,8 +360,7 @@ Gov.parse_contact_elems=function(doc,url,resolve,reject,name) {
 	    text=text.replace(new RegExp(Gov.regexpify_str(elem.innerText)),"$&\t"); });*/
 
 	//console.log("p.innerText="+text);
-	if((ret=Gov.parse_data_func(text)) && ret.name && ret.title
-	   && ret.email && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:name}));
+	if((ret=Gov.parse_data_func(text)) && Gov.is_good_person(ret) && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:name}));
 	else if(text.length>600) inner_p.innerHTML="";
     });
     div.forEach(function(elem) {
