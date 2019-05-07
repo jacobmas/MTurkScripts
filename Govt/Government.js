@@ -1258,7 +1258,7 @@ Gov.parse_municipalimpact=function(doc,url,resolve,reject,dept) {
     console.log("contacts.length="+contacts.length);
     contacts.forEach(function(item) {
 	Gov.fix_emails(item);
-	if(curr_contact=Gov.parse_data_func(item.innerText) && curr_contact.name&&curr_contact.title) Gov.contact_list.push(curr_contact);
+	if((curr_contact=Gov.parse_data_func(item.innerText)) && curr_contact.name&&curr_contact.title) Gov.contact_list.push(curr_contact);
     })
     resolve("Done url="+url);
 };
