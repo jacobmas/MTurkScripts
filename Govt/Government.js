@@ -862,6 +862,7 @@ Gov.parse_data_func=function(text) {
 	split_lines.splice(1,0,temp_split_lines[0]); }
 
     if(split_lines.length>0&&(title_prefix=split_lines[0].match(Gov.title_prefix_regex))) {
+	if(Gov.debug) console.log("title_prefix="+JSON.stringify(title_prefix));
 	split_lines=[split_lines[0].replace(Gov.title_prefix_regex,"")].concat([title_prefix[0]].concat(split_lines.slice(1))); }
     while(/:/.test(split_lines[0])) split_lines=split_lines[0].split(":").filter(line=>line && line.trim().length>0).concat(split_lines.slice(1));
     /** End additional code **/
