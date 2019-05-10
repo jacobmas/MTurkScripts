@@ -9,7 +9,7 @@ var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 				     "Council Member|Commissioner|Sheriff|Undersheriff|Clerk|Attorney|Recorder|Official|Foreman|Roadmaster|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|"+
 				     "Superintendent|Advisor|Marshal|Public|Clerk|Code Enforcement|Building Services|Operations|Sgt\.|Det\.|"+
 				     "Foreman|Secretary|Chief|President)($|[^A-Za-z0-9]{1})","i"),
-	      title_prefix_regex:/^(Director|Mayor|Chief|Councilman|Councilwoman|Secretary|Sheriff|Sergeant|Patrol Officer|Lieutenant|Detective)\s+/,
+	      title_prefix_regex:/^(Director|Mayor|Chief|Councilman|Councilwoman|Secretary|Sheriff|Sergeant|Patrol Officer|Lieutenant|Detective)(\s+[A-Z][\-\.\'a-z]+)(.*)$/,
 	      bad_stuff_re:/(\/\*)|(^Wh.*\?$)|(\sand\s)|([\d]+)|(I want to\s.*$)|Printer-Friendly|(^Home.*)|(…)|((City|Town) Hall)|City Hall|Welcome to/i
 	      ,bad_stuff_re2:/(Contact( Us)?)$|Navigation|Email|Search|Printer-Friendly|Economic|Quick Links|Choose |function\(|var |\/.*\//i, //Menu([^A-Za-z0-9]|$)
 	      bad_link_regex:/(^\s*(javascript|mailto|tel):)|(\/(cdn-cgi|tag|event|events)\/)|(\/#email)|(#$)|(\/login)|(\/events)|(-schedule(-|\/))|(\.pdf$)/i,
@@ -804,14 +804,14 @@ Gov.split_into_lines=function(text) {
 // Split off a title from the beginning
     if((split_comma=split_lines[0].split(","))&&split_comma.length>1&&Gov.title_regex.test(split_comma[0])) {
 	split_lines=split_comma.concat(split_lines.slice(1)); }
-    if(Gov.debug) console.log("split_lines before filtering="+JSON.stringify(split_lines));
+    if(Gov.debug||Gov.debug_parse) console.log("split_lines before filtering="+JSON.stringify(split_lines));
     // Filter out junky splits 
     split_lines=split_lines.filter(line => line && line.replace(/[\-\s]+/g,"").trim().length>0);
     split_lines=split_lines.map(line => line.replace(/^\s*[\(]*(\s*[^\d]+)/,"$1").replace(/[\)]*\s*$/,"").trim());
     // Split off a title from the beginning (not sure why I had it again but leave anyway)
     if(split_lines.length>0&&(split_comma=split_lines[0].split(","))&&split_comma.length>1&&
        Gov.title_regex.test(split_lines[0])) split_lines=split_comma.concat(split_lines.slice(1));
-    if(Gov.debug) console.log("split_lines after filtering="+JSON.stringify(split_lines));
+    if(Gov.debug||Gov.debug_parse) console.log("split_lines after filtering="+JSON.stringify(split_lines));
     return split_lines;
 };
 
@@ -830,7 +830,7 @@ Gov.parse_data_func=function(text) {
     // Do some initial cleanup
     text=Gov.initial_cleanup_text_for_parse(text);
 
-    if(Gov.debug) console.log("text="+text);
+    if(Gov.debug||Gov.debug_parse) console.log("text="+text);
     if((text=text.trim()).length===0) return ret;
     var split_lines_1=(text=text.trim()).split(Gov.split_lines_regex),split_lines=[],temp_split_lines,new_split;
     var found_email=false,split_comma,found_phone=false;
@@ -855,15 +855,18 @@ Gov.parse_data_func=function(text) {
 //	console.log("$$ SET ret.department="+ret.department);
 	split_lines=split_lines.slice(1); }
     while(/:/.test(split_lines[0])) split_lines=split_lines[0].split(":").filter(line=>line && line.trim().length>0).concat(split_lines.slice(1));
-
+    
+   if(split_lines.length>0&&(title_prefix=split_lines[0].match(Gov.title_prefix_regex))) {
+	if(Gov.debug||Gov.debug_parse) console.log("title_prefix="+JSON.stringify(title_prefix));
+       split_lines=[title_prefix[2].trim(),title_prefix[1].trim(),title_prefix[3].trim()].concat(split_lines.slice(1));
+   }
+    
     /** Additional code **/
     if(Gov.title_regex.test(split_lines[0]) &&
        (temp_split_lines=split_lines.splice(0,1))) {
 	split_lines.splice(1,0,temp_split_lines[0]); }
 
-    if(split_lines.length>0&&(title_prefix=split_lines[0].match(Gov.title_prefix_regex))) {
-	if(Gov.debug) console.log("title_prefix="+JSON.stringify(title_prefix));
-	split_lines=[split_lines[0].replace(Gov.title_prefix_regex,"")].concat([title_prefix[0]].concat(split_lines.slice(1))); }
+ 
     while(/:/.test(split_lines[0])) split_lines=split_lines[0].split(":").filter(line=>line && line.trim().length>0).concat(split_lines.slice(1));
     /** End additional code **/
 
@@ -891,7 +894,7 @@ Gov.parse_data_func=function(text) {
 	   && j+1 < split_lines.length) begin_name=begin_name+" "+split_lines[(j++)+1];
 	ret.name=Gov.parse_name_func(begin_name?begin_name:"");
     }
-    if(Gov.debug) console.log("parse_data_func: "+JSON.stringify(split_lines)+", j="+j);
+    if(Gov.debug||Gov.debug_parse) console.log("parse_data_func: "+JSON.stringify(split_lines)+", j="+j);
     for(i=j+1; i < split_lines.length; i++) {
 	if(split_lines[i]===undefined || !good_stuff_re.test(split_lines[i])) continue;
 	//  console.log("i="+i+", split_lines[i]="+split_lines[i]);
@@ -1610,6 +1613,7 @@ Gov.init_Gov=function(doc,url,resolve,reject,query)
     if(!query.id_only) { console.log("url="+url); console.time("Gov"); }
     Gov.url=url;Gov.query=query;Gov.dept_links=[];Gov.resolve=resolve;Gov.reject=reject;Gov.contact_links=[];
     Gov.debug=query.debug||false;
+    Gov.debug_parse=query.debug_parse||false;
     Gov.init_id_regex();Gov.depts={};
     Gov.promise_list=[];
     //console.log("Gov.id_regex="+Gov.id_regex);
