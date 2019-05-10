@@ -1035,7 +1035,7 @@ Gov.scrape_qscend=function(doc,url,resolve,reject) {
    Needs work to allow it to only scrape the directories likely to have the queried contacts, far too slow to scrape them all
 */
 Gov.scrape_civicplus=function(doc,url,resolve,reject) {
-    var directory_promise=MTurkScript.prototype.create_promise(url.replace(/\/$/,"")+"/Directory.aspx",
+    var directory_promise=MTurkScript.prototype.create_promise(url.replace(/(https?:\/\/[^\/]*).*$/,"$1")+"/Directory.aspx",
 							       Gov.parse_civicplus_directory,resolve,
 							       reject); };
 
