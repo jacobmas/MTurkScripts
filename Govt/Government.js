@@ -800,7 +800,7 @@ Gov.split_into_lines=function(text) {
     var split_lines=text.split(Gov.split_lines_regex);
     var mult_word_begin_re=/^[^\s]+\s+[^\s]+,\s*[A-Z\.]*[^A-Z\s\n,]+/;
     if(split_lines.length>0 &&
-       mult_word_begin_re.test(split_lines[0])) split_lines=split_lines.split(",").concat(split_lines.slice(1));
+       mult_word_begin_re.test(split_lines[0])) split_lines=split_lines[0].split(",").concat(split_lines.slice(1));
 // Split off a title from the beginning
     if((split_comma=split_lines[0].split(","))&&split_comma.length>1&&Gov.title_regex.test(split_comma[0])) {
 	split_lines=split_comma.concat(split_lines.slice(1)); }
