@@ -774,12 +774,13 @@ Gov.initial_cleanup_text_for_parse=function(text) {
     /* Cleanup jobs preceding names with commas */
     return text.trim();
 };
-
+/* Basic check of bad ret, can be improved */
 Gov.parsed_ret_is_bad=function(ret) {
     if(ret && ret.name && /\s+for\s+/.test(ret.name)) return true;
     return false;
 };
 
+/* Try to fix a bad title splitting */
 Gov.fix_bad_title_data_func=function(ret) {
     let split_title=ret.title.split(",");
    // console.log("# split_title="+JSON.stringify(split_title)+", test1="+ Gov.title_regex.test(split_title[1].trim()));
@@ -791,6 +792,29 @@ Gov.fix_bad_title_data_func=function(ret) {
     }
 
 };
+
+/* Split the text into lines (e.g. tokenize), very ad hoc but it's not regular or even context-free but 
+   HTML format helps us a lot there (ususally) */
+Gov.split_into_lines=function(text) {
+    // Split with the catch almost all division possibilities regex 
+    var split_lines=text.split(Gov.split_lines_regex);
+    var mult_word_begin_re=/^[^\s]+\s+[^\s]+,\s*[A-Z\.]*[^A-Z\s\n,]+/;
+    if(split_lines.length>0 &&
+       mult_word_begin_re.test(split_lines[0])) split_lines=split_lines.split(",").concat(split_lines.slice(1));
+// Split off a title from the beginning
+    if((split_comma=split_lines[0].split(","))&&split_comma.length>1&&Gov.title_regex.test(split_comma[0])) {
+	split_lines=split_comma.concat(split_lines.slice(1)); }
+    if(Gov.debug) console.log("split_lines before filtering="+JSON.stringify(split_lines));
+    // Filter out junky splits 
+    split_lines=split_lines.filter(line => line && line.replace(/[\-\s]+/g,"").trim().length>0);
+    split_lines=split_lines.map(line => line.replace(/^\s*[\(]*(\s*[^\d]+)/,"$1").replace(/[\)]*\s*$/,"").trim());
+    // Split off a title from the beginning (not sure why I had it again but leave anyway)
+    if(split_lines.length>0&&(split_comma=split_lines[0].split(","))&&split_comma.length>1&&
+       Gov.title_regex.test(split_lines[0])) split_lines=split_comma.concat(split_lines.slice(1));
+    if(Gov.debug) console.log("split_lines after filtering="+JSON.stringify(split_lines));
+    return split_lines;
+};
+
 
 /**
  * Gov.parse_data_func parses text into name,title,phone,email
@@ -810,9 +834,13 @@ Gov.parse_data_func=function(text) {
     if((text=text.trim()).length===0) return ret;
     var split_lines_1=(text=text.trim()).split(Gov.split_lines_regex),split_lines=[],temp_split_lines,new_split;
     var found_email=false,split_comma,found_phone=false;
+   /* 
+    // Split if there is more than one word (e.g. a spacing) [or rather exactly two words] before a comma
+    // in the first thing, to try to separate out a name without screwing up Last, First forms
     if(/^[^\s]+\s+[^\s]+,\s*[A-Z\.]*[^A-Z\s\n,]+/.test(split_lines_1[0])) {
 	split_lines=split_lines_1[0].split(",").concat(split_lines_1.slice(1)); }
     else split_lines=split_lines_1;
+    // Split off a title from the beginning
     if((split_comma=split_lines[0].split(","))&&split_comma.length>1&&Gov.title_regex.test(split_comma[0])) {
 	split_lines=split_comma.concat(split_lines.slice(1)); }
     if(Gov.debug) console.log("split_lines="+JSON.stringify(split_lines));
@@ -820,7 +848,8 @@ Gov.parse_data_func=function(text) {
     split_lines=split_lines.map(line => line.replace(/^\s*[\(]*(\s*[^\d]+)/,"$1").replace(/[\)]*\s*$/,"").trim());
     if(split_lines.length>0&&(split_comma=split_lines[0].split(","))&&split_comma.length>1&&Gov.title_regex.test(split_lines[0])) {
 	split_lines=split_comma.concat(split_lines.slice(1)); }
-    if(Gov.debug) console.log("split_lines="+JSON.stringify(split_lines));
+    if(Gov.debug) console.log("split_lines="+JSON.stringify(split_lines));*/
+    split_lines=Gov.split_into_lines(text);
     if(split_lines.length>0&&Gov.dept_name_regex.test(split_lines[0])) {
 	ret.department=split_lines[0];
 //	console.log("$$ SET ret.department="+ret.department);
