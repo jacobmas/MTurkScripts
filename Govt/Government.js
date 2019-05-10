@@ -3,7 +3,7 @@
 //var MTP=MTurkScript.prototype;
 /* Gov.script_loaded is a map of urls to number loaded there, script total is a map of urls to total number needed there */
 var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
-	      split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s*-\s+)|\||                     |	|	|●|•|\s{3,}|\s+[*≈]+\s+|(\s+\/\s+)/,
+	      split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s*-\s+)|\||                     |	|	|●|(\s+~\s+)|•|\s{3,}|\s+[*≈]+\s+|(\s+\/\s+)/,
 	      id_map:{"ahaconsulting":"municodeweb","seamlessgov":"seamlessdocs","townwebdesign":"townweb","civicasoft":"granicus"},
 	      title_regex:new RegExp("(^|[^A-Za-z]{1})(Clerk[\/\-]+Treasurer|Officer|Head of School|Director|Department|Supervisor|Manager|Clerk|Administrator|Inspector|Assistant|"+
 				     "Council Member|Commissioner|Sheriff|Undersheriff|Clerk|Attorney|Recorder|Official|Foreman|Roadmaster|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|"+
@@ -803,7 +803,8 @@ Gov.parse_data_func=function(text) {
 
     var has_pasted_title=false,title_prefix,dept_name;
     // if(!/@/.test(text)) return;
-        text=Gov.initial_cleanup_text_for_parse(text);
+    // Do some initial cleanup
+    text=Gov.initial_cleanup_text_for_parse(text);
 
     if(Gov.debug) console.log("text="+text);
     if((text=text.trim()).length===0) return ret;
