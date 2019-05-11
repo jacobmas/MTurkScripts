@@ -6,10 +6,10 @@ var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 	      split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s*-\s+)|\||                     |	|	|●|(\s+~\s+)|•|\s{3,}|\s+[*≈]+\s+|(\s+\/\s+)/,
 	      id_map:{"ahaconsulting":"municodeweb","seamlessgov":"seamlessdocs","townwebdesign":"townweb","civicasoft":"granicus"},
 	      title_regex:new RegExp("(^|[^A-Za-z]{1})(Clerk[\/\-]+Treasurer|Officer|Head of School|Director|Department|Supervisor|Manager|Clerk|Administrator|Inspector|Assistant|"+
-				     "Council Member|Commissioner|Sheriff|Undersheriff|Clerk|Attorney|Recorder|Official|Foreman|Roadmaster|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|"+
+				     "Council Member|Commissioner|Constable|Sheriff|Undersheriff|Clerk|Attorney|Recorder|Official|Foreman|Roadmaster|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|"+
 				     "Superintendent|Advisor|Marshal|Public|Clerk|Code Enforcement|Building Services|Operations|Sgt\.|Det\.|"+
 				     "Foreman|Secretary|Chief|President)($|[^A-Za-z0-9]{1})","i"),
-	      title_prefix_regex:/^(Director|Mayor|Chief|Councilman|Councilwoman|Secretary|Sheriff|Sergeant|Patrol Officer|Lieutenant|Detective|Sgt\.|Lt\.)((?:\s+[A-Z][\-\.\'a-z]+[\-\.\'a-zA-Z]+)+)(.*)$/,
+	      title_prefix_regex:/^(Director|Mayor|Chief|Councilman|Councilwoman|Secretary|Sheriff|Sergeant|Patrol Officer|Lieutenant|Detective|Sgt\.|Lt\.)((?:\s+[A-Z][\-\.\'a-z]+[\-\.\'a-zA-Z]*)+)(.*)$/,
 	      bad_stuff_re:/(\/\*)|(^Wh.*\?$)|(\sand\s)|([\d]+)|(I want to\s.*$)|Printer-Friendly|(^Home.*)|(…)|((City|Town) Hall)|City Hall|Welcome to/i
 	      ,bad_stuff_re2:/(Contact( Us)?)$|Navigation|Email|Search|Printer-Friendly|Economic|Quick Links|Choose |function\(|var |\/.*\//i, //Menu([^A-Za-z0-9]|$)
 	      bad_link_regex:/(^\s*(javascript|mailto|tel):)|(\/(cdn-cgi|tag|event|events)\/)|(\/#email)|(#$)|(\/login)|(\/events)|(-schedule(-|\/))|(\.pdf$)/i,
