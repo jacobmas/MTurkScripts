@@ -46,7 +46,7 @@ Gov.matches_title_regex=function(title) {
 Gov.find_phone=function(doc,url) {
     var schoolphone,phone,match;
     var phone_re_str_begin="(?:Tel|Telephone|Phone|Ph|P|T):\\s*";
-    var phone_re_str_end="([(]?[0-9]{3}[)]?[-\\s\\.\\/]+[0-9]{3}[-\\s\\.\\/]+[0-9]{4,6}(\\s*(x|ext\\.?)\\s*[\\d]{1,5})?)";
+    var phone_re_str_end="([(]?[0-9]{3}[)]?[-\\s\\.\\/]?[0-9]{3}[-\\s\\.\\/]+[0-9]{4,6}(\\s*(x|ext\\.?)\\s*[\\d]{1,5})?)";
     var ext_phone_re=new RegExp(phone_re_str_begin+phone_re_str_end,"i");
     if((schoolphone=doc.querySelector("a[href^='tel:']")) && phone_re.test(schoolphone.innerText)) phone=schoolphone.innerText.trim();
     else if(!phone && (match=doc.body.innerHTML.match(ext_phone_re))) phone=match[1];
