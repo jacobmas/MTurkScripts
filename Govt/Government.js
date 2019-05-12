@@ -6,7 +6,7 @@ var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 	      split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s*-\s+)|\||                     |	|	|●|(\s+~\s+)|•|\s{3,}|\s+[*≈]+\s+|(\s+\/\s+)/,
 	      id_map:{"ahaconsulting":"municodeweb","seamlessgov":"seamlessdocs","townwebdesign":"townweb","civicasoft":"granicus"},
 	      title_regex:new RegExp("(^|[^A-Za-z]{1})(Clerk[\/\-]+Treasurer|Officer|Head of School|Director|Department|Supervisor|Manager|Clerk|Administrator|Inspector|Assistant|"+
-				     "Council Member|Commissioner|Constable|Sheriff|Undersheriff|Clerk|Attorney|Recorder|Official|Foreman|Roadmaster|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|"+
+				     "Council Member|Commissioner|Constable|Sheriff|Undersheriff|Clerk|Attorney|Recorder|Official|Foreman|Roadmaster|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|Chief of Police|"+
 				     "Superintendent|Advisor|Marshal|Public|Clerk|Code Enforcement|Building Services|Operations|Sgt\.|Det\.|"+
 				     "Foreman|Secretary|Chief|President)($|[^A-Za-z0-9]{1})","i"),
 	      title_prefix_regex:/^(Director|Mayor|Chief|Constable|Councilman|Councilwoman|Secretary|Sheriff|Sergeant|Patrol Officer|Lieutenant|Detective|Sgt\.|Lt\.)((?:\s+[A-Z0-9\"][\-\.\'a-z0-9]+[0-9\-\.\'\"a-zA-Z]*)+)(.*)$/,
@@ -257,6 +257,8 @@ Gov.is_good_person=function(ret) {
     if(!(ret.name && ret.title)) return false;
     if(!(ret.name&&ret.name.split(/\s+/).length<=4)) return false;
     if(nlp(ret.name).people().out('terms').length===0 && !(ret.email&&email_re.test(ret.email))) return false;
+    else {
+	console.log("nlp name="+(nlp(ret.name).people().out('terms'))); }
     if(!(ret.email&&email_re.test(ret.email)) && !Gov.matches_title_regex(ret.title)) return false;
     if(/^[^A-Z]+/.test(ret.title)) return false;
 //    ret.name && ret.title
