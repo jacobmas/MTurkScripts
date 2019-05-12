@@ -9,7 +9,7 @@ var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 				     "Council Member|Commissioner|Constable|Sheriff|Undersheriff|Clerk|Attorney|Recorder|Official|Foreman|Roadmaster|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|Chief of Police|"+
 				     "Superintendent|Advisor|Marshal|Public|Clerk|Code Enforcement|Building Services|Operations|Sgt\.|Det\.|"+
 				     "Foreman|Secretary|Chief|President)($|[^A-Za-z0-9]{1})","i"),
-	      title_prefix_regex:/^(Director|Mayor|(Chief ([Oo]f Police)?)|Constable|Councilman|Councilwoman|Secretary|Sheriff|Sergeant|Patrol Officer|Lieutenant|Detective|Sgt\.|Lt\.)((?:\s+[A-Z0-9\"][\-\.\'a-z0-9]+[0-9\-\.\'\"a-zA-Z]*)+)(.*)$/,
+	      title_prefix_regex:/^(Director|Mayor|(Chief ([Oo]f Police)?)|Police Chief|Constable|Councilman|Councilwoman|Secretary|Sheriff|Sergeant|Patrol Officer|Lieutenant|Detective|Sgt\.|Lt\.)((?:\s+[A-Z0-9\"][\-\.\'a-z0-9]+[0-9\-\.\'\"a-zA-Z]*)+)(.*)$/,
 	      bad_stuff_re:/(\/\*)|(^Wh.*\?$)|(\sand\s)|([\d]+)|(I want to\s.*$)|Printer-Friendly|(^Home.*)|(…)|((City|Town) Hall)|City Hall|Welcome to/i
 	      ,bad_stuff_re2:/(Contact( Us)?)$|Navigation|Email|Search|Printer-Friendly|Economic|Quick Links|Choose |function\(|var |\/.*\//i, //Menu([^A-Za-z0-9]|$)
 	      bad_link_regex:/(^\s*(javascript|mailto|tel):)|(\/(cdn-cgi|tag|event|events)\/)|(\/#email)|(#$)|(\/login)|(\/events)|(-schedule(-|\/))|(\.pdf$)/i,
@@ -258,7 +258,7 @@ Gov.is_good_person=function(ret) {
     if(!(ret.name&&ret.name.split(/\s+/).length<=4)) return false;
     if(nlp(ret.name).people().out('terms').length===0 && !(ret.email&&email_re.test(ret.email))) return false;
     else {
-	console.log("nlp name="+(nlp(ret.name).people().out('terms'))); }
+	if(Gov.debug) console.log("nlp name="+JSON.stringify((nlp(ret.name).people().out('terms')))); }
     if(!(ret.email&&email_re.test(ret.email)) && !Gov.matches_title_regex(ret.title)) return false;
     if(/^[^A-Z]+/.test(ret.title)) return false;
 //    ret.name && ret.title
