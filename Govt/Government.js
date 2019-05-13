@@ -772,7 +772,7 @@ Gov.initial_cleanup_text_for_parse=function(text) {
 	.replace(/([\d]{1})\s{1,}([A-Za-df-wy-z]{1})/g,"$1\t$2").replace(/([A-Za-z]{1})\s([A-Za-z0-9\._]+@)/,"$1\t$2")
 	.replace(/([^\s]+)\s+([^\s@]+@[^\s@]+)/g,"$1\t$2")
 	.replace(/(-[\d]+)([a-zA-Z]+)/g,"$1\t$2").replace(/([a-zA-Z]+)([\d]+-)/g,"$1\t$2");
-    text=text.replace(job_re,"$1$2,").replace(/\s+,/g,",");
+    text=text.replace(job_re,"$1$2,");
     /* Cleanup jobs preceding names with commas */
     return text.trim();
 };
@@ -792,12 +792,12 @@ Gov.fix_bad_title_data_func=function(ret) {
 	ret.name=split_title[0].trim();
 	ret.title=split_title[1].trim();
     }
-
+    ret.title=ret.title.replace(/^\s*,\s*/,"");
 };
 
 /* Split the text into lines (e.g. tokenize), very ad hoc but it's not regular or even context-free but 
    HTML format helps us a lot there (ususally) */
-Gov.split_into_lines=function(text) {
+Gov.split_into_lines=function(text,ret) {
     // Split with the catch almost all division possibilities regex 
     var split_lines=text.split(Gov.split_lines_regex);
     var mult_word_begin_re=/^[^\s]+\s+[^\s]+,\s*[A-Z\.]*[^A-Z\s\n,]+/;
@@ -814,6 +814,18 @@ Gov.split_into_lines=function(text) {
     if(split_lines.length>0&&(split_comma=split_lines[0].split(","))&&split_comma.length>1&&
        Gov.title_regex.test(split_lines[0])) split_lines=split_comma.concat(split_lines.slice(1));
     if(Gov.debug||Gov.debug_parse) console.log("split_lines after filtering="+JSON.stringify(split_lines));
+    
+    /* Add dept name */
+    if(split_lines.length>0&&Gov.dept_name_regex.test(split_lines[0])) {
+	ret.department=split_lines[0];
+	split_lines=split_lines.slice(1); }
+    while(/:/.test(split_lines[0])) split_lines=split_lines[0].split(":").filter(line=>line && line.trim().length>0).concat(split_lines.slice(1));
+    
+   if(split_lines.length>0&&(title_prefix=split_lines[0].match(Gov.title_prefix_regex))&&title_prefix.length>3) {
+	if(Gov.debug||Gov.debug_parse) console.log("title_prefix="+JSON.stringify(title_prefix));
+       split_lines=[title_prefix[2]?title_prefix[2].trim():"",title_prefix[1]?title_prefix[1].trim():"",
+		    title_prefix[3]?title_prefix[3].trim():""].concat(split_lines.slice(1));
+   }
     return split_lines;
 };
 
@@ -836,24 +848,13 @@ Gov.parse_data_func=function(text) {
     if((text=text.trim()).length===0) return ret;
     var split_lines_1=(text=text.trim()).split(Gov.split_lines_regex),split_lines=[],temp_split_lines,new_split;
     var found_email=false,split_comma,found_phone=false;
-    split_lines=Gov.split_into_lines(text);
-    if(split_lines.length>0&&Gov.dept_name_regex.test(split_lines[0])) {
-	ret.department=split_lines[0];
-//	console.log("$$ SET ret.department="+ret.department);
-	split_lines=split_lines.slice(1); }
-    while(/:/.test(split_lines[0])) split_lines=split_lines[0].split(":").filter(line=>line && line.trim().length>0).concat(split_lines.slice(1));
-    
-   if(split_lines.length>0&&(title_prefix=split_lines[0].match(Gov.title_prefix_regex))&&title_prefix.length>3) {
-	if(Gov.debug||Gov.debug_parse) console.log("title_prefix="+JSON.stringify(title_prefix));
-       split_lines=[title_prefix[2]?title_prefix[2].trim():"",title_prefix[1]?title_prefix[1].trim():"",
-		    title_prefix[3]?title_prefix[3].trim():""].concat(split_lines.slice(1));
-   }
+    split_lines=Gov.split_into_lines(text,ret);
+   
     
     /** Additional code **/
     if(Gov.title_regex.test(split_lines[0]) &&
        (temp_split_lines=split_lines.splice(0,1))) {
 	split_lines.splice(1,0,temp_split_lines[0]); }
-
  
     while(/:/.test(split_lines[0])) split_lines=split_lines[0].split(":").filter(line=>line && line.trim().length>0).concat(split_lines.slice(1));
     /** End additional code **/
