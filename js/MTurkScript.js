@@ -1456,15 +1456,18 @@ MTurkScript.prototype.fix_emails_in_scripts=function(doc,url,the_script) {
  */
 MTurkScript.prototype.fix_emails=function(doc,url) {
     var i,links=doc.links,j,script,scripts=doc.scripts;
-    var my_match,temp_email,encoded_match,match_split;
+    var my_match,temp_email,encoded_match,match_split,clicky;
     console.log("fix_emails: url="+url);
     for(i=0; i < links.length; i++) {
         //console.log("("+i+"): "+links[i].href+", "+links[i].innerText);
         if(links[i].dataset.encEmail && (temp_email=MTurkScript.prototype.swrot13(links[i].dataset.encEmail.replace(/\[at\]/,"@")))
            && !MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
+	else if(/mailto/.test(links[i].className) && (temp_email=MTP.swrot13(links[i].href)) &&
+                   !MTurkScript.prototype.is_bad_email(temp_email.toString())) links[i].href="mailto:"+temp_email
         else if(links[i].href.indexOf("cdn-cgi/l/email-protection")!==-1 && (encoded_match=links[i].href.match(/#(.*)$/)) &&
 		(temp_email=MTurkScript.prototype.cfDecodeEmail(encoded_match[1]).replace(/\?.*$/,"")) &&
 		!MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
+	
 	else if(links[i].dataset.cfemail!==undefined && (temp_email=MTurkScript.prototype.cfDecodeEmail(links[i].dataset.cfemail).replace(/\?.*$/,"")) &&
 		!MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
 	if(links[i].dataset.cfemail!==undefined) { console.log("cfemail="+links[i].dataset.cfemail+",decode="+MTurkScript.prototype.cfDecodeEmail(links[i].dataset.cfemail.toString())); }
@@ -1477,6 +1480,9 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 		(encoded_match=links[i].href.match(/DeCryptX\(\'([^\)]+)\'\)/))) links[i].href="mailto:"+temp_email;
         else if((script=links[i].querySelector("script")) &&
 		/var addy[\d]+/.test(script.innerHTML)) MTurkScript.prototype.fix_addy_script(links[i],script);
+	else if((clicky=links[i].getAttribute("onclick"))&&
+		(encoded_match=clicky.match(/mailme\([\'\"]{1}([^\'\"]+)[\'\"]{1}/i))
+                && (temp_email=decodeURIComponent(encoded_match[1]).replace("[nospam]","@"))) links[i].href="mailto:"+temp_email;
         // console.log("("+i+"): "+links[i].href+", "+links[i].innerText);
     }
     for(x=0;x<scripts.length;x++) MTurkScript.prototype.fix_emails_in_scripts(doc,url,scripts[x]);
