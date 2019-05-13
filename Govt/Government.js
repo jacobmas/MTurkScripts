@@ -858,9 +858,10 @@ Gov.parse_data_func=function(text) {
 	split_lines=split_lines.slice(1); }
     while(/:/.test(split_lines[0])) split_lines=split_lines[0].split(":").filter(line=>line && line.trim().length>0).concat(split_lines.slice(1));
     
-   if(split_lines.length>0&&(title_prefix=split_lines[0].match(Gov.title_prefix_regex))&&title_prefix.length>3&&title_prefix[2]&&title_prefix[3]) {
+   if(split_lines.length>0&&(title_prefix=split_lines[0].match(Gov.title_prefix_regex))&&title_prefix.length>3) {
 	if(Gov.debug||Gov.debug_parse) console.log("title_prefix="+JSON.stringify(title_prefix));
-       split_lines=[title_prefix[2].trim(),title_prefix[1].trim(),title_prefix[3].trim()].concat(split_lines.slice(1));
+       split_lines=[title_prefix[2]?title_prefix[2].trim():"",title_prefix[1]?title_prefix[1].trim():"",
+		    title_prefix[3]?title_prefix[3].trim():""].concat(split_lines.slice(1));
    }
     
     /** Additional code **/
