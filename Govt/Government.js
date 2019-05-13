@@ -796,6 +796,11 @@ Gov.fix_bad_title_data_func=function(ret) {
     ret.title=ret.title.replace(/^\s*,\s*/,"");
 };
 
+Gov.is_good_filter_line=function(line) {
+    if(/^Contact(s)?($|[^A-Za-z])/.test(line) && !Gov.title_regex.test(line)) return false;
+    return true;
+};
+
 /* Split the text into lines (e.g. tokenize), very ad hoc but it's not regular or even context-free but 
    HTML format helps us a lot there (ususally) */
 Gov.split_into_lines=function(text,ret) {
@@ -809,7 +814,7 @@ Gov.split_into_lines=function(text,ret) {
 	split_lines=split_comma.concat(split_lines.slice(1)); }
     if(Gov.debug||Gov.debug_parse) console.log("split_lines before filtering="+JSON.stringify(split_lines));
     // Filter out junky splits 
-    split_lines=split_lines.filter(line => line && line.replace(/[\-\s]+/g,"").trim().length>0);
+    split_lines=split_lines.filter(line => line && line.replace(/[\-\s]+/g,"").trim().length>0&&Gov.is_good_filter_line);
     split_lines=split_lines.map(line => line.replace(/^\s*[\(]*(\s*[^\d]+)/,"$1").replace(/[\)]*\s*$/,"").trim());
     // Split off a title from the beginning (not sure why I had it again but leave anyway)
     if(split_lines.length>0&&(split_comma=split_lines[0].split(","))&&split_comma.length>1&&
