@@ -814,7 +814,7 @@ Gov.split_into_lines=function(text,ret) {
 	split_lines=split_comma.concat(split_lines.slice(1)); }
     if(Gov.debug||Gov.debug_parse) console.log("split_lines before filtering="+JSON.stringify(split_lines));
     // Filter out junky splits 
-    split_lines=split_lines.filter(line => line && line.replace(/[\-\s]+/g,"").trim().length>0&&Gov.is_good_filter_line);
+    split_lines=split_lines.filter(line => line && line.replace(/[\-\s]+/g,"").trim().length>0&&Gov.is_good_filter_line(line));
     split_lines=split_lines.map(line => line.replace(/^\s*[\(]*(\s*[^\d]+)/,"$1").replace(/[\)]*\s*$/,"").trim());
     // Split off a title from the beginning (not sure why I had it again but leave anyway)
     if(split_lines.length>0&&(split_comma=split_lines[0].split(","))&&split_comma.length>1&&
