@@ -772,7 +772,7 @@ Gov.initial_cleanup_text_for_parse=function(text) {
 	.replace(/([\d]{1})\s{1,}([A-Za-df-wy-z]{1})/g,"$1\t$2").replace(/([A-Za-z]{1})\s([A-Za-z0-9\._]+@)/,"$1\t$2")
 	.replace(/([^\s]+)\s+([^\s@]+@[^\s@]+)/g,"$1\t$2")
 	.replace(/(-[\d]+)([a-zA-Z]+)/g,"$1\t$2").replace(/([a-zA-Z]+)([\d]+-)/g,"$1\t$2");
-    text=text.replace(job_re,"$1$2,");
+    text=text.replace(job_re,"$1$2,").replace(/\s+,/g,",");
     /* Cleanup jobs preceding names with commas */
     return text.trim();
 };
@@ -836,21 +836,6 @@ Gov.parse_data_func=function(text) {
     if((text=text.trim()).length===0) return ret;
     var split_lines_1=(text=text.trim()).split(Gov.split_lines_regex),split_lines=[],temp_split_lines,new_split;
     var found_email=false,split_comma,found_phone=false;
-   /* 
-    // Split if there is more than one word (e.g. a spacing) [or rather exactly two words] before a comma
-    // in the first thing, to try to separate out a name without screwing up Last, First forms
-    if(/^[^\s]+\s+[^\s]+,\s*[A-Z\.]*[^A-Z\s\n,]+/.test(split_lines_1[0])) {
-	split_lines=split_lines_1[0].split(",").concat(split_lines_1.slice(1)); }
-    else split_lines=split_lines_1;
-    // Split off a title from the beginning
-    if((split_comma=split_lines[0].split(","))&&split_comma.length>1&&Gov.title_regex.test(split_comma[0])) {
-	split_lines=split_comma.concat(split_lines.slice(1)); }
-    if(Gov.debug) console.log("split_lines="+JSON.stringify(split_lines));
-    split_lines=split_lines.filter(line => line && line.replace(/[\-\s]+/g,"").trim().length>0);
-    split_lines=split_lines.map(line => line.replace(/^\s*[\(]*(\s*[^\d]+)/,"$1").replace(/[\)]*\s*$/,"").trim());
-    if(split_lines.length>0&&(split_comma=split_lines[0].split(","))&&split_comma.length>1&&Gov.title_regex.test(split_lines[0])) {
-	split_lines=split_comma.concat(split_lines.slice(1)); }
-    if(Gov.debug) console.log("split_lines="+JSON.stringify(split_lines));*/
     split_lines=Gov.split_into_lines(text);
     if(split_lines.length>0&&Gov.dept_name_regex.test(split_lines[0])) {
 	ret.department=split_lines[0];
