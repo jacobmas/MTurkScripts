@@ -9,7 +9,7 @@ var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 				     "Council Member|Commissioner|Constable|Sheriff|Undersheriff|Clerk|Attorney|Recorder|Official|Foreman|Roadmaster|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|Chief of Police|"+
 				     "Superintendent|Advisor|Marshal|Public|Clerk|Code Enforcement|Building Services|Operations|Sgt\.|Det\.|"+
 				     "Foreman|Secretary|Chief|President)($|[^A-Za-z0-9]{1})","i"),
-	      title_prefix_regex:/^(Director|Mayor|Police Chief|Chief|Chief [Oo]f Police|Constable|Councilman|Councilwoman|Secretary|Sheriff|Sergeant|Patrol Officer|Lieutenant|Detective|Sgt\.|Lt\.)((?:\s+[A-Z0-9\"][\-\.\'a-z0-9]+[0-9\-\.\'\"a-zA-Z]*)+)(.*)$/,
+	      title_prefix_regex:/^(Director|Mayor|Commissioner|Senator|Police Chief|Chief|Chief [Oo]f Police|Chief Deputy|Constable|Councilman|Councilwoman|Secretary|Sheriff|Sergeant|Patrol Officer|Lieutenant|Detective|Sgt\.|Lt\.)((?:\s+[A-Z0-9\"][\-\.\'a-z0-9]+[0-9\-\.\'\"a-zA-Z]*)+)(.*)$/,
 	      bad_stuff_re:/(\/\*)|(^Wh.*\?$)|(\sand\s)|([\d]+)|(I want to\s.*$)|Printer-Friendly|(^Home.*)|(…)|((City|Town) Hall)|City Hall|Welcome to/i
 	      ,bad_stuff_re2:/(Contact( Us)?)$|Navigation|Email|Search|Printer-Friendly|Economic|Quick Links|Choose |function\(|var |\/.*\//i, //Menu([^A-Za-z0-9]|$)
 	      bad_link_regex:/(^\s*(javascript|mailto|tel):)|(\/(cdn-cgi|tag|event|events)\/)|(\/#email)|(#$)|(\/login)|(\/events)|(-schedule(-|\/))|(\.pdf$)/i,
@@ -176,6 +176,7 @@ Gov.load_scripts=function(doc,url,resolve,reject,dept_name) {
 	for(j=0; j < temp_table_scripts.length; j++) {
 	    //console.log("temp_table_scripts["+j+"]="+temp_table_scripts[j].outerHTML);
 	    /* Only loading scripts from the current site */
+	    if(temp_table_scripts[j].src) temp_table_scripts[j].src=temp_table_scripts[j].src.replace(/^http:/,"https:");
 	    if(temp_table_scripts[j].src===undefined || temp_table_scripts[j].src.length===0 ||
 	       MTP.get_domain_only(temp_table_scripts[j].src,true)===MTP.get_domain_only(url,true)) { scripts_to_load.push(temp_table_scripts[j]); }
 	}
