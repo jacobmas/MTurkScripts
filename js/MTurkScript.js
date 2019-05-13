@@ -1463,7 +1463,7 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
         if(links[i].dataset.encEmail && (temp_email=MTurkScript.prototype.swrot13(links[i].dataset.encEmail.replace(/\[at\]/,"@")))
            && !MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
 	else if(/mailto/.test(links[i].className) && (temp_email=MTP.swrot13(links[i].href)) &&
-                   !MTurkScript.prototype.is_bad_email(temp_email.toString())) links[i].href="mailto:"+temp_email
+                !MTurkScript.prototype.is_bad_email(temp_email.toString())) links[i].href="mailto:"+temp_email;
         else if(links[i].href.indexOf("cdn-cgi/l/email-protection")!==-1 && (encoded_match=links[i].href.match(/#(.*)$/)) &&
 		(temp_email=MTurkScript.prototype.cfDecodeEmail(encoded_match[1]).replace(/\?.*$/,"")) &&
 		!MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
