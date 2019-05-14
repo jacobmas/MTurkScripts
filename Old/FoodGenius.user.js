@@ -2,7 +2,7 @@
 // @name         FoodGenius
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Stuff about JJNissen
+// @description  Get Restaurant hompepage, Needs Cleanup Work
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -10,6 +10,7 @@
 // @include        https://*.amazonaws.com/*
 // @include https://worker.mturk.com/*
 // @include file://*
+// @grant GM_deleteValue
 // @grant  GM_getValue
 // @grant GM_setValue
 // @grant GM_addValueChangeListener
@@ -24,8 +25,7 @@
 // @connect *
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
 
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
@@ -35,10 +35,9 @@
 (function() {
     'use strict';
 
-    var automate=GM_getValue("automate",false);
-    var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%]+(\.[^<>()\[\]\\.,;:：\s@"\?]+)*)|("[^\?]+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
-
-    var phone_re=/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}/im;
+    var MTurk=new MTurkScript(20000,200,[],begin_script,"A3W0AYFYLP1OIS",false);
+    var MTP=MTurkScript.prototype;
+   
     var fax_re=/Fax[:]?[\s]?([\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/im;
 
 
@@ -74,18 +73,7 @@
     }
 
     function check_function() { return true;  }
-    function check_and_submit(check_function)
-    {
-        console.log("in check");
-        console.log("Closed="+GM_getValue("closed",0)+"\nReturn="+GM_getValue("return",0)+
-                    "\nsuccess="+GM_getValue("success",0)+"\nno page="+GM_getValue("no_webpage",0));
-        
-        console.log("Checking and submitting");
-	if(GM_getValue("automate"))
-        {
-            setTimeout(function() { document.getElementById("submitButton").click(); }, 500);
-        }
-    }
+
     function is_bad_url2(the_url)
     {
         var i;
@@ -114,7 +102,7 @@
     {
         if(address.state===undefined || address.city===undefined || address.state===undefined)
         {
-            GM_setValue("returnHit",true);
+            GM_setValue("returnHit"+MTurk.assignmenet_id,true);
         }
         document.getElementById("addressLine1").value=address.street;
         document.getElementById("city").value=address.city;
@@ -244,18 +232,20 @@
                 console.log("Permanently closed!");
                 document.getElementsByName("closed")[0].checked=true;
                 GM_setValue("closed",my_query.closed+1);
-                check_and_submit();
+                MTurk.check_and_submit();
                 return;
             }
             if(lgb_info!==null && lgb_info!==undefined)
             {
                 console.log("lgb_info");
                 inner_a=lgb_info.getElementsByTagName("a");
-                if(inner_a!==null && inner_a!==undefined && inner_a.length>0 && !is_bad_url(inner_a[0].href.replace(/\/$/,""),bad_urls,5) && !is_bad_url2(inner_a[0].href))
+                if(inner_a!==null && inner_a!==undefined && inner_a.length>0 &&
+                   !MTP.is_bad_url(inner_a[0].href.replace(/\/$/,""),bad_urls,5,2) && !is_bad_url2(inner_a[0].href))
                 {
+                    console.log("Glunk");
                     document.getElementById("webpage_url").value=inner_a[0].href;
                     GM_setValue("success",my_query.success+1);
-                    check_and_submit();
+                    MTurk.check_and_submit();
                     return;
                 }
                 else if(inner_a.length>0)
@@ -270,7 +260,6 @@
             if(b_algo.length===0)
             {
                 console.log("b_algo length=0");
-                //GM_setValue("returnHit",true);
                 return;
             }
 
@@ -290,19 +279,19 @@
                 }
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
 
-                if(!is_bad_url(b_url,bad_urls) && !is_bad_url2(b_url,bad_urls) && i < 2)
+                if(!MTP.is_bad_url(b_url,bad_urls,5,2) && !is_bad_url2(b_url,bad_urls) && i < 2)
                 {
                     document.getElementById("webpage_url").value=b_url;
                     GM_setValue("success",my_query.success+1);
-                    check_and_submit();
+                    MTurk.check_and_submit();
                     return;
 
                 }
-                else if(!is_bad_url(b_url,bad_urls) && !is_bad_url2(b_url,bad_urls))
+                else if(!MTP.is_bad_url(b_url,bad_urls,5,2) && !is_bad_url2(b_url,bad_urls))
                 {
                     console.log("BAD can't guess");
                     GM_setValue("return",my_query.return+1);
-                    GM_setValue("returnHit",true);
+                    GM_setValue("returnHit"+MTurk.assignment_id,true);
                     return;
                 }
 
@@ -317,28 +306,19 @@
             }
             GM_setValue("no_webpage",my_query.no_webpage+1);
             document.getElementsByName("no_page")[0].checked=true;
-            check_and_submit();
+            MTurk.check_and_submit();
             return;
-           /* if(!found_url)
-            {
-                document.getElementById("UrlBad").checked=true;
-                check_and_submit();
-                b1_success=true;
-                return;
-            }*/
 
-          //GM_setValue("returnHit",true);
-            //return;
 
         }
         catch(error)
         {
-GM_setValue("returnHit",true);
+            GM_setValue("returnHit"+MTurk.assignment_id,true);
             return;
             //console.log("Error "+error);
             //reject(JSON.stringify({error: true, errorText: error}));
         }
-        GM_setValue("returnHit",true);
+        GM_setValue("returnHit"+MTurk.assignment_id,true);
             return;
 
     }
@@ -378,7 +358,7 @@ GM_setValue("returnHit",true);
             console.log("No error");
             /* we got a good result */
             document.getElementById("webpage_url").value=search_result.url;
-            check_and_submit();
+            MTurk.check_and_submit();
         }
         else
         {
@@ -386,21 +366,18 @@ GM_setValue("returnHit",true);
             {
                 console.log("search_result.noURLS="+search_result.noURLS);
                 document.getElementsByName("no_page")[0].checked=true;
-                check_and_submit();
+                MTurk.check_and_submit();
             }
             else
             {
                 /* Didn't get a new URL, quit */
                 console.log("Had an error: "+search_result.errorText);
-                GM_setValue("returnHit",true);
+                GM_setValue("returnHit"+MTurk.assignment_id,true);
                 return false;
             }
         }
 
     }
-
-
-
     function prefix_in_string(prefixes, to_check)
     {
         var j;
@@ -432,8 +409,21 @@ GM_setValue("returnHit",true);
 
     }
 
-    function init_Query()
-    {
+    function begin_script(timeout,total_time,callback) {
+        if(timeout===undefined) timeout=200;
+        if(total_time===undefined) total_time=0;
+        if(callback===undefined) callback=init_Query;
+        if(MTurk!==undefined) { callback(); }
+        else if(total_time<2000) {
+            console.log("total_time="+total_time);
+            total_time+=timeout;
+            setTimeout(function() { begin_script(timeout,total_time,callback); },timeout);
+            return;
+        }
+        else { console.log("Failed to begin script"); }
+    }
+
+    function init_Query() {
 
        var wT=document.getElementById("workContent").getElementsByTagName("table")[0];
         var i;
@@ -464,107 +454,11 @@ GM_setValue("returnHit",true);
         campPromise.then(camp_promise_then
         )
         .catch(function(val) {
-           console.log("Failed at this " + val); GM_setValue("returnHit",true); });
+           console.log("Failed at this " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
 
 
 
 
-
-    }
-
-    window.addEventListener("keydown",function(e) {
-        if(e.key !== "F1") {
-            return;
-        }
-        GM_setValue("stop",true);
-     });
-
-
-    if (window.location.href.indexOf("mturkcontent.com") !== -1 || window.location.href.indexOf("amazonaws.com") !== -1)
-    {
-        var submitButton=document.getElementById("submitButton");
-        if(!submitButton.disabled )
-        {
-
-            init_Query();
-        }
-
-    }
-    else if(window.location.href.indexOf("instagram.com")!==-1)
-    {
-        GM_setValue("instagram_url","");
-        GM_addValueChangeListener("instagram_url",function() {
-            var url=GM_getValue("instagram_url");
-            window.location.href=url;
-        });
-        do_instagram();
-    }
-    else if(window.location.href.indexOf("worker.mturk.com")!==-1)
-    {
-
-	/* Should be MTurk itself */
-        var globalCSS = GM_getResourceText("globalCSS");
-        GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
-       var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
-        if(GM_getValue("automate")===undefined) GM_setValue("automate",false);
-
-        var btn_span=document.createElement("span");
-        var btn_automate=document.createElement("button");
-
-         var btns_primary=document.getElementsByClassName("btn-primary");
-        var btns_secondary=document.getElementsByClassName("btn-secondary");
-         var my_secondary_parent=pipeline.getElementsByClassName("btn-secondary")[0].parentNode;
-        btn_automate.className="btn btn-ternary m-r-sm";
-        btn_automate.innerHTML="Automate";
-        btn_span.appendChild(btn_automate);
-        pipeline.insertBefore(btn_span, my_secondary_parent);
-         GM_addStyle(globalCSS);
-        if(GM_getValue("automate"))
-        {
-            btn_automate.innerHTML="Stop";
-            /* Return automatically if still automating */
-            setTimeout(function() {
-
-                if(GM_getValue("automate")) btns_secondary[0].click();
-                }, 20000);
-        }
-        btn_automate.addEventListener("click", function(e) {
-            var auto=GM_getValue("automate");
-            if(!auto) btn_automate.innerHTML="Stop";
-            else btn_automate.innerHTML="Automate";
-            GM_setValue("automate",!auto);
-        });
-        GM_setValue("returnHit",false);
-        GM_addValueChangeListener("returnHit", function() {
-            if(GM_getValue("returnHit")!==undefined && GM_getValue("returnHit")===true &&
-               btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Return"
-              )
-            {
-                if(GM_getValue("automate")) {
-                    setTimeout(function() { btns_secondary[0].click(); }, 0); }
-            }
-        });
-        /* Regular window at mturk */
-
-
-        if(GM_getValue("stop") !== undefined && GM_getValue("stop") === true)
-        {
-        }
-        else if(btns_secondary!==undefined && btns_secondary.length>0 && btns_secondary[0].innerText==="Skip" &&
-                btns_primary!==undefined && btns_primary.length>0 && btns_primary[0].innerText==="Accept")
-        {
-
-            /* Accept the HIT */
-            if(GM_getValue("automate")) {
-                btns_primary[0].click(); }
-        }
-        else
-        {
-            /* Wait to return the hit */
-            var cboxdiv=document.getElementsByClassName("checkbox");
-            var cbox=cboxdiv[0].firstChild.firstChild;
-            if(cbox.checked===false) cbox.click();
-        }
 
     }
 
