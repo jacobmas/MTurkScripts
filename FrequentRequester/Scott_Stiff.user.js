@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Scott Stiff
+// @name         Scott_Stiff
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  Do Scott Stiff HITs
@@ -26,9 +26,8 @@
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
-
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
-
+// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
@@ -61,9 +60,7 @@
 
         return true;
     }
-
-    function query_response_loop(b_algo,i,type,promise_list,resolve,reject,b1_success,url)
-    {
+    function query_response_loop(b_algo,i,type,promise_list,resolve,reject,b1_success,url) {
         var b_name,b_url,p_caption,b_caption;
         var mtch,j,people;
         b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
@@ -88,8 +85,6 @@
         
         else if(type==="linkedin") return null;
     }
-
-
     function query_response(response,resolve,reject,type) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
@@ -179,7 +174,6 @@
             else scripts[i].innerHTML="";
         }
     };
-
 
     /**
      * contact_response Here it searches for an email TODO:FIX */
@@ -450,6 +444,24 @@
         }
         else { console.log("Failed to begin script"); }
     }
+        function Person(name,title,nameSource,emailDomain,quality) {
+        if(name&&typeof(name)==="object" &&
+           name.first && name.last) Object.assign(this,{first:name.first,middle:"",last:name.last});
+        else if(name&&typeof(name)==="string") {
+            let fullname=MTP.parse_name(name);
+            Object.assign(this,{first:fullname.fname,middle:fullname.mname,last:fullname.lname}); }
+        this.title=title||"";
+        this.nameSource=nameSource||"";
+        this.emailDomain=emailDomain||"";
+        this.quality=0;
+        if(/buzzfile\.com/.test(nameSource)) this.quality+=4;
+        if(/CEO|Chief Executive|President|Founder|Owner/.test(this.title)) this.quality+=3;
+        Object.assign({email:"",emailSource:""});
+        if(quality) this.quality=quality;
+    }
+    function person_cmp(person1,person2) {
+        return person2.quality-person1.quality; }
+
 
     function add_to_sheet() {
         my_query.people.sort(person_cmp);
@@ -517,23 +529,6 @@
 
     }
 
-    function Person(name,title,nameSource,emailDomain,quality) {
-        if(name&&typeof(name)==="object" &&
-           name.first && name.last) Object.assign(this,{first:name.first,middle:"",last:name.last});
-        else if(name&&typeof(name)==="string") {
-            let fullname=MTP.parse_name(name);
-            Object.assign(this,{first:fullname.fname,middle:fullname.mname,last:fullname.lname}); }
-        this.title=title||"";
-        this.nameSource=nameSource||"";
-        this.emailDomain=emailDomain||"";
-        this.quality=0;
-        if(/buzzfile\.com/.test(nameSource)) this.quality+=4;
-        if(/CEO|Chief Executive|President|Founder|Owner/.test(this.title)) this.quality+=3;
-        Object.assign({email:"",emailSource:""});
-        if(quality) this.quality=quality;
-    }
-    function person_cmp(person1,person2) {
-        return person2.quality-person1.quality; }
 
 
     function init_Query()
