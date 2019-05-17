@@ -659,6 +659,57 @@ MTurkScript.prototype.parse_b_context=function(b_context)
     return result;
 };
 
+MTurkScript.prototype.scrape_bing_experience=function(x) {
+    var ret=[];
+    var li=x.querySelectorAll(".b_vList li");
+    var y,curr_job,match,z,str,split1,split2;
+    for(y of li) {
+        curr_job={};
+        z=li.childNodes;
+        if(z.length>=3) {
+            curr_job.title=z[0].innerText.trim();
+            str=z[2].innerText.trim();
+            split1=str.split(" · ");
+            curr_job.company=split1[0];
+            if(split1.length>1) {
+                curr_job.time=split1[1];
+            }
+            ret.push(curr_job);
+        }
+
+    }
+    return ret;
+};
+
+
+
+MTurkScript.prototype.parse_entityTP=function(b_context) {
+    var ret={};
+    var b_entityTP=b_context.querySelector(".b_entityTP");
+    var b_entityTitle,infoCard,about,x,match,b_subModule;
+    if(!b_entityTP) return ret;
+    b_entityTitle=b_entityTP.querySelector(".b_entityTitle");
+    b_subModule=b_entityTP.querySelectorAll(".b_subModule");
+    if(b_entityTitle) ret.name=b_entityTitle.innerText;
+    infoCard=b_entityTP.querySelectorAll(".infoCardIcons a");
+    for(x of infoCard) {
+        if(/linkedin\.com/.test(x.href)) ret.linkedin_url=x.href;
+    }
+    for(x of b_subModule) {
+        let h2=x.querySelector("h2");
+        if(h2.innerText==="Experience") {
+            ret.experience=MTurkScript.prototype.scrape_bing_experience(x);
+        }
+    }
+    about=b_entityTP.querySelectorAll(".b_subModule .b_vList li");
+    for(x of about) {
+        match=x.innerText.trim().match(/^([^:]*):\s*(.*)$/);
+        if(!match) continue;
+        ret[match[1].trim()]=match[2];
+    }
+    return ret;
+};
+
 MTurkScript.prototype.parse_lgb_info=function(lgb_info) {
     var result={"phone":"","name":"",url:"",address:""},bm_details_overlay,b_factrow,i,b_entityTitle,inner_a;
     b_entityTitle=lgb_info.getElementsByClassName("b_entityTitle");
