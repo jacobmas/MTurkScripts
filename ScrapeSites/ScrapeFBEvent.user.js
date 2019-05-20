@@ -35,7 +35,7 @@
     var bad_urls=[];
     var MTurk,MTP;
     if(!/facebook.com/.test(window.location.href)) {
-        MTurk=new MTurkScript(20000,200,[],begin_script,"AHF2EZZ0364Z3",false);
+        MTurk=new MTurkScript(15000,200,[],begin_script,"AHF2EZZ0364Z3",false);
         MTP=MTurkScript.prototype;
     }
     else {
@@ -166,17 +166,20 @@
             else if(x==="FBstarttime"||x==="FBendtime") {
                 new_x=x.replace(/FB/,"").replace(/time/,"").replace(/^([a-z])(.*)$/,function(match,p1,p2) { return p1.toUpperCase()+p2 });
                 console.log("new_x="+new_x);
-                ret=parse_date(result[x]);
-                console.log("ret="+JSON.stringify(ret));
-                datefield=document.getElementById(new_x+"date");
-                timefield=document.getElementById(new_x+"time");
-                if(datefield) {
-                    console.log("datefield add");
-                    datefield.value=ret.date;
-                }
-                if(timefield) {
-                    console.log("timefield add");
-                    timefield.value=ret.time;
+                console.log("result[x]="+result[x]);
+                if(result[x]) {
+                    ret=parse_date(result[x]);
+                    console.log("ret="+JSON.stringify(ret));
+                    datefield=document.getElementById(new_x+"date");
+                    timefield=document.getElementById(new_x+"time");
+                    if(datefield) {
+                        console.log("datefield add");
+                        datefield.value=ret.date;
+                    }
+                    if(timefield) {
+                        console.log("timefield add");
+                        timefield.value=ret.time;
+                    }
                 }
 
             }
@@ -219,6 +222,7 @@
         var content_re=/^([^\s]*)\sto\s([^\s]*)$/,content_match,begin_str,end_str;
         var text_re=/^([^,]+),\s*([^–]*)\s*–\s*(.*)\s*UTC(.*)$/,match;
         var text_re2=/^([^–]+)\s*–\s*(.*)\s*UTC(.*)$/;
+        var text_re3=/^([^–]+)$/;
         if((UTC_match=text.match(UTC_re))) UTC_int=parseInt(UTC_match[1]);
         function replace_time(match,p1,p2) {
             intp1=parseInt(p1);
@@ -259,6 +263,12 @@
 
             result.FBendtime=match[2].trim().replace(/ at/,","+new Date().getFullYear()+" at");
         }
+        else if((match=text.match(text_re3))) {
+            result.match=match;
+           // begin_str=content_match[1].replace(/([\d]{2}):([\d]+)$/,replace_time);
+           // end_str=content_match[1].replace(/([\d]{2}):([\d]+)$/,replace_time);
+            result.FBstarttime=match[1].trim().replace(/ at/,","+new Date().getFullYear()+" at");
+        }
         else {
             console.log("failed, content_match="+content_match+", match="+match);
         }
@@ -270,6 +280,7 @@
 
     function begin_parse_FB_event() {
         var desc,times;
+        console.log("begin parse_FB_event");
         if((desc=document.querySelector("._63ew"))&&(times=document.querySelector("._2ycp"))) {
             parse_FB_event();
             return;
@@ -290,7 +301,9 @@
         if((match=window.location.href.match(regex))) result.FBeventid=match[1];
         if((title=document.querySelector("._5gmx"))) result.FBeventtitle=title.innerText.trim();
         if((img=document.querySelector("._3ojl img"))&&img.src!==undefined) result.FBcoverimg=img.src;
-        var host
+        var host;
+        var ticket=document.querySelector("li[data-testid='event_ticket_link'] ._36hm");
+        if(ticket) result.FBeventticket=decodeURIComponent(ticket.href.replace("https://l.facebook.com/l.php?u=",""));
         var content_match;
         if(host=document.querySelector("._3xd0 a._5xhk")) result.FBeventhost=host.href;
         else if(host=document.querySelector("._b9- a")) result.FBeventhost=host.href;
@@ -311,12 +324,18 @@
     /* begin parsing fb */
     function begin_fb() {
         //GM_setValue("fb_event_url","");
+        console.log("begin_fb, url="+window.location.href);
         GM_addValueChangeListener("fb_event_url",function() {
             my_query.fb_event_url=arguments[2];
             window.location.href=my_query.fb_event_url;
         });
-        if(GM_getValue("fb_event_url","")===window.location.href && /\/events\//.test(window.location.href)) {
+        var l_url=GM_getValue("fb_event_url","");//
+
+        var l_time=l_url.replace(/(https:\/\/[^\/]*\/events\/)/,"");
+        console.log("l_url="+l_url+", l_time="+l_time);
+        if(window.location.href.indexOf(l_time)!==-1 && /\/events\//.test(window.location.href)) {
             my_query.count=0;
+            console.log("BLUNK");
             begin_parse_FB_event();
         }
     }
