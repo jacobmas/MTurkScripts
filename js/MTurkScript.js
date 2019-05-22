@@ -615,8 +615,7 @@ MTurkScript.prototype.parse_b_context=function(b_context)
     var field_regex=/^([^:]+):\s*(.*)$/,field_match,result={},disambig;
     var term_map={"Website":"url","Official site":"url","Company":"company"};
     var field_map=function(field) { return term_map[field]!==undefined?term_map[field]:field; };
-    var wpc_eif;
-    var curr;
+    var b_entityTP=b_context.querySelector(".b_entityTP");
     disambig=b_context.querySelectorAll(".disambig-outline .b_slyGridItem");
     b_entityTitle=b_context.getElementsByClassName("b_entityTitle");
     b_entitySubTitle=b_context.getElementsByClassName("b_entitySubTitle");
@@ -633,7 +632,6 @@ MTurkScript.prototype.parse_b_context=function(b_context)
         result.latitude=details.centerLatitude;
         result.longitude=details.centerLongitude;
     }
-
     b_subModule_h2=b_context.querySelectorAll(".b_subModule h2");
     for(i=0;i<b_subModule_h2.length; i++) {
         if(/Experience/.test(b_subModule_h2[i].innerText) && b_subModule_h2[i].nextElementSibling &&
@@ -650,6 +648,7 @@ MTurkScript.prototype.parse_b_context=function(b_context)
         }
     }
     if(disambig.length>0) MTurkScript.prototype.parse_b_context_disambig(disambig,result);
+    if(b_entityTP) result.person=MTurkScript.prototype.parse_entityTP(b_context);
     return result;
 };
 
