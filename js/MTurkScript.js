@@ -679,7 +679,7 @@ MTurkScript.prototype.scrape_bing_experience=function(b_submodule) {
             curr_job.title=z[0].textContent.trim();
             split1=z[2].textContent.trim().split(" · ");
 	    Object.assign(curr_job,{company:split1[0],time:split1.length>1?split1[1]:""});
-            ret.push(curr_job);
+	    if(curr_job.time.length>0) ret.push(curr_job);
         }
     }
     return ret;

@@ -31,7 +31,7 @@
     'use strict';
     var my_query = {};
     var bad_urls=[];
-    var MTurk=new MTurkScript(20000,200,[],begin_script,"[TODO]",false);
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"[TODO]",false);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
@@ -106,7 +106,10 @@
 
     function add_to_sheet() {
         var x,field;
-        for(x in my_query.fields) if(field=document.getElementById(x)) field.value=my_query.fields[x];
+        for(x in my_query.fields) {
+	    if((MTurk.is_crowd && field=document.getElementsByName(x)[0]) ||
+	       (!MTurk.is_crowd && (field=document.getElementById(x)))) field.value=my_query.fields[x];
+	}
     }
 
     function submit_if_done() {
@@ -131,7 +134,7 @@
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
     }
 
 })();
