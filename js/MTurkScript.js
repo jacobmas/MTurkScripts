@@ -610,13 +610,14 @@ MTurkScript.prototype.parseext_instagram=function(doc,instance,fragment)
 */
 MTurkScript.prototype.parse_b_context=function(b_context)
 {
-    var b_vList,i,bm_details_overlay,inner_li,b_entityTitle,b_entitySubTitle,b_submodule_h2;
-    var b_hList=b_context.getElementsByClassName("b_hList"),inner_a,details,inner_li,split_exp;  
-    var field_regex=/^([^:]+):\s*(.*)$/,field_match,result={};
+    var b_vList,i,bm_details_overlay,b_entityTitle,b_entitySubTitle,b_subModule_h2,j;
+    var b_hList=b_context.getElementsByClassName("b_hList"),inner_a,details,inner_li,split_exp;
+    var field_regex=/^([^:]+):\s*(.*)$/,field_match,result={},disambig;
     var term_map={"Website":"url","Official site":"url","Company":"company"};
     var field_map=function(field) { return term_map[field]!==undefined?term_map[field]:field; };
-    var wpc_eif=b_context.querySelectorAll("#wpc_eif li");
-    
+    var wpc_eif;
+    var curr;
+    disambig=b_context.querySelectorAll(".disambig-outline .b_slyGridItem");
     b_entityTitle=b_context.getElementsByClassName("b_entityTitle");
     b_entitySubTitle=b_context.getElementsByClassName("b_entitySubTitle");
     if(b_entityTitle.length>0) result.Title=b_entityTitle[0].innerText;
@@ -628,55 +629,59 @@ MTurkScript.prototype.parse_b_context=function(b_context)
         }
     }
     if((bm_details_overlay=b_context.getElementsByClassName("bm_details_overlay")).length>0) {
-	details=JSON.parse(bm_details_overlay[0].dataset.detailsoverlay);
-	result.latitude=details.centerLatitude;
-	result.longitude=details.centerLongitude;
+        details=JSON.parse(bm_details_overlay[0].dataset.detailsoverlay);
+        result.latitude=details.centerLatitude;
+        result.longitude=details.centerLongitude;
     }
-   
+
     b_subModule_h2=b_context.querySelectorAll(".b_subModule h2");
     for(i=0;i<b_subModule_h2.length; i++) {
         if(/Experience/.test(b_subModule_h2[i].innerText) && b_subModule_h2[i].nextElementSibling &&
            (inner_li=b_subModule_h2[i].nextElementSibling.querySelector("li"))) {
             split_exp=inner_li.innerText.split("\n");
             if(!result["Job title"]) result["Job title"]=split_exp[0].trim();
-	    if(split_exp.length>1&&!result.Company) result.Company=split_exp[1].replace(/\s*·.*$/,"");
+            if(split_exp.length>1&&!result.Company) result.Company=split_exp[1].replace(/\s*·.*$/,"");
         }
     }
     if(b_hList.length>0) {
-	for(j=0;j<2&&j<b_hList.length;j++) {
-	    inner_a=b_hList[j].getElementsByTagName("a");
+        for(j=0;j<2&&j<b_hList.length;j++) {
+            inner_a=b_hList[j].getElementsByTagName("a");
             for(i=0; i<inner_a.length; i++) result[field_map(inner_a[i].innerText.trim())]=inner_a[i].href;
-	}
+        }
     }
-    
-    if(wpc_eif.length>0) {
-	result.people=[];
-	for(i=0;i+1<wpc_eif.length;i+=2) {
-	    
-	    result.people.push({"Job title":wpc_eif[i].innerText,"Location":wpc_eif[i+1].innerText});
-	}
-    }    
+    if(disambig.length>0) {
+        result.people=[];
+        for(curr of disambig) {
+            let new_url=(curr.querySelector("a")?curr.querySelector("a").href:"").replace(/https?:\/\/[^\/]*/,"https://www.bing.com");
+            let name=curr.querySelector(".b_secondaryFocus")?curr.querySelector(".b_secondaryFocus").innerText.trim():"";
+            let title="",location="";
+            wpc_eif=curr.querySelectorAll("li");
+            if(wpc_eif.length>=2) {
+                title=wpc_eif[0].innerText;
+                location=wpc_eif[1].innerText;
+            }
+            else {
+                console.log("wpc_eif.length="+wpc_eif.length);
+                title=wpc_eif[0].innerText;
+            }
+            result.people.push({url:new_url,name:name,title:title,location:location});
+        }
+    }
     return result;
 };
 
-MTurkScript.prototype.scrape_bing_experience=function(x) {
-    var ret=[];
-    var li=x.querySelectorAll(".b_vList li");
-    var y,curr_job,match,z,str,split1,split2;
+MTurkScript.prototype.scrape_bing_experience=function(b_submodule) {
+    var li=b_submodule.querySelectorAll(".b_vList li");
+    var y,curr_job,match,z,str,split1,ret=[];
     for(y of li) {
         curr_job={};
-        z=li.childNodes;
-        if(z.length>=3) {
-            curr_job.title=z[0].innerText.trim();
-            str=z[2].innerText.trim();
-            split1=str.split(" · ");
-            curr_job.company=split1[0];
-            if(split1.length>1) {
-                curr_job.time=split1[1];
-            }
+        z=y.childNodes;
+        if(z&&z.length>=3) {                
+            curr_job.title=z[0].textContent.trim();
+            split1=z[2].textContent.trim().split(" · ");
+	    Object.assign(curr_job,{company:split1[0],time:split1.length>1?split1[1]:""});
             ret.push(curr_job);
         }
-
     }
     return ret;
 };
