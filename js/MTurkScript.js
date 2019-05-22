@@ -649,25 +649,25 @@ MTurkScript.prototype.parse_b_context=function(b_context)
             for(i=0; i<inner_a.length; i++) result[field_map(inner_a[i].innerText.trim())]=inner_a[i].href;
         }
     }
-    if(disambig.length>0) {
-        result.people=[];
-        for(curr of disambig) {
-            let new_url=(curr.querySelector("a")?curr.querySelector("a").href:"").replace(/https?:\/\/[^\/]*/,"https://www.bing.com");
-            let name=curr.querySelector(".b_secondaryFocus")?curr.querySelector(".b_secondaryFocus").innerText.trim():"";
-            let title="",location="";
-            wpc_eif=curr.querySelectorAll("li");
-            if(wpc_eif.length>=2) {
-                title=wpc_eif[0].innerText;
-                location=wpc_eif[1].innerText;
-            }
-            else {
-                console.log("wpc_eif.length="+wpc_eif.length);
-                title=wpc_eif[0].innerText;
-            }
-            result.people.push({url:new_url,name:name,title:title,location:location});
-        }
-    }
+    if(disambig.length>0) MTurkScript.prototype.parse_b_context_disambig(disambig,result);
     return result;
+};
+
+MTurkScript.prototype.parse_b_context_disambig=function(disambig,result) {
+    result.people=[];
+    var wpc_eif,curr;
+    for(curr of disambig) {
+        let new_url=(curr.querySelector("a")?curr.querySelector("a").href:"").replace(/https?:\/\/[^\/]*/,"https://www.bing.com");
+        let name=curr.querySelector(".b_secondaryFocus")?curr.querySelector(".b_secondaryFocus").innerText.trim():"";
+        let title="",location="";
+        wpc_eif=curr.querySelectorAll("li");
+        if(wpc_eif.length>=2) {
+            title=wpc_eif[0].innerText;
+            location=wpc_eif[1].innerText;
+        }
+        else title=wpc_eif[0].innerText;
+        result.people.push({url:new_url,name:name,title:title,location:location});
+    }
 };
 
 MTurkScript.prototype.scrape_bing_experience=function(b_submodule) {
