@@ -81,7 +81,7 @@ Address.prototype.parse_address_Europe=function(text) {
     if((match=text.match(regex1)) && this.set_address(match[1],"",match[3],"",match[2],match[4])) return true;
     if((match=text.match(regex2)) && this.set_address(match[1],"",match[2],"",match[3],match[4])) return true;
     if((match=text.match(regex3)) && this.set_address(match[1],"",match[2],"",match[3],match[4])) return true;
-    console.log("parse_address_Europe,"+text);
+    //console.log("parse_address_Europe,"+text);
     return false;
 };
 Address.prototype.parse_address_Belgium=function(text) {
@@ -94,7 +94,7 @@ Address.prototype.parse_address_Belgium=function(text) {
 };
 Address.prototype.parse_address_UK=function(text) {
     var split=text.split(/\s*,\s*/),postcode,match;
-    console.log("UK: split="+JSON.stringify(split));
+    //console.log("UK: split="+JSON.stringify(split));
     if(split.length===3&&(match=split[1].match(/[A-Z0-9\s]{3,}/))) {
         this.address1=split[0].trim();
         this.address2="";
@@ -108,7 +108,7 @@ Address.prototype.parse_address_UK=function(text) {
 };
 Address.prototype.parse_address_Sweden=function(text) {
     var split=text.split(/\s*,\s*/),postcode,match;
-    console.log("Sweden: split="+JSON.stringify(split));
+    //console.log("Sweden: split="+JSON.stringify(split));
     if(split.length===3&&(match=split[1].match(/(?:SE-)?([\d\s]+)/))) {
         this.address1=split[0].trim();
         this.address2="";
@@ -138,9 +138,9 @@ Address.parse_postal_elem=function(elem,priority,site) {
     var term_map={"streetaddress":"address1","addressLocality":"city","addressRegion":"state","postalCode":"zip","addressCountry":"country"};
     var curr_item,x;
     for(x in term_map) {
-        console.log("term_map["+x+"]="+term_map[x]+"[itemprop='"+x+"'] i");
+        //console.log("term_map["+x+"]="+term_map[x]+"[itemprop='"+x+"'] i");
         if(curr_item=elem.querySelector("[itemprop='"+x+"' i]")) {
-            console.log("curr_item.innerText.trim()="+curr_item.innerText.trim());
+            //console.log("curr_item.innerText.trim()="+curr_item.innerText.trim());
             ret[term_map[x]]=curr_item.innerText.trim().replace(/\n/g,",").trim(); }
     }
     if(/,/.test(ret.address1)) {
@@ -149,16 +149,17 @@ Address.parse_postal_elem=function(elem,priority,site) {
     }
     if(ret.address1&&ret.city&&ret.state&&ret.zip) {
         //text=ret.address1+","+ret.city+", "+ret.state+" "+ret.zip;
-        console.log("* Adding address in parse_postal_elem for "+site+", text");
+        //console.log("* Adding address in parse_postal_elem for "+site+", text");
         Address.addressList.push(new Address(ret,priority));
     }
+    
 };
 /* Extra has some kinda of type field and a depth field indicating the depth */
 Address.scrape_address=function(doc,url,resolve,reject,extra) {
     var type=extra.type,depth=extra.depth,links=doc.links,i,promise_list=[];
     var contact_regex=/(Contact|Location|Privacy|Kontakt)/i,bad_contact_regex=/^\s*(javascript|mailto):/i,contact2_regex=/contact[^\/]*/i;
     // if(/^(404|403|503|\s*Error)/i.test(doc.title) || /\?reqp\=1&reqr\=/.test(url)) my_query.failed_urls+=2;
-    console.log("In scrape_address for type="+type+", url="+url);
+    //console.log("In scrape_address for type="+type+", url="+url);
     if(depth===0) {
         for(i=0; i < links.length; i++) {
             links[i].href=MTP.fix_remote_url(links[i].href,url).replace(/\/$/,"");
@@ -166,7 +167,7 @@ Address.scrape_address=function(doc,url,resolve,reject,extra) {
                && !bad_contact_regex.test(links[i].href) &&
                !Address.queryList.includes(links[i].href) && Address.queryList.length<10) {
                 Address.queryList.push(links[i].href);
-                console.log("*** Following link labeled "+links[i].innerText+" to "+links[i].href);
+                //console.log("*** Following link labeled "+links[i].innerText+" to "+links[i].href);
                 promise_list.push(MTP.create_promise(links[i].href,Address.scrape_address_page,function(result) {
                     console.log("! Finished parsing ") },MTP.my_catch_func,type));
                 continue;
@@ -179,7 +180,7 @@ Address.scrape_address=function(doc,url,resolve,reject,extra) {
     }).then(MTP.my_then_func).catch(MTP.my_catch_func));
     Promise.all(promise_list).then(function(result) {
         // console.log("Done all promises in scrape_address for "+type);
-        console.log("&& my_query.address_str_list="+JSON.stringify(Address.addressStrList));
+        //console.log("&& my_query.address_str_list="+JSON.stringify(Address.addressStrList));
         resolve(""); })
         .catch(function(result) { console.log("Done all promises in scrape_address for "+type);
 				  console.log("&& my_query.address_str_list="+JSON.stringify(Address.addressStrList));
@@ -187,7 +188,7 @@ Address.scrape_address=function(doc,url,resolve,reject,extra) {
 };
 
 Address.scrape_address_page=function(doc,url,resolve,reject,type) {
-    console.log("scrape_address_page,url="+url);
+//    console.log("scrape_address_page,url="+url);
     var posts=doc.querySelectorAll("[itemtype='https://schema.org/PostalAddress']");
     posts.forEach(function(elem) { Address.parse_postal_elem(elem,1,type); });
     var divs=doc.querySelectorAll("div,p,span,td"),i;
@@ -229,7 +230,7 @@ Address.scrape_address_elem=function(doc,div,type) {
     Address.find_phones(doc,div,type);
     // console.log("Done removing scripts");
     if(div_text.length>1000) return;
-    console.log("Begin scrape_address_elem on "+div_text);
+//    console.log("Begin scrape_address_elem on "+div_text);
     try {
         if(div.tagName==="DIV" && /sqs-block-map/.test(div.className) && (jsonstuff=JSON.parse(div.dataset.blockJson))) {
             Address.addressList.push(new Address(jsonstuff.location.addressLine1+","+jsonstuff.location.addressLine2,0));
@@ -240,7 +241,7 @@ Address.scrape_address_elem=function(doc,div,type) {
     if(((match=div_text.match(add_regex1))&&(text=match[1])) || (add_elem && (text=Address.fix_address_text(add_elem.innerText))) ||
        (text=Address.fix_address_text_full(doc,div_text))
       )  {
-        console.log("scrape_elem, text="+text);
+//        console.log("scrape_elem, text="+text);
         text=text.replace(/\n([\t\s\n])+/g,"\n").replace(/,\s*USA/,"").replace(/\n/g,",").replace(/,[\s,]*/g,",");
         //console.log("scrape_elem, text="+text);
         let parsed;
@@ -249,7 +250,7 @@ Address.scrape_address_elem=function(doc,div,type) {
             text=text.replace(/,[\s,]*/g,",");
             var address=new Address(text,1);
             if(address.city==="") {
-                console.log("temp_text="+temp_text);
+                //console.log("temp_text="+temp_text);
                 let temp_text=text;
                 while(address.city==="" && temp_text.match(/^[^,]*,\s*/)) {
                     temp_text=temp_text.replace(/^[^,]*,\s*/,"");
