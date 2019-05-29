@@ -34,7 +34,7 @@
     'use strict';
     var my_query = {};
     var bad_urls=[];
-    var MTurk=new MTurkScript(20000,200,[],init_Query,"A390RLFJYGA9RS");
+    var MTurk=new MTurkScript(40000,750+(500*Math.random()),[],init_Query,"A390RLFJYGA9RS");
     function is_bad_name(b_name) {
         return false;
     }
@@ -93,6 +93,7 @@
         try { parsed=JSON.parse(text); }
         catch(error) { console.log("error parsing="+error+", text="+text); return; }
         tabs=parsed.contents.twoColumnBrowseResultsRenderer.tabs;
+       // console.log("tabs="+JSON.stringify(tabs));
         try {
             for(i=0; i < tabs.length; i++) {
                 if(tabs[i].tabRenderer && tabs[i].tabRenderer.title==="About" && (content=tabs[i].tabRenderer.content)) break;
@@ -103,21 +104,26 @@
                      }
         if(!content) return ret;
         contents=content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].channelAboutFullMetadataRenderer;
+        //console.log("contents="+JSON.stringify(contents));
         if(contents.title!==undefined&&contents.title.simpleText) my_query.fields.ChannelName=contents.title.simpleText;
         else { console.log("NO TITLE"); }
-        console.log("contents="+JSON.stringify(contents));
+    //    console.log("contents="+JSON.stringify(contents));
         if((label=contents.businessEmailLabel)===undefined) ret.email="";
         if(contents.subscriberCountText && (runs=contents.subscriberCountText.runs) && runs.length>0 &&
            runs[0].text) ret.total_subscribers=runs[0].text.replace(/,/g,"");
         if(contents.country && contents.country.simpleText) ret.location=contents.country.simpleText;
+        ret.url_list=[];
         if((links=contents.primaryLinks)===undefined) links=[];
         for(i=0; i < links.length; i++) {
             url=decodeURIComponent(links[i].navigationEndpoint.urlEndpoint.url.replace(/^.*(&|\?)q\=/,"")).replace(/(&|\?).*$/,"");
             console.log("url["+i+"]="+url);
-            if(/instagram\.com/.test(url)) ret.insta=url; 
-            else if(/facebook\.com/.test(url)) ret.fb=url.replace(/\/$/,"").replace(/facebook\.com\//,"facebook.com/pg/")+"/about"; 
+            if(/instagram\.com/.test(url)) ret.insta=url;
+            else if(/facebook\.com/.test(url)) ret.fb=url.replace(/\/$/,"").replace(/facebook\.com\//,"facebook.com/pg/")+"/about";
             else if(/twitter\.com/.test(url)) ret.twitter=url;
-            else if(!/plus\.google\.com|((youtube|gofundme|patreon|paypal|udemy)\.com)/.test(url)) ret.url=url;
+            else if(!/plus\.google\.com|((youtube|gofundme|\.poshmark|patreon|paypal|udemy|\.etsy|\/kik|\.apple)\.com)/.test(url)) {
+                ret.url_list.push(url);
+                ret.url=url;
+            }
         }
         if(contents.description && contents.description.simpleText && (ret.description=contents.description.simpleText.replace(/\\n/g,"\n"))) {
             if(match=ret.description.match(email_re)) ret.email=match[0];
@@ -126,6 +132,7 @@
         }
         if(contents.businessEmailLabel===undefined) ret.businessEmailLabel=false;
         else {
+            console.log(contents);
             ret.businessEmailLabel=contents.businessEmailButton!==undefined;
             console.log("\n**** Label="+JSON.stringify(contents.businessEmailLabel)+", returning "+  ret.businessEmailLabel);
             console.log("contents.businessEmailButton="+JSON.stringify(contents.businessEmailButton));
@@ -143,7 +150,7 @@
                 text=scripts[i].innerHTML.replace(script_regex_begin,"");
                 console.log(text.indexOf(";"));
                 if(text.indexOf(";")!==-1) text=text.substr(0,text.indexOf("};")+1);
-                ret=parse_youtube_inner(text);      
+                ret=parse_youtube_inner(text);
                 if(!ret) {
                     my_query.fields.email="NULL";
                     my_query.done.web=my_query.done.fb=my_query.done.insta=true;
@@ -172,23 +179,40 @@
         if(ret.fb) promise_list.push(MTurkScript.prototype.create_promise(ret.fb,MTurkScript.prototype.parse_FB_about,parse_fb_then));
         else if(my_query.done["fb"]=true) submit_if_done();
         if(ret.url && my_query.fields.email.length===0) {
+            var curr_url;
+            for(curr_url of ret.url_list) {
+                my_query.url_list.push(curr_url);
 
-            call_contact_page(ret.url,submit_if_done);
+                curr_url=curr_url.replace(/^www\./,"http://www.");
+                call_contact_page(curr_url,submit_if_done);
+            }
         }
         else { my_query.done["web"]=true; submit_if_done(); }
 
     }
-
+    function is_bad_person(name) {
+        if(/^(mom|oficial|someone|audio|girl|boy|(may$))/i.test(name)) return true;
+        return false;
+    }
     function parse_people(description) {
-        if(!description) return;
-        var people=nlp(description).people().out('topk');
-        var match;
+     //   if(!description) return;
+        if(!description) description=my_query.fields.ChannelName;
+        var people=nlp(description?description+", ":""+my_query.fields.ChannelName).people().out('topk');
+        var match,pos;
         if((people&&people.length>0)||((people=nlp(my_query.fields.ChannelName).people().out('topk'))&&people&&people.length>0)) {
-
-            let re=new RegExp(people[0].normal,"i");
-            console.log("# re="+re);
-            if((match=description.match(re))) my_query.fields.YouTuberName=match[0];
+            pos=0;
             console.log("people="+JSON.stringify(people));
+
+            while(pos<people.length) {
+                let re=new RegExp(people[pos].normal,"i");
+                console.log("# re="+re);
+                if((match=description.match(re)) && !is_bad_person(match[0])) {
+                    my_query.fields.YouTuberName=match[0];
+                    break;
+                }
+                pos++;
+            }
+
         }
 
     }
@@ -197,8 +221,13 @@
     function parse_insta_then(result) {
         var match;
         console.log("insta_result: "+JSON.stringify(result));
-        if(result.success && result.email) { my_query.fields.email=result.email; }
-        if(result.biography && (match=result.biography.match(email_re))) my_query.fields.email=match[0];
+        if(result.success && result.email) {
+
+
+            my_query.fields.email=result.email.replace(/^[^@]*[^0-9A-Za-z\.\_]+/,""); }
+        if(result.biography && (match=result.biography.match(email_re))) my_query.fields.email=match[0].replace(/^[^@]*[^\-0-9A-Za-z\.\_@]+/,"");
+        if(result.name&&my_query.fields.YouTuberName==="na") my_query.fields.YouTuberName=MTP.removeDiacritics(result.name).replace(/\s*[^\s\(\[\)\]\'\-0-9A-Za-z\.\_@]+/g,"").trim();;
+        if(my_query.fields.YouTuberName.length===0) my_query.fields.YouTuberName="na";
         my_query.done.insta=true;
         submit_if_done();
 
@@ -206,6 +235,12 @@
     function parse_fb_then(result) {
         console.log("fb_result: "+JSON.stringify(result));
         if(result.email) { my_query.fields.email=result.email; }
+        if(result.url &&!/youtube\.com/.test(result.url) && !my_query.url_list.find(function(elem) {
+            return elem.indexOf(MTP.get_domain_only(result.url,true))!==-1; })) {
+            my_query.url_list.push(result.url);
+            my_query.done.web=false;
+             call_contact_page(result.url,submit_if_done);
+        }
         my_query.done["fb"]=true;
         submit_if_done();
 
@@ -280,7 +315,7 @@
         MTP.fix_emails(doc,url);
         var short_name=url.replace(my_query.url,""),links=doc.links,email_matches,phone_matches;
         var replacement=url.match(/^https?:\/\/[^\/]+/)[0];
-        var contact_regex=/(Contact|About|Privacy|Legal)/i,bad_contact_regex=/^\s*(javascript|mailto):/i;
+        var contact_regex=/(Contact|About|Privacy|Legal|Contato|Kontakt)/i,bad_contact_regex=/^\s*(javascript|mailto):/i;
         console.log("replacement="+replacement);
         var temp_url,curr_url;
         if(email_matches=doc.body.innerHTML.match(email_re)) {
@@ -351,7 +386,10 @@
         var i;
        // var wT=document.getElementById("workContent").getElementsByTagName("table")[0];
         var dont=document.querySelector(".dont-break-out");
-        my_query={url:dont.href+"/about",fields:{email:"",ChannelName:"",YouTuberName:"na"},submitted:false,done:{"insta":false,"fb":false,"web":false}};
+
+        my_query={url:dont.href.replace(/\/$/,"")+"/about",fields:{email:"",ChannelName:"",YouTuberName:"na"},submitted:false,done:{"insta":false,"fb":false,"web":false},
+                 url_list:[]};
+        console.log("my_query.url="+my_query.url);
         var promise=MTurkScript.prototype.create_promise(my_query.url,parse_youtube,parse_youtube_then);
         var search_str;
         const queryPromise = new Promise((resolve, reject) => {
