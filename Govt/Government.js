@@ -797,14 +797,15 @@ Gov.fix_bad_title_data_func=function(ret) {
 };
 
 Gov.is_good_filter_line=function(line) {
-    if(/^Contact(s)?($|[^A-Za-z])/.test(line) && !Gov.title_regex.test(line)) return false;
+    if(/^(Contact(s)?|Click)($|[^A-Za-z])/i.test(line) && !Gov.title_regex.test(line)) return false;
     return true;
 };
 
 /* Split the text into lines (e.g. tokenize), very ad hoc but it's not regular or even context-free but 
    HTML format helps us a lot there (ususally) */
 Gov.split_into_lines=function(text,ret) {
-    // Split with the catch almost all division possibilities regex 
+    // Split with the catch almost all division possibilities regex
+    var i;
     var split_lines=text.split(Gov.split_lines_regex);
     var mult_word_begin_re=/^[^\s]+\s+[^\s]+,\s*[A-Z\.]*[^A-Z\s\n,]+/;
     if(split_lines.length>0 &&
@@ -820,12 +821,21 @@ Gov.split_into_lines=function(text,ret) {
     if(split_lines.length>0&&(split_comma=split_lines[0].split(","))&&split_comma.length>1&&
        Gov.title_regex.test(split_lines[0])) split_lines=split_comma.concat(split_lines.slice(1));
     if(Gov.debug||Gov.debug_parse) console.log("split_lines after filtering="+JSON.stringify(split_lines));
+
+    // Split Phone, Email, from things
+    for(i=split_lines.length-1;i>=0;i--) {
+	if(/,(Tel|Ph|E(?:-?)mail|P)[a-z]*:/.test(split_lines[i])) {
+	    split_lines=split_lines.slice(0,i).concat(split_lines[i].split(/,(Tel|Ph|E(?:-?)mail|P)[a-z]*:/)).concat(split_lines.slice(i+1));
+	}
+    }
+	
     
     /* Add dept name */
     if(split_lines.length>0&&Gov.dept_name_regex.test(split_lines[0])) {
 	ret.department=split_lines[0];
 	split_lines=split_lines.slice(1); }
     while(/:/.test(split_lines[0])) split_lines=split_lines[0].split(":").filter(line=>line && line.trim().length>0).concat(split_lines.slice(1));
+    
     
    if(split_lines.length>0&&(title_prefix=split_lines[0].match(Gov.title_prefix_regex))&&title_prefix.length>3) {
 	if(Gov.debug||Gov.debug_parse) console.log("title_prefix="+JSON.stringify(title_prefix));
