@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         ASOCGovITAdminCommRec
+// @name         ASOCLawITAdminCommRec
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Find employees for government agency
+// @description  Find employees for law enforcement agency
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -25,18 +25,21 @@
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
 // @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/8c2219056062f4b5152534927cf1efe2d5910dbb/Govt/Government.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/a1d806c820e6044da10293934226642af8960f37/Govt/Government.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=["zillow.com","localtown.us"];
+    var debug=false;
+    var bad_urls=default_bad_urls.concat(["zillow.com","localtown.us","usacops.com","sheriffs.org","facebook.com","en.wikipedia.org",
+                                         "hometownlocator.com"]);
     var MTurk=new MTurkScript(50000,200,[],begin_script,"A3T3RIGHXP9IK4",false);
+    var my_email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%\*]{1,40}(\.[^<>\/()\[\]\\.,;:：\s\*@"\?]{1,40}){0,5}))@((([a-zA-Z\-0-9]{1,30}\.){1,8}[a-zA-Z]{2,20}))/g;
+
     var MTP=MTurkScript.prototype;
-    function try_bad_name_again(b_name,p_caption,site,pos)
-    {
+    function try_bad_name_again(b_name,p_caption,site,pos) {
        // console.log("in try_bad_name");
         if(/(^|\s|,)Mt\.($|\s|,)/.test(b_name))
         {
@@ -83,9 +86,7 @@
         return true;
     }
 
-
-    function acronym(text)
-    {
+    function acronym(text)  {
         text=text.replace(/([A-Za-z]{1})-([A-Za-z]{1])/,"$1 $2");
         var ret="",t_split=text.split(" ");
         for(var i=0; i < t_split.length; i++)
@@ -93,12 +94,10 @@
         return ret;
     }
 
-    function is_school_district(text)
-    {
+    function is_school_district(text) {
         return /(\s|^|[a-z]+)(District|Schools|Public School|Local School|((I(\.)?)?S(\.)?D(\.)?)|USD)([\s,]+|$)/i.test(text);
     }
-    function is_bad_name(b_name,p_caption,site,pos)
-    {
+    function is_bad_name(b_name,p_caption,site,pos)  {
         b_name=b_name.replace(/^The\s*/,"").replace(/\'/g,"").replace(/^(Welcome to|Government of) (the )?/i,"");
         b_name=b_name.replace(/(Village|Government|City|County) Offices/i,"$1");
 
@@ -236,20 +235,32 @@
         }
         console.log("Up to checking b_splits");
         for(i=0;i<b_split.length;i++) {
-            if(MTP.matches_names(search_str,b_split[i])||
-               MTP.matches_names(search_str,b_split[i].replace(/^(Town|Village|Township|Municipality|City) of /i,""))) return false;
+            console.log("search_str="+search_str+", b_split["+i+"]="+b_split[i]);
+            if(MTP.matches_names(my_query.agency_name.replace(/,.*$/,""),b_split[i])||
+               MTP.matches_names(my_query.agency_name.replace(/,.*$/,""),b_split[i].replace(/^(Town|Village|Township|Municipality|City) of /i,""))) return false;
         }
 
 
         return true;
     }
 
+    function query_response_loop(b_algo,i,type,promise_list,resolve,reject,b1_success) {
+        var b_name,b_url,p_caption,b_caption;
+        var mtch,j,people;
+        b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
+        b_url=b_algo[i].getElementsByTagName("a")[0].href;
+        b_caption=b_algo[i].getElementsByClassName("b_caption");
+        p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
+            p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
+        console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
+
+    }
+
     function query_response(response,resolve,reject,type,search_str) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-        console.log("in query_response\n"+response.finalUrl);
-        var search, b_algo, i=0, inner_a;
-
+        console.log("in query_response\n"+response.finalUrl+", type="+type);
+        var search, b_algo, i=0,j,mtch, inner_a,promise_list=[];
         var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
         var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
         try {
@@ -282,23 +293,45 @@
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0)?b_caption[0].getElementsByTagName("p")[0].innerText:"";
                  console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if((!MTP.is_bad_url(b_url,bad_urls,4,2)) && (
+                if(/query/.test(type) && (!MTP.is_bad_url(b_url,bad_urls,6,2)) && (
                                                             !is_bad_name2(b_name,p_caption,search_str,b_url))
-                   &&  !(parsed_context&&parsed_context.url&&/^\s*Visit/i.test(b_name)) &&
+                   && !(parsed_context&&parsed_context.url&&/^\s*Visit/i.test(b_name)) &&
 
                    (b1_success=true)) break;
+                   if(/fb/.test(type) &&  (!ASOC.agency_regex[my_query.agency_type] || ASOC.agency_regex[my_query.agency_type].test(b_name)) &&
+                                                            !is_bad_name2(b_name,p_caption,search_str,b_url)
+                    && (b1_success=true)) break;
+                if(type==="email" && (mtch=p_caption.match(my_email_re))) {
+                    for(j=0; j < mtch.length; j++) if(!MTurk.is_bad_email(mtch[j]) && mtch[j].length>0) my_query.email_list.push(mtch[j]);
+                }
+                if(type==="email") {
+                    if(i>3) return null;
+                    else if(!/\.(pdf|xls|xlsx|doc|docx)$/.test(b_url)&&!MTP.is_bad_url(b_url,bad_urls,-1)) promise_list.push(MTP.create_promise(b_url,contact_response,MTP.my_then_func,MTP.my_catch_func));
+                    else if(/\.(pdf|xls|xlsx|doc|docx)$/.test(b_url) && MTP.get_domain_only(b_url)===my_query.domain) {
+                        my_query.email_list.push(search_str.replace(/^\+\"(.*)\"$/,"$1"));
+                    }
+                }
+
             }
+
             if(b1_success && (resolve(b_url)||true)) return;
+            if(type==="email") {
+                Promise.all(promise_list).then(function() { resolve(""); })
+                    .catch(function() { reject("Failed the email"); });
+                return;
+            }
         }
         catch(error) {
             reject(error);
             return;
         }
-        if(parsed_context&&parsed_context.url&&parsed_context.url.length>0 &&(resolve(parsed_context.url)||true)) return;
+        if(parsed_context&&parsed_context.url&&parsed_context.url.length>0 &&
+           !MTP.is_bad_url(parsed_context.url,bad_urls,-1) &&
+           (resolve(parsed_context.url)||true)) return;
         if(parsed_lgb&&parsed_lgb.url&&parsed_lgb.url.length>0 &&(resolve(parsed_lgb.url)||true)) return;
-        else if(my_query.try_count===0) {
-            my_query.try_count++;
-            query_search(my_query.short_name+" "+my_query.city+" "+reverse_state_map[my_query.state]+" website",resolve,reject,query_response,"url");
+        else if(my_query.try_count[type]===0) {
+            my_query.try_count[type]++;
+            query_search(my_query.short_name+" "+my_query.city+" "+reverse_state_map[my_query.state]+" ",resolve,reject,query_response,"url");
             return;
         }
         else reject("No govt website found");
@@ -306,6 +339,8 @@
         return;
 
     }
+
+
 
 
     /* Search on bing for search_str, parse bing response with callback */
@@ -320,28 +355,78 @@
     }
 
 
-
     /* Following the finding the district stuff */
     function query_promise_then(result) {
         console.log("Success, query_promise_then, result="+result);
         my_query.url=result;
-        var dept_regex_lst=[/^((City|Town|Village) )?(Government|Department)$/i,/(Boro(ugh)?|Town|Village|Township|City) (Manager|Clerk|Administrator|Hall)/i,
-                            /Information Systems|Mayor/i,/(^|[^A-Za-z]+)(PR|IT)($|[^A-Za-z]+)/i,
-                            /(^|[^A-Za-z]+)(Admin|Manager|Tech|Communication|Supervisor|Clerk|Record|Recorder)/i,
+        my_query.domain=MTP.get_domain_only(result,true);
+       var curr;
+        var type_list=[/Fire/i,/Sheriff/i,/Police|((^|[^A-Za-z]+)PD($|[^A-Za-z]+))/i,/Marshal/i]
+        var dept_regex_lst=[/^((City|Town|Village) )?(Government|Department)$/i,
+                            /Information Systems|Public Safety/i,/(^|[^A-Za-z]+)(PR|IT)($|[^A-Za-z]+)/i,
+                            /Command Staff|Sheriff|Law Enforcement/i,
+                            /(^|[^A-Za-z]+)(Tech|Communication)/i,/Message .*Chief/i,
                             /^(Public Information|(Information$))/i,/(Boro(ugh)?|Town|Village|Township|City) Hall/i];
-        var title_regex_lst=[/Admin|Administrator|Supervisor|Manager/i,/(^|[^A-Za-z]+)(Technology|CTO|IT|Network)($|[^A-Za-z]+)/i,/Communication|Community/i,
-                             /(^|[^A-Za-z]+)(PR)($|[^A-Za-z]+)/i,/Relations|Information Officer/i,/Clerk|Records|Recorder|PIO/i];
-        //var promise=MTP.create_promise(
+        for(curr of type_list) {
+            if(curr.test(my_query.agency_type)) dept_regex_lst.push(curr);
+        }
+        var title_regex_lst=[/Admin|Administrator|Sheriff|Supervisor|Manager/i,/(^|[^A-Za-z]+)(Technology|CTO|IT|Network)($|[^A-Za-z]+)/i,/Communication|Community/i,
+                             /(^|[^A-Za-z]+)(PR)($|[^A-Za-z]+)/i,/Relations|Information Officer/i,/Clerk|Records|Recorder|PIO/i,
+                            /Police Chief|^Chief$|Chief of Police|Chief of Public Safety|^Police Commissioner|Marshal/];
         var query={dept_regex_lst:dept_regex_lst,
-                       title_regex_lst:title_regex_lst,id_only:false,default_scrape:false,debug:false};
+                       title_regex_lst:title_regex_lst,id_only:false,default_scrape:false,debug:debug};
         var promise=MTP.create_promise(my_query.url,Gov.init_Gov,gov_promise_then,function(result) {
             console.log("Failed at Gov "+result);
             GM_setValue("returnHit"+MTurk.assignment_id,true) },query);
     }
 
+    var contact_response=function(doc,url,resolve,reject,query) {
+        console.log("in contact_response,url="+url);
+        var i,j, my_match,temp_email,encoded_match,match_split;
+
+        var begin_email=my_query.fields.email,clicky;
+        var x,scripts=doc.scripts,style=doc.querySelectorAll("style");
+        //for(x=0;x<scripts.length;x++) { scripts[x].innerHTML=""; }
+        for(x=0;x<style.length;x++) { style[x].innerHTML=""; }
+
+        var short_name=url.replace(my_query.url,""),links=doc.links,email_matches,phone_matches;
+        var temp_url,curr_url;
+        doc.body.innerHTML=doc.body.innerHTML.replace(/\s*\[at\]\s*/,"@").replace(/\s*\[dot\]\s*/,".");
+        MTP.fix_emails(doc,url);
+        console.log("& doc.body.innerHTML.length="+doc.body.innerHTML.length);
+        if(doc.body.innerHTML.length>1000000) {
+            console.log("Page at url="+url+", too long, resolving");
+            resolve(query);
+            return;
+        }
+
+
+        console.time("beforeemailmatchesnew");
+
+        if((email_matches=doc.body.innerHTML.match(my_email_re))) {
+            for(j=0; j < email_matches.length; j++) {
+                if(!MTurk.is_bad_email(email_matches[j]) && email_matches[j].length>0) my_query.email_list.push(email_matches[j].toString());
+            }
+        }
+        console.timeEnd("beforeemailmatchesnew");
+        for(i=0; i < links.length; i++) {
+            try {
+                if((temp_email=links[i].href.replace(/^\s*mailto:\s*/,"").match(email_re)) &&
+                   !MTP.is_bad_email(temp_email[0])) my_query.email_list.push(temp_email.toString());
+                //else if(encoded_match) { console.log("encoded_match="+encoded_match); }
+                //else if((clicky=links[i].getAttribute("onclick"))) { console.log("clicky="+clicky+", match="+clicky.match(/mailme/)); }
+            }
+            catch(error) { console.log("Error with emails "+error); }
+        }
+        console.log("* doing doneQueries++ for "+url);
+
+        resolve(query);
+        return;
+    };
+
     function begin_script(timeout,total_time,callback) {
         if(timeout===undefined) timeout=200;
-        if(total_time===undefined) total_time=0; 
+        if(total_time===undefined) total_time=0;
         if(callback===undefined) callback=init_Query;
         if(MTurk!==undefined && Gov!==undefined) { callback(); }
         else if(total_time<2000) {
@@ -361,9 +446,15 @@
     function submit_if_done() {
         var is_done=true,x;
         add_to_sheet();
+        console.log("my_query.done="+JSON.stringify(my_query.done));
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
+    /* ASOC stuff, maybe expand later */
+    var ASOC={};
+    ASOC.type_lists={"Records":{lst:[],num:'3'},"Administration":{lst:[],num:'2'},"IT":{lst:[],num:'1'},"Communication":{lst:[],num:''}};
+    ASOC.agency_regex={"Police":/Police|(^|[^A-Za-z]+)PD($|[^A-Za-z]+)/i};
+    /* After the Gov search */
     function gov_promise_then(my_result) {
         var i,curr,fullname,x,num;
         console.log("\n*** Gov.phone="+Gov.phone);
@@ -372,62 +463,196 @@
         for(i=0;i<result.length;i++) {
             if((!Gov.phone || Gov.phone.length===0) && result[i].phone && result[i].phone.length>0) Gov.phone=result[i].phone;
         }
-     //   console.log("result="+JSON.stringify(result));
-
-        var type_lists={"Records":{lst:[],num:'3'},"Administration":{lst:[],num:'2'},"IT":{lst:[],num:'1'},"Communication":{lst:[],num:''}}
         for(i=0;i<result.length;i++) {
             temp=new PersonQual(result[i]);
             console.log("("+i+"), "+JSON.stringify(temp));
-            if(temp.quality>0&&type_lists[temp.type]!==undefined) {
-                type_lists[temp.type].lst.push(temp); }
+            if(temp.quality>0&&ASOC.type_lists[temp.type]!==undefined) {
+                ASOC.type_lists[temp.type].lst.push(temp); }
         }
-        for(x in type_lists) {
-            type_lists[x].lst.sort(cmp_people);
-            console.log("type_lists["+x+"]="+JSON.stringify(type_lists[x]));
-            if(type_lists[x].lst.length>0) {
+        for(x in ASOC.type_lists) {
+            ASOC.type_lists[x].lst.sort(cmp_people);
+            console.log("ASOC.type_lists["+x+"]="+JSON.stringify(ASOC.type_lists[x]));
+            if(ASOC.type_lists[x].lst.length>0) {
                 console.log("Good type_list "+x);
-                curr=type_lists[x].lst[0];
+                curr=ASOC.type_lists[x].lst[0];
                 console.log("Good type_list "+x+"="+curr);
+                num=ASOC.type_lists[x].num;
+                if(curr.email==="na" && my_query.default_email) curr.email=my_query.default_email;
+                insert_ASOC_PersonQual(curr,num);
+                if(curr.email==="na" && num!=="3") {
+                    /* Search for it */
+                    my_query.done.email=false;
+                    console.log("Beginning email_search for "+curr);
+                    const emailPromise = new Promise((resolve, reject) => {
+                        begin_email_search(curr,num,resolve,reject,0);
+                    });
+                    emailPromise.then(email_promise_then)
+                        .catch(function(val) {
+                        console.log("Failed at this emailPromise " + val);  });
 
-                num=type_lists[x].num;
-                my_query.fields["f"+num+"1"]=curr.title;
-                fullname=MTP.parse_name(curr.name);
-                my_query.fields["f"+num+"2"]=fullname.fname;
-                my_query.fields["f"+num+"3"]=fullname.lname;
-                my_query.fields["f"+num+"4"]=curr.phone;
-                if(curr.email) my_query.fields["f"+num+"5"]=curr.email;
+                }
 
             }
             console.log("Done x");
         }
+        my_query.done.gov=true;
         submit_if_done();
 
 //        console.log("result="+JSON.stringify(result));
     }
+    function good_init(str) {
+            return str.length>0?str.charAt(0):"";
+        }
+    /* Do the email searches */
+    function begin_email_search(curr,num,resolve,reject) {
+        var promise_list=[];
+        var fullname=MTP.parse_name(curr.name);
+        curr.fullname=fullname;
+        var search_str,x;
+
+        for(x in fullname) fullname[x]=fullname[x].toLowerCase();
+        if(!fullname.mname) fullname.mname="";
+        /* Search for jsmith@domain.com OR smithj@domain.com, first.last@domain.com,firstlast@domain.com */
+        var search_str_lst=["+\""+fullname.fname.charAt(0)+fullname.lname+"@"+my_query.domain+"\"",
+            "+\""+fullname.lname+fullname.fname.charAt(0)+"@"+my_query.domain+"\"",
+                           "+\""+fullname.fname+"."+fullname.lname+"@"+my_query.domain+"\"",
+                            "+\""+fullname.fname+fullname.lname.charAt(0)+"@"+my_query.domain+"\"",
+                             "+\""+fullname.fname.charAt(0)+good_init(fullname.mname)+fullname.lname+"@"+my_query.domain+"\"",
+                            "+\""+fullname.lname+fullname.fname.charAt(0)+good_init(fullname.mname)+"@"+my_query.domain+"\""
+                           ];
+        var currPromise;
+        var i=0;
+        function do_email_search(search_str,resolve,reject,i) {
+            setTimeout(function() { query_search(search_str, resolve, reject, query_response,"email"); },(i*1000));
+        }
+        for(search_str of search_str_lst) {
+
+            currPromise = new Promise((resolve, reject) => {
+                console.log("Beginning URL search");
+                do_email_search(search_str,resolve,reject,i);
+
+            });
+            currPromise.then(MTP.my_then_func)
+                .catch(function(val) {
+                console.log("Failed at this emailPromise " + val); });
+            promise_list.push(currPromise);
+                i++;
+        }
+        Promise.all(promise_list).then(function() { resolve(curr); }).catch(reject);
+
+
+
+        console.log("new search_str="+search_str);
+
+    }
+    function assign_email(curr) {
+        var domain_list=[];
+        var fname=curr.fullname.fname,lname=curr.fullname.lname,mname=curr.fullname.mname;
+        var dom_str=my_query.domain.replace(/\./g,"\\.");
+        var email_regexps=
+            [new RegExp("^"+fname.charAt(0)+"(\\.)?"+lname+"@"+dom_str,"i"),
+             new RegExp("^"+fname+"[\\._]{1}"+lname+"@"+dom_str,"i"),
+             new RegExp("^"+fname+lname.charAt(0)+"@"+dom_str,"i"),new RegExp("^"+lname+fname.charAt(0)+"@"+dom_str,"i"),
+             new RegExp("^"+good_init(fname)+good_init(mname)+lname+"@"+dom_str,"i")];
+        var curr_email,curr_re;
+        for(curr_email of my_query.email_list) {
+            for(curr_re of email_regexps) {
+                if(curr_re.test(curr_email)) {
+                    curr.email=curr_email;
+                }
+            }
+            if(curr_email.indexOf(my_query.domain)!==-1) console.log("curr_email="+curr_email);
+            return;
+        }
+
+
+    }
+    function update_ASOC() {
+        var x,curr,num;
+        for(x in ASOC.type_lists) {
+            ASOC.type_lists[x].lst.sort(cmp_people);
+            console.log("ASOC.type_lists["+x+"]="+JSON.stringify(ASOC.type_lists[x]));
+            if(ASOC.type_lists[x].lst.length>0) {
+
+                curr=ASOC.type_lists[x].lst[0];
+                console.log("Good type_list "+x+"="+curr);
+                num=ASOC.type_lists[x].num;
+                if(curr.email==="na" && x==="Administration"&&my_query.default_email) curr.email=my_query.default_email;
+                if(curr.phone==="na" && x==="Administration"&&my_query.default_phone) curr.phone=my_query.default_phone;
+                insert_ASOC_PersonQual(curr,num);
+            }
+            console.log("Done x");
+        }
+    }
+    function email_promise_then(curr_name) {
+        console.log("curr="+JSON.stringify(curr_name));
+        assign_email(curr_name);
+        var x,curr,num;
+        console.log("my_query.email_list="+JSON.stringify(my_query.email_list));
+        my_query.done.email=true;
+        update_ASOC();
+        submit_if_done();
+    }
+
+    /* insert PersonQual into ASOC */
+    function insert_ASOC_PersonQual(curr,num) {
+        var fullname=MTP.parse_name(curr.name);
+        my_query.fields["f"+num+"2"]=fullname.fname;
+        my_query.fields["f"+num+"3"]=fullname.lname;
+        my_query.fields["f"+num+"1"]=curr.title;
+        if(curr.phone) my_query.fields["f"+num+"4"]=curr.phone;
+        else my_query.fields["f"+num+"4"]="na";
+        if(curr.email) my_query.fields["f"+num+"5"]=curr.email;
+        else my_query.fields["f"+num+"5"]="na";
+    }
+
+
+
+
+
 
     function PersonQual(curr) {
         //this.curr=curr;
         var fullname;
         var terms=["name","title","phone","email"],x;
+        var admin_re_lst=[{type_re:/Fire/i,admin_re:/^Fire/i},{type_re:/Sheriff/i,admin_re:/(^|[^A-Za-z]+)(Sheriff)/i},
+                          {type_re:/Police/i,
+                           admin_re:/^(Chief)$|Police Chief|Public Safety|Chief of Police|Director of Public Safety|Police Commissioner/i},
+                          {type_re:/Constable/i,admin_re:/^Constable/i},
+                          {type_re:/Marshal/i,admin_re:/\s*Marshal/i}];
+        var admin_re=/Director|Manager|Coordinator/;
+        for(x of admin_re_lst) {
+            if(x.type_re.test(my_query.agency_type)) {
+                admin_re=x.admin_re;
+                break;
+            }
+        }
+       // console.log("admin_re="+admin_re);
         curr.name=curr.name.trim();
         for(x of terms) this[x]=curr[x]?curr[x]:"na";
         if(this.title) this.title=this.title.replace(/^[^A-Za-z]+/,"").replace(/[^A-Za-z]+$/,"");
+        if(this.phone) {
+            let p_match=this.phone.match(phone_re);
+            this.phone=p_match?p_match[0]:"";
+        }
         if(this.name) {
             fullname=MTP.parse_name(curr.name);
             this.first=fullname.fname;
             this.last=fullname.lname;
         }
         if(this.email) this.email=this.email.replace(/This email address is being protected from spambots\. You need JavaScript enabled to view it\.(.*@.*)cloak.*$/,"$1");
-
+        let email_match;
+        if(this.email && (email_match=this.email.match(email_re))) this.email=email_match[0];
         if(this.email==="Email" && Gov.id==="granicus"&&this.first
            &&this.last) this.email=this.first.toLowerCase().charAt(0)+this.last.toLowerCase()+"@"+MTP.get_domain_only(Gov.url,true);
 
         if((!this.phone ||this.phone==="na") && Gov.phone) this.phone=Gov.phone;
+        if(!this.phone||!this.phone.trim()) this.phone="na";
         this.quality=0;
         this.type="";
-        if(curr.title && /(Business Administrator)|(^Administrator$)|(Supervisor,\s*(City|Town|Village|County))|((County|City|Town|Township|Village|Public|Boro(ugh)?)\s*(Admin|Manager|Supervisor))|Director of Administration|Chief Admin|((^|[^A-Za-z]+)(CAO)($|[^A-Za-z]+))|(^Manager$)/i.test(curr.title)) {
+        if(curr.title && admin_re.test(curr.title)) {
             this.type="Administration";
-            if(/^(City|Town|Township|Village|Boro(ugh)?) (Administrator|Manager|Supervisor)$/i.test(curr.title)) this.quality=4;
+            if(/^(Chief|Chief of Police|Police Chief)$/i.test(curr.title)) this.quality=4;
             else if(/Chief Administrative Officer/.test(curr.title)) this.quality=2;
             else this.quality=1;
         }
@@ -440,7 +665,7 @@
             else if(/Director|Chief|Specialist/.test(curr.title)) this.quality=2;
             else this.quality=1;
         }
-        if((curr.title && !(this.type==="Administration") && /(Communic)|(Public Rel)|Public Information|((^|[^A-Za-z]+)(PR|PIO)($|[^A-Za-z]+))/i.test(curr.title)) || (curr.department && /Communications/.test(curr.department))) {
+        if((curr.title && !(this.type==="Administration") && /(Communica)|(Public Rel)|Public Information|((^|[^A-Za-z]+)(PR|PIO)($|[^A-Za-z]+))/i.test(curr.title)) || (curr.department && /Communications/.test(curr.department))) {
             this.type="Communication";
             if(/^(Communications Director|Public Relations Director|Communications Manager|Public Information Officer|PIO)$/i
                .test(curr.title)) this.quality=4;
@@ -458,11 +683,27 @@
             else if(/Clerk/i.test(curr.title)) this.quality=2;
             else this.quality=1;
         }
-        if(this.email!=="na") this.quality+=.01
-        if(/[\d\?]+/.test(this.name)) this.quality=-1;
+        if(this.email!=="na"||email_re.test(this.email)) this.quality+=.01
+        if(/[\d\?]+|Downstream/.test(this.name)) this.quality=-1;
+        if(this.is_bad_person_name(this.name)) this.quality=-1;
         var nlp_out=nlp(this.name).people().out('topk');
         if(nlp_out.length>0) this.quality+=2;
+        if(curr.quality) this.quality=curr.quality; // manually set quality
     }
+    PersonQual.prototype.toString=function() {
+        return "{ Name:"+this.name+", Title: "+(this.title)+", Phone: "+
+            (this.phone)+", Email: "+this.email+", Department: "+this.department+"}";
+    };
+    PersonQual.prototype.is_bad_person_name=function(name) {
+        if(/\s+(Pike|Rd\.|Road|St\.?|Street$)/i.test(name)) return true;
+        if(/(^|[^A-Za-z]+)(Monday|Friday|Library|Sheriff\'s|Administration|Ave\.?|Apply|Hours|Sign In|P\.?O\.? Box|Borough|Office|Government|Mayor|Our|Services)($|[^A-Za-z]+)/i.test(name)) return true;
+  if(/(^|[^A-Za-z]+)(Click|Here|Contact)($|[^A-Za-z]+)/i.test(name)) return true;
+        if(/PO Box/.test(name)) return true;
+        if(name.split(/\s+/).length>4) return true;
+
+        return false;
+    };
+
      function cmp_people(person1,person2) {
         if(!(person1 instanceof PersonQual && person2 instanceof PersonQual)) return 0;
         if(person2.quality!=person1.quality) return person2.quality-person1.quality;
@@ -475,7 +716,7 @@
     function paste_data(e) {
         e.preventDefault();
         var target_type=e.target.id.replace(/1$/,"");
-        var term_list=["","Tech Coordinator","Manager","Clerk"];
+        var term_list=["","Tech Coordinator","Sheriff","Clerk"];
         var text = e.clipboardData.getData("text/plain");
         var ret=Gov.parse_data_func(text),fullname;
         if(text==="na") {
@@ -523,6 +764,7 @@
 
     function set_govt_names() {
         var agency_match;
+        var agency_type_list=[{re:/(^|[^A-Za-z]+)Police($|[^A-Za-z]+)/,name:"Police"}],ag;
         my_query.orig_name=my_query.orig_name.replace(/Township of ([^,]*)/,"$1 Township").replace(/charter Township/,"Township");
         my_query.agency_name=my_query.orig_name.replace(/\([^\)]+\)/,"").trim().replace(/[A-Z]{2}$/,function(match, offset, string) {
             if(reverse_state_map[match]!==undefined) return reverse_state_map[match];
@@ -538,11 +780,17 @@
     //    console.log("New my_query.agency_name="+my_query.agency_name);
         agency_match=my_query.agency_name.match(/(.*)\s-\s*([^,]*),\s*(.*)$/);
         if(agency_match) my_query.agency_type=agency_match[2].replace(/(^|\s)(Department|Dept. of)(\s|$)/i,"");
-        else
+        else if((agency_match=my_query.agency_name.match(/([^,]*)\s*,\s*([^-]*)\s-\s*(.*)$/)))
         {
-            agency_match=my_query.agency_name.match(/([^,]*)\s*,\s*([^-]*)\s-\s*(.*)$/);
-            if(agency_match) my_query.agency_type=agency_match[3].replace(/(^|\s)(Department|Dept. of)(\s|$)/i,"");
+            my_query.agency_type=agency_match[3].replace(/(^|\s)(Department|Dept. of)(\s|$)/i,"");
         }
+        else {
+            for(ag of agency_type_list) {
+                if(ag.re.test(my_query.agency_name)) my_query.agency_type=ag.name; }
+        }
+
+
+
         my_query.query_name=my_query.query_name.replace(/([^,]*)\s*,\s*([^-]*)\s-\s*(.*)$/,"$1 $3 $2");
         my_query.query_name=my_query.query_name.replace(/(^|\s)(?:Community|Central )School Corporation(\s|,|$)/,"$1Schools$2").trim();
         my_query.query_name=my_query.query_name.replace(/(^|\s)[\dR]+-([XVI\d]+)(\s|$|,)/,"")
@@ -583,7 +831,38 @@
          my_query.short_name=my_query.short_name.trim();
     }
 
+    /* doing fb */
+    function fb_promise_then(result) {
+        var url=result.replace(/m\./,"www.");
+        url=url.replace(/facebook\.com\/pages\/([^\/]*)\/([^\/]*)/,"facebook.com/$1-$2");
+        url=url.replace(/facebook\.com\/([^\/]+).*$/,"facebook.com/pg/$1").replace(/\/$/,"")+"/about/?ref=page_internal";
+        my_query.fb_url=url;
+        console.log("FB promise_then, new url="+url);
+        var promise=MTP.create_promise(url,MTP.parse_FB_about,parse_fb_about_then);
 
+    }
+
+     function parse_fb_about_then(result) {
+        console.log("result="+JSON.stringify(result));
+
+        my_query.done.fb=true;
+
+        if(result.email) {
+            my_query.default_email=result.email;
+            var p=new PersonQual({name:result.team.length>0?result.team[0]:"",title:"Chief",phone:result.phone||"",email:result.email,quality:1.01});
+            ASOC.type_lists["Administration"].lst.push(p);
+            update_ASOC();
+        }
+         if(result.phone) {
+             my_query.default_phone=result.phone;
+     }
+        else {
+            console.log("Calling submit_if_done from parse_fb_about_then");
+        }
+
+         submit_if_done();
+
+    }
 
     function init_Query()
     {
@@ -597,10 +876,10 @@
         var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         var dont=document.getElementsByClassName("dont-break-out");
         my_query={name:wT.rows[0].cells[1].innerText,city:wT.rows[1].cells[1].innerText,county:wT.rows[2].cells[1].innerText,
-                  state:wT.rows[3].cells[1].innerText,agency_type:"",agency_number:"",
+                  state:wT.rows[3].cells[1].innerText,agency_type:"",agency_number:"",email_list:[],domain:"",
                   fields:{"f1":"",f2:"",f3:"",f4:"",f5:"",f11:"",f12:"",f13:"",f14:"",f15:"",f21:"",f22:"",f23:"",f24:"",f25:"",
                          f31:"",f32:"",f33:"",f34:"",f35:""},
-                  done:{},submitted:false,try_count:0};
+                  done:{fb:false,gov:false},submitted:false,try_count:{"query":0}};
 
         my_query.orig_name=my_query.name;
         my_query.agency_name=my_query.orig_name;
@@ -613,24 +892,26 @@
 
         set_govt_names();
         // Should never happen now
-        if(/ - /.test(my_query.agency_name)) {
-            console.log("Agency contains -, returning");
-
-            GM_setValue("returnHit"+MTurk.assignment_id,true); return; }
+       
 
        // .replace(/(^|\s)of(\s|$)/i,"");
        // console.log("my_query="+JSON.stringify(my_query));
         my_query.agency_type=my_query.agency_type.replace(/Sherrif/,"Sheriff");
         console.log("my_query="+JSON.stringify(my_query));
         for(i in my_query.fields) my_query.fields[i]="na";
-        var title_lst=["","1","2","3"];
+        var title_lst=["","1","2"];
         for(i=0;i<title_lst.length;i++) {
             document.querySelector("#f"+title_lst[i]+"1").addEventListener("paste",paste_data);
             document.querySelector("#f"+title_lst[i]+"2").addEventListener("paste",paste_name);
         }
         Gov.debug=true;
 
-        var search_str=my_query.name+"";
+         if(/ - /.test(my_query.agency_name)) {
+            console.log("Agency contains -, returning");
+
+            GM_setValue("returnHit"+MTurk.assignment_id,true); return; }
+
+        var search_str=my_query.query_name+"";
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");
@@ -638,6 +919,15 @@
         queryPromise.then(query_promise_then)
             .catch(function(val) {
             console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+        var fb_search_str=my_query.query_name+" site:facebook.com";
+        const fbPromise = new Promise((resolve, reject) => {
+            console.log("Beginning URL search");
+            query_search(fb_search_str, resolve, reject, query_response,"fb");
+        });
+        fbPromise.then(fb_promise_then)
+            .catch(function(val) {
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+
 
 
     }

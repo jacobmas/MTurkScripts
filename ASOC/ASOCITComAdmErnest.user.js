@@ -2,7 +2,7 @@
 // @name         ASOCITComAdmErnest
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Current School Class as of 03/12/2019
+// @description  Current School Class as of 03/12/2019 (slightly better but fucked up for Ernest some)
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
