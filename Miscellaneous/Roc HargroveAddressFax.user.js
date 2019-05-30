@@ -108,7 +108,10 @@
     function add_to_sheet() {
         var x,field;
         //update_address();
-        for(x in my_query.fields) if(field=document.getElementsByName(x)[0]) field.value=my_query.fields[x];
+        for(x in my_query.fields) {
+            console.log("my_query.fields["+x+"]="+my_query.fields[x]);
+            if(field=document.getElementsByName(x)[0]) field.value=my_query.fields[x];
+        }
     }
 
     function submit_if_done() {
@@ -170,9 +173,15 @@
         var top,x;
         top=address;
         console.log("top="+JSON.stringify(top));
+        var add_field_prefix={"office_name1_01":"01","address1_01":"02",
+                              "address2_01":"03","city_01":"04","state_01":"05","zip_01":"06","phone_01":"07","fax_01":"08",
+                             "office_name1_02":"10","address1_02":"11",
+                              "address2_02":"12","city_02":"13","state_02":"14","zip_02":"15","phone_02":"16","fax_02":"17"};
+
         for(x in top) {
             console.log("Adding "+x+"_"+suffix);
-            my_query.fields[x+"_"+suffix]=top[x]; }
+            my_query.fields[add_field_prefix[x+"_"+suffix]+"_"+x+"_"+suffix]=top[x]; }
+
 
     }
     function remove_phones(text,suffix,target) {
@@ -182,7 +191,8 @@
         var pasted_name=/office_name/.test(target.name);
         for(i=0;i<split.length;i++) {
             if(i==0 && pasted_name && !/[\d]/.test(split[i])) {
-                my_query.fields["office_name1_"+suffix]=split[i].trim();
+                console.log("Added "+(suffix==="01"?"01":"10")+"office_name1_"+suffix+" to equal "+split[i].trim());
+                my_query.fields[(suffix==="01"?"01":"10")+"_office_name1_"+suffix]=split[i].trim();
                 continue;
             }
             match=split[i].match(phone_re);
@@ -203,9 +213,11 @@
         var match=e.target.name.match(/_([^_]*)$/);
 
         var suffix=match?match[1]:"01";
+        if(text.indexOf("\n")===-1 && !my_query.fields[e.target.name]) my_query.fields[e.target.name]=text;
+
         text=remove_phones(text,suffix,e.target);
         text=text.replace(/\s*\n\s*/g,",").replace(/,,/g,",").replace(/,\s*$/g,"").trim();
-
+        console.log("e.target.name="+e.target.name);
         console.log("text="+text);
 
         update_address(new Address(text,-50),suffix);
@@ -224,9 +236,9 @@
     {
         console.log("in init_query rochargrove");
         var i;
-        document.getElementsByName("address1_01")[0].addEventListener("paste",do_address_paste);
-         document.getElementsByName("office_name1_01")[0].addEventListener("paste",do_address_paste);
-        document.getElementsByName("office_name1_02")[0].addEventListener("paste",do_address_paste);
+        document.getElementsByName("02_address1_01")[0].addEventListener("paste",do_address_paste);
+         document.getElementsByName("01_office_name1_01")[0].addEventListener("paste",do_address_paste);
+        document.getElementsByName("10_office_name1_02")[0].addEventListener("paste",do_address_paste);
 
         //var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         //var dont=document.getElementsByClassName("dont-break-out");
