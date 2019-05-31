@@ -2,7 +2,7 @@
 //var my_query = {};
 //var MTP=MTurkScript.prototype;
 /* Gov.script_loaded is a map of urls to number loaded there, script total is a map of urls to total number needed there */
-var Gov=Gov||{contact_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
+var Gov=Gov||{contact_list:[],email_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 	      split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s*-\s+)|\||                     |	|	|●|(\s+~\s+)|•|\s{3,}|\s+[*≈]+\s+|(\s+\/\s+)|\.{3,}/,
 	      id_map:{"ahaconsulting":"municodeweb","seamlessgov":"seamlessdocs","townwebdesign":"townweb","civicasoft":"granicus"},
 	      title_regex:new RegExp("(^|[^A-Za-z]{1})(Clerk[\/\-]+Treasurer|Officer|Head of School|Director|Department|Supervisor|Manager|Clerk|Administrator|Inspector|Assistant|"+
@@ -54,7 +54,40 @@ Gov.find_phone=function(doc,url) {
     console.log("Phone="+phone);
     return phone;
 };
+Gov.scrape_lone_emails=function(doc,url) {
+    if(Gov.debug) console.log("in Gov.scrape_lone_emails,url="+url);
+    
+    var i,j, my_match,temp_email,encoded_match,match_split;
+    var extension=extra.extension,callback=extra.callback,nlp_temp;
+    var begin_email=my_query.fields.email,title_result;
+    var x,scripts=doc.scripts,style=doc.querySelectorAll("style");
+    MTP.fix_emails(doc,url);
+    for(x=0;x<style.length;x++) { style[x].innerHTML=""; }
+    var links=doc.links,email_matches,phone_matches;
+    console.log("replacement="+replacement);
+    var temp_url,curr_url;
+    doc.body.innerHTML=doc.body.innerHTML.replace(/\s*([\[\(]{1})\s*at\s*([\)\]]{1})\s*/,"@")
+        .replace(/\s*([\[\(]{1})\s*dot\s*([\)\]]{1})\s*/,".");
+    MTP.fix_emails(doc,url);
+    if((email_matches=doc.body.innerHTML.match(email_re))) {
+        for(j=0; j < email_matches.length; j++) {
+            if(!MTP.is_bad_email(email_matches[j]) && email_matches[j].length>0 &&
+	       !Gov.email_list.includes(email_matches[j])) Gov.email_list.push(email_matches[j]);              
+        }
+       
+    }
 
+   
+    for(i=0; i < links.length; i++)
+    {   
+        //if(my_query.fields.email.length>0) continue;
+        
+        if((temp_email=links[i].href.replace(/^mailto:\s*/,"").match(email_re)) &&
+           !MTurkScript.prototype.is_bad_email(temp_email[0])) Gov.email_list.push(temp_email.toString());
+    }
+    if(Gov.debug) console.log("done scrape_lone_emails");
+    return;
+};
 
 /** Gov.scrape_none scrapes a generic government website for employees */
 Gov.scrape_none=function(doc,url,resolve,reject) {
@@ -331,6 +364,8 @@ Gov.parse_contact_tables=function(doc,url,resolve,reject,temp_div,dept_name) {
     }
     /* No asynchronous calls so won't happen till after tables finish parsing right? */
     console.time("parse_contact_elems");
+
+    Gov.scrape_lone_emails(doc,url);
 
     add_count=add_count+Gov.parse_contact_elems(doc,url,resolve,reject,dept_name);
     console.timeEnd("parse_contact_elems");
