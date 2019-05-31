@@ -58,7 +58,6 @@ Gov.scrape_lone_emails=function(doc,url) {
     if(Gov.debug) console.log("in Gov.scrape_lone_emails,url="+url);
     
     var i,j, my_match,temp_email,encoded_match,match_split;
-    var extension=extra.extension,callback=extra.callback,nlp_temp;
     var begin_email=my_query.fields.email,title_result;
     var x,scripts=doc.scripts,style=doc.querySelectorAll("style");
     MTP.fix_emails(doc,url);
