@@ -884,9 +884,9 @@ Gov.parse_data_func=function(text) {
 	//   else { console.log("split_lines["+j+"], bad_stuff="+split_lines[j].match(Gov.bad_stuff_re)); }
     }
     if(j>=split_lines.length) return ret;
-    if(Gov.debug) console.log("After skipping, j="+j);
+   // if(Gov.debug) console.log("After skipping, j="+j);
     split_comma=split_lines[j].split(/,/);
-    if(split_comma.length===2 && /[^\s]\s/.test(split_comma[0])) {
+    if(split_comma.length>=2 && /[^\s]\s/.test(split_comma[0])) {
 	// console.log("Doing split_comma");
 	var curr_last=split_lines.length-1;
 	split_lines.push(split_lines[curr_last]);
