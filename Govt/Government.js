@@ -62,7 +62,6 @@ Gov.scrape_lone_emails=function(doc,url) {
     MTP.fix_emails(doc,url);
     for(x=0;x<style.length;x++) { style[x].innerHTML=""; }
     var links=doc.links,email_matches,phone_matches;
-    console.log("replacement="+replacement);
     var temp_url,curr_url;
     doc.body.innerHTML=doc.body.innerHTML.replace(/\s*([\[\(]{1})\s*at\s*([\)\]]{1})\s*/,"@")
         .replace(/\s*([\[\(]{1})\s*dot\s*([\)\]]{1})\s*/,".");
