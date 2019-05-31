@@ -58,7 +58,6 @@ Gov.scrape_lone_emails=function(doc,url) {
     if(Gov.debug) console.log("in Gov.scrape_lone_emails,url="+url);
     
     var i,j, my_match,temp_email,encoded_match,match_split;
-    var begin_email=my_query.fields.email,title_result;
     var x,scripts=doc.scripts,style=doc.querySelectorAll("style");
     MTP.fix_emails(doc,url);
     for(x=0;x<style.length;x++) { style[x].innerHTML=""; }
@@ -79,7 +78,6 @@ Gov.scrape_lone_emails=function(doc,url) {
    
     for(i=0; i < links.length; i++)
     {   
-        //if(my_query.fields.email.length>0) continue;
         
         if((temp_email=links[i].href.replace(/^mailto:\s*/,"").match(email_re)) &&
            !MTurkScript.prototype.is_bad_email(temp_email[0])) Gov.email_list.push(temp_email.toString());
