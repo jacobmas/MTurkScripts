@@ -799,7 +799,7 @@ Gov.parse_name_func=function(text) {
  * Yucky initial functions to clean up text to make parsing easier */
 Gov.initial_cleanup_text_for_parse=function(text) {
     var job_re=/([^a-zA-Z]+)(Mayor|Administrator|Director|Supervisor|Alderman|Superintendent|Manager)\s+/ig;
-    text=text.replace(/ (?:has served as|is|has been) the ([A-Z]+)/,"\t$1");
+    text=text.replace(/ (?:has served as|is|has been) the ([A-Z]+)/,",\t$1");
     text=text.replace(/([a-z]{1})([A-Z][a-z]+:)/g,"$1\t$2").replace(/([a-z]{1})\s{1,}([\d]{1})/g,"$1\t$2")
 	.replace(/([\d]{1})\s{1,}([A-Za-df-wy-z]{1})/g,"$1\t$2").replace(/([A-Za-z]{1})\s([A-Za-z0-9\._]+@)/,"$1\t$2")
 	.replace(/([^\s]+)\s+([^\s@]+@[^\s@]+)/g,"$1\t$2")
