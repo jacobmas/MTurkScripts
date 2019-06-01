@@ -84,7 +84,7 @@ Address.prototype.parse_address_Europe=function(text) {
     if((match=text.match(regex1)) && this.set_address(match[1],"",match[3],"",match[2],match[4])) return true;
     if((match=text.match(regex2)) && this.set_address(match[1],"",match[2],"",match[3],match[4])) return true;
     if((match=text.match(regex3)) && this.set_address(match[1],"",match[2],"",match[3],match[4])) return true;
-    //console.log("parse_address_Europe,"+text);
+    console.log("parse_address_Europe,"+text);
     return false;
 };
 Address.prototype.parse_address_Belgium=function(text) {
