@@ -78,12 +78,16 @@ Address.prototype.parse_address_Canada=function(text) {
 };
 Address.prototype.parse_address_Europe=function(text) {
     var split=text.split(/\s*,\s*/),postcode,match;
-    var regex1=/^([^,]+),\s*((?:[A-Z]\s*-\s*)?[\d]{4})\s+([^,]+),\s*([^,]+)$/;
+    var regex1=/^([^,]+),\s*((?:[A-Z]\s*-\s*)?[\d]{4,})\s+([^,]+),\s*([^,]+)$/;
     var regex2=/^([^,]+),\s*\s+([^,]+),\s*((?:[A-Z]+-)?[\d]+),\s*([^,]+)$/;
     var regex3=/^([^,]+),([^,]+),\s*((?:[A-Z]+-)?[\d]+)\s*,\s*([^,]+)$/;
+    var regex4=/^([^,]+),\s*((?:[A-Z]\s*-\s*)?[\d]{4,})\s+([^,]+)$/;
+
     if((match=text.match(regex1)) && this.set_address(match[1],"",match[3],"",match[2],match[4])) return true;
     if((match=text.match(regex2)) && this.set_address(match[1],"",match[2],"",match[3],match[4])) return true;
     if((match=text.match(regex3)) && this.set_address(match[1],"",match[2],"",match[3],match[4])) return true;
+    if((match=text.match(regex4)) && this.set_address(match[1],"",match[3],"",match[2],"") return true;
+
     console.log("parse_address_Europe,"+text);
     return false;
 };
