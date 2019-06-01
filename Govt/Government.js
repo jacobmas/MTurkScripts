@@ -799,15 +799,15 @@ Gov.parse_name_func=function(text) {
  * Yucky initial functions to clean up text to make parsing easier */
 Gov.initial_cleanup_text_for_parse=function(text) {
     if(Gov.debug) console.log("pre-cleanup, text="+text);
-    var job_re=/^([^a-zA-Z]+)(Mayor|Administrator|Director|Supervisor|Alderman|Superintendent|Manager)\s+/ig;
-     var job_re2=/([a-z]+)(Chief|Owner|Mayor|Administrator|Director|Supervisor|Alderman|Superintendent|Manager)\s+/ig;
+    var job_re=/^([^a-zA-Z]+)(Mayor|Administrator|Director|Supervisor|Alderman|Superintendent|Manager)(\s+)/ig;
+     var job_re2=/([a-z]+)(Chief|Owner|Mayor|Administrator|Director|Supervisor|Alderman|Superintendent|Manager)(\s+)/ig;
     text=text.replace(/ (?:has served as|is|has been) the ([A-Z]+)/,",\t$1");
     text=text.replace(/([a-z]{1})([A-Z][a-z]+:)/g,"$1\t$2").replace(/([a-z]{1})\s{1,}([\d]{1})/g,"$1\t$2")
 	.replace(/([\d]{1})\s{1,}([A-Za-df-wy-z]{1})/g,"$1\t$2").replace(/([A-Za-z]{1})\s([A-Za-z0-9\._]+@)/,"$1\t$2")
 	.replace(/([^\s]+)\s+([^\s@]+@[^\s@]+)/g,"$1\t$2")
 	.replace(/(-[\d]+)([a-zA-Z]+)/g,"$1\t$2").replace(/([a-zA-Z]+)([\d]+-)/g,"$1\t$2");
     text=text.replace(job_re,"$1$2,");
-    text=text.replace(job_re2,"$1,$2"); // fix if spacing bad
+    text=text.replace(job_re2,"$1,$2$3"); // fix if spacing bad
     /* Cleanup jobs preceding names with commas */
     return text.trim();
 };
