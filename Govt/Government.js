@@ -798,7 +798,7 @@ Gov.parse_name_func=function(text) {
 /* 
  * Yucky initial functions to clean up text to make parsing easier */
 Gov.initial_cleanup_text_for_parse=function(text) {
-    //if(Gov.debug) console.log("pre-cleanup, text="+text);
+    if(Gov.debug) console.log("pre-cleanup, text="+text);
     var job_re=/^([^a-zA-Z]+)(Mayor|Administrator|Director|Supervisor|Alderman|Superintendent|Manager)\s+/ig;
      var job_re2=/([a-z]+)(Chief|Owner|Mayor|Administrator|Director|Supervisor|Alderman|Superintendent|Manager)\s+/ig;
     text=text.replace(/ (?:has served as|is|has been) the ([A-Z]+)/,",\t$1");
