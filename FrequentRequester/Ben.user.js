@@ -117,7 +117,7 @@
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
     function parse_text() {
-        var conj_reg=/(.{6,10})\s(and|or|but|if|after|because|before|that|in|for)\s.*$/;
+        var conj_reg=/(.{8,10})\s(and|or|but|if|after|because|before|that|in|for)\s.*$/;
         var split=my_query.text.split("\."),next,first,i;
         var to_regex=/^.*\s(and be(?:come)|to (attend|practice|start|work|get|be(?:come)?)\s.{3,})/
         for(i=0;i<split.length;i++) {
@@ -126,16 +126,33 @@
                 next=first.replace(to_regex,"$1")
                     .replace(conj_reg,"$1");
                 next=next.replace(/\smy\s/," your ").replace(/\smyself\s/," yourself ").replace(/,\s+.*$/,"");
-                my_query.fields.Q5FreeTextInput=next;
+                my_query.fields.Q5FreeTextInput=next.replace(/^to /,"");
                 add_to_sheet();
                 return;
             }
-            if(/plan (?:to|on) ([a-z]*ing)\s/i.test(first)) {
+            if(/(hope|plan) (?:to|on) ([a-z]*ing)\s/i.test(first)) {
 
-                next=first.replace(/^.*\splan (?:to|on) ([a-z]*)ing/i,"$1")
+                next=first.replace(/^.*\s(?:hope|plan) (?:to|on) ([a-z]*)ing/i,"$1")
                     .replace(conj_reg,"$1");
                 next=next.replace(/\smy\s/," your ").replace(/\smyself\s/," yourself ").replace(/,\s+.*$/,"");
-                my_query.fields.Q5FreeTextInput=next;
+                my_query.fields.Q5FreeTextInput=next.replace(/^to /,"");
+                add_to_sheet();
+                return;
+            }
+            if(/(hope|plan) (?:to|on)\s/i.test(first)) {
+
+                next=first.replace(/^.*\s(?:hope|plan) (?:to|on)\s/i,"")
+                    .replace(conj_reg,"$1");
+                next=next.replace(/\smy\s/," your ").replace(/\smyself\s/," yourself ").replace(/,\s+.*$/,"");
+                my_query.fields.Q5FreeTextInput=next.replace(/^to /,"");
+                add_to_sheet();
+                return;
+            }
+            if(/\sis to/.test(first)) {
+                next=first.replace(/^.*\sis to/i,"")
+                    .replace(conj_reg,"$1");
+                next=next.replace(/\smy\s/," your ").replace(/\smyself\s/," yourself ").replace(/,\s+.*$/,"");
+                my_query.fields.Q5FreeTextInput=next.replace(/^to /,"");
                 add_to_sheet();
                 return;
             }

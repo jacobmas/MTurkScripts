@@ -1,4 +1,4 @@
-/* Text can be an object or a string with address text */
+/* Text can be an object or a string with address text, location currently unused */
 function Address(text,priority,location) {
     console.log("# In address for "+text);
     this.priority=priority;
@@ -20,6 +20,9 @@ Address.prototype.parse_address=function(text) {
 	return 2; }
     return 1<<25;
 };
+
+
+
 // Set the address of something directly */
 Address.prototype.set_address=function(address1,address2,city,state,postcode,country) {
     if(address1) this.address1=address1.trim();
@@ -75,7 +78,7 @@ Address.prototype.parse_address_Canada=function(text) {
 };
 Address.prototype.parse_address_Europe=function(text) {
     var split=text.split(/\s*,\s*/),postcode,match;
-    var regex1=/^([^,]+),\s*((?:B-)?[\d]{4})\s+([^,]+),\s*([^,]+)$/;
+    var regex1=/^([^,]+),\s*((?:[A-Z]\s*-\s*)?[\d]{4})\s+([^,]+),\s*([^,]+)$/;
     var regex2=/^([^,]+),\s*\s+([^,]+),\s*((?:[A-Z]+-)?[\d]+),\s*([^,]+)$/;
     var regex3=/^([^,]+),([^,]+),\s*((?:[A-Z]+-)?[\d]+)\s*,\s*([^,]+)$/;
     if((match=text.match(regex1)) && this.set_address(match[1],"",match[3],"",match[2],match[4])) return true;
