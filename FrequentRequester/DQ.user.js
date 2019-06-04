@@ -34,7 +34,7 @@
     'use strict';
     var my_query = {};
     var bad_urls=[];
-    var MTurk=new MTurkScript(30000,200,[],begin_script,"A4R60DG7BBK8Y",false);
+    var MTurk=new MTurkScript(30000,750+(Math.random()*250),[],begin_script,"A4R60DG7BBK8Y",false);
     function is_bad_name(b_name)
     {
 	return false;
@@ -1200,6 +1200,43 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
                 (num=count[0].innerText.trim().match(/[\d,]+/))) resolve({count:num[0],url:url});
         else resolve({count:"0",url:url,error:true});
     };
+    DQ.parse_dealercenter=function(doc,url,resolve,reject) {
+        console.log("in parse_dealercenter,url="+url);
+        var scripts=doc.scripts,i,curr_script;
+        // Search for the script that lets us grab the vehicles
+        for(i=0;i<scripts.length;i++)
+        {
+            curr_script=scripts[i];
+            if(curr_script.src && /\/inv-scripts\/inv\/[\d]+\/vehicle/.test(curr_script.src)) {
+                curr_script.src=MTP.fix_remote_url(curr_script.src,url);
+                var promise=MTP.create_promise(curr_script.src,DQ.parse_dealercenter_vehicles,resolve,reject);
+                return;
+            }
+        }
+
+        var count=doc.querySelector(".dws-page-size-status.pull-left"),num;
+        if(count && (num=count.innerText.trim().match(/\(([\d]+)/))) resolve({count:num[0],url:url});
+        else {
+           // if(count) console.log("count.innerText="+count.innerText);
+            GM_setValue("returnHit"+MTurk.assignment_id,true);
+            //resolve({count:"0",url:url,error:true});
+        }
+    };
+    /* Parse the response which gives the TotalRecordCount */
+    DQ.parse_dealercenter_vehicles=function(doc,url,resolve,reject,response) {
+        var text=response.responseText.replace(/^[^\(]*\((.*)\);\s*$/,"$1");
+        var parsed;
+        try {
+            parsed=JSON.parse(text);
+            console.log(parsed);
+            if(parsed.TotalRecordCount) resolve({count:(parsed.TotalRecordCount).toString(),url:url});
+            else resolve({count:"0",url:url,error:true});
+        }
+        catch(error) {
+            console.log("Error parsing JSON in dealercenter "+response.responseText);
+            resolve({count:"0",url:url,error:true});
+        }
+    }
     DQ.parse_dealerclick=function(doc,url,resolve,reject) {
         console.log("in DQ.parse_dealerclick at url="+url);
         resolve({count:doc.getElementsByClassName("title").length,url:url});
@@ -1648,6 +1685,7 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
     DQ.dealer={suffix:"/used-inventory/index.htm",parser:DQ.parse_dealer};
     DQ.dealerclick={suffix:"/inventory",parser:DQ.parse_dealerclick};
     DQ.dealercarsearch={suffix:"/newandusedcars.aspx?clearall=1",parser:DQ.parse_dealercarsearch};
+    DQ.dealercenter={suffix:"/inventory",parser:DQ.parse_dealercenter};
     DQ.dealereprocess={suffix:"/search/used/tp/",parser:DQ.parse_dealereprocess};
     DQ.dealerexpress={find_link:DQ.find_link_dealerexpress,parser:DQ.parse_dealerexpress};
     DQ.dealerfire={find_link:DQ.find_link,parser:DQ.parse_dealerfire,href_rx:/\/(preowned|used)-cars/,text_rx:/View all|Inventory/i};
@@ -1655,6 +1693,7 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
     DQ.dealeron={suffix:"/searchused.aspx",parser:DQ.parse_dealeron};
     DQ.dealerpac={find_link:DQ.find_link,parser:DQ.parse_dealerpac,href_rx:/\/external\/listveh.php\?/,text_rx:/.*/i};
     DQ.dealerpeak={find_link:DQ.find_link,parser:DQ.parse_dealerpeak,href_rx:/(\/used-cars\/for-sale)|(\/VehicleSearch\/UsedVehicles)/i,text_rx:/.*/};
+
     DQ.dealerscloud={suffix:"/used-cars",parser:DQ.parse_dealerscloud};
     DQ.dealersolutionssoftware={suffix:"/inventory.aspx",parser:DQ.parse_dealersolutionssoftware};
     DQ.dealerspecialties={find_link:DQ.find_link_dealerspecialties,parser:DQ.parse_dealerspecialties};
@@ -1884,8 +1923,6 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
 "http://flahertyusedcars.com/","http://autoexpresscolumbia.com/"];
    function init_Query()
     {
-
-
         console.log("in init_query");
         if(!/www\./.test(window.location.href)) init_UI();
         var i;
@@ -1903,19 +1940,28 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
         }
         console.log(y);*/
         if(!/trystuff\.com/.test(window.location.href)) {
-           var dont=document.getElementsByClassName("dont-break-out")[0].href;
-        var well=document.getElementsByClassName("well");
-        my_query={url:well[0].innerText.replace(/^www/,"http://www"),name:well[1].innerText};
-        if(!/http/.test(my_query.url) && !/www/.test(my_query.url)) my_query.url="http://www."+my_query.url;
-        url_list.push(my_query.url);
-        GM_setValue("url_list",url_list);
-    }
+            var dont=document.getElementsByClassName("dont-break-out")[0].href;
+            var well=document.getElementsByClassName("well");
+            my_query={url:well[0].innerText.replace(/^www/,"http://www"),name:well[1].innerText};
+            if(!/http/.test(my_query.url) && !/www/.test(my_query.url)) my_query.url="http://www."+my_query.url;
+            url_list.push(my_query.url);
+            GM_setValue("url_list",url_list);
+        }
         else {
-            my_query={url:"http://channelislandsautosales.com"}; }
+            my_query={url:"http://www.odiagasautosales.com"}; }
 
 
         promise=MTurkScript.prototype.create_promise(my_query.url,DQ.init_DQ,query_promise_then,function() {
             console.log("BLOO");
+            if(/\.business\.site/.test(my_query.url)) {
+                document.getElementById("websiteVINCount").value=0;
+                MTurk.check_and_submit();
+
+                return;
+            }
+
+            document.getElementById("websiteVINCount").value=0;
+
             GM_setValue("returnHit"+MTurk.assignment_id,true); }
 
             );
