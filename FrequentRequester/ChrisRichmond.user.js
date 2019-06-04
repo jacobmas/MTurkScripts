@@ -36,7 +36,7 @@
     var my_query = {};
     var bad_urls=["/app.lead411.com",".zoominfo.com",".privateschoolreview.com",".facebook.com",".niche.com","en.wikipedia.org",".yelp.com","hunter.io",
                  ".zoominfo.com","issuu.com","linkedin.com"];
-    var MTurk=new MTurkScript(60000,250+Math.random()*1000,[],begin_script,"AL5SB3TG7J1ZR",false);
+    var MTurk=new MTurkScript(60000,750+Math.random()*1000,[],begin_script,"AL5SB3TG7J1ZR",false);
     var MTP=MTurkScript.prototype;
     var my_email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%\*]{1,40}(\.[^<>\/()\[\]\\.,;:：\s\*@"\?]{1,40}){0,5}))@((([a-zA-Z\-0-9]{1,30}\.){1,8}[a-zA-Z]{2,20}))/g;
 
@@ -318,7 +318,7 @@
         for(i=0;i<headers.length;i++) {
            // console.log("headers["+i+"]="+headers[i].innerText);
             if(my_query.fields.first.length===1) {
-                do_nlp(headers[i].innerText,url); /* do_nlp for name */
+    //           do_nlp(headers[i].innerText,url); /* do_nlp for name */
 
             }
         }
@@ -326,7 +326,7 @@
         console.log("in contact_response "+url);
         var short_name=url.replace(my_query.url,""),links=doc.links,email_matches,phone_matches;
         var replacement=url.match(/^https?:\/\/[^\/]+/)[0];
-        var contact_regex=/(Contact|About|Legal|Team|Staff|Faculty|Teacher)/i,bad_contact_regex=/^\s*(javascript|mailto|tel):/i;
+        var contact_regex=/(Contact|(^About)|Legal|Team|Staff|Faculty|Teacher)/i,bad_contact_regex=/^\s*(javascript|mailto|tel):/i;
         console.log("replacement="+replacement);
         var temp_url,curr_url;
         doc.body.innerHTML=doc.body.innerHTML.replace(/\s*([\[\(]{1})\s*at\s*([\)\]]{1})\s*/,"@")
@@ -355,10 +355,9 @@
                 my_query.fb_url=links[i].href;
                 fb_promise_then(links[i].href);
             }
-
              //console.log("i="+i+", text="+links[i].innerText);
             if(extension==='' &&
-               (contact_regex.test(links[i].innerText)||/\/(contact|about)/i.test(links[i].href))
+               (contact_regex.test(links[i].innerText)||/\/(contact)/i.test(links[i].href))
                 && !bad_contact_regex.test(links[i].href) &&
                !MTurk.queryList.includes(links[i].href=MTurkScript.prototype.fix_remote_url(links[i].href,url))) {
                 MTurk.queryList.push(links[i].href);
@@ -513,6 +512,9 @@
         //this.curr=curr;
         var fullname;
         var terms=["name","title","phone","email"],x;
+        var bad_last=/^(place|street)/i;
+        this.last="";
+        this.first="";
         for(x of terms) this[x]=curr[x]?curr[x]:"na";
         if(this.title) this.title=this.title.replace(/^[^A-Za-z]+/,"").replace(/[^A-Za-z]+$/,"");
         if(this.name) {
@@ -537,9 +539,13 @@
             this.quality+=2;
         }
         else this.quality=0;
-        if(!(this.email && MTP.get_domain_only(my_query.url,true)===this.email.replace(/^[^@]*@/,""))) this.quality=-1;
-        if(/[\d\?]+/.test(this.name)) this.quality=-1;
+        if(this.email && MTP.get_domain_only(my_query.url,true)===this.email.replace(/^[^@]*@/,"")) this.quality+=1;
+        if(!this.email || this.email==="na") this.quality=-1;
+        if(/[\d\?:]+/.test(this.name)) this.quality=-1;
+        if(this.name.split(" ").length>4) this.quality=-1;
         else if(MTP.is_bad_email(this.email)) this.quality=-1;
+        else if(bad_last.test(this.last)) this.quality=-1;
+
     }
     function cmp_people(person1,person2) {
         if(!(person1 instanceof PersonQual && person2 instanceof PersonQual)) return 0;
@@ -558,16 +564,19 @@
 
         my_query={url:wT.rows[0].cells[1].innerText,fb_url:"",insta_url:"",person_list:"",found_fb:false,
                                     fields:{email:"",first:" "},done:{url:false,fb:false,gov:false},submitted:false,email_list:[]};
+        my_query.domain=MTP.get_domain_only(my_query.url,true);
         call_contact_page(my_query.url,submit_if_done);
+
         console.log("my_query="+JSON.stringify(my_query));
         var dept_regex_lst=[];
 
         var title_regex_lst=[/Admin|Administrator|Supervisor|Manager|Director|Founder|Owner|Officer|Secretary|Assistant/i];
         //var promise=MTP.create_promise(
         var query={dept_regex_lst:dept_regex_lst,
-                       title_regex_lst:title_regex_lst,id_only:false,default_scrape:false,debug:true};
+                       title_regex_lst:title_regex_lst,id_only:false,default_scrape:false,debug:false};
         var gov_promise=MTP.create_promise(my_query.url,Gov.init_Gov,gov_promise_then,function(result) {
             console.log("Failed at Gov "+result);
+            if(my_query.fields.email.length===0) my_query.fields.email="NA";
             my_query.done.gov=true;
             submit_if_done(); },query);
 
