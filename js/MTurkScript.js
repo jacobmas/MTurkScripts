@@ -840,8 +840,7 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
     if(_a3f.length>0 && (coord_ret=MTurkScript.prototype.FB_match_coords(_a3f[0].src))) {
         for(i in coord_ret) result[i]=coord_ret[i];
     }
-    for(i=0; i < about_fields.length; i++)
-    {
+    for(i=0; i < about_fields.length; i++) {
         //  console.log("about_fields["+i+"].className="+about_fields[i].className);
         inner_field1=about_fields[i].getElementsByClassName("_50f4");
 	if((p_match=/^\s*Call (.*)$/.test(about_fields[i].innerText))) result.phone=p_match[1];
@@ -866,6 +865,8 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
 	else if((p_match=/Call (.*)$/.test(text))) result.phone=p_match[1];
         else if(/^About$/i.test(text) && about_fields[i].getElementsByClassName("_3-8w").length>0) {
             result.about=about_fields[i].getElementsByClassName("_3-8w")[0].innerText; }
+	else if(/^\s*Founded (on|in)\s*/.test(text)) {
+	    result.founded=text.replace(/^\s*Founded (on|in)\s*/,""); }
     }
     result.team=[];
     var t_m=doc.querySelectorAll("._42ef ._2iem");
