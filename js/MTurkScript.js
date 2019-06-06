@@ -865,7 +865,7 @@ MTurkScript.prototype.parse_FB_about=function(doc,url,resolve,reject) {
 	else if((p_match=/Call (.*)$/.test(text))) result.phone=p_match[1];
         else if(/^About$/i.test(text) && about_fields[i].getElementsByClassName("_3-8w").length>0) {
             result.about=about_fields[i].getElementsByClassName("_3-8w")[0].innerText; }
-	else if(/^\s*Founded (on|in)\s*/.test(text)) {
+	else if(/^\s*(Born|Founded) (on|in)\s*/.test(text)) {
 	    result.founded=text.replace(/^\s*Founded (on|in)\s*/,""); }
     }
     result.team=[];
