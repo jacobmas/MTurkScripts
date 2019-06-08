@@ -399,6 +399,7 @@ Gov.parse_contact_elems=function(doc,url,resolve,reject,name) {
 	if((ret=Gov.parse_data_func(text)) && Gov.is_good_person(ret) && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:name}));
 	else if(text.length>600) inner_p.innerHTML="";
     });
+    console.log("parse_contact_divs, length="+div.length);
     console.time("parse_contact_div");
     div.forEach(function(elem) {
 
