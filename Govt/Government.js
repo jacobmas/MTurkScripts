@@ -63,8 +63,8 @@ Gov.scrape_lone_emails=function(doc,url) {
     for(x=0;x<style.length;x++) { style[x].innerHTML=""; }
     var links=doc.links,email_matches,phone_matches;
     var temp_url,curr_url;
-    doc.body.innerHTML=doc.body.innerHTML.replace(/\s*([\[\(]{1})\s*at\s*([\)\]]{1})\s*/,"@")
-        .replace(/\s*([\[\(]{1})\s*dot\s*([\)\]]{1})\s*/,".");
+    doc.body.innerHTML=doc.body.innerHTML.replace(/\s*([\[\(]{1})\s*at\s*([\)\]]{1})\s*/g,"@")
+        .replace(/\s*([\[\(]{1})\s*dot\s*([\)\]]{1})\s*/g,".");
     MTP.fix_emails(doc,url);
     if((email_matches=doc.body.innerHTML.match(email_re))) {
         for(j=0; j < email_matches.length; j++) {
@@ -399,9 +399,11 @@ Gov.parse_contact_elems=function(doc,url,resolve,reject,name) {
 	if((ret=Gov.parse_data_func(text)) && Gov.is_good_person(ret) && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:name}));
 	else if(text.length>600) inner_p.innerHTML="";
     });
+    console.time("parse_contact_div");
     div.forEach(function(elem) {
 
 	add_count+=Gov.parse_contact_div(elem,name,url); });
+    console.timeEnd("parse_contact_div");
     Gov.strip_bad_contacts();
     return add_count;
 };
@@ -1643,8 +1645,7 @@ Gov.init_nlp=function() {
  * id_only says whether we just want to id the page type 
  * default_scrape says whether or not to default to scrape_none (for use outside government)
  */
-Gov.init_Gov=function(doc,url,resolve,reject,query)
-{
+Gov.init_Gov=function(doc,url,resolve,reject,query) {
     var refresh=Gov.needs_refresh(doc,url),promise;
     if(refresh && (promise=MTP.create_promise(refresh,Gov.init_Gov,resolve,reject,query)||1)) return;
     var dom=url.replace(/^https?:\/\//,"").replace(/^www\./,"");
