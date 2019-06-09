@@ -1231,6 +1231,8 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
             console.log(parsed);
             if(parsed.TotalRecordCount) resolve({count:(parsed.TotalRecordCount).toString(),url:url});
             else resolve({count:"0",url:url,error:true});
+
+
         }
         catch(error) {
             console.log("Error parsing JSON in dealercenter "+response.responseText);
