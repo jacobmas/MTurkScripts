@@ -270,15 +270,17 @@
     {
         //var dont=document.getElementsByClassName("dont-break-out")[0].href;
         var wT=document.getElementById("WebsiteDataCollection").getElementsByTagName("table")[0];
+        var input=document.querySelector("input.form-control");
 
 
         my_query={search_str:wT.rows[0].cells[1].innerText.replace(/^.*q\=site:\s*/,"").replace(/^.*q\=\s*/,"").replace(/\+/," "),
                   prefix:'CityPlanner',
 fields:{}};
+        my_query.prefix=input.name.replace(/FirstName$/,"");
         GM_setClipboard(my_query.url);
         document.querySelector("input[id$='FirstName']").addEventListener("paste",cityManager_paste);
 
-      //  console.log("query="+JSON.stringify(query));
+        console.log("query="+JSON.stringify(my_query));
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(my_query.search_str, resolve, reject, query_response,"query");
