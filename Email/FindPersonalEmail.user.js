@@ -10,6 +10,7 @@
 // @include        https://*.amazonaws.com/*
 // @include https://worker.mturk.com/*
 // @include file://*
+// @grant GM_deleteValue
 // @grant  GM_getValue
 // @grant GM_setValue
 // @grant GM_addValueChangeListener
@@ -33,37 +34,67 @@
     'use strict';
     var my_query = {};
     var bad_urls=["/app.lead411.com",".zoominfo.com",".privateschoolreview.com",".facebook.com",".niche.com","en.wikipedia.org",".yelp.com","hunter.io",
-                 ".zoominfo.com","issuu.com","linkedin.com"];
-    var MTurk=new MTurkScript(20000,500,[],begin_script,"AQFT1SYA8YNLA",false);
+                 ".zoominfo.com","issuu.com","linkedin.com","downloademail.info","www.skymem.com"];
+    var MTurk=new MTurkScript(20000,500,[],begin_script,"A1FS8KQVU1SUKC",true);
     var MTP=MTurkScript.prototype;
     var my_email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%\*]{1,40}(\.[^<>\/()\[\]\\.,;:：\s\*@"\?]{1,40}){0,5}))@((([a-zA-Z\-0-9]{1,30}\.){1,8}[a-zA-Z]{2,20}))/g;
 
     function is_bad_name(b_name)  { return false; }
 
-    /* A loop in query_response */
-    function query_response_loop(b_algo,i,type,promise_list,resolve,reject,b1_success)
-    {
+    /* Parse a single bing search result on a page */
+    function query_response_loop(b_algo,i,type,promise_list,resolve,reject,b1_success) {
         var b_name,b_url,p_caption,b_caption;
+        var short_name,full_short;
         var mtch,j,people;
         b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
         b_url=b_algo[i].getElementsByTagName("a")[0].href;
         b_caption=b_algo[i].getElementsByClassName("b_caption");
         p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
             p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
+        short_name=b_name.replace(/\s[\-\|\,]+.*$/,"").replace(/,.*$/,"").trim();
+        full_short=MTP.parse_name(short_name);
+
         console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
         if(type==="email" && (mtch=p_caption.match(my_email_re))) {
-            for(j=0; j < mtch.length; j++) if(!MTurk.is_bad_email(mtch[j]) && mtch[j].length>0) my_query.email_list.push(mtch[j]);
+            for(j=0; j < mtch.length; j++) if(!MTurk.is_bad_email(mtch[j]) && mtch[j].length>0) my_query.email_list.push({email:mtch[j],url:b_url});
         }
         if(type==="email") {
             if(i>3) return null;
             else if(!/\.(pdf|xls|xlsx)$/.test(b_url)&&!MTP.is_bad_url(b_url,bad_urls,-1)) promise_list.push(MTP.create_promise(b_url,contact_response,MTP.my_then_func,MTP.my_catch_func));
+        }
+        // Parse the query pages where person and company are searched for
+        if(type==="query" && i < 3&&!MTP.is_bad_url(b_url,bad_urls,-1)) promise_list.push(MTP.create_promise(b_url,contact_response,MTP.my_then_func,MTP.my_catch_func));
+        if((type==="query"||(type==="temp_query")) && /linkedin\.com\/in/.test(b_url) &&
+           ((full_short.fname===my_query.fullname.fname &&
+             full_short.lname.indexOf(my_query.fullname.lname)!==-1) ||
+            (b_url.indexOf(my_query.fullname.fname.toLowerCase())!==-1 && b_url.indexOf(my_query.fullname.lname.toLowerCase())!==-1)
+                                                               ) && !my_query.redone_linkedin) {
+            console.log("MATCHED short_name, my_query.name for linkedin");
+            my_query.redone_linkedin=true;
+
+            var search_str=//my_query.name+" "+b_url.replace(/https?:\/\/[^\/]*\/in\//,"");
+                b_name.replace(/[\-\|\,]*\s*LinkedIn\s*$/i,"").replace(/\.\.\.\s*$/,"");
+            if(search_str.replace(/^[^\-]*\s-\s*/,"").indexOf("linkedin")!==-1 && !my_query.temp_redo) {
+                my_query.temp_redo=true;
+                my_query.redone_linkedin=false;
+                search_str="\""+my_query.name+"\" "+b_url.replace(/https?:\/\/[^\/]*\/in\//,"");
+            }
+            const redonequeryPromise = new Promise((resolve, reject) => {
+                console.log("Beginning URL search with "+search_str);
+                query_search(search_str, resolve, reject, query_response,"temp_query");
+            });
+            redonequeryPromise.then(query_promise_then)
+                .catch(function(val) {
+                console.log("Failed at this queryPromise " + val); my_query.done.redone_query=true;
+            submit_if_done(); });
+            if(my_query.temp_redo && !my_query.redone_linkedin) return true;
         }
         if(type==="url" && !MTP.is_bad_url(b_url, bad_urls,4,2) && !is_bad_name(b_name) && (b1_success=true)) return b_url;
     }
 
     function query_response(response,resolve,reject,type) {
         var doc = new DOMParser().parseFromString(response.responseText, "text/html");
-        console.log("in query_response\n"+response.finalUrl);
+        console.log("in query_response\n"+response.finalUrl+", type="+type);
         var search, b_algo, i=0, inner_a,result;
         var b_url, b_name, b_factrow,lgb_info, b_caption,p_caption,loop_result;
         var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb,parsed_loc;
@@ -75,9 +106,16 @@
             if((b_context=doc.getElementById("b_context"))&&(parsed_context=MTP.parse_b_context(b_context))) {
                 console.log("MOO");
                 console.log("parsed_context="+JSON.stringify(parsed_context));
+                if(parsed_context.people) {
+                    console.log("### parsed_context.people");
+                    if(!my_query.found_good && found_good_person(parsed_context.people,resolve,reject,type)) {  return; }
+                }
                 if(type==="url" && parsed_context.url && !MTP.is_bad_url(parsed_context.url,bad_urls,5) && (resolve(parsed_context.url)||true)) return;
+                if(type==="query" && parsed_context.person&&parsed_context.person.experience) {
+                    console.log("parsed_context.person");
+                    if(parsed_context.person.experience.length>0) my_query.company=parsed_context.person.experience[0].company.replace(/\-/g," ");
+                }
             }
-            console.log("TU");
             if((lgb_info=doc.getElementById("lgb_info"))&&
                (parsed_lgb=MTP.parse_lgb_info(lgb_info))) console.log("parsed_lgb="+JSON.stringify(parsed_lgb));
             for(i=0; i < b_algo.length&&i<5; i++) {
@@ -85,85 +123,57 @@
                 if(b_url&&(b1_success=true)) break;
             }
             if(type==="email") {
-                Promise.all(promise_list).then(function() { done_promises_then({resolve:resolve,reject:reject}); });
+                Promise.all(promise_list).then(function() { done_promises_then({type:type,resolve:resolve,reject:reject}); })
+                    .catch(function() { done_promises_then({type:type,resolve:resolve,reject:reject}) });
                 return; }
-            else if(type==="coach") {
-                my_query.coach_list.sort(function(a,b) { return b.value-a.value; });
-                console.log("my_query.coach_list="+JSON.stringify(my_query.coach_list));
-                Promise.all(promise_list).then(function() { resolve(""); });
+            if(b1_success && (resolve(b_url)||true)) return;
+            if(type==="query") {
+                Promise.all(promise_list).then(function() { done_promises_then({}); });
+                resolve("");
                 return;
             }
-            if(b1_success && (resolve(b_url)||true)) return;
             if(type==="url" && parsed_lgb&&parsed_lgb.url && !MTP.is_bad_url(parsed_lgb.url,bad_urls,5) && (resolve(parsed_lgb.url)||true)) return;
         }
         catch(error) {
             reject(error);
             return;
         }
+        if(type==="query" && (resolve("")||true)) return;
+
         reject("Nothing found");
         return;
     }
-
-
-
-
-    function convert_email_good(text) {
-        var i,text_re=/\?e\=([\d]+)/,text_match,split_text=[],split_text2="",min_val=9999,x;
-        if((text_match=text.match(text_re))) {
-            for(i=0; i < text_match[1].length; i+=4) split_text.push(text_match[1].substr(i,4));
-            /** Probably should fix to take the minimum valued one or something in case it's .k12.XX.us **/
-            for(i=0; i < split_text.length; i++) if(parseInt(split_text[i])<min_val) min_val=parseInt(split_text[i]);
-            x=min_val;
-            for(i=0; i < split_text.length; i++) split_text2=split_text2+String.fromCharCode(46+(parseInt(split_text[i])-x)/2);
-           // console.log(JSON.stringify(split_text2));
-            text=split_text2;
-        }
-        text=text.replace(/^mailto:/,"");
-        return text;
-    }
     /**
-     * Match if it has the word email in the innerText
+     * Use bing's finding a person thing on the right-hand side
      */
-    function do_email_re_match(link) {
-
-        if(/\?e\=(\d+)/.test(link.href)) {
-            link.innerHTML=convert_email_good(link.href);
-            link.href="mailto:"+link.innerHTML;
-        }
-        else if(/\/email\/indexjspe([\d]+)/.test(link.href)) {
-            //console.log("found "+link.href);
-            let match;
-            if((match=link.href.match(/\/email\/indexjspe([\d]+)/))) {
-                link.innerHTML=convert_email_good("?e="+match[1]);
-                link.href="mailto:"+link.innerHTML;
+    function found_good_person(people,resolve,reject,type) {
+        let curr_person;
+        for(curr_person of people) {
+            //console.log("state_map[my_query.state]="+state_map[my_query.state]);
+            curr_person.name=curr_person.name.replace(/,.*$/,"").replace(/\s*\([^\)]*\)/g,"").trim();
+            console.log("curr_person.name="+curr_person.name);
+            let full=MTP.parse_name(curr_person.name.trim());
+            console.log("@ full="+JSON.stringify(full)+", my_query.fullname.lname="+my_query.fullname.lname);
+            if(full.lname.indexOf(my_query.fullname.lname)===-1) continue;
+            if(true) {
+                console.log("url="+curr_person.url);
+                var search_str=decodeURIComponent(curr_person.url.match(/\?q\=([^&]*)&/)[1]).replace(/\+/g," ");
+                console.log("### Found good person ");
+                my_query.found_good=true;
+                query_search(search_str,resolve,reject,query_response,type);
+//                var promise=MTP.create_promise(curr_person.url,query_response,resolve,reject,type);
+               return true;
             }
         }
-        else link.innerText=link.href.replace(/^\s*mailto:\s*/,"");
-
+        return false;
     }
+
 
     /* TODO: add these three to MTurkScript */
     var reverse_str=function(str) {
         var ret="",i;
         for(i=str.length-1;i>=0;i--) ret+=str.charAt(i);
         return ret;
-    };
-
-    var fix_insertEmail=function(script,match) {
-        console.log("in fix_insertEmail, match="+match);
-        var parent=script.parentNode;
-        var email=reverse_str(match[2])+"@"+reverse_str(match[1]);
-        parent.innerHTML=email;
-    };
-
-    var fix_script_emails=function(doc,url,resolve,reject,query) {
-        var i,scripts=doc.scripts,match;
-        var insertEmailRegex=/insertEmail\([\'\"]{1}([^\'\"]+)[\'\"]{1},\s*[\'\"]{1}([^\'\"]+)[\'\"]{1}\)/;
-        for(i=0;i<scripts.length;i++) {
-            //console.log("scripts["+i+"].innerHTML="+scripts[i].innerHTML);
-            if((match=scripts[i].innerHTML.match(insertEmailRegex))) fix_insertEmail(scripts[i],match);
-            else scripts[i].innerHTML="";
-        }
     };
 
 
@@ -176,11 +186,7 @@
         var begin_email=my_query.fields.email,clicky;
         var x,scripts=doc.scripts,style=doc.querySelectorAll("style");
         //for(x=0;x<scripts.length;x++) { scripts[x].innerHTML=""; }
-        for(x=0;x<style.length;x++) { style[x].innerHTML=""; }
-        fix_script_emails(doc,url,resolve,reject,query);
 
-        //console.log(url+": "+JSON.stringify(nlp_temp));
-//        console.log(nlp_temp);
         console.log("in contact_response "+url);
         var short_name=url.replace(my_query.url,""),links=doc.links,email_matches,phone_matches;
         var replacement=url.match(/^https?:\/\/[^\/]+/)[0];
@@ -188,7 +194,7 @@
         console.log("replacement="+replacement);
         var temp_url,curr_url;
         doc.body.innerHTML=doc.body.innerHTML.replace(/\s*\[at\]\s*/,"@").replace(/\s*\[dot\]\s*/,".");
-        //MTP.fix_emails(doc,url);
+        MTP.fix_emails(doc,url);
         console.log("& doc.body.innerHTML.length="+doc.body.innerHTML.length);
 
         console.time("beforeemailmatchesnew");
@@ -196,7 +202,7 @@
         if((email_matches=doc.body.innerHTML.match(my_email_re))) {
             //console.log("EMAILMATCHESNEW: "+JSON.stringify(email_matches));
             for(j=0; j < email_matches.length; j++) {
-                if(!MTurk.is_bad_email(email_matches[j]) && email_matches[j].length>0) my_query.email_list.push(email_matches[j].toString());
+                if(!MTurk.is_bad_email(email_matches[j]) && email_matches[j].length>0) my_query.email_list.push({email:email_matches[j].toString(),url:url});
             }
 //            console.log("Found email hop="+my_query.fields.email);
         }
@@ -205,40 +211,13 @@
 
         if(phone_matches=doc.body.innerText.match(phone_re)) my_query.fields.phoneNumber=phone_matches[0];
         for(i=0; i < links.length; i++) {
-            do_email_re_match(links[i]);
+
             if(my_query.fields.email.length>0) continue;
             try
             {
-                if(links[i].dataset.encEmail && (temp_email=MTP.swrot13(links[i].dataset.encEmail.replace(/\[at\]/,"@")))
-                   && !MTP.is_bad_email(temp_email.toString())) my_query.email_list.push(temp_email.toString());
-                if(links[i].href.indexOf("amazonaws.com")===-1 && links[i].href.indexOf("mturkcontent.com")===-1)
-                {
-                    //if(links[i].dataset) { console.log("links[i].dataset="+JSON.stringify(links[i].dataset)); }
-
-                    //    console.log(short_name+": ("+i+")="+links[i].href);
-                }
-                if(/mailto/.test(links[i].className) && (temp_email=MTP.swrot13(links[i].href)) &&
-                   !MTP.is_bad_email(temp_email.toString())) my_query.email_list.push(temp_email.toString());
-                if(links[i].dataset.domain&&links[i].dataset.username) my_query.email_list.push(links[i].dataset.username+"@"+links[i].dataset.domain);
-                if(links[i].href.indexOf("cdn-cgi/l/email-protection#")!==-1 && (encoded_match=links[i].href.match(/#(.*)$/)) &&
-                   (temp_email=MTP.cfDecodeEmail(encoded_match[1]).replace(/\?.*$/,"")) &&
-                   !MTP.is_bad_email(temp_email.toString())) my_query.email_list.push(temp_email.toString());
-                else if(links[i].dataset!==undefined && links[i].dataset.cfemail!==undefined && (encoded_match=links[i].dataset.cfemail) &&
-                        (temp_email=MTP.cfDecodeEmail(encoded_match[1]).replace(/\?.*$/,"")) &&
-                        !MTP.is_bad_email(temp_email.toString())) my_query.email_list.push(temp_email.toString());
                 if((temp_email=links[i].href.replace(/^mailto:\s*/,"").match(email_re)) &&
-                   !MTP.is_bad_email(temp_email.toString())) my_query.email_list.push(temp_email.toString());
-                if(links[i].href.indexOf("javascript:location.href")!==-1 && (temp_email="") &&
-                   (encoded_match=links[i].href.match(/String\.fromCharCode\(([^\)]+)\)/)) && (match_split=encoded_match[1].split(","))) {
-                    for(j=0; j < match_split.length; j++) temp_email=temp_email+String.fromCharCode(match_split[j].trim());
-                    my_query.email_list.push(temp_email.toString());
-                }
-                if(links[i].href.indexOf("javascript:DeCryptX(")!==-1 &&
-                   (encoded_match=links[i].href.match(/DeCryptX\(\'([^\)]+)\'\)/))) my_query.email_list.push(MTP.DecryptX(encoded_match[1]).toString());
-                if((clicky=links[i].getAttribute("onclick"))&&(encoded_match=clicky.match(/mailme\([\'\"]{1}([^\'\"]+)[\'\"]{1}/i))
-                    && (temp_email=decodeURIComponent(encoded_match[1]).replace("[nospam]","@"))) my_query.email_list.push(temp_email.toString());
-                //else if(encoded_match) { console.log("encoded_match="+encoded_match); }
-                //else if((clicky=links[i].getAttribute("onclick"))) { console.log("clicky="+clicky+", match="+clicky.match(/mailme/)); }
+                   !MTurkScript.prototype.is_bad_email(temp_email[0])) my_query.email_list.push({email:temp_email.toString(),url:url});
+
             }
             catch(error) { console.log("Error with emails "+error); }
         }
@@ -254,19 +233,21 @@
     }
 
     function remove_dups(lst) {
-        for(var i=lst.length;i>0;i--) if(lst[i]===lst[i-1]) lst.splice(i,1);
+        console.log("lst="+JSON.stringify(lst));
+        for(var i=lst.length-1;i>0;i--) if(lst[i].email===lst[i-1].email) lst.splice(i,1);
     }
-    /* Evaluate the emails with respect to the name */
+    /* Evaluate the emails with respect to the name, really need nicknames json */
     function evaluate_emails(query) {
         console.log("name="+JSON.stringify(my_query.fullname));
         for(i=0;i<my_query.email_list.length;i++) {
-            my_query.email_list[i]=my_query.email_list[i].replace(/^[^@]+\//,"").replace(/(\.[a-z]{3})yX$/,"$1"); }
+            my_query.email_list[i].email=my_query.email_list[i].email.replace(/^[^@]+\//,"").replace(/(\.[a-z]{3})yX$/,"$1"); }
         my_query.email_list.sort(function(a,b) {
+
             try {
-                if(a.split("@")[1]<b.split("@")[1]) return -1;
-                else if(a.split("@")[1]>b.split("@")[1]) return 1;
-                if(a.split("@")[0]<b.split("@")[0]) return -1;
-                else if(a.split("@")[0]>b.split("@")[0]) return 1;
+                if(a.email.split("@")[1]<b.email.split("@")[1]) return -1;
+                else if(a.email.split("@")[1]>b.email.split("@")[1]) return 1;
+                if(a.email.split("@")[0]<b.email.split("@")[0]) return -1;
+                else if(a.email.split("@")[0]>b.email.split("@")[0]) return 1;
                 else return 0;
             }
             catch(error) { return 0; }
@@ -280,8 +261,9 @@
             [new RegExp("^"+fname.charAt(0)+"(\\.)?"+lname+"@","i"),new RegExp("^"+fname+"[\\._]{1}"+lname+"@","i"),
              new RegExp("^"+fname+lname.charAt(0)+"@","i"),new RegExp("^"+lname+fname.charAt(0)+"@","i"),new RegExp("^"+my_query.fullname.fname+"@")];
         /* Judges the quality of an email */
-        function EmailQual(email) {
+        function EmailQual(email,url) {
             this.email=email;
+            this.url=url;
             this.domain=email.replace(/^[^@]*@/,"");
             this.quality=0;
             if(new RegExp(my_query.fullname.fname,"i").test(email)) this.quality=1;
@@ -295,42 +277,25 @@
         }
         for(i=0;i<my_query.email_list.length;i++) {
            // console.log("my_query.email_list["+i+"]="+typeof(my_query.email_list[i]));
-            if(MTP.is_bad_email(my_query.email_list[i])) continue;
-            curremail=new EmailQual(my_query.email_list[i].trim());
+            if(MTP.is_bad_email(my_query.email_list[i].email)) continue;
+            curremail=new EmailQual(my_query.email_list[i].email.trim(),my_query.email_list[i].url);
             if(curremail.quality>0) my_email_list.push(curremail);
         }
         my_email_list.sort(function(a, b) { return a.quality-b.quality; });
         console.log("my_email_list="+JSON.stringify(my_email_list));
         if(my_email_list.length>0) {
-            my_query.fields.email=my_email_list.pop().email;
+            var temp=my_email_list.pop();
+            my_query.fields.email=temp.email;
+            my_query.fields.url=temp.url;
+
             submit_if_done();
             return true;
         }
-        else if(do_next_email_query(query.resolve,query.reject)) return false;
-        else query.reject("Failed nothing found");
+        else if(query.resolve&&query.reject&&do_next_email_query(query.resolve,query.reject)) return false;
+        else if(query.resolve&&query.reject) query.reject("Failed nothing found");
         return false;
     }
 
-    function do_next_email_query(resolve,reject) {
-        var search_str;
-        if(my_query.try_count.email===0) {
-                my_query.try_count.email++;
-                search_str="+\""+my_query.fullname.fname.toLowerCase()+"."+my_query.fullname.lname.toLowerCase()+"@"+my_query.domain+"\" OR "
-            +"+\""+my_query.fullname.fname.toLowerCase()+my_query.fullname.lname.toLowerCase().charAt(0)+"@"+my_query.domain+"\"";
-                //console.log("trying email again with "+search_str);
-                query_search(search_str,resolve,reject,query_response,"email");
-                return true;
-            }
-        else if(my_query.try_count.email===1) {
-            my_query.try_count.email++;
-            search_str=my_query.name+" site:"+my_query.domain;
-            query_search(search_str,resolve,reject,query_response,"email");
-            return true;
-        }
-
-
-        return false;
-    }
 
 
     /* Search on bing for search_str, parse bing response with callback */
@@ -344,25 +309,100 @@
                           });
     }
 
-
+    function query_promise_then(result) {
+        console.log("query_promise_then, result="+result);
+        var search_str=my_query.company;
+        const urlPromise = new Promise((resolve, reject) => {
+            console.log("Beginning URL search");
+            query_search(search_str, resolve, reject, query_response,"url");
+        });
+        urlPromise.then(url_promise_then)
+            .catch(function(val) {
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
+    }
 
     /* Following finding the domain */
-    function query_promise_then(result) {
-        console.log("query_promise_then,result="+result);
+    function url_promise_then(result) {
+        console.log("# url_promise_then,result="+result);
         my_query.domain=MTP.get_domain_only(result,true);
         var lname=my_query.fullname.lname.replace(/\'/g,""),fname=my_query.fullname.fname.replace(/\'/g,"");
-        var search_str="+\""+fname.charAt(0).toLowerCase()+lname.toLowerCase()+"@"+my_query.domain+"\" OR "+
-            "+\""+lname.toLowerCase()+fname.charAt(0).toLowerCase()+"@"+my_query.domain+"\" OR +\""+
-            fname+lname+"@"+my_query.domain+"\"";
+        var curr_email=fname.charAt(0).toLowerCase()+lname.toLowerCase()+"@"+my_query.domain;
+        var search_str="+\""+curr_email+"\"";// OR "+
+         //   "+\""+lname.toLowerCase()+fname.charAt(0).toLowerCase()+"@"+my_query.domain+"\"";
         console.log("new search_str for emails ="+search_str);
+        do_mailtester_query(curr_email);
+
         const emailPromise = new Promise((resolve, reject) => {
-            console.log("Beginning URL search");
+            console.log("$ Beginning Email search");
             query_search(search_str, resolve, reject, query_response,"email");
         });
         emailPromise.then(email_promise_then)
             .catch(function(val) {
             console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
     }
+
+    function do_mailtester_query(email) {
+
+        var url="http://mailtester.com/testmail.php";
+        var data={"lang":"en","email":email};
+         var headers={"host":"mailtester.com","origin":"http://mailtester.com","Content-Type": "application/x-www-form-urlencoded",
+                     "referer":"http://mailtester.com/testmail.php"};
+        var data_str=MTP.json_to_post(data);
+         console.log("do_mailtester_query, email="+email+", data_str="+data_str);
+        var promise=new Promise((resolve,reject) => {
+
+            GM_xmlhttpRequest({method: 'POST', headers:headers,data:data_str,anonymous:true,
+                               url: url,
+                               onload: function(response) {
+                                   var doc = new DOMParser().parseFromString(response.responseText, "text/html");
+                                   mailtester_response(doc,response.finalUrl, resolve, reject,email); },
+                               onerror: function(response) { reject("Fail mailtester"); },ontimeout: function(response) { reject("Fail"); }
+                              });
+        });
+    }
+    function mailtester_response(doc,url,resolve,reject,email) {
+        console.log("mailtester_response,doc.body.innerHTML.length="+doc.body.innerHTML.length);
+      // console.log(doc.body.innerHTML);
+        var table=doc.querySelector("#content > table");
+        if(table) {
+       //    console.log("div.innerHTML="+div.innerHTML);
+            let lastRow=table.rows[table.rows.length-1];
+            let lastCell=lastRow.cells[lastRow.cells.length-1];
+            console.log("lastCell="+lastCell.outerHTML);
+            if(lastCell.innerText.indexOf("E-mail address is valid")!==-1) {
+                my_query.email_list.push({email:email,url:url});
+                my_query.found_with_mailtester=true;
+                evaluate_emails();
+
+            }
+            else if(lastCell.innerText.indexOf("Server doesn't allow e-mail address verification")!==-1) {
+                // Don't waste precious queries
+                my_query.found_with_mailtester=true;
+            }
+
+        }
+        else {
+            console.log("doc.body.innerHTML="+doc.body.innerHTML);
+        }
+    }
+
+    function do_next_email_query(resolve,reject) {
+        var search_str;
+        console.log("do_next_email, query, try_count.email="+my_query.try_count.email);
+        var email_types=[my_query.fullname.fname.toLowerCase()+"."+my_query.fullname.lname.toLowerCase()+"@"+my_query.domain,
+                         my_query.fullname.lname+"@"+my_query.domain];
+        if(my_query.try_count.email<email_types.length) {
+            let curr_email=email_types[my_query.try_count.email];
+            my_query.try_count.email++;
+            search_str="+\""+curr_email+"\"";
+            if(!my_query.found_with_mailtester) do_mailtester_query(curr_email);
+            //console.log("trying email again with "+search_str);
+            query_search(search_str,resolve,reject,query_response,"email");
+            return true;
+        }
+        return false;
+    }
+
 
     function email_promise_then(result) {
         console.log("In email_promise_then, result="+result); }
@@ -383,9 +423,10 @@
 
     function add_to_sheet() {
         var x,field;
-        my_query.fields.web_url=my_query.fields.email;
-
-        for(x in my_query.fields) if(field=document.getElementById(x)) field.value=my_query.fields[x];
+	for(x in my_query.fields) {
+            if((MTurk.is_crowd && (field=document.getElementsByName(x)[0])) ||
+	       (!MTurk.is_crowd && (field=document.getElementById(x)))) field.value=my_query.fields[x];
+        }
     }
 
     function submit_if_done() {
@@ -395,6 +436,19 @@
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
 
+    function parse_initial_params_Bryan() {
+        var p=document.querySelectorAll("form div div p");
+        var re=/^[^:]*:\s*/;
+        my_query.name=p[0].innerText.replace(re,"").trim();
+        let fullname=MTP.parse_name(my_query.name);
+        Object.assign(my_query,{first:fullname.fname,last:fullname.lname});
+        my_query.location=p[1].innerText.replace(re,"");
+        my_query.company=p[2].innerText.replace(re,"");
+        my_query.fullname=fullname;
+        my_query.company=my_query.company.replace(/^.* AS REPRESENTED BY THE [^,]*,/,"");
+        my_query.company=MTP.shorten_company_name(my_query.company);
+    }
+
 
 
     function init_Query()
@@ -402,22 +456,21 @@
         console.log("in init_query");
         var i,promise,st;
         bad_urls=bad_urls.concat(default_bad_urls);
-        var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
+     //   var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
 
-        my_query={name:wT.rows[0].cells[1].innerText.replace(/, PhD$/i,"").trim(),title:wT.rows[1].cells[1].innerText.trim(),
-                  company:wT.rows[2].cells[1].innerText,
-                  fields:{email:""},done:{},submitted:false,try_count:{"email":0},email_list:[]};
-        my_query.fullname=MTP.parse_name(my_query.name);
+        my_query={fields:{email:"",url:""},done:{},submitted:false,try_count:{"email":0},email_list:[],emails_to_try:[],found_with_mailtester:false};
+        parse_initial_params_Bryan();
         console.log("my_query="+JSON.stringify(my_query));
-        var search_str=my_query.company;
+
         add_to_sheet();
+
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
-            query_search(search_str, resolve, reject, query_response,"url");
+            query_search(my_query.first+" "+my_query.last+" "+my_query.company+" ", resolve, reject, query_response,"query");
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+            console.log("Failed at this queryPromise " + val); my_query.done.query=true; submit_if_done(); });
 
 
     }
