@@ -154,6 +154,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
 	
 };
 
+
 MTurkScript.prototype.setup_worker_mturk=function() {
     var self=this;
     this.submitted=false;
@@ -582,15 +583,9 @@ MTurkScript.prototype.parseext_instagram=function(doc,instance,fragment)
     if(text_div.length>0)
     {
         var email_matches=text_div[0].innerText.match(email_re);
-        if(email_matches!==null && email_matches.length>0)
-        {
-            for(j=0; j < email_matches.length; j++)
-            {
-                if(!MTurkScript.is_bad_email(email_matches[j])) {
-
-                    result.email=email_matches[j];
-                    break;
-                }
+        if(email_matches!==null && email_matches.length>0) {
+            for(j=0; j < email_matches.length; j++) {
+                if(!MTurkScript.is_bad_email(email_matches[j]) && (result.email=email_matches[j])) break;
             }
         }
         if(text_div[0].getElementsByTagName("span").length>0) result.description=text_div[0].getElementsByTagName("span")[0].innerText;
@@ -680,6 +675,7 @@ MTurkScript.prototype.scrape_bing_experience=function(b_submodule) {
             curr_job.title=z[0].textContent.trim();
             split1=z[2].textContent.trim().split(" · ");
 	    Object.assign(curr_job,{company:split1[0],time:split1.length>1?split1[1]:""});
+	    
 	    if(curr_job.time.length>0) ret.push(curr_job);
         }
     }
@@ -702,7 +698,7 @@ MTurkScript.prototype.parse_entityTP=function(b_context) {
     }
     for(x of b_subModule) {
         let h2=x.querySelector("h2");
-        if(h2&&h2.innerText==="Experience") {
+        if(h2&&h2.innerText.indexOf("Experience")!==-1) {
             ret.experience=MTurkScript.prototype.scrape_bing_experience(x);
         }
     }
