@@ -1,7 +1,8 @@
 /* Text can be an object or a string with address text, location currently unused */
-function Address(text,priority,location) {
+function Address(text,priority,url) {
     console.log("# In address for "+text);
     this.priority=priority;
+    this.url=url;
     var ret;
     if(typeof(text)==='object' &&
        this.set_address(text.address1,text.address2,text.city,text.state,text.postcode,text.country)) this.priority=priority;
@@ -140,7 +141,7 @@ Address.queryList=[];
 Address.addressList=[];
 Address.phoneList=[];
 Address.addressStrList=[];
-Address.parse_postal_elem=function(elem,priority,site) {
+Address.parse_postal_elem=function(elem,priority,site,url) {
     var ret={},text;
     var term_map={"streetaddress":"address1","addressLocality":"city","addressRegion":"state","postalCode":"zip","addressCountry":"country"};
     var curr_item,x;
@@ -157,7 +158,7 @@ Address.parse_postal_elem=function(elem,priority,site) {
     if(ret.address1&&ret.city&&ret.state&&ret.zip) {
         //text=ret.address1+","+ret.city+", "+ret.state+" "+ret.zip;
         //console.log("* Adding address in parse_postal_elem for "+site+", text");
-        Address.addressList.push(new Address(ret,priority));
+        Address.addressList.push(new Address(ret,priority,url));
     }
     
 };
@@ -197,9 +198,9 @@ Address.scrape_address=function(doc,url,resolve,reject,extra) {
 Address.scrape_address_page=function(doc,url,resolve,reject,type) {
 //    console.log("scrape_address_page,url="+url);
     var posts=doc.querySelectorAll("[itemtype='https://schema.org/PostalAddress']");
-    posts.forEach(function(elem) { Address.parse_postal_elem(elem,1,type); });
+    posts.forEach(function(elem) { Address.parse_postal_elem(elem,1,type,url); });
     var divs=doc.querySelectorAll("div,p,span,td"),i;
-    for(i=0;i<divs.length;i++) Address.scrape_address_elem(doc,divs[i],type);
+    for(i=0;i<divs.length;i++) Address.scrape_address_elem(doc,divs[i],type,url);
     resolve("");
 };
 Address.find_phones=function(doc,div,type) {
@@ -217,7 +218,7 @@ Address.find_phones=function(doc,div,type) {
 	for(i=1;i<phoneMatch.length;i++) Address.phoneList.push({phone:phoneMatch[i].trim(),priority:1});
     }
 };
-Address.scrape_address_elem=function(doc,div,type) {
+Address.scrape_address_elem=function(doc,div,type,url) {
     var scripts=div.querySelectorAll("script,style"),i;
     var heads=doc.querySelectorAll("h1,h2,h3,h4,h5");
     for(i=0;i<heads.length;i++) heads[i].innerHTML="";
@@ -240,7 +241,7 @@ Address.scrape_address_elem=function(doc,div,type) {
 //    console.log("Begin scrape_address_elem on "+div_text);
     try {
         if(div.tagName==="DIV" && /sqs-block-map/.test(div.className) && (jsonstuff=JSON.parse(div.dataset.blockJson))) {
-            Address.addressList.push(new Address(jsonstuff.location.addressLine1+","+jsonstuff.location.addressLine2,0));
+            Address.addressList.push(new Address(jsonstuff.location.addressLine1+","+jsonstuff.location.addressLine2,0,url));
         }
     }
     catch(error) { console.log("Error parsing jsonstuff"); }
@@ -255,18 +256,18 @@ Address.scrape_address_elem=function(doc,div,type) {
         // console.log("add_regex1, div="+div.innerText);
         if(!Address.addressStrList.includes(text)) {
             text=text.replace(/,[\s,]*/g,",");
-            var address=new Address(text,1);
+            var address=new Address(text,1,url);
             if(address.city==="") {
                 //console.log("temp_text="+temp_text);
                 let temp_text=text;
                 while(address.city==="" && temp_text.match(/^[^,]*,\s*/)) {
                     temp_text=temp_text.replace(/^[^,]*,\s*/,"");
-                    address=new Address(temp_text,1);
+                    address=new Address(temp_text,1,url);
                 }
             }
             if(address.city==="") {
                 var split=address.split(/\s*|\s*/);
-                for(i=0;i<split.length;i++) if((address=new Address(split[i])) && address.city.length>0) break;
+                for(i=0;i<split.length;i++) if((address=new Address(split[i],2,url)) && address.city.length>0) break;
             }
             Address.addressList.push(address);
             Address.addressStrList.push(text);
