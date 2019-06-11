@@ -1539,6 +1539,9 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 	else if((clicky=links[i].getAttribute("onclick"))&&
 		(encoded_match=clicky.match(/mailme\([\'\"]{1}([^\'\"]+)[\'\"]{1}/i))
                 && (temp_email=decodeURIComponent(encoded_match[1]).replace("[nospam]","@"))) links[i].href="mailto:"+temp_email;
+	else if(links[i].dataset&&links[i].dataset.domain!==undefined &&
+		links[i].dataset.user!==undefined) {
+	    links[i].href="mailto:"+links[i].dataset.user+"@"+links[i].dataset.domain;  }
         // console.log("("+i+"): "+links[i].href+", "+links[i].innerText);
     }
     for(x=0;x<scripts.length;x++) MTurkScript.prototype.fix_emails_in_scripts(doc,url,scripts[x]);
