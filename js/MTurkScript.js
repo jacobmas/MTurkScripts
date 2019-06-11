@@ -1468,7 +1468,8 @@ MTurkScript.prototype.insert_email_before=function(doc,elem,email,text) {
     let a=doc.createElement("a");
     a.href="mailto:"+email;
     a.innerHTML=text;
-    if(elem.parentNode) elem.parentNode.insertBefore(a,elem);
+    if(elem.parentNode && doc.body.contains(elem)) elem.parentNode.insertBefore(a,elem);
+    else doc.body.appendChild(a);
 };
 
 /** Fixes the emails obfuscated in scripts */
