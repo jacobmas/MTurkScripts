@@ -295,7 +295,7 @@ Address.paste_address=function(e,obj,field_map,callback) {
     e.preventDefault();
     var text = e.clipboardData.getData("text/plain").replace(/\s*\n\s*/g,",").replace(/,,/g,",").replace(/,\s*$/g,"").trim();
     console.log("address text="+text);
-    var add=new Address(text,-50),x;
+    var add=new Address(text,-50,""),x;
     for(x in field_map) if(add[x]!==undefined) obj[field_map[x]]=add[x];
     if(callback!==undefined && typeof(callback)==='function') callback();    
 };

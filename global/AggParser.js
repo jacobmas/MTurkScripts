@@ -8,7 +8,7 @@ AggParser.parse_buzzfile=function(doc,url,resolve,reject,quality) {
     var result={success:true,site:"buzzfile",quality:quality,fields:{}};
     if(!div && !divorg && (resolve({success:false,site:"buzzfile"})||true)) return;
     if(div) {
-	result.address=AggParser.parse_postal_elem(div,4);
+	result.address=AggParser.parse_postal_elem(div,4,result.site,url);
     }
     if(divorg && (employee=divorg.querySelector("[itemprop='employee']")) &&
        (title=divorg.querySelector("[itemprop='contactType']"))) {
@@ -23,7 +23,7 @@ AggParser.parse_hotfrog=function(doc,url,resolve,reject,quality) {
     AggParser.parse_postal(doc,url,resolve,reject,"hotfrog");
 }
 
-AggParser.parse_postal_elem=function(elem,priority,site) {
+AggParser.parse_postal_elem=function(elem,priority,site,url) {
     var ret={},text;
     var term_map={"streetaddress":"address1","addressLocality":"city","addressRegion":"state","postalCode":"zip","addressCountry":"country"};
     var curr_item,x;
@@ -45,7 +45,7 @@ AggParser.parse_postal=function(doc,url,resolve,reject,type) {
     var div=doc.querySelector("[itemtype='https://schema.org/PostalAddress']");
     var result={success:true,site:type,fields:{}};
     if(!div) { resolve({success:false,site:type}); return; }
-    result.address=AggParser.parse_postal_elem(div,4,type);
+    result.address=AggParser.parse_postal_elem(div,4,type,url);
     console.log("parse_postal, result="+JSON.stringify(result));
     resolve(result);
 }
@@ -60,7 +60,7 @@ AggParser.parse_bizapedia=function(doc,url,resolve,reject) {
         if(/^(Principal|Mailing)/.test(td[i].innerText)) {
             console.log("### Found principal address");
             nextItem=td[i].parentNode.querySelectorAll("td")[1];
-            result.address=AggParser.parse_postal_elem(nextItem,4,"bizapedia");
+            result.address=AggParser.parse_postal_elem(nextItem,4,"bizapedia",url);
             break;
         }
     }
