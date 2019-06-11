@@ -25,7 +25,7 @@ AggParser.parse_hotfrog=function(doc,url,resolve,reject,quality) {
 
 AggParser.parse_postal_elem=function(elem,priority,site,url) {
     var ret={},text;
-    var term_map={"streetaddress":"address1","addressLocality":"city","addressRegion":"state","postalCode":"zip","addressCountry":"country"};
+    var term_map={"streetaddress":"address1","addressLocality":"city","addressRegion":"state","postalCode":"postcode","addressCountry":"country"};
     var curr_item,x;
     for(x in term_map) {
         console.log("term_map["+x+"]="+term_map[x]+"[itemprop='"+x+"'] i");
@@ -37,7 +37,7 @@ AggParser.parse_postal_elem=function(elem,priority,site,url) {
         ret.address2=ret.address1.replace(/^[^,]+,/,"");
         ret.address1=ret.address1.replace(/,.*$/,"");
     }    
-    return new Address(ret,priority);
+    return new Address(ret,priority,url);
 };
 
 AggParser.parse_postal=function(doc,url,resolve,reject,type) {
