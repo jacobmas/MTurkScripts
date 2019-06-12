@@ -15,6 +15,7 @@
 // @grant GM_addValueChangeListener
 // @grant GM_setClipboard
 // @grant GM_xmlhttpRequest
+// @grant GM_deleteValue
 // @grant GM_openInTab
 // @grant GM_getResourceText
 // @grant GM_addStyle
@@ -23,7 +24,9 @@
 // @connect yellowpages.com
 // @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/School/Schools.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
+
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
@@ -61,7 +64,7 @@
             }
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                 console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-          
+
         }
         catch(error) {
             reject(error);
@@ -137,7 +140,7 @@
 
     function begin_script(timeout,total_time,callback) {
         if(timeout===undefined) timeout=200;
-        if(total_time===undefined) total_time=0; 
+        if(total_time===undefined) total_time=0;
         if(callback===undefined) callback=init_Query;
         if(MTurk!==undefined) { callback(); }
         else if(total_time<2000) {
@@ -165,7 +168,13 @@
         console.log("in parse_web_addphone, url="+url+", level="+level);
         var result={},url_list=[];
         var p=doc.querySelectorAll("p,div,li"),i,match,text;
+        var phoneMatch=doc.body.innerHTML.match(/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}(\s*x\s*[\d]{1,3})?/ig);
         var parsedAdd,links=doc.links,promise_list=[],len;
+        if(phoneMatch) {
+            for(i=0;i<phoneMatch.length;i++) {
+                if(!my_query.parsedPhones.includes(phoneMatch[i].replace(/[^\d]+/g,""))) my_query.parsedPhones.push(phoneMatch[i].replace(/[^\d]+/g,""));
+            }
+        }
         try {
 
             if(level===0) {
@@ -232,22 +241,37 @@
 
     }
     function parse_web_catch(response) {
-        var q=document.getElementsByName("Question");
+        var q=document.getElementsByName("Funeral Home URL");
         console.log("Failed web?");
-        q[2].checked=true;
+        q[3].checked=true;
         MTurk.check_and_submit();
     }
     function parse_web_then(result) {
+
         console.log("parse_web_then: my_query="+JSON.stringify(my_query));
-        var q=document.getElementsByName("Question"),i;
-        console.log("q="+q+", length="+q.length);
-         q[1].checked=true;
+        var i;
+        //var q=document.getElementsByName("Question"),i;
+        //console.log("q="+q+", length="+q.length);
+      //   q[1].checked=true;
+        var phoneEl=document.getElementsByName("Funeral Home Phone #");
+        phoneEl[1].checked=true;
+        document.getElementsByName("Funeral Home URL")[1].checked=true;
         for(i=0;i<my_query.parsedAdds.length;i++) {
-            console.log("i="+i);
-            if(matches_parsed_adds(my_query.origAddress,my_query.parsedAdds[i])) {
-                q[0].checked=true;
-            }
+           // console.log("i="+i);
+         /*   if(matches_parsed_adds(my_query.origAddress,my_query.parsedAdds[i])) {
+              //  q[0].checked=true;
+            }*/
+
         }
+        for(i=0;i<my_query.parsedPhones.length;i++) {
+           // console.log("i="+i);
+            if(my_query.origPhone===my_query.parsedPhones[i].replace(/[^\d]+/g,"")) {
+              phoneEl[0].checked=true;
+            }
+
+        }
+        document.getElementsByName("Funeral Home URL")[1].checked=true;
+
         MTurk.check_and_submit();
     }
 
@@ -258,9 +282,12 @@
         var address=document.querySelectorAll("form i");
         var query=document.querySelectorAll("form strong");
         var url=document.querySelectorAll("a");
-        my_query={url:url[url.length-1].href,query_str:query[1].innerText,address:address[1].innerText,fields:{textinput:false},
-                  parsedAdds:[],
+        my_query={url:url[url.length-1].href,query_str:query[1].innerText,address:address[1].innerText,phone:address[2].innerText,
+
+                  fields:{url:0},
+                  parsedAdds:[],parsedPhones:[],
                   done:{},submitted:false};
+        my_query.origPhone=my_query.phone.replace(/[^\d]+/g,"");
         my_query.origAddress=parseAddress.parseLocation(my_query.address);
 	console.log("my_query="+JSON.stringify(my_query));
        var webPromise=MTP.create_promise(my_query.url,parse_web_addphone,parse_web_then,parse_web_catch);

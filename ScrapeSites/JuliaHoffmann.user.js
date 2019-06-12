@@ -56,7 +56,7 @@
         var list=doc.getElementsByClassName("search-results-list-description"),i;
         try
         {
-            let reg=new RegExp(my_query.title,"i");
+            let reg=new RegExp(my_query.title.replace(/\'and\'/,"and"));
             for(i=0; i < list.length; i++)
             {
                 var x=list[i].getElementsByTagName("a")[0];
@@ -77,13 +77,16 @@
         }
         if(my_query.try_count===0) {
             my_query.try_count++;
-            my_query.title=my_query.title.replace(/\s.*$/,"");
+            my_query.title=my_query.title.replace(/(^[^\s]+\s[^\s]+).*$/,"$1");
             var data={"searchArg1": my_query.last,"argType1": "all","searchCode1": "KNAM","searchType": "2",
                   "combine2":"and","searchArg2":my_query.title
                   ,"argType2":"all","searchCode2":"KTIL",
 "yearOption":"defined","year":"1518-2018","fromYear":"","toYear":"","location":"all","place":"all",
 "type":"all","language":"all","recCount":"25"};
             console.log("data="+JSON.stringify(data));
+            if(my_query.date&&my_query.date.length>0) {
+                data.year=(parseInt(my_query.date)-1)+"-"+(parseInt(my_query.date)+1)
+            }
             var data_str=MTurkScript.prototype.json_to_post(data).replace(/%20/g,"+");
             query_search(data_str, resolve, reject, query_response);
             return;
@@ -161,14 +164,35 @@
     function parse_book(text) {
         var result={last:"",date:"",title:""};
         text=text.replace(/^Book:\s*/,"");
+        text=text.replace(/([\d]{4})\./,"$1.");
         var regex_parendate=/^(.*)\s*(\(\s*[\d]+\s*\))\s*(.*)$/,match;
+        var regex2=/^([A-Za-z]+);\s*([A-Z]+)\.\s*([\d]+)\.\s*(.*)$/;
+        var regex3=/^([\-\sA-Za-z\.]+);\s+([\-\sA-Za-z]+)\.\s*(.*)$/;
+        console.log("TEXT="+text);
+        let date_match;
+
+         if(!result.date && (date_match=text.match(/[\d]{4}/))) result.date=date_match[0];
         if(match=text.match(regex_parendate)) {
             console.log("paren match="+JSON.stringify(match));
-            result.last=MTurkScript.prototype.removeDiacritics(match[1].replace(/;.*$/,""));
+            result.last=MTurkScript.prototype.removeDiacritics(match[1].replace(/;.*$/,"")).replace(/\s+.*$/,"");
             result.date=match[2];
             result.title=match[3].replace(/^[:\.\s]*/,"").replace(/[:;\.\?\(\)]+.*$/,"").replace(/^The\s+/i,"").
             replace(/\sand\s/g," \'and\' ")
             .trim();
+        }
+        else if(match=text.match(regex2)) {
+            console.log("match2="+match);
+            result.last=match[1];
+            result.date=match[3];
+            result.title=match[4].replace(/[:;\.\?\(\)]+.*$/,"");
+
+        }
+        else if(match=text.match(regex3)) {
+            console.log("match3="+match);
+            result.last=match[1];
+
+            result.title=match[3].replace(/^([\d]+\.)/,"").replace(/[:;\.\?\(\)]+.*$/,"");
+
         }
         else {
             if((match=text.match(/[\d]{4}/))) result.date=match[1];
@@ -180,12 +204,14 @@
                 result.title=text.replace(/[:;\.\?\(\)]+.*$/,"").trim();;
             }
             console.log("Bung text="+text);
-            result.last=MTurkScript.prototype.removeDiacritics(temp_text.replace(/;.*$/,""));
+            result.last=MTurkScript.prototype.removeDiacritics(temp_text.replace(/;.*$/,"")).replace(/\s+.*$/,"");
            // text=text.replace(/^[^\d]*[\d]{4}[\.\s]*/,"");
             console.log("mung text="+text);
 
             if((match=text.match(/[^\.\?;]+$/))&&result.title.length===0) result.title=match[0].replace(/\d.*$/,"").trim().replace(/[:;\.\?\(\)]+.*$/,"").trim();;
         }
+
+        if(result.date) result.date=result.date.replace(/[^\d]+/g,"");
         return result;
 
     }
@@ -215,6 +241,10 @@
                   ,"argType2":"all","searchCode2":"KTIL",
 "yearOption":"defined","year":"1518-2018","fromYear":"","toYear":"","location":"all","place":"all",
 "type":"all","language":"all","recCount":"25"};
+        if(my_query.date&&my_query.date.length>0) {
+            data.year=(parseInt(my_query.date)-1)+"-"+(parseInt(my_query.date)+1)
+        }
+
         console.log("data="+JSON.stringify(data));
         var data_str=MTurkScript.prototype.json_to_post(data).replace(/%20/g,"+");
         my_query.data_str=data_str;

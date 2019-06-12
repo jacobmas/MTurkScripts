@@ -2,7 +2,7 @@
 // @name         Aidin
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  New script
+// @description  Find Fax Numbers
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -10,6 +10,7 @@
 // @include        https://*.amazonaws.com/*
 // @include https://worker.mturk.com/*
 // @include file://*
+// @grant GM_deleteValue
 // @grant  GM_getValue
 // @grant GM_setValue
 // @grant GM_addValueChangeListener
