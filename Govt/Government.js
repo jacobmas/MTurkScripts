@@ -15,7 +15,7 @@ var Gov=Gov||{contact_list:[],email_list:[],scripts_loaded:{},scripts_total:{},a
 	      title_prefix_regex:/^(Director|Mayor|Commissioner|Senator|Police Chief|Chief|Chief [Oo]f Police|Chief Deputy|Constable|Councilman|Councilwoman|Secretary|Sheriff|Sergeant|Patrol Officer|Lieutenant|Detective|Sgt\.|Lt\.)((?:\s+[A-Z0-9\"][\-\.\'a-z0-9]+[0-9\-\.\'\"a-zA-Z]*)+)(.*)$/,
 	      bad_stuff_re:/(\/\*)|(^Wh.*\?$)|(\sand\s)|([\d]+)|(I want to\s.*$)|Printer-Friendly|(^Home.*)|(…)|((City|Town) Hall)|City Hall|Welcome to/i
 	      ,bad_stuff_re2:/(Contact( Us)?)$|Navigation|Email|Search|Printer-Friendly|Economic|Quick Links|Choose |function\(|var |\/.*\//i, //Menu([^A-Za-z0-9]|$)
-	      bad_link_regex:/(^\s*(javascript|mailto|tel):)|(\/(cdn-cgi|tag|event|events)\/)|(\/#email)|(#$)|(\/login)|(\/events)|(-schedule(-|\/))|(\.pdf$)|(blogger\.com\/email-post)/i,
+	      bad_link_regex:/(^\s*(javascript|mailto|tel):)|(\/(cdn-cgi|tag|event|events)\/)|(\/#email)|(#$)|(\/login)|(\/events)|(-schedule(-|\/))|(\.pdf$)|(blogger\.com\/(share-post|email-post))/i,
 	      bad_contact_regex:/Webmaster|Employee Email|(^|\s)Login|Email Notifications|Business .*Directory|(State|Federal).*Contacts/i,
 	      dept_name_regex:/^(Department of )?(Parks (and|&) Recreation|Library|CPED|Public Works|Police|Sanitation|Administration|Parks|Recreation|Information Technology|Human Resources|Civil Rights)\s*(Department)?$/i,
 
