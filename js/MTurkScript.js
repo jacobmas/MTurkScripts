@@ -280,10 +280,10 @@ MTurkScript.prototype.cfDecodeEmail=function(encodedString) {
 MTurkScript.prototype.is_bad_email=function(to_check) {
    // console.log("to_check="+to_check);
     to_check=to_check.toLowerCase();
-    if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1) return true;
+    if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1 || to_check.indexOf("@2x.yelp")!==-1) return true;
     else if(/\.(png|jpg|jpeg|gif)$/.test(to_check)) return true;
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
-    else if(/(@((godaddy|domain)\.com|example\.com))|(^example@)/.test(to_check)) return true;
+    else if(/(@((godaddy|domain|addresshere)\.com|example\.com|))|(^example@)/.test(to_check)) return true;
     else if(/;/.test(to_check)) return true;
     else if(/^youremail/.test(to_check)) return true;
     else if(/(^root@)|localhost\.localhost/.test(to_check)) return true;
