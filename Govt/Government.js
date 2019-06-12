@@ -5,14 +5,17 @@
 var Gov=Gov||{contact_list:[],email_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
 	      split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s*-\s+)|\||                     |	|	|●|(\s+~\s+)|•|\s{3,}|\s+[*≈]+\s+|(\s+\/\s+)|\.{3,}/,
 	      id_map:{"ahaconsulting":"municodeweb","seamlessgov":"seamlessdocs","townwebdesign":"townweb","civicasoft":"granicus"},
-	      title_regex:new RegExp("(^|[^A-Za-z]{1})(Clerk[\/\-]+Treasurer|Officer|Head of School|Director|Department|Supervisor|Manager|Clerk|Administrator|Inspector|Assistant|"+
-				     "Council Member|Commissioner|Constable|Sheriff|Undersheriff|Clerk|Attorney|Recorder|Official|Foreman|Roadmaster|Coordinator|Mayor|Planner|Engineer|Police|Fire|Specialist|Chief of Police|"+
-				     "Superintendent|Advisor|Marshal|Public|Clerk|Code Enforcement|Building Services|Operations|Sgt\.|Det\.|"+
-				     "Foreman|Secretary|Chief|President)($|[^A-Za-z0-9]{1})","i"),
+	      title_regex:new RegExp("(^|[^A-Za-z]{1})"+
+	"(Administrator|Advisor|Assistant|Attorney|Building Services|Clerk[\/\-]+Treasurer|"+
+	"Chief of Police|Chief|Clerk|Code Enforcement|Commissioner|Constable|Coordinator|Council Member|"+
+	"Director|Department|Det\.|Detective|Engineer|Fire|Foreman|Head of School|Inspector|"+
+	"Manager|Marshal|Mayor|Officer|Official|Operations|Planner|Police|President|Public|"+
+	"Recorder|Roadmaster|Scientist|Secretary|Sheriff|Specialist|Superintendent|Supervisor|Sgt\.|"+
+	"|Undersheriff)($|[^A-Za-z0-9]{1})","i"),
 	      title_prefix_regex:/^(Director|Mayor|Commissioner|Senator|Police Chief|Chief|Chief [Oo]f Police|Chief Deputy|Constable|Councilman|Councilwoman|Secretary|Sheriff|Sergeant|Patrol Officer|Lieutenant|Detective|Sgt\.|Lt\.)((?:\s+[A-Z0-9\"][\-\.\'a-z0-9]+[0-9\-\.\'\"a-zA-Z]*)+)(.*)$/,
 	      bad_stuff_re:/(\/\*)|(^Wh.*\?$)|(\sand\s)|([\d]+)|(I want to\s.*$)|Printer-Friendly|(^Home.*)|(…)|((City|Town) Hall)|City Hall|Welcome to/i
 	      ,bad_stuff_re2:/(Contact( Us)?)$|Navigation|Email|Search|Printer-Friendly|Economic|Quick Links|Choose |function\(|var |\/.*\//i, //Menu([^A-Za-z0-9]|$)
-	      bad_link_regex:/(^\s*(javascript|mailto|tel):)|(\/(cdn-cgi|tag|event|events)\/)|(\/#email)|(#$)|(\/login)|(\/events)|(-schedule(-|\/))|(\.pdf$)/i,
+	      bad_link_regex:/(^\s*(javascript|mailto|tel):)|(\/(cdn-cgi|tag|event|events)\/)|(\/#email)|(#$)|(\/login)|(\/events)|(-schedule(-|\/))|(\.pdf$)|(blogger\.com\/email-post)/i,
 	      bad_contact_regex:/Webmaster|Employee Email|(^|\s)Login|Email Notifications|Business .*Directory|(State|Federal).*Contacts/i,
 	      dept_name_regex:/^(Department of )?(Parks (and|&) Recreation|Library|CPED|Public Works|Police|Sanitation|Administration|Parks|Recreation|Information Technology|Human Resources|Civil Rights)\s*(Department)?$/i,
 
