@@ -24,8 +24,7 @@ var reverse_state_map={},reverse_province_map={};
 for(let x in state_map)     reverse_state_map[state_map[x]]=x;
 for(let x in province_map)     reverse_province_map[province_map[x]]=x;
 
-var default_bad_urls=["facebook.com","youtube.com","twitter.com","instagram.com","opendi.us",".business.site","plus.google.com",".alibaba.com",
-		      ".trystuff.com",".mturkcontent.com",".amazonaws.com",".medium.com",".google.com",".opencorporates.com",".thefreedictionary.com",".dictionary.com"];
+var default_bad_urls=["facebook.com","youtube.com","twitter.com","instagram.com","opendi.us",".business.site","plus.google.com",".alibaba.com",".trystuff.com",".mturkcontent.com",".amazonaws.com",".medium.com",".google.com",".opencorporates.com",".thefreedictionary.com",".dictionary.com"];
 
 /* Regular expressions for emails, phones, faxes */
 var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%\*]{1,40}(\.[^<>\/()\[\]\\.,;:：\s\*@"\?]{1,40}){0,5}))@((([a-zA-Z\-0-9]{1,30}\.){1,8}[a-zA-Z]{2,20}))/g;
@@ -283,7 +282,7 @@ MTurkScript.prototype.is_bad_email=function(to_check) {
     if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1 || to_check.indexOf("@2x.yelp")!==-1) return true;
     else if(/\.(png|jpg|jpeg|gif)$/.test(to_check)) return true;
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
-    else if(/(@((godaddy|domain|addresshere)\.com|example\.com|))|(^example@)/.test(to_check)) return true;
+    else if(/(@((godaddy|domain|addresshere|emailaddress)\.com|example\.com))|(^example@)/i.test(to_check)) return true;
     else if(/;/.test(to_check)) return true;
     else if(/^youremail/.test(to_check)) return true;
     else if(/(^root@)|localhost\.localhost/.test(to_check)) return true;
