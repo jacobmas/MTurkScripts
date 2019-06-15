@@ -611,6 +611,7 @@ MTurkScript.prototype.parse_b_context=function(b_context)
     var term_map={"Website":"url","Official site":"url","Company":"company"};
     var field_map=function(field) { return term_map[field]!==undefined?term_map[field]:field; };
     var b_entityTP=b_context.querySelector(".b_entityTP");
+    var parsed_entity;
     disambig=b_context.querySelectorAll(".disambig-outline .b_slyGridItem");
     b_entityTitle=b_context.getElementsByClassName("b_entityTitle");
     b_entitySubTitle=b_context.getElementsByClassName("b_entitySubTitle");
@@ -643,7 +644,11 @@ MTurkScript.prototype.parse_b_context=function(b_context)
         }
     }
     if(disambig.length>0) MTurkScript.prototype.parse_b_context_disambig(disambig,result);
-    if(b_entityTP) result.person=MTurkScript.prototype.parse_entityTP(b_context);
+    if(b_entityTP) {
+	parsed_entity=MTurkScript.prototype.parse_entityTP(b_context);
+	if(parsed_entity.type&&/Person/.test(parsed_entity.type)) result.person=parsed_entity;
+	else result.thing=parsed_entity;
+    }
     return result;
 };
 
@@ -686,11 +691,14 @@ MTurkScript.prototype.scrape_bing_experience=function(b_submodule) {
 MTurkScript.prototype.parse_entityTP=function(b_context) {
     var ret={};
     var b_entityTP=b_context.querySelector(".b_entityTP");
-    var b_entityTitle,infoCard,about,x,match,b_subModule;
+    var b_entityTitle,infoCard,about,x,match,b_subModule,b_entitySubTitle;
     if(!b_entityTP) return ret;
     b_entityTitle=b_entityTP.querySelector(".b_entityTitle");
+    b_entitySubTitle=b_entityTP.querySelector(".b_entitySubTitle");
     b_subModule=b_entityTP.querySelectorAll(".b_subModule");
     if(b_entityTitle) ret.name=b_entityTitle.innerText;
+    if(b_entitySubTitle) ret.type=b_entitySubTitle.innerText;
+    
     infoCard=b_entityTP.querySelectorAll(".infoCardIcons a");
     for(x of infoCard) {
         if(/linkedin\.com/.test(x.href)) ret.linkedin_url=x.href;
