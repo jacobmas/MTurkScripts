@@ -374,7 +374,7 @@ MTurkScript.prototype.parse_name=function(to_parse)
     split_parse=to_parse.split(" ");
     last=split_parse.length-1;
     for(last=split_parse.length-1; last>=1; last--) {
-        if(!this.suffix_regex.test(split_parse[last]) &&
+        if(!suffix_regex.test(split_parse[last]) &&
            !(split_parse.length>0 && /[A-Z][a-z]/.test(split_parse[0]) && /^[^a-z]+$/.test(split_parse[last]))) break;
     }
     if(last>=2 && /^(Van|de|Le|La|Von)$/i.test(split_parse[last-1])) ret.lname=split_parse[last-1]+" "+split_parse[last];
