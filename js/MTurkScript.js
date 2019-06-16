@@ -367,13 +367,14 @@ MTurkScript.prototype.parse_name=function(to_parse)
 {
     //console.log("Doing parse_name on "+to_parse);
     var first_pos=0,j,last,ret={};
-    var suffixes=["Jr","II","III","IV","CPA","CGM","Sr"],prefixes=["Mr","Ms","Mrs","Dr","Rev"],split_parse;
+    var suffixes=[/^Jr\.?/i,/^II$/i,/^III$/i,/^IV$/i,/^CPA$/i,/^CGM$/i,/^Sr\.?$/i],prefixes=["Mr","Ms","Mrs","Dr","Rev"],split_parse;
     var prefixes_regex=/^(Mr|Ms|Mrs|Dr|Rev|Miss)\.?\s+/gi,paren_regex=/\([^\)]*\)/g,caps_regex=/^[A-Z]+$/;
+    var suffix_regex=/^((Jr\.?)|(II)|(III)|(IV)|(CPA)|(CGM)|(Sr\.?))$/i;
     to_parse=to_parse.replace(paren_regex,"").replace(prefixes_regex,"");
     split_parse=to_parse.split(" ");
     last=split_parse.length-1;
     for(last=split_parse.length-1; last>=1; last--) {
-        if(!this.prefix_in_string(suffixes,split_parse[last]) &&
+        if(!this.suffix_regex.test(split_parse[last]) &&
            !(split_parse.length>0 && /[A-Z][a-z]/.test(split_parse[0]) && /^[^a-z]+$/.test(split_parse[last]))) break;
     }
     if(last>=2 && /^(Van|de|Le|La|Von)$/i.test(split_parse[last-1])) ret.lname=split_parse[last-1]+" "+split_parse[last];
