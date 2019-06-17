@@ -693,6 +693,7 @@ MTurkScript.prototype.parse_entityTP=function(b_context) {
     var ret={};
     var b_entityTP=b_context.querySelector(".b_entityTP");
     var b_entityTitle,infoCard,about,x,match,b_subModule,b_entitySubTitle;
+    var splspli,exp;
     if(!b_entityTP) return ret;
     b_entityTitle=b_entityTP.querySelector(".b_entityTitle");
     b_entitySubTitle=b_entityTP.querySelector(".b_entitySubTitle");
@@ -716,7 +717,26 @@ MTurkScript.prototype.parse_entityTP=function(b_context) {
         if(!match) continue;
         ret[match[1].trim()]=match[2];
     }
+    splspli=b_subModule.querySelector(".spl-spli-dg");
+    if(splspli && (exp=splispli.querySelector("h2")) &&
+       exp.innerText.indexOf("Experience")!==-1) ret.experience=MTurkScript.prototype.scrape_spli_experience(splspli);
+    }
     return ret;
+};
+
+MTurkScript.prototype.scrape_spli_experience=function(spli) {
+    var grp=spli.querySelectorAll("spl-spli-dg-group"),ret=[];
+    var head,promote,demote,curr;
+    for(curr of group) {
+	if(!(head=curr.querySelector(".spl-spli-dg-group-head"))) continue;
+	promote=curr.querySelector(".b_promoteText");
+	demote=curr.querySelector(".b_demoteText");
+	if(head && promote && demote) {
+	    ret.push({title:promote.innerText.trim(),company:head.innerText.trim(),time:demote.innerText.trim()});
+	}   
+    }
+    return ret;
+    
 };
 
 MTurkScript.prototype.parse_lgb_info=function(lgb_info) {
