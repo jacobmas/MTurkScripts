@@ -72,7 +72,7 @@ Gov.scrape_lone_emails=function(doc,url) {
     if((email_matches=doc.body.innerHTML.match(email_re))) {
         for(j=0; j < email_matches.length; j++) {
             if(!MTP.is_bad_email(email_matches[j]) && email_matches[j].length>0 &&
-	       !Gov.email_list.includes(email_matches[j])) Gov.email_list.push(email_matches[j]);              
+	       !Gov.email_list.includes({email:email_matches[j],url:url})) Gov.email_list.push({email:email_matches[j],url:url});              
         }
        
     }
@@ -82,7 +82,7 @@ Gov.scrape_lone_emails=function(doc,url) {
     {   
         
         if((temp_email=links[i].href.replace(/^mailto:\s*/,"").match(email_re)) &&
-           !MTurkScript.prototype.is_bad_email(temp_email[0])) Gov.email_list.push(temp_email.toString());
+           !MTurkScript.prototype.is_bad_email(temp_email[0])) Gov.email_list.push({email:temp_email.toString(),url:url});
     }
     if(Gov.debug) console.log("done scrape_lone_emails");
     return;
