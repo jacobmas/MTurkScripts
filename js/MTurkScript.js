@@ -720,7 +720,6 @@ MTurkScript.prototype.parse_entityTP=function(b_context) {
     splspli=b_subModule.querySelector(".spl-spli-dg");
     if(splspli && (exp=splispli.querySelector("h2")) &&
        exp.innerText.indexOf("Experience")!==-1) ret.experience=MTurkScript.prototype.scrape_spli_experience(splspli);
-    }
     return ret;
 };
 
