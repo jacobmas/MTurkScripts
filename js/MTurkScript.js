@@ -717,7 +717,7 @@ MTurkScript.prototype.parse_entityTP=function(b_context) {
         if(!match) continue;
         ret[match[1].trim()]=match[2];
     }
-    splspli=b_subModule.querySelector(".spl-spli-dg");
+    splspli=b_entityTP.querySelector(".spl-spli-dg");
     if(splspli && (exp=splispli.querySelector("h2")) &&
        exp.innerText.indexOf("Experience")!==-1) ret.experience=MTurkScript.prototype.scrape_spli_experience(splspli);
     return ret;
