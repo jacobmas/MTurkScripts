@@ -751,7 +751,7 @@ MTurkScript.prototype.parse_lgb_info=function(lgb_info) {
     for(i=0; i < b_factrow.length; i++) {
         if(phone_re.test(b_factrow[i].innerText)||/^\+/.test(b_factrow[i].innerText)) result.phone=b_factrow[i].innerText;
     }
-    if(!result.name && (inner_a=lgb_info.querySelector("h2 a"))) Object.assign(result,{url:a.href,name:a.innerText});
+    if(!result.name && (inner_a=lgb_info.querySelector("h2 a"))) Object.assign(result,{url:inner_a.href,name:inner_a.innerText});
     return result;
 };
 
