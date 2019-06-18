@@ -647,7 +647,7 @@ MTurkScript.prototype.parse_b_context=function(b_context)
     if(disambig.length>0) MTurkScript.prototype.parse_b_context_disambig(disambig,result);
     if(b_entityTP) {
 	parsed_entity=MTurkScript.prototype.parse_entityTP(b_context);
-	if(parsed_entity.type&&/Person/.test(parsed_entity.type)) result.person=parsed_entity;
+	if((parsed_entity.type&&/Person/.test(parsed_entity.type))||(parsed_entity.experience&&parsed_entity.experience.length>0)) result.person=parsed_entity;
 	else result.thing=parsed_entity;
     }
     return result;
