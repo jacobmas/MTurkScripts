@@ -1679,6 +1679,31 @@ MTurkScript.prototype.is_bad_name=function(b_name,p_caption,i) {
     if(i===0 && b_name.toLowerCase().indexOf(my_query.name.split(" ")[0].toLowerCase())!==-1) return false;
     return true;
 };
+/* 
+people should be parsed_context.people
+full should be result of MTP.parse_name or equivalent */
+MTurkScript.prototype.found_good_person=function(people,full,resolve,reject,type) {
+    let curr_person;
+    for(curr_person of people) {
+        //console.log("state_map[my_query.state]="+state_map[my_query.state]);
+        curr_person.name=curr_person.name.replace(/,.*$/,"").replace(/\s*\([^\)]*\)/g,"").trim();
+        console.log("curr_person.name="+curr_person.name);
+      
+        console.log("@ full="+JSON.stringify(full)+", my_query.fullname="+JSON.stringify(my_query.fullname));
+        if(full.lname.indexOf(my_query.fullname.lname)!==-1&&
+           full.fname.charAt(0).toLowerCase()===my_query.fullname.fname.charAt(0).toLowerCase()) {
+            console.log("url="+curr_person.url);
+            var search_str=decodeURIComponent(curr_person.url.match(/\?q\=([^&]*)&/)[1]).replace(/\+/g," ");
+            console.log("### Found good person ");
+            my_query.found_good=true;
+            var filters=curr_person.url.match(/&filters\=([^&]*)/)[1];
+            query_search(search_str,resolve,reject,query_response,type,filters);
+	    //                var promise=MTP.create_promise(curr_person.url,query_response,resolve,reject,type);
+            return true;
+        }
+    }
+    return false;
+};
 
 	
 

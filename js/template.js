@@ -76,10 +76,11 @@
     }
 
     /* Search on bing for search_str, parse bing response with callback */
-    function query_search(search_str, resolve,reject, callback,type) {
+    function query_search(search_str, resolve,reject, callback,type,filters) {
         console.log("Searching with bing for "+search_str);
+        if(!filters) filters="";
         var search_URIBing='https://www.bing.com/search?q='+
-            encodeURIComponent(search_str)+"&first=1&rdr=1";
+            encodeURIComponent(search_str)+"&filters="+filters+"&first=1&rdr=1";
         GM_xmlhttpRequest({method: 'GET', url: search_URIBing,
                            onload: function(response) { callback(response, resolve, reject,type); },
                            onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
