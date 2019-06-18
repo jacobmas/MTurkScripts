@@ -718,14 +718,15 @@ MTurkScript.prototype.parse_entityTP=function(b_context) {
         ret[match[1].trim()]=match[2];
     }
     splspli=b_entityTP.querySelector(".spl-spli-dg");
-    console.log(splspli);
+   // console.log(splspli);
     if(splspli && (exp=splspli.querySelector("h2")) &&
        exp.innerText.indexOf("Experience")!==-1) ret.experience=MTurkScript.prototype.scrape_spli_experience(splspli);
     return ret;
 };
 
 MTurkScript.prototype.scrape_spli_experience=function(spli) {
-    var grp=spli.querySelectorAll("spl-spli-dg-group"),ret=[];
+    
+    var grp=spli.querySelectorAll(".spl-spli-dg-group"),ret=[];
     var head,promote,demote,curr;
     for(curr of grp) {
 	if(!(head=curr.querySelector(".spl-spli-dg-group-head"))) continue;
