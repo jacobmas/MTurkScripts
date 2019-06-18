@@ -14,6 +14,7 @@
 // @grant GM_setValue
 // @grant GM_addValueChangeListener
 // @grant GM_setClipboard
+// @grant GM_deleteValue
 // @grant GM_xmlhttpRequest
 // @grant GM_openInTab
 // @grant GM_getResourceText
@@ -152,7 +153,8 @@
                 break;
             }
         }
-        my_query.emailBusinessLabel=ret.emailBusinessLabel;
+        my_query.emailBusinessLabel=ret.businessEmailLabel;
+        //console.log("my
         if(ret.description && (email_match=ret.description.match(email_re)) && (my_query.fields.email=email_match[0])) submit_if_done();
         else { console.log("email_match="+email_match); }
         if(ret.description) {
@@ -216,7 +218,7 @@
         if(MTurk.queryList.length>0 && MTurk.doneQueries >= MTurk.queryList.length) my_query.done["web"]=true;
         for(x in my_query.done) { if(!my_query.done[x]) is_done=false; }
 
-        for(x in my_query.fields) { if(my_query.fields[x].length===0) is_found=false; }
+        for(x in my_query.fields) { if(my_query.fields[x].length===0||my_query.fields[x]==="NULL") is_found=false; }
         if(is_done && is_found &&!my_query.submitted && MTurk.doneQueries >= MTurk.queryList.length && (my_query.submitted=true)) MTurk.check_and_submit();
         else if(is_done && !my_query.submitted && MTurk.doneQueries >= MTurk.queryList.length) {
             if(!my_query.emailBusinessLabel) {
@@ -226,7 +228,7 @@
                 return;
             }
             console.log("Failed");
-            GM_setValue("returnHit",true);
+            GM_setValue("returnHit"+MTurk.assignment_id,true);
             return; }
     }
 
@@ -332,16 +334,10 @@
         var wT=document.getElementById("workContent").getElementsByTagName("table")[0];
 	//var dont=document.getElementsByClassName("dont-break-out");
         my_query={url:wT.rows[0].cells[1].innerText+"/about",fields:{email:""},submitted:false,done:{"insta":false,"fb":false,"web":false}};
+        console.log("my_query.url="+my_query.url);
         var promise=MTurkScript.prototype.create_promise(my_query.url,parse_youtube,parse_youtube_then);
 	var search_str;
-        const queryPromise = new Promise((resolve, reject) => {
-            console.log("Beginning URL search");
-         //   query_search(search_str, resolve, reject, query_response);
-        });
-        queryPromise.then(query_promise_then
-        )
-        .catch(function(val) {
-           console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+      
     }
 
 })();
