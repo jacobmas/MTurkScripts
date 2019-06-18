@@ -10,9 +10,9 @@
 // @include        https://*.amazonaws.com/*
 // @include https://worker.mturk.com/*
 // @include https://airtable.com/*
-// @include file://*
 // @grant  GM_getValue
 // @grant GM_setValue
+// @grant GM_deleteValue
 // @grant GM_addValueChangeListener
 // @grant GM_setClipboard
 // @grant GM_xmlhttpRequest
@@ -32,8 +32,9 @@
     'use strict';
     var my_query = {};
     var bad_urls=[];
-    var MTurk=new MTurkScript(20000,200,[],begin_script,"AVIEM6HO9Z9VC",false);
+    var MTurk=new MTurkScript(60000,750+(Math.random()*1000),[],begin_script,"AVIEM6HO9Z9VC",false);
     var MTP=MTurkScript.prototype;
+    if(window.location.href.indexOf("airtable.com")!==-1) begin_airtable();
     function is_bad_name(b_name)
     {
         return false;
@@ -42,7 +43,7 @@
     function query_response(response,resolve,reject,type) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-        console.log("in query_response\n"+response.finalUrl);
+        console.log("in query_response\n"+response.finalUrl+", type="+type);
         var search, b_algo, i=0, inner_a;
         var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
         var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
@@ -107,7 +108,10 @@
 
     function add_to_sheet() {
         var x,field;
-        for(x in my_query.fields) if(field=document.getElementById(x)) field.value=my_query.fields[x];
+	for(x in my_query.fields) {
+            if((MTurk.is_crowd && (field=document.getElementsByName(x)[0])) ||
+	       (!MTurk.is_crowd && (field=document.getElementById(x)))) field.value=my_query.fields[x];
+        }
     }
 
     function submit_if_done() {
@@ -117,64 +121,48 @@
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
 
-    function do_airtable() {
-        console.log("In do airtable "+window.location.href);
-        var cursor=document.querySelector(".addRecordSelector");
-console.log("In do airtable2");
-        if(cursor) cursor.click();
-           console.log("In do airtable2");
-        setTimeout(do_airtable2,250);
-
-        var py2=document.querySelector(".py2");
-                console.log("In do airtable3");
-
-
-                console.log("In do airtable4");
-        console.log("py2="+py2);
-        py2.paste(my_query.code);
-
-    }
-    function do_airtable2() {
-    }
-
-
-
     function init_Query()
     {
-
         console.log("in init_query");
         var i;
-       
-        var dont=document.querySelectorAll(".well");
-        my_query={code:dont[0].innerText,url:dont[1].innerText,fields:{},done:{},submitted:false};
-       my_query.url=!/https?:\/\/www/.test(my_query.url) && !/^www/.test(my_query.url) ? "http://www."+my_query.url
-        : my_query.url;
-        if(!/https?:\/\//.test(my_query.url)) my_query.url="http://"+my_query.url;
+      //  var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
+        var well=document.querySelector(".well");
+        var dont=document.getElementsByClassName("dont-break-out");
+        var code_re=/^([^:]*):\s*([^\d\.]*)\s([a-z\s]*)\s-\s(.*)$/,match;
+
+
+        my_query={url:dont.href,fields:{},done:{},submitted:false};
+        if((match=well.innerText.match(code_re))) {
+            Object.assign(my_query,{code:match[1],size:match[2],type:match[3],place:match[4]}); }
         console.log("my_query="+JSON.stringify(my_query));
-        var search_str;
-        GM_setValue("my_query",my_query);
-       /* const queryPromise = new Promise((resolve, reject) => {
-            console.log("Beginning URL search");
-            query_search(search_str, resolve, reject, query_response,type);
-        });
-        queryPromise.then(query_promise_then)
-            .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });*/
+        GM_setValue("my_query","");
+        setTimeout(function() {
+            console.log("Setting my_query="+JSON.stringify(my_query));
+            GM_setValue("my_query",my_query); },2000);
 
     }
-    if(window.location.href.indexOf("mturkcontent.com")!==-1) setTimeout(begin_script,1500);
+    function select_airtable() {
+        console.log("select_airtable");
+        var sugg=document.querySelectorAll(".rowSuggestion");
+        sugg.forEach(function(elem) {
+            console.log(elem.innerText);
+        });
+    }
 
-    if(/airtable\.com/.test(window.location.href)) {
-        console.log("MOO");
+    function init_airtable() {
+        console.log("init_airtable, location="+window.location.href);
+        var add=document.querySelector(".addRecordSelector");
+        add.click();
+        setTimeout(select_airtable,1000);
+    }
+
+    function begin_airtable() {
+        console.log("begin_airtable");
         GM_addValueChangeListener("my_query",function() {
             my_query=arguments[2];
-            console.log("arguments="+JSON.stringify(arguments));
-
-            console.log("Beginning airtable");
-            do_airtable();
-        });
+            if(my_query) {
+                init_airtable();
+            }  });
     }
-
-
 
 })();
