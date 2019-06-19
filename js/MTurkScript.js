@@ -717,7 +717,7 @@ MTurkScript.prototype.parse_entityTP=function(b_context) {
         if(!match) continue;
         ret[match[1].trim()]=match[2];
     }
-    prof=b_entityTP.querySelectorAll("spl-spli-ftl-prof .b_entitySubTitle");
+    prof=b_entityTP.querySelectorAll("spl-spli-ftl .b_entitySubTitle");
     if(prof.length>=2) ret.Location=prof[prof.length-1].innerText.trim();
     splspli=b_entityTP.querySelector(".spl-spli-dg");
    // console.log(splspli);
