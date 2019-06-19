@@ -693,7 +693,7 @@ MTurkScript.prototype.parse_entityTP=function(b_context) {
     var ret={};
     var b_entityTP=b_context.querySelector(".b_entityTP");
     var b_entityTitle,infoCard,about,x,match,b_subModule,b_entitySubTitle;
-    var splspli,exp;
+    var splspli,exp,prof;
     if(!b_entityTP) return ret;
     b_entityTitle=b_entityTP.querySelector(".b_entityTitle");
     b_entitySubTitle=b_entityTP.querySelector(".b_entitySubTitle");
@@ -717,6 +717,8 @@ MTurkScript.prototype.parse_entityTP=function(b_context) {
         if(!match) continue;
         ret[match[1].trim()]=match[2];
     }
+    prof=b_entityTP.querySelectorAll("spl-spli-ftl-prof .b_entitySubTitle");
+    if(prof.length>=2) ret.Location=prof[1].innerText.trim();
     splspli=b_entityTP.querySelector(".spl-spli-dg");
    // console.log(splspli);
     if(splspli && (exp=splspli.querySelector("h2")) &&

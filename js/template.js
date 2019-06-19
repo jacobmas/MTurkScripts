@@ -108,9 +108,9 @@
     function add_to_sheet() {
         var x,field;
         for(x in my_query.fields) {
-	    if((MTurk.is_crowd && field=document.getElementsByName(x)[0]) ||
-	       (!MTurk.is_crowd && (field=document.getElementById(x)))) field.value=my_query.fields[x];
-	}
+            if((MTurk.is_crowd && (field=document.getElementsByName(x)[0])) ||
+               (!MTurk.is_crowd && (field=document.getElementById(x)))) field.value=my_query.fields[x];
+        }
     }
 
     function submit_if_done() {
