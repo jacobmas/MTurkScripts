@@ -1049,6 +1049,11 @@ MTurkScript.prototype.is_bad_fb=function(b_url,b_name) {
     return false;
 };
 
+MTurkScript.prototype.is_bad_instagram=function(b_url,bname) {
+    if(/instagram\.com\/explore\//.test(b_url)) return true;
+    return false;
+};
+
 /**
      * parse_insta_script is a helper for parse_instagram that extracts the useful data
      */
@@ -1208,6 +1213,7 @@ MTurkScript.prototype.call_contact_page=function(url,callback,extension) {
 						       callback(); }
 		      });
 };
+
 
 
 
