@@ -1050,7 +1050,7 @@ MTurkScript.prototype.is_bad_fb=function(b_url,b_name) {
 };
 
 MTurkScript.prototype.is_bad_instagram=function(b_url,bname) {
-    if(/instagram\.com\/explore\//.test(b_url)) return true;
+    if(/instagram\.com\/(p|explore)\//.test(b_url)) return true;
     return false;
 };
 
@@ -1372,30 +1372,31 @@ MTurkScript.prototype.parse_youtube=function(doc,url,resolve,reject) {
 };
 /* matches_names Checks whether two names of places match, will need to be adjusted for use with b_name, e.g. split and iterate  */
 MTurkScript.prototype.matches_names=function(name1,name2) {
-        var num_replace={"$10$2":/(^|[^A-Za-z])Zero($|[^A-Za-z])/i,"$11$2":/(^|[^A-Za-z])One($|[^A-Za-z])/i,"$12$2":/(^|[^A-Za-z])Two($|[^A-Za-z])/i,
-                         "$13$2":/(^|[^A-Za-z])Three($|[^A-Za-z])/i,"$14$2":/(^|[^A-Za-z])Four($|[^A-Za-z])/i,"$15$2":/(^|[^A-Za-z])Five($|[^A-Za-z])/i,
-        "$16$2":/(^|[^A-Za-z])Six($|[^A-Za-z])/i,"$17$2":/(^|[^A-Za-z])Seven($|[^A-Za-z])/i,"$18$2":/(^|[^A-Za-z])Eight($|[^A-Za-z])/i,
-            "$19$2":/(^|[^A-Za-z])Nine($|[^A-Za-z])/i };
-        var and_regex=/\s+(&|and)\s+.*$/,extra_regex=/[\.\']+/g,prefix_reg=/^The\s*/i,i,at_reg=/\s+(@|at)\s+.*$/;
-        var split_camel=/([a-z]{1})([A-Z]{1})/,chain_reg=/^(Walmart).*$/,street_reg=/([^a-zA-Z]{1}|^)Street\s+/i;
-        var final_my,final_other,x;
-        var my_name=name1.replace(extra_regex,"").replace(chain_reg,"")
+    var num_replace={"$10$2":/(^|[^A-Za-z])Zero($|[^A-Za-z])/i,"$11$2":/(^|[^A-Za-z])One($|[^A-Za-z])/i,"$12$2":/(^|[^A-Za-z])Two($|[^A-Za-z])/i,
+                     "$13$2":/(^|[^A-Za-z])Three($|[^A-Za-z])/i,"$14$2":/(^|[^A-Za-z])Four($|[^A-Za-z])/i,"$15$2":/(^|[^A-Za-z])Five($|[^A-Za-z])/i,
+		     "$16$2":/(^|[^A-Za-z])Six($|[^A-Za-z])/i,"$17$2":/(^|[^A-Za-z])Seven($|[^A-Za-z])/i,"$18$2":/(^|[^A-Za-z])Eight($|[^A-Za-z])/i,
+		     "$19$2":/(^|[^A-Za-z])Nine($|[^A-Za-z])/i };
+    var and_regex=/\s+(&|and)\s+.*$/,extra_regex=/[\.\']+/g,prefix_reg=/^The\s*/i,i,at_reg=/\s+(@|at)\s+.*$/;
+    var split_camel=/([a-z]{1})([A-Z]{1})/,chain_reg=/^(Walmart).*$/,street_reg=/([^a-zA-Z]{1}|^)Street\s+/i;
+    var final_my,final_other,x;
+    var my_name=name1.replace(extra_regex,"").replace(chain_reg,"")
         .replace(prefix_reg,"").replace(split_camel,"$1 $2").replace(/-/g," ").replace(street_reg,"$1St ");
-        for(x in num_replace) my_name=my_name.replace(num_replace[x],x);
-        final_my=my_name.replace(and_regex,"").replace(at_reg,"").replace(/\s/g,"").toLowerCase().trim();
-        var other_name=name2.replace(extra_regex,"").replace(chain_reg,"").replace(prefix_reg,"").replace(split_camel,"$1 $2")
+    for(x in num_replace) my_name=my_name.replace(num_replace[x],x);
+    final_my=my_name.replace(and_regex,"").replace(at_reg,"").replace(/\s/g,"").toLowerCase().trim();
+    var other_name=name2.replace(extra_regex,"").replace(chain_reg,"").replace(prefix_reg,"").replace(split_camel,"$1 $2")
         .replace(/-/g," ").replace(street_reg,"St ");
-        for(x in num_replace) other_name=other_name.replace(num_replace[x],x);
-        final_other=other_name.replace(and_regex,"").replace(at_reg,"").replace(/\s/g,"").toLowerCase().trim();
-        //console.log("my_name="+my_name+", other_name="+other_name);
-        if(final_my===final_other || final_my.indexOf(final_other)!==-1 || final_other.indexOf(final_my)!==-1) return true;
-        for(i=0;i<final_my.length;i++) if(final_my.charAt(i)!==final_other.charAt(i)) break;
-        if(i*3/2>=final_my.length) return true;
-        var my_split=my_name.split(" ");
-        var other_split=other_name.split(" ");
-        if(my_split[0].toLowerCase()===other_split[0].toLowerCase() &&
-           my_split[my_split.length-1].toLowerCase()===other_split[other_split.length-1].toLowerCase()) return true;
-        return false;
+    for(x in num_replace) other_name=other_name.replace(num_replace[x],x);
+    final_other=other_name.replace(and_regex,"").replace(at_reg,"").replace(/\s/g,"").toLowerCase().trim();
+    //console.log("my_name="+my_name+", other_name="+other_name);
+    if(final_my===final_other || final_my.indexOf(final_other)!==-1 || final_other.indexOf(final_my)!==-1) return true;
+    for(i=0;i<final_my.length;i++) if(final_my.charAt(i)!==final_other.charAt(i)) break;
+    if(i*3/2>=final_my.length) return true;
+    var my_split=my_name.split(" ");
+    var other_split=other_name.split(" ");
+    if(my_split[0].toLowerCase()===other_split[0].toLowerCase() &&
+       my_split[my_split.length-1].toLowerCase()===other_split[other_split.length-1].toLowerCase()) return true;
+    
+    return false;
 };
 
 
