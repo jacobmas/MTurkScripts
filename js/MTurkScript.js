@@ -1055,7 +1055,7 @@ MTurkScript.prototype.is_bad_instagram=function(b_url,bname) {
 };
 
 MTurkScript.prototype.is_bad_twitter=function(b_url,bname) {
-    if(/twitter\.com\/(intent|share\?)\//.test(b_url)) return true;
+    if(/twitter\.com\/(intent\/|share\?)/.test(b_url)) return true;
     return false;
 };
 
