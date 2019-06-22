@@ -1044,13 +1044,18 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
 TODO: have it repair it automatically
 */
 MTurkScript.prototype.is_bad_fb=function(b_url,b_name) {
-    if(/\/(pages|groups|search|events|directory)\//.test(b_url)) return true;
+    if(/\/(pages|groups|search|events|directory|public)\//.test(b_url)) return true;
     if(/\/sharer\.php/.test(b_url)) return true;
     return false;
 };
 
 MTurkScript.prototype.is_bad_instagram=function(b_url,bname) {
     if(/instagram\.com\/(p|explore)\//.test(b_url)) return true;
+    return false;
+};
+
+MTurkScript.prototype.is_bad_twitter=function(b_url,bname) {
+    if(/twitter\.com\/(intent|share\?)\//.test(b_url)) return true;
     return false;
 };
 
