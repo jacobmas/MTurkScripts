@@ -1607,7 +1607,7 @@ MTurkScript.prototype.is_bad_page=function(doc,url) {
     if(/^(IIS7|404)/.test(title.trim())) return true;
     if((doc.title===MTP.get_domain_only(url,true)&& doc.body.innerHTML.length<500)) return true;
     if((a=doc.querySelector(".ams"))&&(a.innerText==="Click here to buy this domain")) return true;
-    if(/^Not found$/.test(doc.body.innerText)) return true;
+    if(/^Not found$/i.test(doc.body.innerText)) return true;
     return false;
 };
 
