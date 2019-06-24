@@ -1055,7 +1055,7 @@ MTurkScript.prototype.is_bad_instagram=function(b_url,bname) {
 };
 
 MTurkScript.prototype.is_bad_twitter=function(b_url,bname) {
-    if(/twitter\.com\/(intent\/|share\?)/.test(b_url)) return true;
+    if(/twitter\.com\/(((intent|#\!)\/)|share\?)/.test(b_url)) return true;
     return false;
 };
 
@@ -1599,7 +1599,7 @@ MTurkScript.prototype.is_bad_page=function(doc,url) {
     var title=doc.title;
     var iframes=doc.querySelectorAll("iframe");
     for(i=0;i<iframes.length;i++) {
-        if(iframes[i].src&&/parked\-content\.godaddy\.com/.test(iframes[i].src)) return "for sale.";
+        if(iframes[i].src&&/parked\-content\.godaddy\.com/.test(iframes[i].src)) return true;
     }
     if(/hugedomains\.com|qfind\.net|\?reqp\=1&reqr\=/.test(url)) { return true; }
     else if(/Expired|^404|Error|is for sale/.test(title)) return true;
