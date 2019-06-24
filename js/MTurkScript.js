@@ -1597,7 +1597,7 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 MTurkScript.prototype.is_bad_page=function(doc,url) {
     var links=doc.links,i,scripts=doc.scripts;
     var title=doc.title;
-    var iframes=doc.querySelectorAll("iframe");
+    var iframes=doc.querySelectorAll("iframe"),a;
     for(i=0;i<iframes.length;i++) {
         if(iframes[i].src&&/parked\-content\.godaddy\.com/.test(iframes[i].src)) return true;
     }
@@ -1606,6 +1606,7 @@ MTurkScript.prototype.is_bad_page=function(doc,url) {
     else if(doc.querySelector("div.leftblk h3.domain_name")) return true;
     if(/^(IIS7|404)/.test(title.trim())) return true;
     if((doc.title===MTP.get_domain_only(url,true)&& doc.body.innerHTML.length<500)) return true;
+    if((a=doc.querySelector(".ams"))&&(a.innerText==="Click here to buy this domain")) return true;
     if(/^Not found$/.test(doc.body.innerText)) return true;
     return false;
 };
