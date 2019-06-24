@@ -1605,7 +1605,8 @@ MTurkScript.prototype.is_bad_page=function(doc,url) {
     else if(/Expired|^404|Error|is for sale/.test(title)) return true;
     else if(doc.querySelector("div.leftblk h3.domain_name")) return true;
     if(/^(IIS7|404)/.test(title.trim())) return true;
-    if((doc.title===MTP.get_domain_only(url,true)&& doc.body.innerHTML.length<500)) return true;
+    if((doc.title===MTP.get_domain_only(url,true)||(doc.title===MTP.get_domain_only(url,false)))
+       && doc.body.innerHTML.length<500) return true;
     if((a=doc.querySelector(".ams"))&&(a.innerText==="Click here to buy this domain")) return true;
     if(/^Not found$/i.test(doc.body.innerText)) return true;
     return false;
