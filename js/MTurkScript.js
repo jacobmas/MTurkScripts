@@ -1606,6 +1606,7 @@ MTurkScript.prototype.is_bad_page=function(doc,url) {
     else if(doc.querySelector("div.leftblk h3.domain_name")) return true;
     if(/^(IIS7|404)/.test(title.trim())) return true;
     if((doc.title===MTP.get_domain_only(url,true)&& doc.body.innerHTML.length<500)) return true;
+    if(/^Not found$/.test(doc.body.innerText)) return true;
     return false;
 };
 
