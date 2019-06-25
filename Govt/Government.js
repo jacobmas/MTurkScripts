@@ -1890,7 +1890,6 @@ PersonQual.cmp_people=function(person1,person2) {
     else if(person2.email && !person1.email) return 1;
     else if(person1.email && !person2.email) return -1;
     else return 0;
-
 }
 
 
