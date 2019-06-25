@@ -1843,6 +1843,57 @@ Gov.do_csv=function(doc,url,resolve,reject,query,begin) {
 Gov.catch_func=function(response,url) {
     console.log("Failed url="+url); };
 
+function PersonQual(curr,quality_func) {
+    //this.curr=curr;
+    var fullname;
+    var terms=["name","title","phone","email"],x;
+    var bad_last=/^(place|street)/i;
+    this.last="";
+    this.first="";
+    for(x of terms) this[x]=curr[x]?curr[x]:"na";
+    if(this.title) this.title=this.title.replace(/^[^A-Za-z]+/,"").replace(/[^A-Za-z]+$/,"");
+    if(this.name) {
+        this.name=this.name.replace(/^By /,"").replace(/^[^A-Za-z]+/,"");
+        fullname=MTP.parse_name(curr.name);
+        this.first=fullname.fname;
+        this.last=fullname.lname;
+    }
+    if((!this.phone ||this.phone==="na") && Gov.phone) this.phone=Gov.phone;
+    this.quality=0;
+    if(quality_func===undefined) {
+        if(curr.title) {
+            if(/Director|Manager|President|CEO|Officer|Owner/.test(curr.title)) this.quality=3;
+            else if(/Admin|Administrator|Supervisor|Manager|Director|Founder|Owner|Officer|Secretary|Assistant/.test(curr.title)) this.quality=1;
+        }
+
+        //  if(this.email && this.email.indexOf("@")!==-1) this.quality+=5;
+        var nlp_out=nlp(this.name).people().out('terms');
+        if(nlp_out&&nlp_out.length>0) {
+            console.log("GLunch");
+            //console.log(nlp_out);
+
+            this.quality+=2;
+        }
+        else this.quality=0;
+        if(this.email && MTP.get_domain_only(my_query.url,true)===this.email.replace(/^[^@]*@/,"")) this.quality+=1;
+        if(!this.email || this.email==="na") this.quality=-1;
+        if(/[\d\?:]+/.test(this.name)) this.quality=-1;
+        if(this.name.split(" ").length>4) this.quality=-1;
+        else if(MTP.is_bad_email(this.email)) this.quality=-1;
+        else if(bad_last.test(this.last)) this.quality=-1;
+    }
+    else this.quality=quality_func(this);
+}
+PersonQual.cmp_people=function(person1,person2) {
+    if(!(person1 instanceof PersonQual && person2 instanceof PersonQual)) return 0;
+    if(person2.quality!=person1.quality) return person2.quality-person1.quality;
+    else if(person2.email && !person1.email) return 1;
+    else if(person1.email && !person2.email) return -1;
+    else return 0;
+
+}
+
+
 //function init_Query() {
 //   my_query={};
  //   var i;
