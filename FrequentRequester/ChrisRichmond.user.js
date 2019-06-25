@@ -157,6 +157,10 @@
             my_query.fields.first=fullname.fname;
             my_query.fields.email=my_query.person_list[0].email;
         }
+        if(my_query.fields.email.length===0 && my_query.contact_url&&my_query.contact_url.length>0) {
+                my_query.fields.email=my_query.contact_url;
+                 add_to_sheet();
+             }
         for(x in my_query.fields) {
             if((field=document.getElementsByName(field_name_map[x])).length>0) {
                 field[0].value=my_query.fields[x];
@@ -177,6 +181,7 @@
         if(is_done && MTurk.doneQueries>=MTurk.queryList.length&&
            !my_query.submitted && (my_query.submitted=true)) {
             if(my_query.fields.email.length>0) MTurk.check_and_submit();
+
             else {
                 console.log("Insufficient info found, returning");
                 GM_setValue("returnHit"+MTurk.assignment_id,true);
@@ -294,51 +299,108 @@
                           });
     };
 
+        /* If it's a good link to follow in the search for emails */
+    function good_link_to_follow(l,depth) {
+        var contact_regex=/(Contact|(^About)|Legal|Team|Staff|Faculty|Teacher)/i,bad_contact_regex=/(^\s*(javascript|mailto|tel):)|(\.pdf$)/i;
+        var contact2_regex=/^(Contact( Us)?)/;
 
+        if(depth===0 && ((contact_regex.test(l.innerText)||/\/(contact)/i.test(l.href))
+                && !bad_contact_regex.test(l.href))) return true;
+        if(depth===0 && (MTP.get_domain_only(my_query.url,true)===MTP.get_domain_only(l.href,true) && /^(Terms|Privacy)/.test(l.innerText)
+           && !bad_contact_regex.test(l.href))) return true;
+      //  if(depth>0 && contact2_regex.test(l.innerText) && !bad_contact_regex.test(l.href)) return true;
+     //   console.log("l.innerText="+l.innerText);
+        return false;
+    }
+
+    function is_contact_form(the_form) {
+        var found={"name":false,"email":false,"phone":false,"message":false};
+        // regexs to link to founds
+        var found_res={"name":/Name|(^First$)|(^Last$)/i,"email":/^E(-)?mail/i,"phone":/Phone/i,"message":/Message|Comments/i};
+        var inp,lbl,i;
+        var ct=0,x;
+
+        for(inp of the_form.querySelectorAll("input,textarea")) {
+            console.log("inp.name="+inp.name+", inp.outerHTML="+inp.outerHTML);
+            for(x in found_res) {
+                if(inp.name && found_res[x].test(inp.name)) found[x]=true; }
+            if(!inp.labels) continue;
+            for(i=0;i<inp.labels.length;i++) {
+                lbl=inp.labels[i];
+                console.log("#lbl="+lbl.innerText);
+                for(x in found_res) {
+                    if(found_res[x].test(lbl.innerText)) found[x]=true; }
+            }
+        }
+        console.log("form "+the_form.name+", found="+JSON.stringify(found));
+        /* Check for 3 of 4 */
+        for(x in found) if(found[x]) ct++;
+        return ct>=3;
+    }
+
+    function check_url_for_contact_form(doc,url) {
+        console.log("In check_url_for_contact_form, url="+url);
+        var form=doc.querySelectorAll("form"),btn;
+        if((btn=doc.querySelector("button.g-recaptcha")) && (btn.innerText==="Submit")) my_query.contact_url=url;
+        //if(!/\/contact/.test(url)) return;
+        form.forEach(function(elem) {
+            console.log("\tcheck_url_for_contact_form, form id="+elem.id+", name="+elem.name);
+            if(is_contact_form(elem)&&(my_query.domain===MTP.get_domain_only(url,true))) my_query.contact_url=url;
+        });
+
+//        if(submit) my_query.contact_url=url;
+    }
+    // Fix in case it gets older, also make into a library
+    function check_old_blogspot(doc,url) {
+        var datehead,year;
+        url=url.replace(/\/$/,"");
+        console.log("check_old_blogspot, url="+url);
+        if(!/blogspot\.com$/.test(url)) return;
+        datehead=doc.querySelector(".date-header");
+        if(datehead && (year=parseInt(datehead.innerText.trim().match(/[\d]{4,}$/)))) {
+            console.log("check_old_blogspot, year="+year);
+            if(year<2019) my_query.old_blogspot=true;
+        }
+    }
 
     /**
  * contact_response Here it searches for an email TODO:FIX */
     var contact_response=function(doc,url,extra) {
         console.log("in contact_response,url="+url);
-        
+
         var i,j, my_match,temp_email,encoded_match,match_split;
         var extension=extra.extension,callback=extra.callback,nlp_temp;
         var begin_email=my_query.fields.email,title_result;
         if(extension===undefined) extension='';
-        if(extra.extension==='' && (title_result=is_bad_page(doc,doc.title,url))) {
+        if(is_bad_page(doc,doc.title,url) && MTP.get_domain_only(url,true)===my_query.domain) {
+            my_query.fields.email="NA";
         }
+        // Check for a contact form
+        check_url_for_contact_form(doc,url);
+        // check if it's an old blogspot
+        check_old_blogspot(doc,url);
         if(/wix\.com/.test(url)) {
             callback();
             return; }
         var x,scripts=doc.scripts,style=doc.querySelectorAll("style");
         MTP.fix_emails(doc,url);
-        contact_response_scripts(doc,url,extra);
         for(x=0;x<style.length;x++) { style[x].innerHTML=""; }
-        var headers=doc.querySelectorAll("h1,h2,h3,h4,h5,strong");
-        for(i=0;i<headers.length;i++) {
-           // console.log("headers["+i+"]="+headers[i].innerText);
-            if(my_query.fields.first.length===1) {
-    //           do_nlp(headers[i].innerText,url); /* do_nlp for name */
 
-            }
-        }
 
         console.log("in contact_response "+url);
         var short_name=url.replace(my_query.url,""),links=doc.links,email_matches,phone_matches;
         var replacement=url.match(/^https?:\/\/[^\/]+/)[0];
         var contact_regex=/(Contact|(^About)|Legal|Team|Staff|Faculty|Teacher)/i,bad_contact_regex=/^\s*(javascript|mailto|tel):/i;
+        var contact2_regex=/^(Contact( Us)?)/;
         console.log("replacement="+replacement);
         var temp_url,curr_url;
         doc.body.innerHTML=doc.body.innerHTML.replace(/\s*([\[\(]{1})\s*at\s*([\)\]]{1})\s*/,"@")
-            .replace(/\s*([\[\(]{1})\s*dot\s*([\)\]]{1})\s*/,".");
+            .replace(/\s*([\[\(]{1})\s*dot\s*([\)\]]{1})\s*/,".").replace(/dotcom/,".com");
         MTP.fix_emails(doc,url);
         if(my_query.fields.email.length===0 && (email_matches=doc.body.innerHTML.match(email_re))) {
             my_query.email_list=my_query.email_list.concat(email_matches);
-            for(j=0; j < email_matches.length; j++) {
-                if(!MTurk.is_bad_email(email_matches[j]) && email_matches[j].length>0 &&
-                   (my_query.fields.email=email_matches[j])) break;
-            }
-            console.log("Found email hop="+my_query.fields.email);
+
+            //console.log("Found email hop="+my_query.fields.email);
         }
 
         if(phone_matches=doc.body.innerText.match(phone_re)) my_query.fields.phoneNumber=phone_matches[0];
@@ -348,23 +410,26 @@
                 my_query.done["insta"]=false;
                 console.log("***** FOUND INSTAGRAM "+links[i].href);
                 var temp_promise=MTP.create_promise(links[i].href,MTP.parse_instagram,parse_insta_then); }
-            if(/facebook\.com\/.+/.test(links[i].href) && !MTP.is_bad_fb(links[i].href) &&
+             if(/facebook\.com\/.+/.test(links[i].href) && (/\/pages\//.test(links[i].href) || !MTP.is_bad_fb(links[i].href)) &&
                my_query.fb_url.length===0 && !my_query.found_fb) {
+                console.log("FOUND FB");
                 my_query.found_fb=true;
                 my_query.done.fb=false;
-                my_query.fb_url=links[i].href;
-                fb_promise_then(links[i].href);
+                my_query.fb_url=links[i].href.replace(/\?.*$/,"").replace(/\/pages\/([^\/]*)\/([^\/]*)/,"/$1-$2");
+                fb_promise_then(my_query.fb_url);
             }
-             //console.log("i="+i+", text="+links[i].innerText);
-            if(extension==='' &&
-               (contact_regex.test(links[i].innerText)||/\/(contact)/i.test(links[i].href))
-                && !bad_contact_regex.test(links[i].href) &&
-               !MTurk.queryList.includes(links[i].href=MTurkScript.prototype.fix_remote_url(links[i].href,url))) {
+            //console.log("i="+i+", text="+links[i].innerText);
+            links[i].href=MTurkScript.prototype.fix_remote_url(links[i].href,url);
+            var depth=extension===''?0:1;
+            if(good_link_to_follow(links[i],depth)
+             &&
+               !MTurk.queryList.includes(links[i].href)) {
                 MTurk.queryList.push(links[i].href);
                 console.log("*** Following link labeled "+links[i].innerText+" to "+links[i].href);
                 call_contact_page(links[i].href,callback,"NOEXTENSION");
                 continue;
             }
+
             //if(my_query.fields.email.length>0) continue;
             if(links[i].dataset.encEmail && (temp_email=MTP.swrot13(links[i].dataset.encEmail.replace(/\[at\]/,"@")))
                && !MTP.is_bad_email(temp_email)) my_query.email_list.push(temp_email.toString());
@@ -382,11 +447,12 @@
                 my_query.email_list.push(temp_email.toString());
             }
             if(links[i].href.indexOf("javascript:DeCryptX(")!==-1 &&
-               (encoded_match=links[i].href.match(/DeCryptX\(\'([^\)]+)\'\)/))) my_query.fields.email=MTurkScript.prototype.DecryptX(encoded_match[1]);
+               (encoded_match=links[i].href.match(/DeCryptX\(\'([^\)]+)\'\)/))) my_query.email_list.push(encoded_match[1]);
             if(/^tel:/.test(links[i].href)) my_query.fields.phoneNumber=links[i].href.replace(/^tel:/,"");
             //if(email_re.test(temp_email) && !my_query.email_list.includes(temp_email)) my_query.email_list.push(temp_email);
 
         }
+        if(my_query.domain==="blogspot.com") do_asidelinks(doc,url,callback);
         console.log("* doing doneQueries++ for "+url);
         MTurk.doneQueries++;
         if(begin_email.length===0 && my_query.fields.email.length>0) my_query.fields.url=url;
@@ -394,6 +460,25 @@
         evaluate_emails(callback);
         return;
     };
+
+        /* Look at aside links on blogspot */
+    function do_asidelinks(doc,url,callback) {
+        var bad_contact_regex=/^\s*(javascript|mailto|tel):/i;
+        let asidelinks=doc.querySelectorAll("aside .Image .widget-content a,aside .Text .widget-content a"),curr_aside;
+        for(curr_aside of asidelinks) {
+            if(!MTP.is_bad_url(curr_aside.href,bad_urls,5,2) && !bad_contact_regex.test(curr_aside.href) &&
+               !MTurk.queryList.includes(curr_aside.href)) {
+                MTurk.queryList.push(curr_aside.href);
+                console.log("*** Following ASIDE link labeled "+curr_aside.innerText+" to "+curr_aside.href);
+                call_contact_page(curr_aside.href,callback,"NOEXTENSION");
+
+            }
+        }
+    }
+
+
+
+  
 
     function remove_dups(lst) {
         console.log("in remove_dups,lst="+JSON.stringify(lst));
@@ -563,10 +648,13 @@
         var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
 
         my_query={url:wT.rows[0].cells[1].innerText,fb_url:"",insta_url:"",person_list:"",found_fb:false,
-                                    fields:{email:"",first:" "},done:{url:false,fb:false,gov:false},submitted:false,email_list:[]};
+                                    fields:{email:"",first:" "},done:{url:false,fb:false,gov:false},submitted:false,email_list:[],contact_url:"",
+                 old_blogspot:false,alt_domains:[]};
         my_query.domain=MTP.get_domain_only(my_query.url,true);
-        call_contact_page(my_query.url,submit_if_done);
-
+        MTurk.queryList.push(my_query.url);
+        call_contact_page(my_query.url,submit_if_done,{extension:"NOEXTENSION"});
+        call_contact_page(my_query.url.replace(/^(https?:\/\/[^\/]*).*$/,"$1"),submit_if_done);
+        
         console.log("my_query="+JSON.stringify(my_query));
         var dept_regex_lst=[];
 
