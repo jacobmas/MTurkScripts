@@ -1843,7 +1843,7 @@ Gov.do_csv=function(doc,url,resolve,reject,query,begin) {
 Gov.catch_func=function(response,url) {
     console.log("Failed url="+url); };
 
-function PersonQual(curr,quality_func,site_url) {
+function PersonQual(curr,site_url,quality_func) {
     //this.curr=curr;
     var fullname;
     var terms=["name","title","phone","email"],x;
