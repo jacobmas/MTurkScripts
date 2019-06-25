@@ -1843,7 +1843,7 @@ Gov.do_csv=function(doc,url,resolve,reject,query,begin) {
 Gov.catch_func=function(response,url) {
     console.log("Failed url="+url); };
 
-function PersonQual(curr,quality_func) {
+function PersonQual(curr,quality_func,site_url) {
     //this.curr=curr;
     var fullname;
     var terms=["name","title","phone","email"],x;
@@ -1875,7 +1875,7 @@ function PersonQual(curr,quality_func) {
             this.quality+=2;
         }
         else this.quality=0;
-        if(this.email && MTP.get_domain_only(my_query.url,true)===this.email.replace(/^[^@]*@/,"")) this.quality+=1;
+        if(this.email && MTP.get_domain_only(site_url,true)===this.email.replace(/^[^@]*@/,"")) this.quality+=1;
         if(!this.email || this.email==="na") this.quality=-1;
         if(/[\d\?:]+/.test(this.name)) this.quality=-1;
         if(this.name.split(" ").length>4) this.quality=-1;
