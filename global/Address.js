@@ -3,10 +3,11 @@ function Address(text,priority,url) {
     console.log("# In address for "+text);
     this.priority=priority;
     this.url=url;
+    this.text=text;
     var ret;
-    if(typeof(text)==='object' &&
-       this.set_address(text.address1,text.address2,text.city,text.state,text.postcode,text.country)) this.priority=priority;
-    else if((ret=this.parse_address(text.trim()))||true) this.priority=this.priority+ret;
+    if(typeof(this.text)==='object' &&
+       this.set_address(this.text.address1,text.address2,text.city,text.state,text.postcode,text.country)) this.priority=priority;
+    else if((ret=this.parse_address(this.text.trim()))||true) this.priority=this.priority+ret;
     else this.priority=(1 << 25);
     if(this.address1 && !/^[\d]/.test(this.address1) && /[\d]+.{4,}/.test(this.address1)) {
 	this.address1=this.address1.replace(/^[^\d]*/,""); }
