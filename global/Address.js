@@ -12,6 +12,7 @@ function Address(text,priority,url) {
 	this.address1=this.address1.replace(/^[^\d]*/,""); }
 }
 Address.prototype.parse_address=function(text) {
+    this.text=this.text.replace(/\|/g,","); 
     if(this.parse_address_US(text)) return 1;
     if(this.parse_address_Canada(text)) return 1;
     if(/[^A-Za-z]Sweden$/.test(text) && this.parse_address_Sweden(text)) return 1;
@@ -36,7 +37,7 @@ Address.prototype.set_address=function(address1,address2,city,state,postcode,cou
 };
 
 Address.prototype.parse_address_US=function(text) {
-    var fl_regex=/(?:,\s*)?([\d]+(th|rd|nd) Fl(?:(?:oo)?r)?)\s*,/i,match;
+    var fl_regex=/(?:,\s*)?([\d]+(th|rd|nd|st) Fl(?:(?:oo)?r)?)\s*,/i,match;
     var floor=text.match(fl_regex);
     text=text.replace(fl_regex,",").trim().replace(/\n/g,",");
     text=text.replace(/,\s*(US|United States|United States of America|USA)$/i,"")
