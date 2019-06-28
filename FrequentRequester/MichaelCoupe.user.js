@@ -25,7 +25,8 @@
 // @connect *
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/ddb7809592746c7c491afcb1f08c6fa8d89ed046/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
 // @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
 // @require https://raw.githubusercontent.com/adamhooper/js-priority-queue/master/priority-queue.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
@@ -36,7 +37,7 @@
     var my_query = {};
     var bad_urls=["facebook.com","local.yahoo.com","youtube.com","twitter.com","yelp.com",".hub.biz",".yellowbot.com","instagram.com",
                   ".youtube.com",".opendi.com",".opendi.us",".findmypilates.com","/opendatany.com",".cylex.us.com"];
-    var MTurk=new MTurkScript(30000,200,[],init_Query,"A39GWSBSSA2V6G");
+    var MTurk=new MTurkScript(30000,500+Math.random()*500,[],init_Query,"A39GWSBSSA2V6G");
     var MTP=MTurkScript.prototype;
 
     var name_lst=GM_getValue("name_lst",[]);
@@ -60,6 +61,7 @@
     }
 
     function is_bad_fb(b_url,b_name) {
+        if(!/facebook\.com/.test(b_url)) return true;
         if(/\/(pages|groups|search|events)\//.test(b_url)) return true;
         return false;
     }
@@ -119,7 +121,7 @@
                     return;
                 }
                 else if(b_url!==undefined && !(type==="url" && MTP.is_bad_url(b_url, bad_urls,4,2)) &&
-                   !(type==="fb" && is_bad_fb(b_url,b_name)) && !is_bad_name(b_name,p_caption))
+                   !(type==="fb" && is_bad_fb(b_url,b_name) ) && !is_bad_name(b_name,p_caption))
                 {
                     b1_success=true;
                     break;
@@ -235,12 +237,30 @@
     function parse_yelp_then(result) {
         my_query.done.yelp=true;
         submit_if_done();
-        if(my_query.url2) call_contact_page(my_query.url2,done_url2);
-        else if((my_query.done.url2=true)) submit_if_done();
+        if(my_query.url2) {
+
+            var dept_regex_lst=[];
+
+            var title_regex_lst=[/Admin|Administrator|Supervisor|Manager|Director|Founder|Owner|Officer|Secretary|Assistant/i];
+            //var promise=MTP.create_promise(
+            var query={dept_regex_lst:dept_regex_lst,
+                       title_regex_lst:title_regex_lst,id_only:false,default_scrape:false,debug:false};
+            var gov_promise=MTP.create_promise(my_query.url2,Gov.init_Gov,gov_promise_then2,function(result) {
+                console.log("Failed at Gov "+result);
+                my_query.done.gov2=true;
+                submit_if_done(); },query);
+
+
+            call_contact_page(my_query.url2,done_url2);
+        }
+        else {
+            my_query.done.gov2=true;
+            my_query.done.url2=true;
+            submit_if_done();
+        }
     }
 
-    function done_url2()
-    {
+    function done_url2() {
         my_query.done.url2=true;
         submit_if_done();
     }
@@ -277,10 +297,48 @@
             .catch(function(val) {
 
             my_query.done.url=true;
+            console.log("Setting my_query.done.gov, query_promise_then fail");
+            my_query.done.gov=true;
             my_query.done.query=true;
             submit_if_done();
             console.log("Failed at this queryPromise " + val); });
 
+    }
+
+    function gov_promise_then2(my_result) {
+        my_query.done.gov2=true;
+        after_gov(my_result,"gov_promise_then2"); }
+    function gov_promise_then(my_result) {
+        console.log("Setting my_query.done.gov, gov_promise_then");
+
+        my_query.done.gov=true;
+        after_gov(my_result,"gov_promise_then"); }
+
+
+    function after_gov(my_result,called_from) {
+        console.log("# after_gov, "+called_from);
+        var i,curr,fullname,x,num;
+
+        console.log("\n*** Gov.phone="+Gov.phone);
+        var result=Gov.contact_list;
+        var temp;
+         var person_list=[];
+        console.log("Gov result="+JSON.stringify(result));
+
+         for(i=0;i<result.length;i++) {
+             console.log("Before personqual");
+             temp=new PersonQual(result[i],"");
+             console.log("("+i+"), "+JSON.stringify(temp));
+             if(temp.quality>0) {
+                 person_list.push(temp); }
+         }
+        my_query.person_list=my_query.person_list.concat(person_list);
+
+        my_query.person_list.sort(PersonQual.cmp_people);
+        console.log("Calling submit if done from gov_promise_then");
+         submit_if_done();
+
+//        console.log("result="+JSON.stringify(result));
     }
 
     /* Search on bing for search_str, parse bing response with callback */
@@ -300,10 +358,25 @@
         my_query.done.query=true;
         console.log("Found url="+result+", calling");
         my_query.url=result;
+        var dept_regex_lst=[];
+
+            var title_regex_lst=[/Admin|Administrator|Supervisor|Manager|Director|Founder|Owner|Officer|Secretary|Assistant/i];
+            //var promise=MTP.create_promise(
+            var query={dept_regex_lst:dept_regex_lst,
+                       title_regex_lst:title_regex_lst,id_only:false,default_scrape:false,debug:false};
+            var gov_promise=MTP.create_promise(my_query.url,Gov.init_Gov,gov_promise_then,function(result) {
+                console.log("Failed at Gov "+result);
+//                if(my_query.fields.email.length===0) my_query.fields.email="NA";
+                console.log("Setting my_query.done.gov, gov_promise fail");
+
+                my_query.done.gov=true;
+                submit_if_done(); },query);
+
         call_contact_page(result,submit_if_done);
     }
 
     function fb_promise_then(result) {
+        my_query.found_fb=true;
         var url=result.replace(/m\./,"www.").
         replace(/facebook\.com\/([^\/]+).*$/,"facebook.com/pg/$1").replace(/\/$/,"")+"/about/?ref=page_internal";
         my_query.fb_url=url;
@@ -323,29 +396,21 @@
         if(result.email) {
             my_query.email_list.push(result.email);
             evaluate_emails(submit_if_done);
-           /* if(!(my_query.fields.email.length>0 && /info@/.test(result.email))) {
-                my_query.fields.email=result.email; }*/
             my_query.done.url=true;
         }
-
-        else if(result.url && !MTP.is_bad_url(result.url,bad_urls,-1)) query_promise_then(result.url);
-        else
-        {
-           
-        }
-
+        else if(result.url && !MTP.is_bad_url(result.url,bad_urls,-1)&&!my_query.url) query_promise_then(result.url);
         submit_if_done();
     }
 
     function begin_script(timeout,total_time,callback) {
-        if(MTurk!==undefined) { callback();  }
+        if(MTurk!==undefined) callback();
         else if(total_time<5000) {
             console.log("total_time="+total_time);
             total_time+=timeout;
             setTimeout(function() { begin_script(timeout,total_time,callback); },timeout);
             return;
         }
-        else { console.log("Failed to begin script"); }
+        else console.log("Failed to begin script");
     }
 
     function add_to_sheet() {
@@ -354,6 +419,8 @@
         if(my_query.fields.email.length>0||my_query.fields["first name"].length>0||my_query.fields["last name"].length>0) {
             my_query.fields.Q6MultiLineTextInput=""; }
 
+
+        // Set name from email
         if(my_query.fields.email&&my_query.fields.email.length>0)  {
             console.log("*** my_query.fields.email="+my_query.fields.email);
             my_query.fields.email=my_query.fields.email.toString().replace(/^20([a-z]+)/,"$1"); }
@@ -372,6 +439,15 @@
         }
         my_query.fields["first name"]=my_query.fields["first name"].replace(/^[a-z]{1}/,function(match) { return match.toUpperCase(); });
         my_query.fields["last name"]=my_query.fields["last name"].replace(/^[a-z]{1}/,function(match) { return match.toUpperCase(); });
+
+        if(my_query.person_list.length>0&&my_query.person_list[0].email.length>0) {
+          //  console.log("my_query.person_list="+JSON.stringify(my_query.person_list));
+            my_query.fields["first name"]=my_query.person_list[0].first;
+            my_query.fields["last name"]=my_query.person_list[0].last;
+            my_query.fields.email=my_query.person_list[0].email;
+
+        }
+
         for(x in my_query.fields) {
             if(document.getElementById(x) && my_query.fields[x].length>0) {
                 document.getElementById(x).value=my_query.fields[x];
@@ -386,7 +462,9 @@
         var is_done=true,x,is_done_dones;
         add_to_sheet();
          if(MTurk.queryList.length>0 && MTurk.doneQueries>=MTurk.queryList.length) {
-            my_query.done.url=true; }
+            my_query.done.url=true;
+         }
+        if(my_query.done.url&&my_query.done.url2&&my_query.done.gov&&my_query.done.gov2 && !my_query.found_fb) my_query.done.fb=true;
         console.log("my_query.done="+JSON.stringify(my_query.done)+"\ndoneQueries="+MTurk.doneQueries+", total="+MTurk.queryList.length);
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
 
@@ -416,8 +494,8 @@
               && !nlp_temp[0].tags.includes("Possessive") && !nlp_temp[nlp_temp.length-1].tags.includes("Possessive") &&
                nlp_temp[nlp_temp.length-1].text.toLowerCase()===nlp_temp[nlp_temp.length-1].normal.toLowerCase() &&
                nlp_temp[nlp_temp.length-1].normal!=="park" && !nlp_temp[0].tags.includes("ClauseEnd") &&
-               !/(ing$)|academy|location|street|schools|christian|high/.test(nlp_temp[nlp_temp.length-1].normal)
-               &&!/location|street|christian|high|west|east|north|south/.test(nlp_temp[0].normal)
+               !/(ing$)|academy|location|street|schools|christian|high|rd|road|gym|family/i.test(nlp_temp[nlp_temp.length-1].normal)
+               &&!/location|street|christian|high|west|east|north|south|rd|road|gym|family/i.test(nlp_temp[0].normal)
               ) {
                 my_query.fields["first name"]=nlp_temp[0].text;
                 my_query.fields["last name"]=nlp_temp[nlp_temp.length-1].text;
@@ -426,55 +504,6 @@
         }
 
     
-    };
-
-    var fix_addy_script_only=function(script) {
-        console.log("In fix_addy_script, script="+script.innerHTML);
-        var addy=script.innerHTML.match(/var (addy[\da-z]+\s*\=)/),split=script.innerHTML.split("\n");
-        var str_list=[""],i,addy_reg,match,email,str_reg=/\'[^\']*\'/g;
-        const reducer = (acc, curr) => acc + curr.replace(/\'/g,"");
-        const replacer = (match,p1) => String.fromCharCode(parseInt(p1));
-        if(!addy) return;
-        addy_reg=new RegExp(addy[1]);
-        for(i=0;i<split.length;i++) if(addy_reg.test(split[i]) && (match=split[i].match(str_reg))) str_list=str_list.concat(match);
-        email=str_list.reduce(reducer);
-        while(/&#([\d]+);/.test(email)) email=email.replace(/&#([\d]+);/,replacer);
-        console.log("email="+email);
-        if(email.match(email_re)) {
-            if(script.parentNode) script.parentNode.innerHTML=email;
-            console.log("script.parentNode="+script.parentNode);
-            //script.innerHTML=email;
-        }
-    };
-    //console.log("email="+email);
-
-    var contact_response_scripts=function(doc,url,extra) {
-        var x,scripts=doc.scripts;
-        for(x=0;x<scripts.length;x++) {
-            var unesc_regex=/(?:unescape|decodeURIComponent)\((?:[\"\']{1})([^\"\"]+)(?:[\"\']{1})/;
-            //console.log("scripts["+x+"]="+scripts[x].innerHTML);
-            var match=scripts[x].innerHTML.match(unesc_regex),decoded,match2;
-            if(/var addy[\d]+/.test(scripts[x].innerHTML)) fix_addy_script_only(scripts[x]);
-
-            if(match&&(decoded=decodeURIComponent(match[1]))&&(match2=decoded.match(email_re)) && my_query.fields.email.length===0) {
-                console.log("Matched weird decode");
-                my_query.fields.email=match2[0];
-
-            }
-            else if(scripts[x].innerHTML.length<100000&&
-                   (match=scripts[x].innerHTML.match(/[\'\"]{1}([\<\>^\'\"\n\s\t;\)\(]+@[^\>\<\'\"\s\n\t;\)\(]+\.[^\<\>\'\"\s\n\t;\)\(]+)[\'\"]{1}/))) {
-                    if((match2=match[1].match(email_re)) && !MTP.is_bad_email(match2[0])) {
-                        console.log("Found email in scripts "+scripts[x].innerHTML);
-                        my_query.fields.email=match[1];
-                    }
-               // console.timeEnd("search");
-            }
-
-
-
-
-            scripts[x].innerHTML="";
-        }
     };
 
     function is_bad_page(doc,title,url) {
@@ -488,7 +517,6 @@
         else if(doc.querySelector("div.leftblk h3.domain_name")) return "dead.";
         if(/^(IIS7|404)/.test(title.trim())) return "dead.";
         if((doc.title===MTP.get_domain_only(url,true)&& doc.body.innerHTML.length<500)) return "dead.";
-
         return null;
     }
 
@@ -522,9 +550,7 @@
     var contact_response=function(doc,url,extra) {
 
         console.log("in contact_response,url="+url);
-        if(/wix\.com/.test(url)) {
-            callback();
-            return; }
+        if(/wix\.com/.test(url)) { callback(); return; }
         var i,j, my_match,temp_email,encoded_match,match_split;
         var extension=extra.extension,callback=extra.callback,nlp_temp;
         var begin_email=my_query.fields.email,title_result;
@@ -534,20 +560,16 @@
             if(my_query.fields.email.length===0 && my_query.fields["first name"].length>0) my_query.fields["first name"]="";
         }
         var x,scripts=doc.scripts,style=doc.querySelectorAll("style");
-        MTP.fix_emails(doc,url);
-        contact_response_scripts(doc,url,extra);
         for(x=0;x<style.length;x++) { style[x].innerHTML=""; }
+
+        //MTP.fix_emails(doc,url);
         var headers=doc.querySelectorAll("h1,h2,h3,h4,h5,strong");
         for(i=0;i<headers.length;i++) {
            // console.log("headers["+i+"]="+headers[i].innerText);
             if(my_query.fields["first name"].length===0) {
                 do_nlp(headers[i].innerText,url);
-
             }
         }
-        //console.log(url+": "+JSON.stringify(nlp_temp));
-//        console.log(nlp_temp);
-        console.log("in contact_response "+url);
         var short_name=url.replace(my_query.url,""),links=doc.links,email_matches,phone_matches;
         var replacement=url.match(/^https?:\/\/[^\/]+/)[0];
         var contact_regex=/(Contact|About|Legal|Team|Staff|Faculty|Teacher)/i,bad_contact_regex=/^\s*(javascript|mailto|tel):/i;
@@ -572,14 +594,13 @@
                 my_query.done["insta"]=false;
                 console.log("***** FOUND INSTAGRAM "+links[i].href);
                 var temp_promise=MTP.create_promise(links[i].href,MTP.parse_instagram,parse_insta_then); }
-            if(/facebook\.com\/.+/.test(links[i].href) && !MTP.is_bad_fb(links[i].href) &&
-               my_query.fb_url.length===0 && my_query.done.fb) {
+            if(/facebook\.com\/.+/.test(links[i].href) && !MTP.is_bad_fb(links[i].href) && my_query.fb_url.length===0 &&
+                !my_query.found_fb) {
+                my_query.found_fb=true;
                 my_query.done.fb=false;
                 my_query.fb_url=links[i].href;
                 fb_promise_then(links[i].href);
             }
-
-             //console.log("i="+i+", text="+links[i].innerText);
             if(extension==='' &&
                (contact_regex.test(links[i].innerText)||/\/(contact|about)/i.test(links[i].href))
                 && !bad_contact_regex.test(links[i].href) &&
@@ -589,28 +610,10 @@
                 call_contact_page(links[i].href,callback,"NOEXTENSION");
                 continue;
             }
-            //if(my_query.fields.email.length>0) continue;
-            if(links[i].dataset.encEmail && (temp_email=MTP.swrot13(links[i].dataset.encEmail.replace(/\[at\]/,"@")))
-               && !MTP.is_bad_email(temp_email)) my_query.email_list.push(temp_email.toString());
-            if(links[i].href.indexOf("cdn-cgi/l/email-protection#")!==-1 && (encoded_match=links[i].href.match(/#(.*)$/)) &&
-               (temp_email=MTP.cfDecodeEmail(encoded_match[1]).replace(/\?.*$/,"")) &&
-               !MTurkScript.prototype.is_bad_email(temp_email)) my_query.email_list.push(temp_email.toString());
-            else if(links[i].dataset!==undefined && links[i].dataset.cfemail!==undefined && (encoded_match=links[i].dataset.cfemail) &&
-               (temp_email=MTurkScript.prototype.cfDecodeEmail(encoded_match[1]).replace(/\?.*$/,"")) &&
-               !MTurkScript.prototype.is_bad_email(temp_email)) my_query.email_list.push(temp_email.toString());
             if((temp_email=links[i].href.replace(/^mailto:\s*/,"").match(email_re)) &&
-               !MTurkScript.prototype.is_bad_email(temp_email[0])) my_query.email_list.push(temp_email.toString());
-            if(links[i].href.indexOf("javascript:location.href")!==-1 && (temp_email="") &&
-               (encoded_match=links[i].href.match(/String\.fromCharCode\(([^\)]+)\)/)) && (match_split=encoded_match[1].split(","))) {
-                for(j=0; j < match_split.length; j++) temp_email=temp_email+String.fromCharCode(match_split[j].trim());
-                my_query.email_list.push(temp_email.toString());
-            }
-            if(links[i].href.indexOf("javascript:DeCryptX(")!==-1 &&
-               (encoded_match=links[i].href.match(/DeCryptX\(\'([^\)]+)\'\)/))) my_query.fields.email=MTurkScript.prototype.DecryptX(encoded_match[1]);
+               !MTurkScript.prototype.is_bad_email(temp_email[0])) my_query.email_list.push(temp_email[0].toString());
             if(/^tel:/.test(links[i].href)) my_query.fields.phoneNumber=links[i].href.replace(/^tel:/,"");
-            //if(email_re.test(temp_email) && !my_query.email_list.includes(temp_email)) my_query.email_list.push(temp_email);
-           
-        }
+       }
         console.log("* doing doneQueries++ for "+url);
         MTurk.doneQueries++;
         //add_to_sheet();
@@ -655,16 +658,19 @@
             this.domain=email.replace(/^[^@]*@/,"");
             this.quality=0;
             if(/wix\.com/.test(this.email)) return;
-            if(/^(info|contact|admission|market)/.test(email)) this.quality=1;
+            if(/^(info|contact|donations|press|admission|market|inquiries|group|member|media)/i.test(email)) this.quality=1;
             else this.quality=2;
-            if(new RegExp(my_query.fullname.fname,"i").test(email)) this.quality=3;
-            if(new RegExp(my_query.fullname.lname.substr(0,5),"i").test(email)) {
-                this.quality=4;
-                if(email.toLowerCase().indexOf(my_query.fullname.lname.replace(/\'/g,"").toLowerCase())>0 &&
-                   my_query.fullname.fname.toLowerCase().charAt(0)===email.toLowerCase().charAt(0)) this.quality=5;
+            if(my_query.fullname.fname.length>0 && my_query.fullname.lname.length>0) {
+                if(new RegExp(my_query.fullname.fname,"i").test(email)) this.quality=3;
+                if(new RegExp(my_query.fullname.lname.substr(0,5),"i").test(email)) {
+                    this.quality=4;
+                    if(email.toLowerCase().indexOf(my_query.fullname.lname.replace(/\'/g,"").toLowerCase())>0 &&
+                       my_query.fullname.fname.toLowerCase().charAt(0)===email.toLowerCase().charAt(0)) this.quality=5;
+                }
+                for(var i=0;i<email_regexps.length;i++) if(email_regexps[i].test(email)) this.quality=6;
             }
-            for(var i=0;i<email_regexps.length;i++) if(email_regexps[i].test(email)) this.quality=6;
-            if(this.email.replace(/^[^@]*@/,"")===MTP.get_domain_only(my_query.url,true)) this.quality+=5;
+            if(this.email.replace(/^[^@]*@/,"")===MTP.get_domain_only(my_query.url,true)||
+              this.email.replace(/^[^@]*@/,"")===MTP.get_domain_only(my_query.url2,true)) this.quality+=5;
            
         }
         for(i=0;i<my_query.email_list.length;i++) {
@@ -728,10 +734,11 @@
         //var dont=document.getElementsByClassName("dont-break-out");
         my_query={name:wT.rows[0].cells[1].innerText,address:wT.rows[1].cells[1].innerText,city:"",state:"",
                   phone:wT.rows[2].cells[1].innerText,try_count:{url:0,fb:0,yelp:0},
-                  email_list:[],url:"",
+                  email_list:[],url:"",url2:"",
+                  person_list:[],
                   fields:{email:"","first name":"","last name":"","Q6MultiLineTextInput":""},url_list:[],
                   fb_url:"",
-                  done:{fb:false,url:false,yelp:false,url2:false,query:false},submitted:false};
+                  done:{fb:false,url:false,yelp:false,url2:false,query:false,gov:false,gov2:false},submitted:false};
 
 
         document.getElementById("first name").addEventListener("paste",paste_name);
