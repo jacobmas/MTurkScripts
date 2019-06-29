@@ -6,7 +6,7 @@ var Gov=Gov||{contact_list:[],email_list:[],scripts_loaded:{},scripts_total:{},a
 	      split_lines_regex:/\s*\n\s*|\s*\t\s*|–|(\s*-\s+)|\||                     |	|	|●|(\s+~\s+)|•|\s{3,}|\s+[*≈]+\s+|(\s+\/\s+)|\.{3,}/,
 	      id_map:{"ahaconsulting":"municodeweb","seamlessgov":"seamlessdocs","townwebdesign":"townweb","civicasoft":"granicus"},
 	      title_regex:new RegExp("(^|[^A-Za-z]{1})"+
-	"(Administrator|Advisor|Assistant|Attorney|Building Services|Clerk[\/\-]+Treasurer|"+
+	"(Administrator|Advisor|Assistant|Attorney|Building Services|Clerk[\/\-]+Treasurer|Coach|"+
 	"Chief of Police|Chief|Clerk|Code Enforcement|Commissioner|Constable|Coordinator|Council Member|"+
 	"Director|Department|Det\.|Detective|Engineer|Fire|Foreman|Head of School|Inspector|"+
 	"Manager|Marshal|Mayor|Officer|Official|Operations|Planner|Police|President|Public|"+
