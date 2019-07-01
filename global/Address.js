@@ -314,8 +314,8 @@ Address.paste_address=function(e,obj,field_map,callback) {
 
 
 //if(typeof require===undefined) require=function(x) { };
-if(typeof module !==undefined && require!==undefined) {
-    var parseAddress=require('parse-address');
+if(typeof module !==undefined) {
+  //  var parseAddress=require('parse-address');
 
     exports.Address=Address;
 }
