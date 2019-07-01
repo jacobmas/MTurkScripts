@@ -311,10 +311,8 @@ Address.paste_address=function(e,obj,field_map,callback) {
     if(callback!==undefined && typeof(callback)==='function') callback();    
 };
 
-
-
 //if(typeof require===undefined) require=function(x) { };
-if(typeof module !==undefined&&typeof exports !==undefined) {
+  if(typeof module !==undefined&&typeof exports !=='undefined') {
   //  var parseAddress=require('parse-address');
 
     exports.Address=Address;
