@@ -12,6 +12,7 @@ function Address(text,priority,url) {
     if(this.address1 && !/^[\d]/.test(this.address1) && /[\d]+.{4,}/.test(this.address1)) {
 	this.address1=this.address1.replace(/^[^\d]*/,""); }
 }
+
 Address.prototype.parse_address=function(text) {
     this.text=this.text.replace(/\|/g,","); 
     if(this.parse_address_US(text)) return 1;
@@ -38,11 +39,19 @@ Address.prototype.set_address=function(address1,address2,city,state,postcode,cou
 };
 
 Address.prototype.parse_address_US=function(text) {
-    var fl_regex=/(?:,\s*)?([\d]+(th|rd|nd|st) Fl(?:(?:oo)?r)?)\s*,/i,match;
+    var fl_regex=/(?:,\s*)?([\d]+(th|rd|nd|st) Fl(?:(?:oo)?r)?)\s*([,\s])/i,match;
     var floor=text.match(fl_regex);
-    text=text.replace(fl_regex,",").trim().replace(/\n/g,",");
-    text=text.replace(/,\s*(US|United States|United States of America|USA)$/i,"")
+    text=text.replace(fl_regex,"$3").trim().replace(/\n/g,",");
+    text=text.replace(/,\s*(US|United States|United States of America|USA)$/i,"");
+    console.log("after removal text=("+text+")");
     var parsed=parseAddress.parseLocation(text);
+    console.log("parsed="+JSON.stringify(parsed));
+    if(!(parsed&&parsed.city&&parsed.zip) && /^[A-Za-z]/.test(text)) {
+	text=text.replace(/^[^,]*,/,"").trim();
+	console.log("after second removal text="+text);
+
+	parsed=parseAddress.parseLocation(text);
+    }
     if(parsed&&parsed.city&&parsed.zip) {
         this.address1=(parsed.number?parsed.number+" ":"")+(parsed.prefix?parsed.prefix+" ":"")+
             (parsed.street?parsed.street+" ":"")+(parsed.type?parsed.type+" ":"")+(parsed.suffix?parsed.suffix+" ":"");
@@ -50,7 +59,7 @@ Address.prototype.parse_address_US=function(text) {
         this.address2=(parsed.sec_unit_type?parsed.sec_unit_type+" ":"")+
             (parsed.sec_unit_num?parsed.sec_unit_num+" ":"");
         if(!this.address2 || this.address2==="undefined") this.address2="";
-        if(floor) this.address2=this.address2+(this.address2.length>0?",":"")+floor[1];
+        if(floor) this.address2=this.address2.trim()+(this.address2.length>0?", ":"")+floor[1];
         if(!this.address2 || this.address2==="undefined") this.address2="";
         this.city=parsed.city?parsed.city:"";
         this.state=parsed.state?parsed.state:"";
@@ -301,3 +310,9 @@ Address.paste_address=function(e,obj,field_map,callback) {
     for(x in field_map) if(add[x]!==undefined) obj[field_map[x]]=add[x];
     if(callback!==undefined && typeof(callback)==='function') callback();    
 };
+
+if(typeof module !==undefined) {
+    var parseAddress=require('parse-address');
+
+    exports.Address=Address;
+}
