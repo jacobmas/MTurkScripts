@@ -311,6 +311,7 @@ Address.paste_address=function(e,obj,field_map,callback) {
     if(callback!==undefined && typeof(callback)==='function') callback();    
 };
 
+if(typeof require===undefined) require="";
 if(typeof module !==undefined) {
     var parseAddress=require('parse-address');
 
