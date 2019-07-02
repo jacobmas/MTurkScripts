@@ -44,7 +44,7 @@ Address.sanitize_text_US=function(text) {
     var ann_regex=/(?:,\s*)(Annex [^,]*),/i;
     var floor=text.match(fl_regex),annex=text.match(ann_regex);
     var after_dash_regex=/^([^,]*?)\s+-\s+([^,]*)/;
-    var after_dash=text.match(after_dash_regex);
+    var after_dash=text.match(after_dash_regex),second_part;
     text=text.replace(after_dash_regex,"$1").trim();
     text=text.replace(fl_regex,"$3").trim();
     text=text.replace(/,\s*(US|United States|United States of America|USA)$/i,"");
@@ -53,15 +53,17 @@ Address.sanitize_text_US=function(text) {
     text=text.replace(ann_regex,",").trim();
     console.log("Before fix, text="+text);
     var parsed=parseAddress.parseLocation(text);
+    var add2_extra=(floor?floor[1]:"");
     if(!(parsed&&parsed.city&&parsed.zip) && /^[A-Za-z]/.test(text)) {
 	text=text.replace(/^[^,]*,/,"").trim();
     }
     if(!((parsed=parseAddress.parseLocation(text))&&parsed.city&&parsed.zip)
-	    && /^[0-9]/.test(text)) {
+       && /^[0-9]/.test(text)) {
+	second_part=text.match(/^([^,]*),([^,]*),/);
 	text=text.replace(/^([^,]*),([^,]*),/,"$1,");
     }
 	
-    var add2_extra=(floor?floor[1]:"");
+    add2_extra=add2_extra+(add2_extra.length>0&&second_part?",":"")+(second_part?second_part[2]:"");
     add2_extra=add2_extra+(add2_extra.length>0&&annex?",":"")+(annex?annex[1]:"");
     add2_extra=add2_extra+(add2_extra.length>0&&after_dash?",":"")+(after_dash?after_dash[2]:"");
     return {text:text,add2_extra:add2_extra};
@@ -333,8 +335,8 @@ Address.paste_address=function(e,obj,field_map,callback) {
 };
 
 //if(typeof require===undefined) require=function(x) { };
-  if(typeof module !==undefined&&typeof exports !=='undefined') {
+/*if(typeof module !==undefined&&typeof exports !=='undefined') {
       var parseAddress=require('parse-address');
 
     exports.Address=Address;
-}
+}*/
