@@ -38,28 +38,49 @@ Address.prototype.set_address=function(address1,address2,city,state,postcode,cou
     return true;
 };
 
-Address.prototype.parse_address_US=function(text) {
+Address.sanitize_text_US=function(text) {
+    text=text.replace(/\n/g,",");
     var fl_regex=/(?:,\s*)?([\d]+(th|rd|nd|st) Fl(?:(?:oo)?r)?)\s*([,\s])/i,match;
-    var floor=text.match(fl_regex);
-    text=text.replace(fl_regex,"$3").trim().replace(/\n/g,",");
+    var ann_regex=/(?:,\s*)(Annex [^,]*),/i;
+    var floor=text.match(fl_regex),annex=text.match(ann_regex);
+    var after_dash_regex=/^([^,]*?)\s+-\s+([^,]*)/;
+    var after_dash=text.match(after_dash_regex);
+    text=text.replace(after_dash_regex,"$1").trim();
+    text=text.replace(fl_regex,"$3").trim();
     text=text.replace(/,\s*(US|United States|United States of America|USA)$/i,"");
-    console.log("after removal text=("+text+")");
+    // replace PO DRAWER //
+    text=text.replace(/(^|,)(\s*)(?:P\.?O\.?\s*)?(DRAWER|BOX)(\s)/i,"$1$2PO Box$4");
+    text=text.replace(ann_regex,",").trim();
+    console.log("Before fix, text="+text);
     var parsed=parseAddress.parseLocation(text);
-    console.log("parsed="+JSON.stringify(parsed));
     if(!(parsed&&parsed.city&&parsed.zip) && /^[A-Za-z]/.test(text)) {
 	text=text.replace(/^[^,]*,/,"").trim();
-	console.log("after second removal text="+text);
-
-	parsed=parseAddress.parseLocation(text);
     }
+    if(!((parsed=parseAddress.parseLocation(text))&&parsed.city&&parsed.zip)
+	    && /^[0-9]/.test(text)) {
+	text=text.replace(/^([^,]*),([^,]*),/,"$1,");
+    }
+	
+    var add2_extra=(floor?floor[1]:"");
+    add2_extra=add2_extra+(add2_extra.length>0&&annex?",":"")+(annex?annex[1]:"");
+    add2_extra=add2_extra+(add2_extra.length>0&&after_dash?",":"")+(after_dash?after_dash[2]:"");
+    return {text:text,add2_extra:add2_extra};
+};
+
+Address.prototype.parse_address_US=function(text) {
+    
+    var ret=Address.sanitize_text_US(text);
+    console.log("after removal text=("+ret.text+")");
+    var parsed=parseAddress.parseLocation(ret.text);
+    console.log("parsed="+JSON.stringify(parsed));
     if(parsed&&parsed.city&&parsed.zip) {
-        this.address1=(parsed.number?parsed.number+" ":"")+(parsed.prefix?parsed.prefix+" ":"")+
-            (parsed.street?parsed.street+" ":"")+(parsed.type?parsed.type+" ":"")+(parsed.suffix?parsed.suffix+" ":"");
+        this.address1=((parsed.number?parsed.number+" ":"")+(parsed.prefix?parsed.prefix+" ":"")+
+		       (parsed.street?parsed.street+" ":"")+(parsed.type?parsed.type+" ":"")+(parsed.suffix?parsed.suffix+" ":"")).trim();
         this.address2="";
-        this.address2=(parsed.sec_unit_type?parsed.sec_unit_type+" ":"")+
-            (parsed.sec_unit_num?parsed.sec_unit_num+" ":"");
+        this.address2=((parsed.sec_unit_type?parsed.sec_unit_type+" ":"")+
+		       (parsed.sec_unit_num?parsed.sec_unit_num+" ":"")).trim();
         if(!this.address2 || this.address2==="undefined") this.address2="";
-        if(floor) this.address2=this.address2.trim()+(this.address2.length>0?", ":"")+floor[1];
+        if(ret.add2_extra) this.address2=this.address2.trim()+(this.address2.length>0?", ":"")+ret.add2_extra;
         if(!this.address2 || this.address2==="undefined") this.address2="";
         this.city=parsed.city?parsed.city:"";
         this.state=parsed.state?parsed.state:"";
@@ -313,7 +334,7 @@ Address.paste_address=function(e,obj,field_map,callback) {
 
 //if(typeof require===undefined) require=function(x) { };
   if(typeof module !==undefined&&typeof exports !=='undefined') {
-  //  var parseAddress=require('parse-address');
+      var parseAddress=require('parse-address');
 
     exports.Address=Address;
 }
