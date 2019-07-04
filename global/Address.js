@@ -9,7 +9,7 @@ function Address(text,priority,url) {
        this.set_address(this.text.address1,text.address2,text.city,text.state,text.postcode,text.country)) this.priority=priority;
     else if((ret=this.parse_address(this.text.trim()))||true) this.priority=this.priority+ret;
     else this.priority=(1 << 25);
-    if(this.address1 && !/^[\d]/.test(this.address1) && /[\d]+.{4,}/.test(this.address1)) {
+    if(this.address1 && /^[^\d]{2,}/.test(this.address1) && /[\d]+.{4,}/.test(this.address1)) {
 	this.address1=this.address1.replace(/^[^\d]*/,""); }
 }
 
@@ -55,6 +55,7 @@ Address.sanitize_text_US=function(text) {
     var parsed=parseAddress.parseLocation(text);
     var add2_extra=(floor?floor[1]:"");
     if(!(parsed&&parsed.city&&parsed.zip) && /^[A-Za-z]/.test(text)) {
+	console.log("Replacing A-Z beginning");
 	text=text.replace(/^[^,]*,/,"").trim();
     }
     if(!((parsed=parseAddress.parseLocation(text))&&parsed.city&&parsed.zip)
@@ -335,8 +336,8 @@ Address.paste_address=function(e,obj,field_map,callback) {
 };
 
 //if(typeof require===undefined) require=function(x) { };
-/*if(typeof module !==undefined&&typeof exports !=='undefined') {
+if(typeof module !==undefined&&typeof exports !=='undefined') {
       var parseAddress=require('parse-address');
 
     exports.Address=Address;
-}*/
+}
