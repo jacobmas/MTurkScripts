@@ -51,11 +51,11 @@ Address.sanitize_text_US=function(text) {
     // replace PO DRAWER //
     text=text.replace(/(^|,)(\s*)(?:P\.?O\.?\s*)?(DRAWER|BOX)(\s)/i,"$1$2PO Box$4");
     text=text.replace(ann_regex,",").trim();
-    console.log("Before fix, text="+text);
+    //console.log("Before fix, text="+text);
     var parsed=parseAddress.parseLocation(text);
     var add2_extra=(floor?floor[1]:"");
     if(!(parsed&&parsed.city&&parsed.zip) && /^[A-Za-z]/.test(text)) {
-	console.log("Replacing A-Z beginning");
+	//console.log("Replacing A-Z beginning");
 	text=text.replace(/^[^,]*,/,"").trim();
     }
     if(!((parsed=parseAddress.parseLocation(text))&&parsed.city&&parsed.zip)
@@ -73,9 +73,9 @@ Address.sanitize_text_US=function(text) {
 Address.prototype.parse_address_US=function(text) {
     
     var ret=Address.sanitize_text_US(text);
-    console.log("after removal text=("+ret.text+")");
+    //console.log("after removal text=("+ret.text+")");
     var parsed=parseAddress.parseLocation(ret.text);
-    console.log("parsed="+JSON.stringify(parsed));
+    //console.log("parsed="+JSON.stringify(parsed));
     if(parsed&&parsed.city&&parsed.zip) {
         this.address1=((parsed.number?parsed.number+" ":"")+(parsed.prefix?parsed.prefix+" ":"")+
 		       (parsed.street?parsed.street+" ":"")+(parsed.type?parsed.type+" ":"")+(parsed.suffix?parsed.suffix+" ":"")).trim();
@@ -336,8 +336,9 @@ Address.paste_address=function(e,obj,field_map,callback) {
 };
 
 //if(typeof require===undefined) require=function(x) { };
+/*
 if(typeof module !==undefined&&typeof exports !=='undefined') {
       var parseAddress=require('parse-address');
 
     exports.Address=Address;
-}
+}*/
