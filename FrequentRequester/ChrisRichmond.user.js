@@ -36,7 +36,7 @@
     var my_query = {};
     var bad_urls=["/app.lead411.com",".zoominfo.com",".privateschoolreview.com",".facebook.com",".niche.com","en.wikipedia.org",".yelp.com","hunter.io",
                  ".zoominfo.com","issuu.com","linkedin.com"];
-    var MTurk=new MTurkScript(60000,750+Math.random()*1000,[],begin_script,"AL5SB3TG7J1ZR",false);
+    var MTurk=new MTurkScript(60000,750+Math.random()*250,[],begin_script,"AL5SB3TG7J1ZR",false);
     var MTP=MTurkScript.prototype;
     var my_email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%\*]{1,40}(\.[^<>\/()\[\]\\.,;:：\s\*@"\?]{1,40}){0,5}))@((([a-zA-Z\-0-9]{1,30}\.){1,8}[a-zA-Z]{2,20}))/g;
 
@@ -316,10 +316,10 @@
     function is_contact_form(the_form) {
         var found={"name":false,"email":false,"phone":false,"message":false};
         // regexs to link to founds
-        var found_res={"name":/Name|(^First$)|(^Last$)/i,"email":/^E(-)?mail/i,"phone":/Phone/i,"message":/Message|Comments/i};
+        var found_res={"name":/Name|(^First$)|(^Last$)/i,"email":/E(-)?mail/i,"phone":/Phone/i,"message":/Message|Comments|Details/i};
         var inp,lbl,i;
         var ct=0,x;
-
+        if(the_form.className.match(/contact-form|contactform/)) return true;
         for(inp of the_form.querySelectorAll("input,textarea")) {
             console.log("inp.name="+inp.name+", inp.outerHTML="+inp.outerHTML);
             for(x in found_res) {
@@ -486,7 +486,7 @@
             lst[i].toLowerCase()===lst[i-1].toLowerCase())) lst.splice(i,1);
     }
     /* Evaluate the emails with respect to the name */
-    function evaluate_emails(callback) {
+   function evaluate_emails(callback) {
       //  console.log("name="+JSON.stringify(my_query.fullname));
         for(i=0;i<my_query.email_list.length;i++) {
             my_query.email_list[i]=my_query.email_list[i].replace(/^[^@]+\//,"").replace(/(\.[a-z]{3})yX$/,"$1"); }
@@ -511,11 +511,12 @@
              new RegExp("^"+fname+lname.charAt(0)+"@","i"),new RegExp("^"+lname+fname.charAt(0)+"@","i"),new RegExp("^"+my_query.fullname.fname+"@")];
         // Judges the quality of an email
         function EmailQual(email) {
-            this.email=email;
+            this.email=email.replace(/^20/,"").replace(/^\!\-\-/,"");
             this.domain=email.replace(/^[^@]*@/,"");
             this.quality=0;
             if(/wix\.com/.test(this.email)) return;
-            if(/^(info|contact|admission|market)/.test(email)) this.quality=1;
+
+            if(/^(info|contact|admission|market|cancel|support|customersupport|feedback)/.test(email)) this.quality=1;
             else this.quality=2;
             if(new RegExp(my_query.fullname.fname,"i").test(email)) this.quality=3;
             if(new RegExp(my_query.fullname.lname.substr(0,5),"i").test(email)) {
@@ -525,6 +526,8 @@
             }
             for(var i=0;i<email_regexps.length;i++) if(email_regexps[i].test(email)) this.quality=6;
             if(this.email.replace(/^[^@]*@/,"")===MTP.get_domain_only(my_query.url,true)) this.quality+=5;
+            if(/^(abuse|privacy|DMCA)/i.test(this.email)) this.quality=-1;
+            if(/noreply@blogger.com/.test(this.email)) this.quality=-1;
 
         }
         for(i=0;i<my_query.email_list.length;i++) {
@@ -576,7 +579,7 @@
         var result=Gov.contact_list;
         var temp;
          var person_list=[];
-    console.log("Gov result="+JSON.stringify(result));
+        console.log("Gov result="+JSON.stringify(result));
 
          var type_lists={"Records":{lst:[],num:'3'},"Administration":{lst:[],num:'2'},"IT":{lst:[],num:'1'},"Communication":{lst:[],num:''}}
          for(i=0;i<result.length;i++) {
@@ -592,8 +595,8 @@
 
 //        console.log("result="+JSON.stringify(result));
     }
-
-    function PersonQual(curr) {
+    /* quality_func is a function to compute the quality of the person, defined by caller, otherwise does default */
+    function PersonQual(curr,quality_func) {
         //this.curr=curr;
         var fullname;
         var terms=["name","title","phone","email"],x;
@@ -610,27 +613,29 @@
         }
         if((!this.phone ||this.phone==="na") && Gov.phone) this.phone=Gov.phone;
         this.quality=0;
-        if(curr.title) {
-            if(/Director|Manager|President|CEO|Officer|Owner/.test(curr.title)) this.quality=3;
-            else if(/Admin|Administrator|Supervisor|Manager|Director|Founder|Owner|Officer|Secretary|Assistant/.test(curr.title)) this.quality=1;
+        if(quality_func===undefined) {
+            if(curr.title) {
+                if(/Director|Manager|President|CEO|Officer|Owner/.test(curr.title)) this.quality=3;
+                else if(/Admin|Administrator|Supervisor|Manager|Director|Founder|Owner|Officer|Secretary|Assistant/.test(curr.title)) this.quality=1;
+            }
+
+            //  if(this.email && this.email.indexOf("@")!==-1) this.quality+=5;
+            var nlp_out=nlp(this.name).people().out('terms');
+            if(nlp_out&&nlp_out.length>0) {
+                console.log("GLunch");
+                //console.log(nlp_out);
+
+                this.quality+=2;
+            }
+            else this.quality=0;
+            if(this.email && MTP.get_domain_only(my_query.url,true)===this.email.replace(/^[^@]*@/,"")) this.quality+=1;
+            if(!this.email || this.email==="na") this.quality=-1;
+            if(/[\d\?:]+/.test(this.name)) this.quality=-1;
+            if(this.name.split(" ").length>4) this.quality=-1;
+            else if(MTP.is_bad_email(this.email)) this.quality=-1;
+            else if(bad_last.test(this.last)) this.quality=-1;
         }
-
-      //  if(this.email && this.email.indexOf("@")!==-1) this.quality+=5;
-        var nlp_out=nlp(this.name).people().out('terms');
-        if(nlp_out&&nlp_out.length>0) {
-            console.log("GLunch");
-            //console.log(nlp_out);
-
-            this.quality+=2;
-        }
-        else this.quality=0;
-        if(this.email && MTP.get_domain_only(my_query.url,true)===this.email.replace(/^[^@]*@/,"")) this.quality+=1;
-        if(!this.email || this.email==="na") this.quality=-1;
-        if(/[\d\?:]+/.test(this.name)) this.quality=-1;
-        if(this.name.split(" ").length>4) this.quality=-1;
-        else if(MTP.is_bad_email(this.email)) this.quality=-1;
-        else if(bad_last.test(this.last)) this.quality=-1;
-
+        else this.quality=quality_func(this);
     }
     function cmp_people(person1,person2) {
         if(!(person1 instanceof PersonQual && person2 instanceof PersonQual)) return 0;
