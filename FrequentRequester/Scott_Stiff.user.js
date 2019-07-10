@@ -88,11 +88,12 @@
     function query_response(response,resolve,reject,type) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-        console.log("in query_response\n"+response.finalUrl);
+        console.log("in query_response\n"+response.finalUrl+", type="+type);
         var search, b_algo, i=0, inner_a;
         var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
         var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
          var promise_list=[];
+        console.log("DUNK");
         try
         {
             search=doc.getElementById("b_content");
@@ -104,7 +105,9 @@
                 console.log("parsed_context="+JSON.stringify(parsed_context)); } 
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
+            console.log("GLUNK");
             for(i=0; i < b_algo.length&&i<5; i++) {
+
                 b_url=query_response_loop(b_algo,i,type,promise_list,resolve,reject,b1_success,response.finalUrl);
                 if(b_url&&(b1_success=true)) break;
             }
@@ -244,7 +247,8 @@
     }
 
     function begin_email_promise() {
-        var fname=my_query.fields.firstName,lname=my_query.fields.lastName.replace(/\'/g,"");;
+        if(!(my_query.fields.firstName && my_query.fields.lastName)) return;
+        var fname=my_query.fields.firstName,lname=my_query.fields.lastName.replace(/\'/g,"");
         var search_str="+\""+fname.charAt(0).toLowerCase()+lname.toLowerCase()+"@"+my_query.domain+"\" OR "+
             "+\""+lname.toLowerCase()+fname.charAt(0).toLowerCase()+"@"+my_query.domain+"\"";
         console.log("new search_str="+search_str);
@@ -356,6 +360,7 @@
     /* Following the finding the district stuff */
     function query_promise_then(result) {
         var promise,url;
+        console.log("result="+JSON.stringify(result));
         if(result.type==="linkedin") { linkedin_promise_then(result); return; }
         else if(result.type==="bbb") {
             console.log("Doing bbb at "+JSON.stringify(result));
@@ -382,7 +387,7 @@
         var contacts=parsed.businessProfile.contactInformation.contacts;
         for(i=0;i<contacts.length;i++) {
             console.log("contacts["+i+"]="+JSON.stringify(contacts[i]));
-            my_query.people.push(new Person({first:contacts[i].name.first,last:contacts[i].name.last},contacts[i].title,url,my_query.domain));
+            my_query.people.push(new Person({name:{first:contacts[i].name.first,last:contacts[i].name.last},title:contacts[i].title,email:""},url,my_query.domain));
             if(/President|Owner|CEO/.test(contacts[i].title)) {
                 Object.assign(my_query.fields,{firstName:contacts[i].name.first,lastName:contacts[i].name.last,contactTitle:contacts[i].title,
                 nameSource:url});
@@ -399,7 +404,7 @@
         submit_if_done();
     }
     function linkedin_promise_then(result) {
-        console.log("result="+JSON.stringify(result));
+        console.log("linkedin_promise_then, result="+JSON.stringify(result));
         var name=result.b_name.replace(/ [\-\|]+.*$/,"").trim();
         var fullname=MTP.parse_name(name);
 
@@ -409,7 +414,8 @@
         var match=result.b_algo.innerText.match(/CEO|Chief Executive|President|Founder|Owner/);
         if(match) {
             my_query.fields.contactTitle=match[0];
-            my_query.people.push(new Person(name,match[0],result.b_url,my_query.domain)); }
+            my_query.people.push(new Person({name:{first:fullname.fname||"",last:fullname.lname||""},title:match[0],email:""},result.b_url,my_query.domain)); }
+        console.log("BUNK");
         submit_if_done();
 
     }
@@ -422,9 +428,10 @@
         console.log("in parse_buzzfile_then,result="+JSON.stringify(result));
         if(result.name && result.title) {
             var fullname=MTP.parse_name(result.name);
-            Object.assign(my_query.fields,
-                          {"firstName":fullname.fname,lastName:fullname.lname,nameSource:my_query.buzzfile_url,contactTitle:result.title});
-            my_query.people.push(new Person(result.name,result.title,my_query.buzzfile_url,my_query.domain));
+            console.log("buzzfile: fullname="+JSON.stringify(fullname));
+           /* Object.assign(my_query.fields,
+                          {"firstName":fullname.fname,lastName:fullname.lname,nameSource:my_query.buzzfile_url,contactTitle:result.title});*/
+            my_query.people.push(new Person({name:{first:fullname.fname||"",last:fullname.lname||""},title:result.title||"",email:""},my_query.buzzfile_url,my_query.domain));
         }
         my_query.done.buzzfile=true;
         my_query.done.linkedin=true;
@@ -444,7 +451,11 @@
         }
         else { console.log("Failed to begin script"); }
     }
-        function Person(name,title,nameSource,emailDomain,quality) {
+    function Person(curr,nameSource,emailDomain,quality) {
+        var name,title,email;
+        name=curr.name;
+        title=curr.title;
+        email=curr.email;
         if(name&&typeof(name)==="object" &&
            name.first && name.last) Object.assign(this,{first:name.first,middle:"",last:name.last});
         else if(name&&typeof(name)==="string") {
@@ -466,6 +477,7 @@
     function add_to_sheet() {
         my_query.people.sort(person_cmp);
         var x,field,good;
+        console.log("my_query.people="+JSON.stringify(my_query.people));
         if(my_query.people.length>0) {
             good=my_query.people[0];
 
@@ -518,8 +530,9 @@
         my_query.paste_count++;
         if(ret.title!==undefined) {
             my_query.fields.url=false;
-            my_query.people.push(new Person({first:fullname.fname.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing),last:fullname.lname.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing)},
-                                                      ret.title,"",my_query.domain,100+my_query.paste_count));
+            my_query.people.push(new Person({name:{first:fullname.fname.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing),
+                                             last:fullname.lname.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing)},title:ret.title||"",email:ret.email||""}
+                                            ,"",my_query.domain,100+my_query.paste_count));
         }
 
 
@@ -559,7 +572,7 @@
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search("\""+my_query.name+"\" "+reverse_state_map[my_query.state]+" site:bbb.org",resolve,reject,query_response,"bbb");
-            //query_search(search_str, resolve, reject, query_response,"linkedin");
+      //      query_search(search_str, resolve, reject, query_response,"linkedin");
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
@@ -570,7 +583,7 @@
         const buzzfilePromise = new Promise((resolve, reject) => {
             console.log("Beginning buzzfile search");
             query_search("\""+my_query.name+"\" "+reverse_state_map[my_query.state]+" site:buzzfile.com",resolve,reject,query_response,"buzzfile");
-            //query_search(search_str, resolve, reject, query_response,"linkedin");
+            query_search(search_str, resolve, reject, query_response,"buzzfile");
         });
         buzzfilePromise.then(buzzfile_promise_then)
             .catch(function(val) {
