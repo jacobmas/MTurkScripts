@@ -26,7 +26,8 @@
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/7e52d640f219dcdd840d6e435a3febe8e345381c/Govt/Government.js
 // @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
 // @require https://raw.githubusercontent.com/adamhooper/js-priority-queue/master/priority-queue.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
@@ -139,6 +140,12 @@
             query_search(search_str,resolve,reject,query_response,type);
             return;
         }
+        else if(type==="yelp" && my_query.try_count[type]===1) {
+            my_query.try_count[type]++;
+            search_str="+\""+my_query.name+"\" "+my_query.address.replace(/,.*$/,"")+" site:yelp.com";
+            query_search(search_str,resolve,reject,query_response,type);
+            return;
+        }
         else if(type==="yelp") {
             resolve(""); return;
         }
@@ -192,10 +199,10 @@
                 //console.log("match="+JSON.stringify(match));
                 match[1]=match[1].replace(/[^A-Za-z0-9]+$/g,"").trim();
                 //console.log("match[1]="+match[1]);
-                add_str=match[1].replace(/([\d]+),\s*([A-Z]*)$/,"$2 $1").replace(/((?:Blvd|Rd|St|Dr)(\.)?)\s/,"$1,");
+                add_str=match[1].replace(/([\d]+),\s*([A-Z]*)$/,"$2 $1").replace(/((?:Blvd|Rd|St|Dr)(\.)?)\s/,"$1,")
+                .replace(/(\s(?:Blvd|Rd|St|Dr))([A-Z])/,"$1 $2");
                 //console.log("add_str="+add_str);
                 //console.log(/([A-Z]+)$/.test(match[1])+", "+match[1].charCodeAt(match[1].length-1));
-
                 if(my_query.address.length===0 && (match2=match[1].match(/^([^,]*),\s*([A-Z]+)\s+([\d]+)$/))) {
                     my_query.city=match2[1];
                     my_query.state=match2[2];
@@ -203,7 +210,7 @@
                 }
                // console.log("inner_li["+i+"]="+inner_li[i].innerText+", ");
                
-                if(parsed_add=parseAddress.parseLocation(add_str)) {
+                if(parsed_add=new Address(add_str)) {
                     my_query.city=parsed_add.city?parsed_add.city:"";
                     my_query.state=parsed_add.state?parsed_add.state:"";
                 console.log("my_query.city="+my_query.city);
@@ -394,7 +401,7 @@
             my_query.fields["last name"]=fullname.lname;
         }
         if(result.email) {
-            my_query.email_list.push(result.email);
+            my_query.email_list.push(new EmailQual(result.email,4));
             evaluate_emails(submit_if_done);
             my_query.done.url=true;
         }
@@ -483,6 +490,9 @@
     /* Do the nlp part */
     var do_nlp=function(text,url) {
         var nlp_temp,j,k,i;
+        var bad_reg_str="(ing$)|academy|location|street|schools|christian|high|rd|road|gym|family|genesis|framework|"+
+            "west|east|north|south|";
+        var bad_reg=new RegExp(bad_reg_str,"i");
         //console.log("text="+text);
         var text_split=text.split(/(\s+[–\-\|]+|,)\s+/);
         for(i=0;i<text_split.length;i++) {
@@ -494,8 +504,8 @@
               && !nlp_temp[0].tags.includes("Possessive") && !nlp_temp[nlp_temp.length-1].tags.includes("Possessive") &&
                nlp_temp[nlp_temp.length-1].text.toLowerCase()===nlp_temp[nlp_temp.length-1].normal.toLowerCase() &&
                nlp_temp[nlp_temp.length-1].normal!=="park" && !nlp_temp[0].tags.includes("ClauseEnd") &&
-               !/(ing$)|academy|location|street|schools|christian|high|rd|road|gym|family/i.test(nlp_temp[nlp_temp.length-1].normal)
-               &&!/location|street|christian|high|west|east|north|south|rd|road|gym|family/i.test(nlp_temp[0].normal)
+               !bad_reg.test(nlp_temp[nlp_temp.length-1].normal)
+               &&!bad_reg.test(nlp_temp[0].normal)
               ) {
                 my_query.fields["first name"]=nlp_temp[0].text;
                 my_query.fields["last name"]=nlp_temp[nlp_temp.length-1].text;
@@ -509,10 +519,19 @@
     function is_bad_page(doc,title,url) {
         var links=doc.links,i,scripts=doc.scripts;
         var iframes=doc.querySelectorAll("iframe");
+        var headers=doc.querySelectorAll("h1,h2");
+        if(/^pageok/.test(doc.body.innerText)) return "dead.";
         for(i=0;i<iframes.length;i++) {
-            if(iframes[i].src&&/parked\-content\.godaddy\.com/.test(iframes[i].src)) return "for sale.";
+            console.log("iframes["+i+"].src="+iframes[i].src);
+            if(iframes[i].src&&/parked\-content\.godaddy\.com/i.test(iframes[i].src)) {
+                console.log("found bad");
+                return "for sale.";
+            }
         }
+        for(i=0;i<headers.length;i++) {
+            if(/^Website Coming Soon$/i.test(headers[i].innerText)) return "dead."; }
         if(/hugedomains\.com|qfind\.net|\?reqp\=1&reqr\=/.test(url)||/is for sale/.test(title)) { return "for sale."; }
+        if(/hugedomains\.com|qfind\.net|\?reqp\=1&reqr\=/.test(url)) { return "for sale."; }
         else if(/Expired|^404|Error/.test(title)) return "dead.";
         else if(doc.querySelector("div.leftblk h3.domain_name")) return "dead.";
         if(/^(IIS7|404)/.test(title.trim())) return "dead.";
@@ -556,8 +575,12 @@
         var begin_email=my_query.fields.email,title_result;
         if(extension===undefined) extension='';
         if(extra.extension==='' && (title_result=is_bad_page(doc,doc.title,url))) {
+            console.log("Wonky bonky");
             my_query.fields.Q6MultiLineTextInput="Closed, website "+url+" is "+title_result;
-            if(my_query.fields.email.length===0 && my_query.fields["first name"].length>0) my_query.fields["first name"]="";
+            if(my_query.fields.email.length===0) {
+                my_query.fields["first name"]="";
+                my_query.fields["last name"]="";
+            }
         }
         var x,scripts=doc.scripts,style=doc.querySelectorAll("style");
         for(x=0;x<style.length;x++) { style[x].innerHTML=""; }
@@ -579,10 +602,9 @@
             .replace(/\s*([\[\(]{1})\s*dot\s*([\)\]]{1})\s*/,".");
         MTP.fix_emails(doc,url);
         if(my_query.fields.email.length===0 && (email_matches=doc.body.innerHTML.match(email_re))) {
-            my_query.email_list=my_query.email_list.concat(email_matches);
+           // my_query.email_list=my_query.email_list.concat(email_matches);
             for(j=0; j < email_matches.length; j++) {
-                if(!MTurk.is_bad_email(email_matches[j]) && email_matches[j].length>0 &&
-                   (my_query.fields.email=email_matches[j])) break;
+                my_query.email_list.push(new EmailQual(email_matches[j]));
             }
             console.log("Found email hop="+my_query.fields.email);
         }
@@ -611,7 +633,7 @@
                 continue;
             }
             if((temp_email=links[i].href.replace(/^mailto:\s*/,"").match(email_re)) &&
-               !MTurkScript.prototype.is_bad_email(temp_email[0])) my_query.email_list.push(temp_email[0].toString());
+               !MTurkScript.prototype.is_bad_email(temp_email[0])) my_query.email_list.push(new EmailQual(temp_email[0].toString()));
             if(/^tel:/.test(links[i].href)) my_query.fields.phoneNumber=links[i].href.replace(/^tel:/,"");
        }
         console.log("* doing doneQueries++ for "+url);
@@ -625,64 +647,66 @@
 
     function remove_dups(lst) {
         console.log("in remove_dups,lst="+JSON.stringify(lst));
-        for(var i=lst.length;i>0;i--) if(typeof(lst[i])!=="string"||(typeof(lst[i-1]==="string") &&
-            lst[i].toLowerCase()===lst[i-1].toLowerCase())) lst.splice(i,1);
+        for(var i=lst.length-1;i>0;i--) {
+            if(lst[i].email.toLowerCase()===lst[i-1].email.toLowerCase() || MTP.is_bad_email(lst[i].email)) lst.splice(i,1);
+        }
     }
+
+    function EmailQual(email,quality) {
+        var i;
+        my_query.fullname={fname:my_query.fields["first name"]||"",lname:my_query.fields["last name"]||""};
+        var fname=my_query.fullname.fname.replace(/\'/g,""),lname=my_query.fullname.lname.replace(/\'/g,"");
+        var email_regexps=
+            [new RegExp("^"+fname.charAt(0)+"(\\.)?"+lname+"@","i"),new RegExp("^"+fname+"[\\._]{1}"+lname+"@","i"),
+             new RegExp("^"+fname+lname.charAt(0)+"@","i"),new RegExp("^"+lname+fname.charAt(0)+"@","i"),new RegExp("^"+my_query.fullname.fname+"@")];
+
+        this.email=email;
+        this.domain=email.replace(/^[^@]*@/,"");
+        this.quality=0;
+        if(/wix\.com/.test(this.email)) return;
+        if(/^(info|contact|donations|press|admission|market|inquiries|group|member|media)/i.test(this.email)) this.quality=1;
+        else if(/^(privacy)/i.test(this.email)) this.quality=-1;
+        else this.quality=2;
+        if(my_query.fullname.fname.length>0 && my_query.fullname.lname.length>0) {
+            if(new RegExp(my_query.fullname.fname,"i").test(email)) this.quality=3;
+            if(new RegExp(my_query.fullname.lname.substr(0,5),"i").test(email)) {
+                this.quality=4;
+                if(email.toLowerCase().indexOf(my_query.fullname.lname.replace(/\'/g,"").toLowerCase())>0 &&
+                   my_query.fullname.fname.toLowerCase().charAt(0)===email.toLowerCase().charAt(0)) this.quality=5;
+            }
+            for(i=0;i<email_regexps.length;i++) if(email_regexps[i].test(email)) this.quality=6;
+        }
+        if(this.email.replace(/^[^@]*@/,"")===MTP.get_domain_only(my_query.url,true)||
+           this.email.replace(/^[^@]*@/,"")===MTP.get_domain_only(my_query.url2,true)) this.quality+=5;
+        if(quality!==undefined) this.quality=Math.max(quality,this.quality);
+        if(MTP.is_bad_email(this.email)) this.quality=-1;
+
+    }
+
+    EmailQual.cmp=function(a,b) {
+        try {
+            if(b.quality!==a.quality) return b.quality-a.quality;
+            if(a.email.split("@")[1]<b.email.split("@")[1]) return -1;
+            else if(a.email.split("@")[1]>b.email.split("@")[1]) return 1;
+            if(a.email.split("@")[0]<b.email.split("@")[0]) return -1;
+            else if(a.email.split("@")[0]>b.email.split("@")[0]) return 1;
+            else return 0;
+        }
+        catch(error) { return 0; }
+    };
+
     /* Evaluate the emails with respect to the name */
     function evaluate_emails(callback) {
       //  console.log("name="+JSON.stringify(my_query.fullname));
         for(i=0;i<my_query.email_list.length;i++) {
-            my_query.email_list[i]=my_query.email_list[i].replace(/^[^@]+\//,"").replace(/(\.[a-z]{3})yX$/,"$1"); }
-        my_query.email_list.sort(function(a,b) {
-            try {
-                if(a.split("@")[1]<b.split("@")[1]) return -1;
-                else if(a.split("@")[1]>b.split("@")[1]) return 1;
-                if(a.split("@")[0]<b.split("@")[0]) return -1;
-                else if(a.split("@")[0]>b.split("@")[0]) return 1;
-                else return 0;
-            }
-            catch(error) { return 0; }
-        });
+            my_query.email_list[i].email=my_query.email_list[i].email.replace(/^[^@]+\//,"").replace(/(\.[a-z]{3})yX$/,"$1"); }
+        my_query.email_list.sort(EmailQual.cmp);
         remove_dups(my_query.email_list);
         console.log("my_query.email_list="+JSON.stringify(my_query.email_list));
         var my_email_list=[],i,curremail;
-        my_query.fullname={fname:my_query.fields["first name"],lname:my_query.fields["last name"]};
-        var fname=my_query.fullname.fname.replace(/\'/g,""),lname=my_query.fullname.lname.replace(/\'/g,"");
-
-        var email_regexps=
-            [new RegExp("^"+fname.charAt(0)+"(\\.)?"+lname+"@","i"),new RegExp("^"+fname+"[\\._]{1}"+lname+"@","i"),
-             new RegExp("^"+fname+lname.charAt(0)+"@","i"),new RegExp("^"+lname+fname.charAt(0)+"@","i"),new RegExp("^"+my_query.fullname.fname+"@")];
-        // Judges the quality of an email
-        function EmailQual(email) {
-            this.email=email;
-            this.domain=email.replace(/^[^@]*@/,"");
-            this.quality=0;
-            if(/wix\.com/.test(this.email)) return;
-            if(/^(info|contact|donations|press|admission|market|inquiries|group|member|media)/i.test(email)) this.quality=1;
-            else this.quality=2;
-            if(my_query.fullname.fname.length>0 && my_query.fullname.lname.length>0) {
-                if(new RegExp(my_query.fullname.fname,"i").test(email)) this.quality=3;
-                if(new RegExp(my_query.fullname.lname.substr(0,5),"i").test(email)) {
-                    this.quality=4;
-                    if(email.toLowerCase().indexOf(my_query.fullname.lname.replace(/\'/g,"").toLowerCase())>0 &&
-                       my_query.fullname.fname.toLowerCase().charAt(0)===email.toLowerCase().charAt(0)) this.quality=5;
-                }
-                for(var i=0;i<email_regexps.length;i++) if(email_regexps[i].test(email)) this.quality=6;
-            }
-            if(this.email.replace(/^[^@]*@/,"")===MTP.get_domain_only(my_query.url,true)||
-              this.email.replace(/^[^@]*@/,"")===MTP.get_domain_only(my_query.url2,true)) this.quality+=5;
-           
-        }
-        for(i=0;i<my_query.email_list.length;i++) {
-           // console.log("my_query.email_list["+i+"]="+typeof(my_query.email_list[i]));
-            if(MTP.is_bad_email(my_query.email_list[i])) continue;
-            curremail=new EmailQual(my_query.email_list[i].trim());
-            if(curremail.quality>0) my_email_list.push(curremail);
-        }
-        my_email_list.sort(function(a, b) { return b.quality-a.quality; });
-        console.log("my_email_list="+JSON.stringify(my_email_list));
-        if(my_email_list.length>0) {
-            my_query.fields.email=my_email_list[0].email;
+            // Judges the quality of an email
+        if(my_query.email_list.length>0&&my_query.email_list[0].quality>0) {
+            my_query.fields.email=my_query.email_list[0].email;
             callback();
             return true;
         }
@@ -692,7 +716,7 @@
     function parse_insta_then(result) {
         console.log("insta_result="+JSON.stringify(result));
         if(result.email) {
-             my_query.email_list.push(result.email);
+             my_query.email_list.push(new EmailQual(result.email,4));
             evaluate_emails(submit_if_done);
         }
        // if(result.email&&my_query.fields.email.length===0) { my_query.fields.email=result.email; }
@@ -725,10 +749,24 @@
         add_to_sheet();
     }
 
-    function init_Query()
-    {
+    function add_appears_closed_button() {
+        var inp=document.createElement("input");
+        Object.assign(inp,{type:"button",name:"appears",id:"appears",value:"Closed",style:{margin: "10px"},className:""});
+        inp.style.margin="15px 50px 15px 0px";
+        inp.addEventListener("click",function() {
+            my_query.fields.Q6MultiLineTextInput="Appears to have closed.";
+            my_query.fields.email=my_query.fields["first name"]=my_query.fields["last name"]="";
+            my_query.email_list=[];
+            add_to_sheet(); });
+        var submit=document.querySelector("input[type='submit'");
+        submit.parentNode.insertBefore(inp,submit);
+    }
+
+    function init_Query() {
         console.log("in init_query");
         var i;
+        add_appears_closed_button();
+
         var form=document.getElementById("mturk_form");
         var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         //var dont=document.getElementsByClassName("dont-break-out");
