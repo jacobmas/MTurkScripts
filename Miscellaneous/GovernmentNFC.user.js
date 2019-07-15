@@ -26,7 +26,8 @@
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/29de2e818626c6f93498fa003eb6a3141894dedb/Govt/Government.js
+
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
@@ -36,14 +37,14 @@
     var bad_urls=[];
      var MTurk=new MTurkScript(40000,200,[],begin_script,"A1TF2W0DUNJVQA",false);
     /* Gov.script_loaded is a map of urls to number loaded there, script total is a map of urls to total number needed there */
-
+   
     //var MTurk=new MTurkScript(20000,200,[],init_Query,"[TODO]");
     function is_bad_name(b_name)
     {
         return false;
     }
 
-
+  
 
      function query_response(response,resolve,reject,type) {
         var doc = new DOMParser()
@@ -282,7 +283,7 @@ fields:{}};
         console.log("query="+JSON.stringify(my_query));
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
-            query_search(my_query.search_str, resolve, reject, query_response,"query");
+            query_search(my_query.search_str+" parks", resolve, reject, query_response,"query");
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
