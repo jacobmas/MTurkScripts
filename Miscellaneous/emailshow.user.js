@@ -17,6 +17,8 @@
 // @connect *
 // @connect crunchbase.com
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
+
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
 // ==/UserScript==
 
@@ -25,8 +27,31 @@
 (function() {
     'use strict';
 
+    var convert_cyberschools_email=function(text) {
+        var split_text=[],i,ret="";
+        /* map to correct character */
+        function get_value(char) {
+            if(/^[A-Z]+/.test(char)) return (char.charCodeAt(0)-65);
+            else if(/^[a-z]+/.test(char)) return (26+char.charCodeAt(0)-97);
+            else if(/^[0-9]+/.test(char)) return (52+char.charCodeAt(0)-48);
+            else {
+                console.log("Got a non-alphanumeric character"); return -1; }
+        }
+
+        /* get the first character */
+        function get_first(text) { return text.length>=2 ? String.fromCharCode(get_value(text.charAt(0))*4+get_value(text.charAt(1))/16) : ""; }
+        function get_second(text) { return text.length>=3 ? String.fromCharCode((get_value(text.charAt(1))%16)*16+get_value(text.charAt(2))/4) : ""; }
+        function get_third(text) { return text.length>=4 ? String.fromCharCode((get_value(text.charAt(2))%4)*64+get_value(text.charAt(3))): ""; }
+        for(i=0;i<text.length;i+=4) split_text.push(text.substr(i,4));
+        for(i=0;i<split_text.length; i++) {
+            split_text[i]=split_text[i].replace(/\=/g,"");
+            ret=ret+get_first(split_text[i])+get_second(split_text[i])+get_third(split_text[i]);
+        }
+        return ret;
+
+    };
     var email_re=/e[\-]?mail/i;
-    var email_re2 = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%]+(\.[^<>()\[\]\\.,;:：\s@"\?]+)*)|("[^\?]+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
+    var email_re2 = /(([^\/<>()\[\]\\.,;:\s@"：+=\/\?%]+(\.[^<>()\[\]\\.,;:：\s@"\?]+)*)|("[^\?]+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/g;
     var mailto_re=/^\s*mailto:/;
     var javascriptO_re=/javascript:O\(\'([^\']+)\',\s*([^,]+),\s*([^,]+)\)/;
     function l(m, n, o) {
@@ -127,53 +152,32 @@
     /**
      * Find the emails and unhide them
      */
-    function do_emails()
-    {
-        var bob=document.getElementsByClassName("ksl-jobtitle");
+    function do_emails() {
+        var bob=document.getElementsByClassName("ksl-jobtitle"),match;
         for(i=0; i < bob.length; i++) bob[i].innerHTML=" | "+bob[i].innerText;
-        var e=document.getElementsByName("e");
-        var x;
-
-        var a_links=document.links;
-        var i;
-        var new_email;
-
-        var div=document.getElementsByTagName("div");
-        for(i=0; i < div.length; i++)
-        {
-            if((/email/i.test(div[i].id) || /email/i.test(div[i].className)) && div[i].style.display==="none")
-            {
-                div[i].style.display="block";
-            }
-        }
-        var img_links=document.getElementsByTagName("img");
-        for(i=0; i < img_links.length; i++)
-        {
-            img_links[i].setAttribute("alt","");
-        }
-
-        for(i=0; i < e.length; i++)
-        {
-            if(e[i].tagName==="INPUT" && e[i].type==="hidden")
-            {
+        var e=document.getElementsByName("e"),i,new_email;
+        var x,a_links=document.links;
+        var div=document.getElementsByTagName("div"),img_links=document.getElementsByTagName("img");
+        for(i=0; i < div.length; i++) if((/email/i.test(div[i].id) || /email/i.test(div[i].className))
+                                         && div[i].style.display==="none") div[i].style.display="block";
+        for(i=0; i < img_links.length; i++) img_links[i].setAttribute("alt","");
+        for(i=0; i < e.length; i++) {
+            if(e[i].tagName==="INPUT" && e[i].type==="hidden") {
                 x=document.createElement("div");
                 x.innerHTML=convert_the_emails(e[i].value);
                 e[i].replaceWith(x);
             }
         }
-        for(i=0; i < a_links.length; i++)
-        {
-
+        for(i=0; i < a_links.length; i++) {
+           if((match=a_links[i].href.match(/sendMail\.cfm\?e=(.*)/))) a_links[i].href="mailto:"+convert_cyberschools_email(match[1]);
            //console.log("a_links[i].textContent="+a_links[i].textContent+"\ta_links["+i+"].href="+JSON.stringify(a_links[i].href));
             if(email_re.test(a_links[i].innerText)) { console.log("BOO "+i); do_email_re_match(a_links[i]); }
-            else if(mailto_re.test(a_links[i].href))// && !email_re2.test(a_links[i].textContent))
-            {
-                console.log("MOO");
-                var new_br=document.createElement("span");
+            else if(/mailto/.test(a_links[i].className) && (match=a_links[i].href.match(email_re2))) {
+                a_links[i].href=MTP.swrot13(match[0]); }
+            else if(mailto_re.test(a_links[i].href)) {
+                var new_br=document.createElement("span"),new_span=document.createElement("span");
                 new_br.innerHTML="\t";
                 console.log("Adding email at "+i);
-                var new_span=document.createElement("span");
-
                 new_span.innerHTML=" - "+a_links[i].href.replace(/^mailto:((\s*)|(%20))?(.*)$/,"$4").replace(/^mailto:\s*(.*)$/,"$1")+" ";
 
                 a_links[i].parentNode.insertBefore(new_span, a_links[i].nextSibling);
@@ -192,37 +196,21 @@
             {
                 console.log("MOOSHOO");
                 a_links[i].className="";
-                a_links[i].innerText=a_links[i].dataset.username+"@"+a_links[i].dataset.domain;
-              
+                a_links[i].innerText=a_links[i].dataset.username+"@"+a_links[i].dataset.domain; 
             }
-            else if(javascriptO_re.test(a_links[i].href))
-            {
+            else if(javascriptO_re.test(a_links[i].href)) {
                 console.log("TOOSHOO "+i);
                 var omatch=a_links[i].href.match(javascriptO_re);
                 new_email=O2(omatch[1],parseInt(omatch[2]),parseInt(omatch[3])).replace(/^mailto:\s*/,"");
                 console.log("new_email="+new_email);
                 a_links[i].innerHTML=a_links[i].innerText+" - "+new_email;
             }
-            else if(/contact\.aspx\?ename\=([^&]+)&/.test(a_links[i].href))
-            {
-                var regex=/\?ename\=([^&]+)&/;
-                var reg_match=a_links[i].href.match(regex);
-                var domain=get_domain_only(window.location.href);
-                if(reg_match!==null)
-                {
-                    a_links[i].innerText="| "+reg_match[1]+"@"+domain;
-                }
+            else if(/contact\.aspx\?ename\=([^&]+)&/.test(a_links[i].href)) {
+                var regex=/\?ename\=([^&]+)&/,reg_match,domain=get_domain_only(window.location.href);
+                if((reg_match=a_links[i].href.match(regex))) a_links[i].innerText="| "+reg_match[1]+"@"+domain;
             }
 
-            else if(/%/.test(a_links[i].onclick))
-            {
-                do_decode_encoded_email(a_links[i],i);
-              //  console.log("Found % at "+i);
-               // console.log("Found nothing at "+i);
-            }
-            //else console.log("Found nothing at "+i+", "+a_links[i].href+", "+a_links[i].innerText);
-
-
+            else if(/%/.test(a_links[i].onclick)) do_decode_encoded_email(a_links[i],i);
         }
         do_appsstaff();
         do_swstaff();
@@ -262,27 +250,16 @@
         for(i=0; i < alpha.length; i++) { alpha[i].innerHTML=""; }
     }
 
-    function swrot13(str)
-    {
-        var i;
+    function swrot13(str) {
+        var i,new_str="";
         str=str.toLowerCase();
-        var new_str="";
-        for(i=0; i < str.length; i++)
-        {
-            if(/[a-z]/.test(str.substr(i,1)))
-            {
-                new_str=new_str+String.fromCharCode(((str.charCodeAt(i)-'a'.charCodeAt(0)+13)%26)+'a'.charCodeAt(0));
-            }
-            else new_str=new_str+str.charAt(i);
-        }
+        for(i=0; i < str.length; i++) {
+            if(/[a-z]/.test(str.substr(i,1))) new_str=new_str+String.fromCharCode(((str.charCodeAt(i)-'a'.charCodeAt(0)+13)%26)+'a'.charCodeAt(0));
+            else new_str=new_str+str.charAt(i); }
         return new_str;
-
-
-
     }
 
-    function do_appsstaff_request(the_elem, the_url)
-    {
+    function do_appsstaff_request(the_elem, the_url) {
         GM_xmlhttpRequest({
             method: 'GET',
             url:    the_url,
@@ -319,8 +296,7 @@
         });
     }
 
-     function do_swrequest(the_elem, the_url)
-    {
+    function do_swrequest(the_elem, the_url) {
         GM_xmlhttpRequest({
             method: 'GET',
             url:    the_url,
