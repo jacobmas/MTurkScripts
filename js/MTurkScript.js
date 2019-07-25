@@ -243,6 +243,14 @@ MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,se
 	if(assignmentId) this.assignment_id=assignmentId.value;
 	callback();
     }
+    else if((document.querySelector("crowd-form button.awsui-button") && !document.querySelector("crowd-button").disabled)) {
+	self.submit_button=document.querySelector("crowd-form button.awsui-button");
+	console.log("self.submit_button="+self.submit_button);
+	console.log(self);
+	let assignmentId=document.querySelector("#assignmentId");
+	if(assignmentId) this.assignment_id=assignmentId.value;
+	callback();
+    }
     else if(total_time<2000) {
         console.log("total_time="+total_time);
         total_time+=timeout;
