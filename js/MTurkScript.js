@@ -134,7 +134,8 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
     if ((window.location.href.indexOf("mturkcontent.com") !== -1 ||
          window.location.href.indexOf("amazonaws.com") !== -1) &&
         ((!is_crowd && document.getElementById("submitButton") && !document.getElementById("submitButton").disabled) ||
-	 (is_crowd && document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)) &&
+	 (is_crowd && document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)||
+	 (is_crowd && document.querySelector("crowd-form button.awsui-button") && !document.querySelector("crowd-form button.awsui-button").disabled)) &&
 	GM_getValue("req_id","")===this.requester_id) {
 	this.submit_button=is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");
 	let assignmentId=document.querySelector("#assignmentId");
@@ -211,7 +212,7 @@ MTurkScript.prototype.setup_worker_mturk=function() {
 };
 MTurkScript.prototype.check_and_submit=function(check_function)	{
     console.log("in check");
-    var submit_button=this.is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");
+    var submit_button=this.is_crowd?(document.querySelector("crowd-button")?document.querySelector("crowd-button"):document.querySelector("crowd-form button.awsui-button")):document.getElementById("submitButton");
     if(!submit_button) submit_button=document.querySelector("input[type='submit']");
     if(check_function!==undefined && !check_function()) {
         GM_setValue("returnHit"+this.assignment_id,true);
@@ -284,7 +285,7 @@ MTurkScript.prototype.is_bad_email=function(to_check) {
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
     else if(/(@((godaddy|domain|addresshere|emailaddress)\.com|example\.com))|(^example@)/i.test(to_check)) return true;
     else if(/;/.test(to_check)) return true;
-    else if(/^youremail/.test(to_check)) return true;
+    else if(/^(sample@|youremail)/.test(to_check)) return true;
     else if(/(^root@)|localhost\.localhost/.test(to_check)) return true;
     else if(/(jacobmas|democraticluntz|fredthelinkedinfred|siviliamshumpkins)@gmail\.com|user@domain\.name/.test(to_check)) return true;
     else if(/@(example|email|wix)\.com$/.test(to_check)) return true;
@@ -1598,6 +1599,9 @@ MTurkScript.prototype.is_bad_page=function(doc,url) {
     var links=doc.links,i,scripts=doc.scripts;
     var title=doc.title;
     var iframes=doc.querySelectorAll("iframe"),a;
+    var headers=doc.querySelectorAll("h1,h2");
+    for(i=0;i<headers.length;i++) {
+	if(/^Website Coming Soon$/i.test(headers[i].innerText)) return true; }
     for(i=0;i<iframes.length;i++) {
         if(iframes[i].src&&/parked\-content\.godaddy\.com/.test(iframes[i].src)) return true;
     }
