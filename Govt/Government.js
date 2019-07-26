@@ -11,7 +11,7 @@ var Gov=Gov||{contact_list:[],email_list:[],scripts_loaded:{},scripts_total:{},a
 	"Director|Department|Det\.|Detective|Engineer|Fire|Foreman|Head of School|Inspector|"+
 	"Manager|Marshal|Mayor|Officer|Official|Operations|Planner|Police|President|Public|"+
 	"Recorder|Roadmaster|Scientist|Secretary|Sheriff|Specialist|Superintendent|Supervisor|Sgt\.|"+
-	"|Undersheriff)($|[^A-Za-z0-9]{1})","i"),
+	"Undersheriff)($|[^A-Za-z0-9]{1})","i"),
 	      title_prefix_regex:/^(Director|Mayor|Commissioner|Senator|Police Chief|Chief|Chief [Oo]f Police|Chief Deputy|Constable|Councilman|Councilwoman|Secretary|Sheriff|Sergeant|Patrol Officer|Lieutenant|Detective|Sgt\.|Lt\.)((?:\s+[A-Z0-9\"][\-\.\'a-z0-9]+[0-9\-\.\'\"a-zA-Z]*)+)(.*)$/,
 	      bad_stuff_re:/(\/\*)|(^Wh.*\?$)|(\sand\s)|([\d]+)|(I want to\s.*$)|Printer-Friendly|(^Home.*)|(…)|((City|Town) Hall)|City Hall|Welcome to/i
 	      ,bad_stuff_re2:/(Contact( Us)?)$|Navigation|Email|Search|Printer-Friendly|Economic|Quick Links|Choose |function\(|var |\/.*\//i, //Menu([^A-Za-z0-9]|$)
@@ -850,7 +850,7 @@ Gov.split_into_lines=function(text,ret) {
     var mult_word_begin_re=/^[^\s]+\s+[^\s]+,\s*[A-Z\.]*[^A-Z\s\n,]+/;
     if(split_lines.length>0 &&
        mult_word_begin_re.test(split_lines[0])) split_lines=split_lines[0].split(",").concat(split_lines.slice(1));
-// Split off a title from the beginning
+// Split off a title from the beginning, may be problematic
     if((split_comma=split_lines[0].split(","))&&split_comma.length>1&&Gov.title_regex.test(split_comma[0])) {
 	split_lines=split_comma.concat(split_lines.slice(1)); }
     if(Gov.debug||Gov.debug_parse) console.log("split_lines before filtering="+JSON.stringify(split_lines));
