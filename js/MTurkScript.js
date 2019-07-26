@@ -134,8 +134,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
     if ((window.location.href.indexOf("mturkcontent.com") !== -1 ||
          window.location.href.indexOf("amazonaws.com") !== -1) &&
         ((!is_crowd && document.getElementById("submitButton") && !document.getElementById("submitButton").disabled) ||
-	 (is_crowd && document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)||
-	 (is_crowd && document.querySelector("crowd-form button.awsui-button") && !document.querySelector("crowd-form button.awsui-button").disabled)) &&
+	 (is_crowd && document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)) &&
 	GM_getValue("req_id","")===this.requester_id) {
 	this.submit_button=is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");
 	let assignmentId=document.querySelector("#assignmentId");
@@ -212,7 +211,7 @@ MTurkScript.prototype.setup_worker_mturk=function() {
 };
 MTurkScript.prototype.check_and_submit=function(check_function)	{
     console.log("in check");
-    var submit_button=this.is_crowd?(document.querySelector("crowd-button")?document.querySelector("crowd-button"):document.querySelector("crowd-form button.awsui-button")):document.getElementById("submitButton");
+    var submit_button=this.is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");
     if(!submit_button) submit_button=document.querySelector("input[type='submit']");
     if(check_function!==undefined && !check_function()) {
         GM_setValue("returnHit"+this.assignment_id,true);
@@ -237,14 +236,6 @@ MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,se
     else { console.log("No assignmentId found"); }
     if((document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)) {
 	self.submit_button=document.querySelector("crowd-button");
-	console.log("self.submit_button="+self.submit_button);
-	console.log(self);
-	let assignmentId=document.querySelector("#assignmentId");
-	if(assignmentId) this.assignment_id=assignmentId.value;
-	callback();
-    }
-    else if((document.querySelector("crowd-form button.awsui-button") && !document.querySelector("crowd-button").disabled)) {
-	self.submit_button=document.querySelector("crowd-form button.awsui-button");
 	console.log("self.submit_button="+self.submit_button);
 	console.log(self);
 	let assignmentId=document.querySelector("#assignmentId");
