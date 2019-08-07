@@ -230,6 +230,7 @@ MTurkScript.prototype.swrot13=function(str) {
     }
     return ret;
 };
+/* Begin a script using the crowd plugin */
 MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,self) {
     let assignmentId=window.location.href.match(/assignmentId\=([A-Z0-9]*)/);
     if(assignmentId) this.assignment_id=assignmentId[1];
@@ -760,11 +761,29 @@ MTurkScript.prototype.parse_lgb_info=function(lgb_info) {
     return result;
 };
 
-MTurkScript.prototype.add_to_sheet=function() {
-    for(var x in my_query.fields) {
-        if(document.getElementById(x) &&
-	   my_query.fields[x].length>0) document.getElementById(x).value=my_query.fields[x];
-    }
+/* parse loc_hy elements in Bing */
+MTurkScript.prototype.parse_loc_hy=function(loc_hy) {
+    var ret=[],ent_cnt=loc_hy.querySelectorAll(".ent_cnt"),add;
+    ent_cnt.forEach(function(elem) {
+	var url=elem.querySelector("a");
+        var addphone=elem.querySelectorAll(".trgr .b_factrow");
+	ret.push({name:url?url.innerText:"",
+		  address:addphone.length>0?addphone[0].innerText.trim():"",phone:addphone.length>1?addphone[1].innerText.trim():"",
+                  url:url?url.href:""});  });
+    return ret;
+};
+
+/* fields_to_add should be my_query.fields 
+   field_map if given should be map of fields_to_add to actual field names
+*/
+MTurkScript.prototype.add_to_sheet=function(fields_to_add,field_map) {
+    var x,field;
+    field_map=field_map||{};
+    for(x in fields_to_add) {
+	curr_mapped=field_map[x]!==undefined ? field_map[x]:x;
+            if((this.is_crowd && (field=document.getElementsByName(curr_mapped)[0])) ||
+               (!this.is_crowd && (field=document.getElementById(curr_mapped)))) field.value=fields_to_add[x];
+        }
 };
 
 /* Creates a promise where it does a standard GM_xmlhttpRequest GET thing, on which point it
@@ -949,11 +968,10 @@ MTurkScript.prototype.parse_FB_search=function(doc,url,resolve,reject)
 };
 
 /**
- * match_home_text Returns list of two fields, either both blank or the first label, second value
+ * FB:match_home_text Returns list of two fields, either both blank or the first label, second value
  * helper for parse_FB_home
  */
-MTurkScript.prototype.match_home_text=function(text)
-{
+MTurkScript.prototype.match_home_text=function(text) {
 
     var ret=["",""];
     var follow_re=/^([\d\,]+) people follow this/,like_re=/^([\d\,]+) people like this/;
@@ -965,13 +983,11 @@ MTurkScript.prototype.match_home_text=function(text)
 };
 
 /**
- * match_home_a Returns list of two fields, either both blank or the first label, second value
+ * match_home_a FB: Returns list of two fields, either both blank or the first label, second value
  * helper for parse_FB_home
  */
-MTurkScript.prototype.match_home_a=function(inner_a,text)
-{
-    var ret=["",""],i;
-    var url_regex=/\.php\?u=(.*)$/;
+MTurkScript.prototype.match_home_a=function(inner_a,text) {
+    var ret=["",""],i, url_regex=/\.php\?u=(.*)$/;
     if(url_regex.test(inner_a[0].href) &&
        !/Get Directions/.test(inner_a[0].innerText)) {
         ret=["url",decodeURIComponent(inner_a[0].href.match(url_regex)[1])
@@ -991,7 +1007,7 @@ MTurkScript.prototype.match_home_a=function(inner_a,text)
  * parseAddress.parseLocation function from 
  * https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
  * 
- * will give 123 Fake Street in some instances so use with caution
+ * will give 123 Fake Street in some instances so use with caution. SUPERSEDED BY address.js?
  */
 MTurkScript.prototype.pre_parse_address=function(address)
 {
@@ -1040,77 +1056,6 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
     resolve(result);
 };
 
-/* Generic to check if an FB link is generally bad, e.g. not the actual "page" for something 
-TODO: have it repair it automatically
-*/
-MTurkScript.prototype.is_bad_fb=function(b_url,b_name) {
-    if(/\/(pages|groups|search|events|directory|public)\//.test(b_url)) return true;
-    if(/\/sharer\.php/.test(b_url)) return true;
-    return false;
-};
-
-MTurkScript.prototype.is_bad_instagram=function(b_url,bname) {
-    if(/instagram\.com\/(p|explore)\//.test(b_url)) return true;
-    return false;
-};
-
-MTurkScript.prototype.is_bad_twitter=function(b_url,bname) {
-    if(/twitter\.com\/(((intent|#\!)\/)|share\?)/.test(b_url)) return true;
-    return false;
-};
-
-/**
-     * parse_insta_script is a helper for parse_instagram that extracts the useful data
-     */
- MTurkScript.prototype.parse_insta_script=function(parsed)
-    {
-        var x,y,z;
-        var user=parsed.entry_data.ProfilePage[0].graphql.user;
-        var result={success:true,followers:"",following:"",name:"",
-                    username:"",url:"",is_business:false,email:"",phone:"",
-                   category:"",address:{},biography:""};
-        if(user.edge_followed_by!==undefined &&
-           user.edge_followed_by.count!==undefined) result.followers=user.edge_followed_by.count;
-         if(user.edge_follow!==undefined &&
-           user.edge_follow.count!==undefined) result.following=user.edge_follow.count;
-        if(user.full_name!==undefined) result.name=user.full_name;
-        if(user.username!==undefined) result.username=user.username;
-        if(user.external_url!==undefined) result.url=user.external_url;
-        if(user.is_business_account!==undefined) result.is_business=user.is_business_account;
-        if(user.business_email) result.email=user.business_email;
-	if(user.profile_pic_url) result.profile_pic_url=user.profile_pic_url;
-        if(user.business_address_json)
-        {
-            let temp_add=JSON.parse(user.business_address_json);
-            result.address={addressLine1:temp_add.street_address, city:temp_add.city_name.replace(/,.*$/,""),
-                            state:temp_add.region_name, country:"",country_code:temp_add.country_code};
-            if(result.address.state.length===0) result.address.state=temp_add.city_name.replace(/^[^,]*,\s*/,"");
-        }
-        if(user.biography) result.biography=user.biography;
-        if(user.business_phone_number) result.phone=user.business_phone_number;
-        return result;
-    }
-
-/** parser for instagram to read the data */
-MTurkScript.prototype.parse_instagram=function(doc,url,resolve,reject)
-{
-    var scripts=doc.scripts,i,j,parsed,script_regex=/^window\._sharedData\s*\=\s*/;
-    var result={success:false};
-    for(i=0; i < scripts.length; i++) {
-        if(script_regex.test(scripts[i].innerHTML))  {
-            parsed=JSON.parse(scripts[i].innerHTML.replace(script_regex,"").replace(/;$/,""));
-	    try {
-		result=MTurkScript.prototype.parse_insta_script(parsed);
-	    }
-	    catch(error) { console.log("Error in parse_insta_script"+error); }
-            resolve(result);
-            break;
-        }
-    }
-    resolve(result);
-    return;
-};
-
 /* Parse FB_search parses a search for PAGES on Facebook */
 MTurkScript.prototype.parse_FB_search_page=function(doc,url,resolve,reject)
 {
@@ -1137,13 +1082,33 @@ MTurkScript.prototype.parse_FB_posts=function(doc,url,resolve,reject) {
     result={success:true,date:time[0].title.split(" ")[0],time:time[0].title.split(" ")[1]};
     resolve(result);
 };
+
+/* Generic to check if an FB link is generally bad, e.g. not the actual "page" for something 
+TODO: have it repair it automatically
+*/
+MTurkScript.prototype.is_bad_fb=function(b_url,b_name) {
+    if(/\/(pages|groups|search|events|directory|public)\//.test(b_url)) return true;
+    if(/\/sharer\.php/.test(b_url)) return true;
+    return false;
+};
+
+MTurkScript.prototype.is_bad_instagram=function(b_url,bname) {
+    if(/instagram\.com\/(p|explore)\//.test(b_url)) return true;
+    return false;
+};
+
+MTurkScript.prototype.is_bad_twitter=function(b_url,bname) {
+    if(/twitter\.com\/(((intent|#\!)\/)|share\?)/.test(b_url)) return true;
+    return false;
+};
+
+
 /* fix_remote_url fixes the remote urls so they aren't having the mturkcontent.com stuff
      * found_url is the url that needs fixing
      *  page_url is the url from response.finalUrl
-   * TODO: needs fixing, doesn't currently use the curr_url to help (or does it just not stop?)
+   * TODO: once in a while it f's up?
     */
-MTurkScript.prototype.fix_remote_url=function(found_url,page_url)
-{
+MTurkScript.prototype.fix_remote_url=function(found_url,page_url) {
     var replacement=page_url.match(/^https?:\/\/[^\/]+/);
     var to_replace= window.location.href.match(/^https?:\/\/[^\/]+/)[0];
     var curr_url=window.location.href, temp_url=curr_url.replace(/\/$/,"");
@@ -1153,6 +1118,7 @@ MTurkScript.prototype.fix_remote_url=function(found_url,page_url)
     }
     return found_url.replace(to_replace,replacement);
 };
+
 /* time24totime12 converts a 24hr form timestring into a 12hr form, 
    uppercase specifies if AM/PM are uppercase or lowercase, true by default */
 MTurkScript.prototype.time24totime12=function(time_str,uppercase) {
@@ -1167,41 +1133,6 @@ MTurkScript.prototype.time24totime12=function(time_str,uppercase) {
     return ret+(uppercase ? ampm.toUpperCase() : ampm);
 };
 
-/* parse_ta_hours is a helper function for parse_trip_advisor */
-MTurkScript.prototype.parse_ta_hours=function(hrs) {
-    console.log("parse_ta_hours: hrs="+JSON.stringify(hrs));
-    var day_list=["Sat","Sun","Mon","Tue","Wed","Thu","Fri"],i,j,day_match,hrs_match,ret={};
-    for(i=0; i < hrs.length; i++) {
-        if(!/ - /.test(hrs[i].days)) hrs[i].days=hrs[i].days+" - "+hrs[i].days;
-        if(!(day_match=hrs[i].days.match(/^([A-Za-z]{3}) - ([A-Za-z]{3})/))) continue;
-        for(j=day_list.indexOf(day_match[1]); j<=day_list.indexOf(day_match[2]); j++) {
-            ret[day_list[j]]=hrs[i].times; }
-    }
-    return ret;
-};
-    /* Parses trip_advisor for some useful info like hours */
-MTurkScript.prototype.parse_trip_advisor=function(doc,url,resolve,reject) {
-    var scripts=doc.scripts,i,ret={},context=null,x,responses=null;
-    var context_regex=/^\{\"@context/,m_reg=/^define\(\'@ta\/page-manifest\',\[\],function\(\)\{return /;
-    console.log("in parse_trip_advisor, url="+url+", scripts.length="+scripts.length);
-    for(i=0; i < scripts.length; i++) {
-        if(!context && context_regex.test(scripts[i].innerHTML) &&
-           (context=JSON.parse(scripts[i].innerHTML))) ret.address=context.address;
-        else if(m_reg.test(scripts[i].innerHTML) &&
-                (responses=JSON.parse(scripts[i].innerHTML.replace(m_reg,"").replace(/;\}\);$/,""))
-                 .redux.api.responses)) {
-            for(x in responses) {
-                if(/\/about\//.test(x)) {
-                    ret.categories=responses[x].data.taxonomyInfos.map(x => x.name);
-                    //ret.taxonomyInfos=responses[x].data.taxonomyInfos;
-                    if(responses[x].data.displayHours) {
-                        ret.hours=MTurkScript.prototype.parse_ta_hours(responses[x].data.displayHours); }
-                }
-            }
-        }
-    }
-    resolve(ret);
-};
 
 /* TODO: NOT READY */
 MTurkScript.prototype.call_contact_page=function(url,callback,extension) {
@@ -1298,83 +1229,6 @@ MTurkScript.prototype.json_to_post=function(obj) {
     return str;
 };
 
-/* parse loc_hy elements in Bing */
-MTurkScript.prototype.parse_loc_hy=function(loc_hy) {
-    var ret=[],ent_cnt=loc_hy.querySelectorAll(".ent_cnt"),add;
-    ent_cnt.forEach(function(elem) {
-	var url=elem.querySelector("a");
-        var addphone=elem.querySelectorAll(".trgr .b_factrow");
-	ret.push({name:url?url.innerText:"",
-		  address:addphone.length>0?addphone[0].innerText.trim():"",phone:addphone.length>1?addphone[1].innerText.trim():"",
-                  url:url?url.href:""});  });
-    return ret;
-};
-
-/** TODO: add query conditions, edit if to be less selective, maybe grab more than one */
-MTurkScript.prototype.parse_yellowpages=function(doc,url,resolve,reject) {
-    var mdm=doc.querySelectorAll(".search-results .mdm"),i,result={success:true},cats,new_url;
-    for(i=0;i<mdm.length;i++) {
-        var name=mdm[i].querySelector(".business-name"),addr=mdm[i].querySelector(".adr"),parsed_add,phone;
-        phone=mdm[i].querySelector(".phone");
-        if(addr&&(result.address=addr.innerText) &&
-	   (result.parsed_add=parseAddress.parseLocation(addr.innerText)) && name && (result.name=name.innerText)) {
-            result.phone=phone?phone.innerText:"";
-            if(cats=mdm[i].querySelector(".categories")) result.categories=cats.innerText;
-            if(new_url=mdm[i].querySelector(".track-visit-website")) result.url=new_url.href;
-            resolve(result);
-            return;
-        }
-    }
-    console.log("No yellowpages results");
-    result.success=false;
-    resolve(result);
-    return;
-};
-
-/* parse_youtube_inner is a helper function for the parse_youtube function */
-MTurkScript.prototype.parse_youtube_inner=function(text) {
-    var parsed,ret={},runs,match,x,content,contents,i,tabs,label,links,url;
-    try { parsed=JSON.parse(text); }
-    catch(error) { console.log("error parsing="+error+", text="+text); return; }
-    tabs=parsed.contents.twoColumnBrowseResultsRenderer.tabs;
-    for(i=0; i < tabs.length; i++) if(tabs[i].tabRenderer && tabs[i].tabRenderer.title==="About" && (content=tabs[i].tabRenderer.content)) break;
-    if(!content) return ret;
-    contents=content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].channelAboutFullMetadataRenderer;
-    if((label=contents.businessEmailLabel)===undefined) ret.email="";
-    if(contents.subscriberCountText && (runs=contents.subscriberCountText.runs) && runs.length>0 &&
-       runs[0].text) ret.total_subscribers=runs[0].text.replace(/,/g,"");
-    if(contents.country && contents.country.simpleText) ret.location=contents.country.simpleText;
-    if((links=contents.primaryLinks)===undefined) links=[];
-    for(i=0; i < links.length; i++) {
-        url=decodeURIComponent(links[i].navigationEndpoint.urlEndpoint.url.replace(/^.*(&|\?)q\=/,"")).replace(/(&|\?).*$/,"");
-        console.log("url["+i+"]="+url);
-        if(/instagram\.com/.test(url)) ret.insta=url; 
-        else if(/facebook\.com/.test(url)) ret.fb=url.replace(/\/$/,"").replace(/facebook\.com\//,"facebook.com/pg/")+"/about"; 
-        else if(/twitter\.com/.test(url)) ret.twitter=url;
-        else if(!/plus\.google\.com|((youtube|gofundme|patreon)\.com)/.test(url) && i===0) ret.url=url;
-    }
-    if(contents.description && contents.description.simpleText && (ret.description=contents.description.simpleText.replace(/\\n/g,"\n"))) {
-        if(match=ret.description.match(email_re)) ret.email=match[0];
-        if(!ret.insta && (match=ret.description.match(/https:\/\/(www.)?instagram.com\/[A-Za-z\.0-9_\-\/]+/))) ret.insta=match[0];
-        if(!ret.fb && (match=ret.description.match(/https?:\/\/([a-z]+).facebook.com\/[A-Za-z\.0-9_\-\/]+/))) ret.fb=match[0];
-    }
-    return ret;
-};
-/* parse_youtube Parses the 'about' page of a youtube channel */
-MTurkScript.prototype.parse_youtube=function(doc,url,resolve,reject) {
-    var scripts=doc.scripts,i,script_regex_begin=/^\s*window\[\"ytInitialData\"\] \=\s*/,text;
-    var script_regex_end=/\s*window\[\"ytInitialPlayerResponse\".*$/,ret={success:false},x,promise_list=[];
-    var email_match,match;
-    for(i=0; i < scripts.length; i++) {
-        if(script_regex_begin.test(scripts[i].innerHTML)) {
-            text=scripts[i].innerHTML.replace(script_regex_begin,"");
-            if(text.indexOf(";")!==-1) text=text.substr(0,text.indexOf("};")+1);
-            resolve(parse_youtube_inner(text));
-            return;
-        }
-    }
-    resolve(ret);
-};
 /* matches_names Checks whether two names of places match, will need to be adjusted for use with b_name, e.g. split and iterate  */
 MTurkScript.prototype.matches_names=function(name1,name2) {
     var num_replace={"$10$2":/(^|[^A-Za-z])Zero($|[^A-Za-z])/i,"$11$2":/(^|[^A-Za-z])One($|[^A-Za-z])/i,"$12$2":/(^|[^A-Za-z])Two($|[^A-Za-z])/i,

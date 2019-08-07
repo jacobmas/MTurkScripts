@@ -751,7 +751,7 @@ Gov.fix_table=function(table,type) {
     var i,j,row,cell,to_fix,result,new_col_str,old_col_str,match,temp_str;
    // console.log("Fixing "+type);
     if((to_fix=Gov.find_col(table,type))<0) return;
-    console.log("Fixing "+type+", col="+to_fix);
+    if(Gov.debug) console.log("Fixing "+type+", col="+to_fix);
     for(i=0;i<table.rows.length;i++) {
 	row=table.rows[i];
 	new_col_str=old_col_str='';
@@ -760,7 +760,7 @@ Gov.fix_table=function(table,type) {
 	if(type==="honorifics") {
 	    result=nlp(row.cells[to_fix].innerText).people().out('terms');
 	    old_col_str=row.cells[to_fix].innerText;
-	    console.log("result="+JSON.stringify(result));
+	    if(Gov.debug) console.log("result="+JSON.stringify(result));
 	    for(j=0;j<result.length;j++) {
 		if(result[j].tags.includes("Honorific")) {
 		    new_col_str=new_col_str+(new_col_str.length>0?" ":"")+result[j].text;

@@ -1,27 +1,6 @@
-// File with various useful site parsers 
+/* File with various useful site parsers, still relatively informal */
 var AggParser={};
-AggParser.parse_buzzfile=function(doc,url,resolve,reject,quality) {
-    console.log("in parse_buzzfile, url="+url);
-    var div=doc.querySelector("[itemtype='https://schema.org/PostalAddress']");
-    var divorg=doc.querySelector("[itemtype='https://schema.org/Organization']"),employee,title;
-    
-    var result={success:true,site:"buzzfile",quality:quality,fields:{}};
-    if(!div && !divorg && (resolve({success:false,site:"buzzfile"})||true)) return;
-    if(div) {
-	result.address=AggParser.parse_postal_elem(div,4,result.site,url);
-    }
-    if(divorg && (employee=divorg.querySelector("[itemprop='employee']")) &&
-       (title=divorg.querySelector("[itemprop='contactType']"))) {
-	Object.assign(result,{name:employee.innerText.trim(),title:title.innerText.trim()});
-    }
-    console.log("parse_buzzfile, result="+JSON.stringify(result));
-    resolve(result);
-};
 
-AggParser.parse_hotfrog=function(doc,url,resolve,reject,quality) {
-    console.log("in parse_hotfrog, url="+url);
-    AggParser.parse_postal(doc,url,resolve,reject,"hotfrog");
-}
 
 AggParser.parse_postal_elem=function(elem,priority,site,url) {
     var ret={},text;
@@ -40,6 +19,7 @@ AggParser.parse_postal_elem=function(elem,priority,site,url) {
     return new Address(ret,priority,url);
 };
 
+/* Parse a PostalAddress schema */
 AggParser.parse_postal=function(doc,url,resolve,reject,type) {
     console.log("in parse_"+type+", url="+url);
     var div=doc.querySelector("[itemtype='https://schema.org/PostalAddress']");
@@ -48,7 +28,28 @@ AggParser.parse_postal=function(doc,url,resolve,reject,type) {
     result.address=AggParser.parse_postal_elem(div,4,type,url);
     console.log("parse_postal, result="+JSON.stringify(result));
     resolve(result);
-}
+};
+
+AggParser.parse_buzzfile=function(doc,url,resolve,reject,quality) {
+    console.log("in parse_buzzfile, url="+url);
+    var div=doc.querySelector("[itemtype='https://schema.org/PostalAddress']");
+    var divorg=doc.querySelector("[itemtype='https://schema.org/Organization']"),employee,title;    
+    var result={success:true,site:"buzzfile",quality:quality,fields:{}};
+    if(!div && !divorg && (resolve({success:false,site:"buzzfile"})||true)) return;
+    if(div) result.address=AggParser.parse_postal_elem(div,4,result.site,url);
+    if(divorg && (employee=divorg.querySelector("[itemprop='employee']")) &&
+       (title=divorg.querySelector("[itemprop='contactType']"))) {
+	Object.assign(result,{name:employee.innerText.trim(),title:title.innerText.trim()});
+    }
+    console.log("parse_buzzfile, result="+JSON.stringify(result));
+    resolve(result);
+};
+
+AggParser.parse_hotfrog=function(doc,url,resolve,reject,quality) {
+    console.log("in parse_hotfrog, url="+url);
+    AggParser.parse_postal(doc,url,resolve,reject,"hotfrog");
+};
+
 
 AggParser.parse_bizapedia=function(doc,url,resolve,reject) {
     console.log("in parse_bizapedia, url="+url);
@@ -192,9 +193,12 @@ AggParser.parse_owler_json=function(text) {
         state=parsed.props.pageProps.initialState;
         console.log(JSON.stringify(state));
 	Object.assign(ret,{companyName:state.companyName||"N/A",Description:state.description||"N/A",
-		      websiteURL:state.website||"N/A",revenue:state.revenue||"N/A",employees:state.employeeCount||"N/A",
-		      sic:state.sicCode?(array_to_str(state.sicCode)||"N/A"):"N/A",street:state.street1Address||"N/A",
-		      city:state.city||"N/A",state:state.state||"N/A",zip:state.zipcode||"N/A",phone:state.phoneNumber||"N/A"});
+			   websiteURL:state.website||"N/A",revenue:state.revenue||"N/A",
+			   employees:state.employeeCount||"N/A",
+			   sic:state.sicCode?(array_to_str(state.sicCode)||"N/A"):"N/A",
+			   street:state.street1Address||"N/A",
+			   city:state.city||"N/A",state:state.state||"N/A",
+			   zip:state.zipcode||"N/A",phone:state.phoneNumber||"N/A"});
         if(state.sicCode) console.log("state.sicCode="+JSON.stringify(state.sicCode));
         for(x in state.competitorDetails) ret["competitor"+(counter++)]=state.competitorDetails[x].name;
         for(i=counter;i<=10;i++) ret["competitor"+i]="N/A";
@@ -211,6 +215,161 @@ AggParser.parse_owler=function(doc,url,resolve,reject,term_map) {
             console.log("Matched regex at "+i);
             Object.assign(ret,parse_owler_json(match[1]));
             break;
+        }
+    }
+    resolve(ret);
+};
+
+/**
+ * parse_insta_script is a helper for parse_instagram that extracts the useful data
+ */
+AggParser.parse_insta_script=function(parsed)
+    {
+        var x,y,z;
+        var user=parsed.entry_data.ProfilePage[0].graphql.user;
+        var result={success:true,followers:"",following:"",name:"",
+                    username:"",url:"",is_business:false,email:"",phone:"",
+                   category:"",address:{},biography:""};
+        if(user.edge_followed_by!==undefined &&
+           user.edge_followed_by.count!==undefined) result.followers=user.edge_followed_by.count;
+         if(user.edge_follow!==undefined &&
+           user.edge_follow.count!==undefined) result.following=user.edge_follow.count;
+        if(user.full_name!==undefined) result.name=user.full_name;
+        if(user.username!==undefined) result.username=user.username;
+        if(user.external_url!==undefined) result.url=user.external_url;
+        if(user.is_business_account!==undefined) result.is_business=user.is_business_account;
+        if(user.business_email) result.email=user.business_email;
+	if(user.profile_pic_url) result.profile_pic_url=user.profile_pic_url;
+        if(user.business_address_json)
+        {
+            let temp_add=JSON.parse(user.business_address_json);
+            result.address={addressLine1:temp_add.street_address, city:temp_add.city_name.replace(/,.*$/,""),
+                            state:temp_add.region_name, country:"",country_code:temp_add.country_code};
+            if(result.address.state.length===0) result.address.state=temp_add.city_name.replace(/^[^,]*,\s*/,"");
+        }
+        if(user.biography) result.biography=user.biography;
+        if(user.business_phone_number) result.phone=user.business_phone_number;
+        return result;
+    }
+
+/** parser for instagram to read the data */
+AggParser.parse_instagram=function(doc,url,resolve,reject) {
+    var scripts=doc.scripts,i,j,parsed,script_regex=/^window\._sharedData\s*\=\s*/;
+    var result={success:false};
+    for(i=0; i < scripts.length; i++) {
+        if(script_regex.test(scripts[i].innerHTML))  {
+            parsed=JSON.parse(scripts[i].innerHTML.replace(script_regex,"").replace(/;$/,""));
+	    try {
+		result=AggParser.parse_insta_script(parsed);
+	    }
+	    catch(error) { console.log("Error in parse_insta_script"+error); }
+            resolve(result);
+            break;
+        }
+    }
+    resolve(result);
+    return;
+};
+
+
+/* parse_ta_hours is a helper function for parse_trip_advisor */
+AggParser.parse_ta_hours=function(hrs) {
+    console.log("parse_ta_hours: hrs="+JSON.stringify(hrs));
+    var day_list=["Sat","Sun","Mon","Tue","Wed","Thu","Fri"],i,j,day_match,hrs_match,ret={};
+    for(i=0; i < hrs.length; i++) {
+        if(!/ - /.test(hrs[i].days)) hrs[i].days=hrs[i].days+" - "+hrs[i].days;
+        if(!(day_match=hrs[i].days.match(/^([A-Za-z]{3}) - ([A-Za-z]{3})/))) continue;
+        for(j=day_list.indexOf(day_match[1]); j<=day_list.indexOf(day_match[2]); j++) {
+            ret[day_list[j]]=hrs[i].times; }
+    }
+    return ret;
+};
+    /* Parses trip_advisor for some useful info like hours */
+AggParser.parse_trip_advisor=function(doc,url,resolve,reject) {
+    var scripts=doc.scripts,i,ret={},context=null,x,responses=null;
+    var context_regex=/^\{\"@context/,m_reg=/^define\(\'@ta\/page-manifest\',\[\],function\(\)\{return /;
+    console.log("in parse_trip_advisor, url="+url+", scripts.length="+scripts.length);
+    for(i=0; i < scripts.length; i++) {
+        if(!context && context_regex.test(scripts[i].innerHTML) &&
+           (context=JSON.parse(scripts[i].innerHTML))) ret.address=context.address;
+        else if(m_reg.test(scripts[i].innerHTML) &&
+                (responses=JSON.parse(scripts[i].innerHTML.replace(m_reg,"").replace(/;\}\);$/,""))
+                 .redux.api.responses)) {
+            for(x in responses) {
+                if(/\/about\//.test(x)) {
+                    ret.categories=responses[x].data.taxonomyInfos.map(x => x.name);
+                    //ret.taxonomyInfos=responses[x].data.taxonomyInfos;
+                    if(responses[x].data.displayHours) {
+                        ret.hours=AggParser.parse_ta_hours(responses[x].data.displayHours); }
+                }
+            }
+        }
+    }
+    resolve(ret);
+};
+
+
+/** TODO: add query conditions, edit if to be less selective, maybe grab more than one */
+AggParser.parse_yellowpages=function(doc,url,resolve,reject) {
+    var mdm=doc.querySelectorAll(".search-results .mdm"),i,result={success:true},cats,new_url;
+    for(i=0;i<mdm.length;i++) {
+        var name=mdm[i].querySelector(".business-name"),addr=mdm[i].querySelector(".adr"),parsed_add,phone;
+        phone=mdm[i].querySelector(".phone");
+        if(addr&&(result.address=addr.innerText) &&
+	   (result.parsed_add=parseAddress.parseLocation(addr.innerText)) && name && (result.name=name.innerText)) {
+            result.phone=phone?phone.innerText:"";
+            if(cats=mdm[i].querySelector(".categories")) result.categories=cats.innerText;
+            if(new_url=mdm[i].querySelector(".track-visit-website")) result.url=new_url.href;
+            resolve(result);
+            return;
+        }
+    }
+    console.log("No yellowpages results");
+    result.success=false;
+    resolve(result);
+    return;
+};
+
+/* parse_youtube_inner is a helper function for the parse_youtube function */
+AggParser.parse_youtube_inner=function(text) {
+    var parsed,ret={},runs,match,x,content,contents,i,tabs,label,links,url;
+    try { parsed=JSON.parse(text); }
+    catch(error) { console.log("error parsing="+error+", text="+text); return; }
+    tabs=parsed.contents.twoColumnBrowseResultsRenderer.tabs;
+    for(i=0; i < tabs.length; i++) if(tabs[i].tabRenderer && tabs[i].tabRenderer.title==="About" && (content=tabs[i].tabRenderer.content)) break;
+    if(!content) return ret;
+    contents=content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].channelAboutFullMetadataRenderer;
+    if((label=contents.businessEmailLabel)===undefined) ret.email="";
+    if(contents.subscriberCountText && (runs=contents.subscriberCountText.runs) && runs.length>0 &&
+       runs[0].text) ret.total_subscribers=runs[0].text.replace(/,/g,"");
+    if(contents.country && contents.country.simpleText) ret.location=contents.country.simpleText;
+    if((links=contents.primaryLinks)===undefined) links=[];
+    for(i=0; i < links.length; i++) {
+        url=decodeURIComponent(links[i].navigationEndpoint.urlEndpoint.url.replace(/^.*(&|\?)q\=/,"")).replace(/(&|\?).*$/,"");
+        console.log("url["+i+"]="+url);
+        if(/instagram\.com/.test(url)) ret.insta=url; 
+        else if(/facebook\.com/.test(url)) ret.fb=url.replace(/\/$/,"").replace(/facebook\.com\//,"facebook.com/pg/")+"/about"; 
+        else if(/twitter\.com/.test(url)) ret.twitter=url;
+        else if(!/plus\.google\.com|((youtube|gofundme|patreon)\.com)/.test(url) && i===0) ret.url=url;
+    }
+    if(contents.description && contents.description.simpleText && (ret.description=contents.description.simpleText.replace(/\\n/g,"\n"))) {
+        if(match=ret.description.match(email_re)) ret.email=match[0];
+        if(!ret.insta && (match=ret.description.match(/https:\/\/(www.)?instagram.com\/[A-Za-z\.0-9_\-\/]+/))) ret.insta=match[0];
+        if(!ret.fb && (match=ret.description.match(/https?:\/\/([a-z]+).facebook.com\/[A-Za-z\.0-9_\-\/]+/))) ret.fb=match[0];
+    }
+    return ret;
+};
+/* parse_youtube Parses the 'about' page of a youtube channel */
+AggParser.parse_youtube=function(doc,url,resolve,reject) {
+    var scripts=doc.scripts,i,script_regex_begin=/^\s*window\[\"ytInitialData\"\] \=\s*/,text;
+    var script_regex_end=/\s*window\[\"ytInitialPlayerResponse\".*$/,ret={success:false},x,promise_list=[];
+    var email_match,match;
+    for(i=0; i < scripts.length; i++) {
+        if(script_regex_begin.test(scripts[i].innerHTML)) {
+            text=scripts[i].innerHTML.replace(script_regex_begin,"");
+            if(text.indexOf(";")!==-1) text=text.substr(0,text.indexOf("};")+1);
+            resolve(AggParser.parse_youtube_inner(text));
+            return;
         }
     }
     resolve(ret);
