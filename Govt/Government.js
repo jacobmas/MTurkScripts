@@ -1421,7 +1421,7 @@ Gov.parse_egovstrategies_page=function(doc,url,resolve,reject,page_num) {
 	    //console.log("("+page_num+", "+i+"), curr_contact="+JSON.stringify(curr_contact));
 
 	    if(Gov.matches_dept_regex(curr_contact.department)&&
-	       Gov.matches_title_regex(curr_contact.title)) Gov.contact_list.push(curr_contact,{url:url}));
+	       Gov.matches_title_regex(curr_contact.title)) Gov.contact_list.push(Object.assign(curr_contact,{url:url}));
 	}
     }
     //        console.log("Resolving on page "+page_num);
