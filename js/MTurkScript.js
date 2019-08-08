@@ -24,7 +24,7 @@ var reverse_state_map={},reverse_province_map={};
 for(let x in state_map)     reverse_state_map[state_map[x]]=x;
 for(let x in province_map)     reverse_province_map[province_map[x]]=x;
 
-var default_bad_urls=["facebook.com","youtube.com","twitter.com","instagram.com","opendi.us",".business.site","plus.google.com",".alibaba.com",".trystuff.com",".mturkcontent.com",".amazonaws.com",".medium.com",".google.com",".opencorporates.com",".thefreedictionary.com",".dictionary.com"];
+var default_bad_urls=["facebook.com","youtube.com","twitter.com","instagram.com","opendi.us",".business.site","plus.google.com",".alibaba.com",".trystuff.com",".mturkcontent.com",".amazonaws.com",".medium.com",".google.com",".opencorporates.com",".thefreedictionary.com",".dictionary.com",".crunchbase.com"];
 
 /* Regular expressions for emails, phones, faxes */
 var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%\*]{1,40}(\.[^<>\/()\[\]\\.,;:：\s\*@"\?]{1,40}){0,5}))@((([a-zA-Z\-0-9]{1,30}\.){1,8}[a-zA-Z]{2,20}))/g;
@@ -356,7 +356,8 @@ MTurkScript.prototype.get_domain_only=function(the_url,lim_one) {
     var httpwww_re=/https?:\/\/www\./,http_re=/https?:\/\//,slash_re=/\/.*$/;
     var ret=the_url.replace(httpwww_re,"").replace(http_re,"").replace(slash_re,"");
     if(lim_one && /\.(co|ac|gov|com|org)\.[A-Za-z]{2}$/i.test(ret)) ret=ret.replace(/^.*\.([^\.]+\.(?:co|ac|gov)\.[A-Za-z]{2})$/,"$1");
-//    else if(lim_one && /^[^\.]+\.[^\.]+(\.[a-z]{2}\.us)$/i) ret=ret;
+    //    else if(lim_one && /^[^\.]+\.[^\.]+(\.[a-z]{2}\.us)$/i) ret=ret;
+    else if(lim_one && (/\.k12\.[a-z]{2}\.us$/i.test(ret))) ret=ret.replace(/^.*\.([^\.]+\.k12\.[a-z]{2}\.us$)/,"$1");
     else if(lim_one) ret=ret.replace(/^.*\.([^\.]+\.[^\.]+$)/,"$1");
     return ret;
 }
@@ -1529,7 +1530,7 @@ MTurkScript.prototype.longest_common_subsequence=function(set1, set2) {
     }
     return longestSequence;
 };
-
+/* TODO: FIX TO NOT DEPEND ON my_query */
 MTurkScript.prototype.is_bad_name=function(b_name,p_caption,i) {
     function is_bad_name_replacer(match,p1,p2,p3) {
 	if(/Saint/i.test(p2)) return p1+"St"+p3;
@@ -1585,6 +1586,5 @@ MTurkScript.prototype.found_good_person=function(people,full,resolve,reject,type
     return false;
 };
 
-	
 
 var MTP=MTurkScript.prototype;

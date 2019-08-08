@@ -328,7 +328,8 @@ Gov.parse_contact_tables=function(doc,url,resolve,reject,temp_div,dept_name) {
 		    if(!elem.innerText.match(email_re)) return;
 		    let elem_text=Gov.textify_elem(elem);
 		    //  console.log("elem.innerText="+elem.innerText);
-		    if((ret=Gov.parse_data_func(elem_text)) && Gov.is_good_person(ret) && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:dept_name})); });
+		    if((ret=Gov.parse_data_func(elem_text)) && Gov.is_good_person(ret) &&
+		       ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:dept_name,url:url})); });
 	    }
 
 	    //console.time("add_columns");
@@ -352,13 +353,13 @@ Gov.parse_contact_tables=function(doc,url,resolve,reject,temp_div,dept_name) {
 	}
 	else begin_row=j+1;
 	console.log("good title_map="+JSON.stringify(title_map));
-	var curr_count=Gov.parse_table(table[i],title_map,begin_row,table[i].rows.length,{name:dept_name});
+	var curr_count=Gov.parse_table(table[i],title_map,begin_row,table[i].rows.length,{name:dept_name},url);
 	if(curr_count>0) add_count=add_count+curr_count;
 	else if(table[i].innerText.match(email_re)) {
 	    table[i].querySelectorAll("td").forEach(function(elem) {
 		var ret,add_count=0;
 
-		if((ret=Gov.parse_data_func(elem.innerText)) && Gov.is_good_person(ret) && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:dept_name})); });
+		if((ret=Gov.parse_data_func(elem.innerText)) && Gov.is_good_person(ret) && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:dept_name,url:url})); });
 	}
     }
     /* No asynchronous calls so won't happen till after tables finish parsing right? */
@@ -399,7 +400,7 @@ Gov.parse_contact_elems=function(doc,url,resolve,reject,name) {
 	    text=text.replace(new RegExp(Gov.regexpify_str(elem.innerText)),"$&\t"); });*/
 
 	//console.log("p.innerText="+text);
-	if((ret=Gov.parse_data_func(text)) && Gov.is_good_person(ret) && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:name}));
+	if((ret=Gov.parse_data_func(text)) && Gov.is_good_person(ret) && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:name,url:url}));
 	else if(text.length>600) inner_p.innerHTML="";
     });
     console.log("parse_contact_divs, length="+div.length);
@@ -464,12 +465,12 @@ Gov.parse_contact_div=function(elem,name,url) {
 	    if((match=text.match(curr_regexp)) && match.length>=2 && match[1]!==undefined && (ret=Gov.parse_data_func(match[1].replace(/\n\n+/g,"\n")))
 	       && Gov.is_good_person(ret) && ++add_count) {
 		//console.log("match["+i+"]="+JSON.stringify(match));
-		Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:name})); }
+		Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:name,url:url})); }
 	}
     }
 
     if((add_count===0) && (ret=Gov.parse_data_func(text)) && Gov.is_good_person(ret)
-       && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:name}));
+       && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:name,url:url}));
 
     Gov.strip_bad_contacts();
     //  console.timeEnd("contact_div");
@@ -580,7 +581,7 @@ Gov.print_row=function(curr_row,i) {
  * it returns the number of contacts added successfully
  * TODO: fix to work with guess_table_map to deal with more complicated tables
  */
-Gov.parse_table=function(table,title_map,begin_row,end_row,dept) {
+Gov.parse_table=function(table,title_map,begin_row,end_row,dept,url) {
    
     console.log("In parse_table");
     console.time("parse_table");
@@ -632,6 +633,7 @@ Gov.parse_table=function(table,title_map,begin_row,end_row,dept) {
 	    curr_contact.name=Gov.parse_name_func(curr_contact.name);
 	    if(!curr_contact.email) curr_contact.email="";
 	    curr_contact.email=curr_contact.email.replace(/\n.*$/g,"").replace(/\n.*$/,"");
+	    curr_contact.url=url;
 	    Gov.contact_list.push(curr_contact);
 	}
 	else if(curr_contact.title) { dept.name=curr_contact.title; };
@@ -1142,7 +1144,7 @@ Gov.get_civicplus_contacts=function(doc,url,resolve,reject,text) {
 
 	title_map=Gov.guess_title_map(table[0].rows[i]);
 	console.log("title_map="+JSON.stringify(title_map));
-	if(!(title_map.name===undefined||title_map.title===undefined)) Gov.parse_table(table[0],title_map,i+1,table[0].rows.length,dept);
+	if(!(title_map.name===undefined||title_map.title===undefined)) Gov.parse_table(table[0],title_map,i+1,table[0].rows.length,dept,url);
     }
     resolve("");
 };
@@ -1191,7 +1193,7 @@ Gov.parse_civicplus_dept_table=function(table,dept_name,url,resolve,reject) {
 	curr_contact.department=dept_name;
 	if(title_map.name!==undefined&&(a=row.cells[title_map.name].querySelector("a"))&&
 	   (match=a.href.match(/\/users\/([^\/]+)/))) curr_contact.email=match[1]+"@"+MTP.get_domain_only(url,true);
-	if(curr_contact.name&&curr_contact.title&&curr_contact.email&&Gov.matches_title_regex(curr_contact.title)) Gov.contact_list.push(curr_contact);
+	if(curr_contact.name&&curr_contact.title&&curr_contact.email&&Gov.matches_title_regex(curr_contact.title)) Gov.contact_list.push(Object.assign(curr_contact,{url:url}));
 	else if(curr_contact.name&&curr_contact.title&&Gov.matches_title_regex(curr_contact.title)&&a) {
 	    promise_list.push(MTP.create_promise(MTP.fix_remote_url(a.href,url),Gov.grab_civicplus_email,MTP.my_then_func,
 						 MTP.my_catch_func,curr_contact)); }
@@ -1201,7 +1203,8 @@ Gov.parse_civicplus_dept_table=function(table,dept_name,url,resolve,reject) {
 Gov.grab_civicplus_email=function(doc,url,resolve,reject,curr_contact) {
     var urls=doc.querySelectorAll(".breadcrumb a"),i,match;
     urls.forEach(function(a) { if((match=a.href.match(/\/users\/([^\/]+)/))) curr_contact.email=match[1]+"@"+MTP.get_domain_only(url,true); });
-    if(curr_contact.name&&curr_contact.title&&curr_contact.email&&Gov.matches_title_regex(curr_contact.title)) Gov.contact_list.push(curr_contact);
+    if(curr_contact.name&&curr_contact.title&&curr_contact.email&&
+       Gov.matches_title_regex(curr_contact.title)) Gov.contact_list.push(Object.assign(curr_contact,{url:url}));
     resolve("");
 };
 /* Granicus/civicasoft scraper */
@@ -1231,7 +1234,7 @@ Gov.get_granicus_staff_directory=function(doc,url,resolve,reject,response) {
 			     phone:curr_elem.phone?curr_elem.phone:"",
 			     email:curr_elem.Emails?curr_elem.Emails.replace(/,.*$/,""):""
 			     ,department:dept};
-		Gov.contact_list.push(curr_person);
+		Gov.contact_list.push(Object.assign(curr_person,{url:url}));
 	    }
 	}
 		
@@ -1291,7 +1294,7 @@ Gov.parse_municipalcms_dir=function(doc,url,resolve,reject) {
 	    curr_contact={department:curr_dept};
 	    for(x in term_map) { if(term=curr_el.querySelector(x)) curr_contact[term_map[x]]=term.innerText.trim(); }
 	    if(email=curr_el.querySelector(".staffLineEmail a")) curr_contact.email=email.href.replace(/^\s*mailto:\s*/,"");
-	    Gov.contact_list.push(curr_contact);
+	    Gov.contact_list.push(Object.assign(curr_contact,{url:url}));
 	    curr_el=curr_el.nextElementSibling;
 	}
     }
@@ -1330,7 +1333,7 @@ Gov.parse_municipalcms_page=function(doc,url,resolve,reject,dept) {
 	else email="";
 	if(row.cells.length>=3) {
 	    Gov.contact_list.push({name:row.cells[0].innerText,phone:row.cells[2].innerText,title:row.cells[1].innerText,
-				   department:dept,email:email}); }
+				   department:dept,email:email,url:url}); }
     }
 
     resolve(""); }
@@ -1353,7 +1356,8 @@ Gov.parse_municipalimpact=function(doc,url,resolve,reject,dept) {
     console.log("contacts.length="+contacts.length);
     contacts.forEach(function(item) {
 	Gov.fix_emails(item);
-	if((curr_contact=Gov.parse_data_func(item.innerText)) && curr_contact.name&&curr_contact.title) Gov.contact_list.push(curr_contact);
+	if((curr_contact=Gov.parse_data_func(item.innerText)) && curr_contact.name&&
+	   curr_contact.title) Gov.contact_list.push(Object.assign(curr_contact,{url:url}));
     })
     resolve("Done url="+url);
 };
@@ -1379,7 +1383,7 @@ Gov.parse_revize_directory=function(doc,url,resolve,reject) {
 	title_map=Gov.guess_title_map(table[0].rows[0]);
 	console.log("title_map="+JSON.stringify(title_map));
 	if(!((title_map.name===undefined&&title_map.first===undefined)
-	     ||(title_map.title===undefined))) Gov.parse_table(table[0],title_map,1,table[0].rows.length);
+	     ||(title_map.title===undefined))) Gov.parse_table(table[0],title_map,1,table[0].rows.length,{name:""},url);
     }
     resolve("");
 
@@ -1416,7 +1420,8 @@ Gov.parse_egovstrategies_page=function(doc,url,resolve,reject,page_num) {
 	    if(match=row.cells[3].innerHTML.match(/EmailDecode\(\'([^\']*)/)) curr_contact.email=Gov.egov_strategies_EmailDecode(match[1]);
 	    //console.log("("+page_num+", "+i+"), curr_contact="+JSON.stringify(curr_contact));
 
-	    if(Gov.matches_dept_regex(curr_contact.department)&&Gov.matches_title_regex(curr_contact.title)) Gov.contact_list.push(curr_contact);
+	    if(Gov.matches_dept_regex(curr_contact.department)&&
+	       Gov.matches_title_regex(curr_contact.title)) Gov.contact_list.push(curr_contact,{url:url}));
 	}
     }
     //        console.log("Resolving on page "+page_num);
@@ -1486,13 +1491,15 @@ Gov.parse_govoffice_vcard=function(doc,url,resolve,reject,dept_name) {
 	var curr_contact=Gov.parse_data_func(text);
 	if(!curr_contact.department) curr_contact.department=dept_name;
 	console.log("curr_contact="+JSON.stringify(curr_contact));
-	if(curr_contact&&curr_contact.name&&curr_contact.title&&Gov.matches_title_regex(curr_contact.title)) Gov.contact_list.push(curr_contact);
+	if(curr_contact&&curr_contact.name&&curr_contact.title&&
+	   Gov.matches_title_regex(curr_contact.title)) Gov.contact_list.push(Object.assign(curr_contact,{url:url}));
     });
     item.forEach(function(elem) {
 	var curr_contact=Gov.parse_data_func(elem.innerText);
 	console.log("curr_contact="+JSON.stringify(curr_contact));
 
-	if(curr_contact&&curr_contact.name&&curr_contact.title&&Gov.matches_title_regex(curr_contact.title)) Gov.contact_list.push(curr_contact);
+	if(curr_contact&&curr_contact.name&&curr_contact.title&&
+	   Gov.matches_title_regex(curr_contact.title)) Gov.contact_list.push(Object.assign(curr_contact,{url:url}));
     });
     resolve("Done vcard at "+url);
 };
