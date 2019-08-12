@@ -365,6 +365,7 @@ MTurkScript.prototype.prefix_in_string=function(prefixes, to_check) {
     for(var j=0; j < prefixes.length; j++) if(to_check.indexOf(prefixes[j])===0) return true;
     return false;
 }
+/* Parse a person's name, somewhat exhaustive */
 MTurkScript.prototype.parse_name=function(to_parse)
 {
     //console.log("Doing parse_name on "+to_parse);
@@ -380,7 +381,15 @@ MTurkScript.prototype.parse_name=function(to_parse)
            !(split_parse.length>0 && /[A-Z][a-z]/.test(split_parse[0]) && /^[^a-z]+$/.test(split_parse[last]))) break;
     }
     if(last>=2 && /^(Van|de|Le|La|Von)$/i.test(split_parse[last-1])) ret.lname=split_parse[last-1]+" "+split_parse[last];
-    else ret.lname=split_parse[last].replace(/[^A-Za-z\']+$/,"");
+    else {
+	if(last>0) ret.lname=split_parse[last].replace(/[^A-Za-z\']+$/,"");
+	else if(split_parse.length>=2) {
+	    /* must have skipped the last name */
+	    ret.lname=split_parse[1].replace(/^(.)(.*)$/,function(match,p1,p2) {
+		return p1.toUpperCase()+p2.toLowerCase(); });    
+	}
+	
+    }
     ret.fname=split_parse[0];
     if(last>=2 && split_parse[1].length>=1) ret.mname=split_parse[1].substring(0,1);
     else ret.mname="";
