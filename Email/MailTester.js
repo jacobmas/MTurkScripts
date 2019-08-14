@@ -109,18 +109,18 @@ MailTester.prototype.do_next_email_query=function(self) {
     if(!self) self=this;
 //    var self=this;
     console.log("do_next_email, query,curr_query_num="+this.curr_mailtester_num);
-    this.email_list.sort(EmailQual.email_cmp);
-    if(this.curr_mailtester_num<this.email_types.length) {
-        let curr_email=this.email_types[this.curr_mailtester_num];
-        this.curr_mailtester_num++;
+    self.email_list.sort(EmailQual.email_cmp);
+    if(self.curr_mailtester_num<self.email_types.length) {
+        let curr_email=self.email_types[self.curr_mailtester_num];
+        self.curr_mailtester_num++;
         search_str="+\""+curr_email+"\"";
 	// Don't do mailtester queries if we've found one already 
-        if(!this.done_with_mailtester && (this.email_list.length===0 || this.email_list[0].quality<6)) {
-	    this.do_mailtester_query(curr_email); }
+        if(!self.done_with_mailtester && (self.email_list.length===0 || self.email_list[0].quality<6)) {
+	    self.do_mailtester_query(curr_email,self); }
 	
         // Leaving out search initially???
-	else if(this.resolve_early&&this.email_list.length>0 && this.email_list[0].quality>=6) {
-	    this.resolve(this.email_list);
+	else if(self.resolve_early&&self.email_list.length>0 && self.email_list[0].quality>=6) {
+	    self.resolve(self.email_list);
 	    return;
 	}
 	// after emailPromise resolves, do more queries
@@ -139,7 +139,7 @@ MailTester.prototype.do_next_email_query=function(self) {
 };
    
 /* do a query of mailtester.com */
-MailTester.prototype.do_mailtester_query=function(email) {
+MailTester.prototype.do_mailtester_query=function(email,self) {
 
     var url="http://mailtester.com/testmail.php";
     var data={"lang":"en","email":email};
@@ -147,14 +147,14 @@ MailTester.prototype.do_mailtester_query=function(email) {
                  "referer":"http://mailtester.com/testmail.php"};
     var data_str=MTurkScript.prototype.json_to_post(data);
     console.log("do_mailtester_query, email="+email+", data_str="+data_str);
-    var self=this;
+    if(!self) self=this;
     var promise=new Promise((resolve,reject) => {
         if(self.done_with_mailtester) return;
         GM_xmlhttpRequest({method: 'POST', headers:headers,data:data_str,anonymous:true,
                            url: url,
                            onload: function(response) {
                                var doc = new DOMParser().parseFromString(response.responseText, "text/html");
-                               self.mailtester_response(doc,response.finalUrl, resolve, reject,email);
+                               self.mailtester_response(doc,response.finalUrl, resolve, reject,email,self);
                            },
                            onerror: function(response) { reject("Fail mailtester"); },ontimeout: function(response) { reject("Fail"); }
                           });
@@ -167,7 +167,9 @@ MailTester.prototype.do_mailtester_query=function(email) {
 };
 
 /* response to a mailtester query */
-MailTester.prototype.mailtester_response=function(doc,url,resolve,reject,email) {
+MailTester.prototype.mailtester_response=function(doc,url,resolve,reject,email,self) {
+    if(!self) self=this;
+
     console.log("mailtester_response,doc.body.innerHTML.length="+doc.body.innerHTML.length);
     var table=doc.querySelector("#content > table");
     if(table) {
