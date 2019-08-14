@@ -254,8 +254,7 @@ MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,se
 MTurkScript.prototype.removeDiacritics=function(str) {
     return str.replace(/[^\u0000-\u007E]/g, function(a) { return diacriticsMap[a] || a; });
 };
-MTurkScript.prototype.DeCryptString = function(s)
-{
+MTurkScript.prototype.DeCryptString = function(s) {
     var n = 0,r = "mailto:",z = 0;
     for( var i = 0; i < s.length/2; i++) {
         z = s.substr(i*2, 1);
@@ -286,9 +285,9 @@ MTurkScript.prototype.is_bad_email=function(to_check) {
     else if(/(@((godaddy|domain|addresshere|emailaddress)\.com|example\.com))|(^example@)/i.test(to_check)) return true;
     else if(/;/.test(to_check)) return true;
     else if(/^(sample@|youremail)/.test(to_check)) return true;
-    else if(/(^root@)|localhost\.localhost/.test(to_check)) return true;
+    else if(/(^(yourname|root)@)|localhost\.localhost/.test(to_check)) return true;
     else if(/(jacobmas|democraticluntz|fredthelinkedinfred|siviliamshumpkins)@gmail\.com|user@domain\.name/.test(to_check)) return true;
-    else if(/@(example|email|wix)\.com$/.test(to_check)) return true;
+    else if(/@(example|email|wix|yourcompany)\.com$/.test(to_check)) return true;
    // else if(!to_check.match(email_re)) return true;
     return false;
 }
@@ -609,6 +608,25 @@ MTurkScript.prototype.parseext_instagram=function(doc,instance,fragment)
     console.log("Done IG, result="+JSON.stringify(result));
 
     GM_setValue("instagram.com_result",result);
+};
+
+/**
+ * query_search does a Bing search
+ * search_str is the actual search query that we're simulating typing into bing
+ * resolve and reject come from a promise
+ * callback is the function called to parse the result of xmlhttprequest (usually query_response)
+ * type is a field denoting the "type" of query (since often multiples made per script)
+ * filters denotes what to put into the filters field in the bing URI 
+*/
+MTurkScript.prototype.query_search=function(search_str, resolve,reject, callback,type,filters) {
+    console.log("Searching with bing for "+search_str);
+    if(!filters) filters="";
+    var search_URIBing='https://www.bing.com/search?q='+
+        encodeURIComponent(search_str)+"&filters="+filters+"&first=1&rdr=1";
+    GM_xmlhttpRequest({method: 'GET', url: search_URIBing,
+                       onload: function(response) { callback(response, resolve, reject,type); },
+                       onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
+                      });
 };
 
 /* parse_b_context parses the b_context on Bing search
