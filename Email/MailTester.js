@@ -104,9 +104,10 @@ MailTester.bad_urls=["facebook.com","youtube.com","twitter.com","instagram.com",
 		     "/ufind.name",".yelp.com",".zoominfo.com"];
 
 /* Do the next email query for the current position in email_types */
-MailTester.prototype.do_next_email_query=function() {
+MailTester.prototype.do_next_email_query=function(self) {
     var search_str, emailPromise;
-    var self=this;
+    if(!self) self=this;
+//    var self=this;
     console.log("do_next_email, query,curr_query_num="+this.curr_mailtester_num);
     this.email_list.sort(EmailQual.email_cmp);
     if(this.curr_mailtester_num<this.email_types.length) {
@@ -126,7 +127,8 @@ MailTester.prototype.do_next_email_query=function() {
 	emailPromise = new Promise((email_resolve,email_reject) => {
             MTurkScript.prototype.query_search(search_str,email_resolve,email_reject,self.query_response,"email");
 	});
-	emailPromise.then(self.do_next_email_query).catch(self.do_next_email_query);
+	emailPromise.then(function() { self.do_next_email_query(self) })
+	    .catch(function() { self.do_next_email_query(self) });
 
 	// don't resolve yet if we're not done
 	return;
