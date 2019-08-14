@@ -196,7 +196,7 @@ MailTester.prototype.mailtester_response=function(doc,url,resolve,reject,email) 
 /* Query response specifically for finding emails */
 MailTester.prototype.query_response=function(response,resolve,reject,type) {
     var doc = new DOMParser().parseFromString(response.responseText, "text/html");
-    console.log("in query_response\n"+response.finalUrl+", type="+type+", try_count["+type+"]="+my_query.try_count[type]);
+    console.log("in query_response\n"+response.finalUrl+", type="+type);
     var search, b_algo, i=0;
     var b_url, b_name, b_factrow, b_caption,p_caption,loop_result,b1_success=false;
     var promise_list=[];
@@ -280,7 +280,6 @@ MailTester.prototype.contact_response=function(doc,url,resolve,reject,query) {
         catch(error) { console.log("Error with emails "+error); }
     }
     console.log("* doing doneQueries++ for "+url);
-    //  console.log("contact_response, url="+url+", my_query.email_list="+JSON.stringify(my_query.email_list));
     resolve("");
     return;
 };
