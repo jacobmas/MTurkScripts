@@ -128,7 +128,9 @@ MailTester.prototype.do_next_email_query=function(self) {
             MTurkScript.prototype.query_search(search_str,email_resolve,email_reject,self.query_response,"email");
 	});
 	emailPromise.then(function() { self.do_next_email_query(self) })
-	    .catch(function() { self.do_next_email_query(self) });
+	    .catch(function(response) {
+		console.log("Failed emailPromise,response="+response);
+		self.do_next_email_query(self) });
 
 	// don't resolve yet if we're not done
 	return;
