@@ -9,8 +9,8 @@
  * the_name={fname:John,mname:Quentin,lname:Doe}, desired_domain either undefined or the domain we're looking for emails for */
 function EmailQual(email,url,the_name,desired_domain) {
     var fname=the_name.fname.replace(/\'/g,"").toLowerCase(),lname=the_name.lname.replace(/[\'\s]/g,"").toLowerCase();
-    this.fname=fname;
-    this.lname=lname;
+    this.fname=the_name.fname;
+    this.lname=the_name.lname;
     var email_regexps=
         [new RegExp("^"+fname.charAt(0)+"(\\.)?"+lname+"$","i"),new RegExp("^"+fname+"[\\._]{1}"+lname+"$","i"),
          new RegExp("^"+fname+lname.charAt(0)+"$","i"),new RegExp("^"+lname+fname.charAt(0)+"$","i")];
