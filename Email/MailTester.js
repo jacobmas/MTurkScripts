@@ -166,9 +166,9 @@ MailTester.prototype.do_mailtester_query=function(email,self) {
                           });
     });
     promise.then(function() {
-	if(typeof self.mailtester_callback === 'function') self.mailtester_callback();
+	if(typeof self.mailtester_callback === 'function') self.mailtester_callback(self.email_list);
     }).catch(function() {
-        if(typeof self.mailtester_callback === 'function') self.mailtester_callback();
+        if(typeof self.mailtester_callback === 'function') self.mailtester_callback(self.email_list);
     });
 };
 
