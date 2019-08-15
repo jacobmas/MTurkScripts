@@ -125,6 +125,7 @@ MailTester.prototype.do_next_email_query=function(self) {
 	}
 	// after emailPromise resolves, do more queries
 	emailPromise = new Promise((email_resolve,email_reject) => {
+	    console.log("Beginning emailPromise");
             MTurkScript.prototype.query_search(search_str,email_resolve,email_reject,self.query_response,"email","",self);
 	});
 	emailPromise.then(function() { self.do_next_email_query(self) })
