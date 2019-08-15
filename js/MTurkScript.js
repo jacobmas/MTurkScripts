@@ -616,15 +616,16 @@ MTurkScript.prototype.parseext_instagram=function(doc,instance,fragment)
  * resolve and reject come from a promise
  * callback is the function called to parse the result of xmlhttprequest (usually query_response)
  * type is a field denoting the "type" of query (since often multiples made per script)
- * filters denotes what to put into the filters field in the bing URI 
+ * filters denotes what to put into the filters field in the bing URI
+ * caller allows an object to pass itself in
 */
-MTurkScript.prototype.query_search=function(search_str, resolve,reject, callback,type,filters) {
+MTurkScript.prototype.query_search=function(search_str, resolve,reject, callback,type,filters,caller) {
     console.log("Searching with bing for "+search_str);
     if(!filters) filters="";
     var search_URIBing='https://www.bing.com/search?q='+
         encodeURIComponent(search_str)+"&filters="+filters+"&first=1&rdr=1";
     GM_xmlhttpRequest({method: 'GET', url: search_URIBing,
-                       onload: function(response) { callback(response, resolve, reject,type); },
+                       onload: function(response) { callback(response, resolve, reject,type,caller); },
                        onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
                       });
 };

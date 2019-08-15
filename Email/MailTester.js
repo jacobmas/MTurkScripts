@@ -200,7 +200,7 @@ MailTester.prototype.mailtester_response=function(doc,url,resolve,reject,email,s
 };
 
 /* Query response specifically for finding emails */
-MailTester.prototype.query_response=function(response,resolve,reject,type) {
+MailTester.prototype.query_response=function(response,resolve,reject,type,self) {
     var doc = new DOMParser().parseFromString(response.responseText, "text/html");
     console.log("in query_response\n"+response.finalUrl+", type="+type);
     var search, b_algo, i=0;
@@ -210,20 +210,20 @@ MailTester.prototype.query_response=function(response,resolve,reject,type) {
         search=doc.getElementById("b_content");
         b_algo=search.getElementsByClassName("b_algo");
         for(i=0; i < b_algo.length&&i<=3; i++) {
-            b_url=this.query_response_loop(b_algo,i,type,promise_list,resolve,reject,b1_success);
+            b_url=self.query_response_loop(b_algo,i,type,promise_list,resolve,reject,b1_success,self);
             if(b_url&&(b1_success=true)) break;
         }
         if(type==="email") {
-            this.totalEmail++;
+            self.totalEmail++;
             Promise.all(promise_list).then(function() {
 		console.log("Done with "+response.finalUrl);
-                this.doneEmail++;
+                self.doneEmail++;
 		resolve("");
                  })
                 .catch(function() {
 		    console.log("Done with "+response.finalUrl);
 
-                    this.doneEmail++;
+                    self.doneEmail++;
                     resolve(""); });
             return;
 	}
@@ -238,7 +238,7 @@ MailTester.prototype.query_response=function(response,resolve,reject,type) {
 };
 
 /* Parse a single bing search result on a page */
-MailTester.prototype.query_response_loop=function(b_algo,i,type,promise_list,resolve,reject,b1_success) {
+MailTester.prototype.query_response_loop=function(b_algo,i,type,promise_list,resolve,reject,b1_success,self) {
     var b_name,b_url,p_caption,b_caption;
     var mtch,j,people;
     b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
@@ -251,21 +251,21 @@ MailTester.prototype.query_response_loop=function(b_algo,i,type,promise_list,res
     if(/(email|query)/.test(type) && (mtch=p_caption.match(MailTester.email_re))) {
         for(j=0; j < mtch.length; j++) {
 	    if(!MTurkScript.prototype.is_bad_email(mtch[j]) &&
-	       mtch[j].length>0) this.email_list.push(new EmailQual(mtch[j],b_url,this.fullname,this.domain));
+	       mtch[j].length>0) self.email_list.push(new EmailQual(mtch[j],b_url,self.fullname,self.domain));
 	}
     }
     /* TODO: integrate PDF parser at some point */
     if(type==="email" && i <=3 && !/\.(xls|xlsx|pdf|doc)$/.test(b_url)&&
        !MTurkScript.prototype.is_bad_url(b_url,MailTester.bad_urls,-1)) {
         promise_list.push(MTurkScript.prototype.create_promise(
-	    b_url,this.contact_response,MTurkScript.prototype.my_then_func,MTurkScript.prototype.my_catch_func));
+	    b_url,self.contact_response,MTurkScript.prototype.my_then_func,MTurkScript.prototype.my_catch_func,self));
     }
     return null;
 };
 
 /**
      * contact_response Here it searches for an email TODO:FIX */
-MailTester.prototype.contact_response=function(doc,url,resolve,reject,query) {
+MailTester.prototype.contact_response=function(doc,url,resolve,reject,self) {
     console.log("in contact_response,url="+url);
     var i,j,temp_email,links=doc.links,email_matches;
     var temp_url,curr_url;
@@ -275,13 +275,13 @@ MailTester.prototype.contact_response=function(doc,url,resolve,reject,query) {
     if((email_matches=doc.body.innerHTML.match(MailTester.email_re))) {
         for(j=0; j < email_matches.length; j++) {
             if(!MTurkScript.prototype.is_bad_email(email_matches[j]) &&
-	       email_matches[j].length>0) this.email_list.push(new EmailQual(email_matches[j].toString(),url,this.fullname,this.domain));
+	       email_matches[j].length>0) self.email_list.push(new EmailQual(email_matches[j].toString(),url,self.fullname,self.domain));
         }
     }
     for(i=0; i < links.length; i++) {
         try {
             if((temp_email=links[i].href.replace(/^mailto:\s*/,"").match(MailTester.email_re)) &&
-               !MTurkScript.prototype.is_bad_email(temp_email[0])) this.email_list.push(new EmailQual(temp_email.toString(),url,this.fullname,this.domain));
+               !MTurkScript.prototype.is_bad_email(temp_email[0])) self.email_list.push(new EmailQual(temp_email.toString(),url,self.fullname,self.domain));
         }
         catch(error) { console.log("Error with emails "+error); }
     }
