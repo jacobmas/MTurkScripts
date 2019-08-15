@@ -120,6 +120,7 @@ MailTester.prototype.do_next_email_query=function(self) {
 	
         // Leaving out search initially???
 	else if(self.resolve_early&&self.email_list.length>0 && self.email_list[0].quality>=6) {
+	    console..log("Resolving early");
 	    self.resolve(self.email_list);
 	    return;
 	}
@@ -137,8 +138,8 @@ MailTester.prototype.do_next_email_query=function(self) {
 	return;
     }
 	// If we've found a good email, we can resolve early
-    this.email_list.sort(EmailQual.email_cmp);
-    this.resolve(this.email_list);
+    self.email_list.sort(EmailQual.email_cmp);
+    self.resolve(self.email_list);
 };
    
 /* do a query of mailtester.com */
