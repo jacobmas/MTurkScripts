@@ -8,7 +8,7 @@ var Gov=Gov||{contact_list:[],email_list:[],scripts_loaded:{},scripts_total:{},a
 	      title_regex:new RegExp("(^|[^A-Za-z]{1})"+
 	"(Administrator|Advisor|Assistant|Attorney|Building Services|Clerk[\/\-]+Treasurer|"+
 	"Chief of Police|Chief|Clerk|Code Enforcement|Commissioner|Constable|Coordinator|Council Member|"+
-	"Director|Department|Det\.|Detective|Engineer|Fire|Foreman|Head of School|Inspector|"+
+	"Director|Department|Det\.|Detective|Engineer|Fire|Founder|Foreman|Head of School|Inspector|"+
 	"Manager|Marshal|Mayor|Officer|Official|Operations|Planner|Police|President|Public|"+
 	"Recorder|Roadmaster|Scientist|Secretary|Sheriff|Specialist|Superintendent|Supervisor|Sgt\.|"+
 	"Undersheriff)($|[^A-Za-z0-9]{1})","i"),
@@ -198,7 +198,9 @@ Gov.load_scripts=function(doc,url,resolve,reject,dept_name) {
     var temp_div=document.createElement("div"),head=document.head;
     temp_div.id="temp_div_id";
     temp_div.style.display="none";
-    document.body.appendChild(temp_div);
+    if(!MTP.is_crowd) {
+	document.body.appendChild(temp_div);
+    }
     var tables=doc.querySelectorAll("table");
     for(i=0; i < tables.length; i++)
     {
@@ -828,6 +830,7 @@ Gov.parsed_ret_is_bad=function(ret) {
 /* Try to fix a bad title splitting */
 Gov.fix_bad_title_data_func=function(ret) {
     let split_title=ret.title.split(",");
+    //if(ret.title.split(" ").length>10 && /\'/.test(ret.title)) ret.title="":
    // console.log("# split_title="+JSON.stringify(split_title)+", test1="+ Gov.title_regex.test(split_title[1].trim()));
     //console.log("# test2="+nlp(split_title[0].trim()).people().out('terms').length);
     if(split_title.length===2 && Gov.title_regex.test(split_title[1].trim()) &&
