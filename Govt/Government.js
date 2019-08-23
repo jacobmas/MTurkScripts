@@ -19,7 +19,7 @@ var Gov=Gov||{contact_list:[],email_list:[],scripts_loaded:{},scripts_total:{},a
 	      bad_contact_regex:/Webmaster|Employee Email|(^|\s)Login|Email Notifications|Business .*Directory|(State|Federal).*Contacts/i,
 	      dept_name_regex:/^(Department of )?(Parks (and|&) Recreation|Library|CPED|Public Works|Police|Sanitation|Administration|Parks|Recreation|Information Technology|Human Resources|Civil Rights)\s*(Department)?$/i,
 
-	      contact_regex:/Contact|Email|Directory|(^About)|(^Departments)|Staff|Officials|^(Town|City) Hall\s*$|(^Government)|(Our Team)|(Personnel)|(Our People)|((^|[^A-Za-z]+)Roster)/i};
+	      contact_regex:/Contact|Email|Directory|(^About)|(^Departments)|Staff|Officials|^(Town|City) Hall\s*$|(^Government)|(Our Team)|(Leadership)|(Personnel)|(Our People)|((^|[^A-Za-z]+)Roster)/i};
 Gov.bad_out_link_regex=/(\/|\.)(facebook|twitter|youtube|constantcontact|activecommunities)\.com|(coderedweb\.net)|(chamber-of-commerce)|(youtu.be)/i;
 Gov.scrapers={"ahaconsulting":null,"alphadogsolutions":null,"blackboard":null,"civicasoft":null,"civiclive":null,"civicplus":null,"combusser":null,
 	      "egovlink":null,
