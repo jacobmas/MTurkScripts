@@ -302,7 +302,8 @@ MTurkScript.prototype.is_bad_email=function(to_check) {
 MTurkScript.prototype.is_bad_url=function(the_url, bad_urls, max_depth, max_dashes)
 {
     var i,dash_split,do_dashes,slash_split;
-    the_url=the_url.replace(/\/$/,"");
+    the_url=the_url.replace(/\/$/,"")
+	.replace(/(https?:\/\/[^\/]*)\/en\/.*$/,"$1");
     if(max_depth===undefined) max_depth=4;
     if(max_dashes===undefined || max_dashes===-1) do_dashes=false;
     else do_dashes=true;
@@ -634,8 +635,7 @@ MTurkScript.prototype.query_search=function(search_str, resolve,reject, callback
    puts the b_vList fields (e.g. Address, Phone,Website) into the results under the
    name given on Bing,  puts b_entityTitle in Name
 */
-MTurkScript.prototype.parse_b_context=function(b_context)
-{
+MTurkScript.prototype.parse_b_context=function(b_context) {
     var b_vList,i,bm_details_overlay,b_entityTitle,b_entitySubTitle,b_subModule_h2,j;
     var b_hList=b_context.getElementsByClassName("b_hList"),inner_a,details,inner_li,split_exp;
     var field_regex=/^([^:]+):\s*(.*)$/,field_match,result={},disambig;
@@ -775,6 +775,19 @@ MTurkScript.prototype.scrape_spli_experience=function(spli) {
     
 };
 
+/**
+ * parse b_factrow on bing 
+ */
+MTurkScript.prototype.parse_b_factrow=function(factrow) {
+        var ret={},re=/^([^:]*):\s*(.*)$/,match;
+        var lst=factrow.querySelectorAll("li"),x;
+        for(x of lst) {
+            if((match=x.innerText.trim().match(re)))  ret[match[1].trim()]=match[2].trim();
+        }
+        console.log("parse_b_factrow,ret="+JSON.stringify(ret));
+        return ret;
+};
+
 MTurkScript.prototype.parse_lgb_info=function(lgb_info) {
     var result={"phone":"","name":"",url:"",address:""},bm_details_overlay,b_factrow,i,b_entityTitle,inner_a;
     b_entityTitle=lgb_info.getElementsByClassName("b_entityTitle");
@@ -801,6 +814,41 @@ MTurkScript.prototype.parse_loc_hy=function(loc_hy) {
                   url:url?url.href:""});  });
     return ret;
 };
+
+/* parse queries to bing of the form https://www.bing.com/maps/overlaybfpr?q="+encodeURIComponent(my_query.address);
+ * to grab business data location at an address,
+ * TODO: Modify to make generic
+ */
+MTurkScript.prototype.parse_bing_overlay=function(doc,url,resolve,reject) {
+    console.log("In parse_bing_overlay, url="+url);
+    var moduleContainer=doc.querySelector(".EntityCollectionModuleContainer");
+    var promise_list=[];
+    if(!moduleContainer) {
+        console.log("module container failed");
+        reject("");
+        return;
+    }
+    var ent_list,y;
+    try {
+        ent_list=JSON.parse(moduleContainer.dataset.entitylist);
+        for(y of ent_list) {
+            console.log("beginning promise list query of "+y.title);
+            promise_list.push(make_addressplus_query(y.title,my_query.address));
+        }
+        Promise.all(promise_list).then(function() { resolve(""); })
+            .catch(function(response) {
+                console.log("Failure in addressplus queries "+response);
+                resolve(""); });
+
+
+    }
+    catch(error) {
+        console.log("Error "+error+", parsing entitylist JSON");
+        reject("");
+        return;
+    }
+};
+
 
 /* fields_to_add should be my_query.fields 
    field_map if given should be map of fields_to_add to actual field names
@@ -1612,6 +1660,15 @@ MTurkScript.prototype.found_good_person=function(people,full,resolve,reject,type
         }
     }
     return false;
+};
+
+/* Do proper name casing, UNTESTED */
+MTurkScript.prototype.proper_name_casing=function(name) {
+    if(/^[A-Z][a-z]/.test(name)) return name;
+    name=name.toLowerCase();
+    if(/^mc/.test(name)&&name.length>=4) return "Mc"+name.substr(2,1).toUpperCase()+name.substr(3);
+    if(name.length>1) return name.substr(0,1).toUpperCase()+name.substr(1);
+    return name;
 };
 
 

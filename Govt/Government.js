@@ -198,9 +198,8 @@ Gov.load_scripts=function(doc,url,resolve,reject,dept_name) {
     var temp_div=document.createElement("div"),head=document.head;
     temp_div.id="temp_div_id";
     temp_div.style.display="none";
-    if(!MTP.is_crowd) {
-	document.body.appendChild(temp_div);
-    }
+    
+    document.body.appendChild(temp_div);
     var tables=doc.querySelectorAll("table");
     for(i=0; i < tables.length; i++)
     {

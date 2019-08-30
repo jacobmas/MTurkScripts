@@ -1,5 +1,5 @@
 /* File with various useful site parsers, still relatively informal */
-var AggParser={};
+var AggParser={}; // generic object
 
 
 AggParser.parse_postal_elem=function(elem,priority,site,url) {
@@ -28,6 +28,11 @@ AggParser.parse_postal=function(doc,url,resolve,reject,type) {
     result.address=AggParser.parse_postal_elem(div,4,type,url);
     console.log("parse_postal, result="+JSON.stringify(result));
     resolve(result);
+};
+
+/* TODO: finish */
+AggParser.search_buzzfile=function(query,resolve,reject) {
+    
 };
 
 AggParser.parse_buzzfile=function(doc,url,resolve,reject,quality) {
@@ -374,3 +379,5 @@ AggParser.parse_youtube=function(doc,url,resolve,reject) {
     }
     resolve(ret);
 };
+
+
