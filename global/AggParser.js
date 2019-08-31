@@ -381,3 +381,118 @@ AggParser.parse_youtube=function(doc,url,resolve,reject) {
 };
 
 
+/** 
+ * Parser for manta.com, happening live to avoid distil getting around
+ * can deal with finding coords later if aI care  
+ */
+
+AggParser.do_manta_search=function(name,location,resolve,reject) {
+      //  MTurk.check_and_submit();
+        var the_manta;
+        
+        the_manta=new MyManta(name,resolve,reject,location);
+        var x;
+        for(x in the_manta) console.log("x="+x);
+        GM_setValue("manta_instance",the_manta);
+        GM_setValue("manta_state","begin");
+        console.log("the_manta="+JSON.stringify(the_manta));
+        var the_tab=GM_openInTab(the_manta.search_url);
+        GM_addValueChangeListener("manta_state",function() {
+            console.log("manta_state change, arguments="+JSON.stringify(arguments));
+            var new_val=arguments[2];
+            if(new_val==="done") {
+                the_manta=GM_getValue("manta_instance",{});
+                the_tab.close();
+                resolve(the_manta);
+            }
+        });
+};
+
+/* Basic code to always run */
+if(/\.manta.com(\/|$)/.test(window.location.href)) {
+    var temp_manta=GM_getValue("manta_instance");
+    var state=GM_getValue("manta_state");
+    var the_manta;
+    console.log("the_manta="+JSON.stringify(the_manta)+", the_manta="+the_manta);
+    
+    if(state==="begin") {
+        GM_setValue("manta_state","search");
+        the_manta=new MyManta(temp_manta.name,temp_manta.resolve,temp_manta.reject,temp_manta.location,"search");
+        console.log("Going to do parse_manta_search");
+        the_manta.parse_manta_search();
+    }
+    else if(state==="parse") {
+        the_manta=new MyManta(temp_manta);
+        console.log("Going to do parse_manta");
+        the_manta.parse_manta();
+    }
+}
+
+function MyManta(name,resolve,reject,location,status) {
+    var x;
+    if(typeof name ==="object") {
+        for(x in name) {
+            this[x]=name[x]; }
+    }
+    else {
+        this.name=name;
+        this.resolve=resolve;
+        this.reject=reject;
+        this.status=status;
+        this.lat=location?location.lat:"";
+        this.lon=location?location.lon:"";
+        this.search_url="https://www.manta.com/search?search_source=nav&search="+encodeURIComponent(this.name);
+        if(this.lat&&this.lon) this.search_url=this.search_url+"&pt="+(this.lat&&this.lon?encodeURIComponent(this.lat+","+this.lon):"");
+    }
+    // this.init();
+
+};
+MyManta.prototype.init=function() {
+    console.log("Calling init"); };
+MyManta.prototype.parse_manta_search=function() {
+    var i,j,list_items,entity,item;
+    console.log("In parse_manta_search, name="+this.name);
+    var the_div=document.querySelector("[itemprop='isPartOf']");
+    list_items=document.querySelectorAll("ul[rel='searchResults'] .list-group-item");
+    var itemprop_list=["name","streetAddress","addressLocality","addressRegion","postalCode"];
+    var entity_data,temp;
+    for(entity of list_items) {
+        entity_data={};
+        for(item of itemprop_list) {
+            if((temp=entity.querySelector("[itemprop='"+item+"']"))) entity_data[item]=temp.innerText.trim(); }
+        if((temp=entity.querySelector("[itemprop='url']"))) entity_data.url=temp.content;
+        console.log("entity_data="+JSON.stringify(entity_data));
+        if(entity_data.name && entity_data.url&& (MTurkScript.prototype.matches_names(this.name,entity_data.name)||
+                                                  MTurkScript.prototype.matches_names(MTurkScript.prototype.shorten_company_name(this.name),
+                                                                                      MTurkScript.prototype.shorten_company_name(entity_data.name)))) {
+            console.log("Success with finding it, going to "+entity_data.url);
+            this.manta_url=entity_data.url;
+            GM_setValue("manta_instance",this);
+            GM_setValue("manta_state","parse");
+            window.location.href=this.manta_url;
+            return;
+        }
+    }
+
+    GM_setValue("manta_state","fail");
+};
+MyManta.prototype.parse_manta=function(response) {
+    var script_re=/^\s*\{\"@context/;
+    var script_lst=document.scripts,curr_script,parsed;
+    for(curr_script of script_lst) {
+        if(script_re.test(curr_script.innerHTML)) {
+            try {
+                parsed=JSON.parse(curr_script.innerHTML);
+                this.schema=parsed;
+                GM_setValue("manta_instance",this);
+                GM_setValue("manta_state","done");
+                return;
+            }
+            catch(error) {
+                console.log("error parsing script JSON");
+            }
+        }
+    }
+
+};
+
