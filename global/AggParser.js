@@ -496,3 +496,69 @@ MyManta.prototype.parse_manta=function(response) {
 
 };
 
+
+function Buzzfile(name,address,resolve,reject) {
+    var x;
+    if(typeof name==='object') {
+        for(x in name) this[x]=name[x]; }
+    else {
+        this.name=name;
+        this.address=address;
+        if(!this.address) this.address={"city":"","state":""};
+        this.resolve=resolve;
+        this.reject=reject;
+        this.search_url="https://buzzfile.com/Search/Company/Results?searchTerm="+encodeURIComponent(this.name.replace(/\s/g,"-"));
+    }
+}
+Buzzfile.prototype.parse_buzzfile_search=function() {
+    console.log("In buzzfile search");
+    var table=document.querySelector("table#companyList"),i,curr_row,comp={};
+    for(i=1;i<table.rows.length;i++) {
+        curr_row=table.rows[i];
+        if(curr_row.cells.length<=5) continue;
+	//            console.log("curr_row.cells.length="+curr_row.cells.length);
+        Object.assign(comp,{name:curr_row.cells[1].innerText.trim(),city:curr_row.cells[4].innerText.trim(),state:curr_row.cells[5].innerText.trim()});
+        if(comp.name&& (MTurkScript.prototype.matches_names(this.name,comp.name)||
+                        MTurkScript.prototype.matches_names(MTurkScript.prototype.shorten_company_name(this.name),
+                                                            MTurkScript.prototype.shorten_company_name(comp.name)))&&
+           (!this.address||!this.address.state||this.address.state===comp.state||state_map[this.address.state]===comp.state)) {
+            this.buzzfile_url=document.querySelector("table#companyList td a").href;
+            GM_setValue("buzzfile_instance",this);
+            console.log("this="+JSON.stringify(this));
+            GM_setValue("buzzfile_state","done");
+        }
+    }
+}
+
+AggParser.do_buzzfile_search=function(name,address,resolve,reject) {
+    var the_tab;
+    var the_buzzfile=new Buzzfile(name,address,resolve,reject);
+    GM_setValue("buzzfile_instance",the_buzzfile);
+    GM_setValue("buzzfile_state","begin");
+    GM_addValueChangeListener("buzzfile_state",function() {
+        console.log("buzzfile_state change, arguments="+JSON.stringify(arguments));
+        var new_val=arguments[2];
+        if(new_val==="done") {
+            the_buzzfile=GM_getValue("buzzfile_instance",{});
+            console.log("Done, the_buzzfile="+JSON.stringify(the_buzzfile));
+            the_tab.close();
+            console.log("closed the tab");
+            resolve(the_buzzfile);
+            return;
+        }
+    });
+    the_tab=GM_openInTab(the_buzzfile.search_url);
+    
+}
+
+if(/\.buzzfile.com(\/|$)/.test(window.location.href)) {
+    var temp_buzzfile=GM_getValue("buzzfile_instance");
+    var state=GM_getValue("buzzfile_state","begin");
+    var the_buzzfile;
+    if(state==="begin") {
+        unsafeWindow.localStorage.clear();
+        the_buzzfile=new Buzzfile(temp_buzzfile);
+        the_buzzfile.parse_buzzfile_search();
+    }
+    
+}
