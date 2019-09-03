@@ -408,6 +408,7 @@ AggParser.do_manta_search=function(name,location,resolve,reject) {
         });
 };
 
+
 /* Basic code to always run */
 if(/\.manta.com(\/|$)/.test(window.location.href)) {
     var temp_manta=GM_getValue("manta_instance");
@@ -526,8 +527,13 @@ Buzzfile.prototype.parse_buzzfile_search=function() {
             GM_setValue("buzzfile_instance",this);
             console.log("this="+JSON.stringify(this));
             GM_setValue("buzzfile_state","done");
+	    return;
         }
     }
+    this.failed=true;
+    GM_setValue("buzzfile_instance",this);
+    console.log("FAILED, this="+JSON.stringify(this));
+    GM_setValue("buzzfile_state","done");    
 }
 
 AggParser.do_buzzfile_search=function(name,address,resolve,reject) {
