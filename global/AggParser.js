@@ -408,27 +408,6 @@ AggParser.do_manta_search=function(name,location,resolve,reject) {
         });
 };
 
-
-/* Basic code to always run */
-if(/\.manta.com(\/|$)/.test(window.location.href)) {
-    var temp_manta=GM_getValue("manta_instance");
-    var state=GM_getValue("manta_state");
-    var the_manta;
-    console.log("the_manta="+JSON.stringify(the_manta)+", the_manta="+the_manta);
-    
-    if(state==="begin") {
-        GM_setValue("manta_state","search");
-        the_manta=new MyManta(temp_manta.name,temp_manta.resolve,temp_manta.reject,temp_manta.location,"search");
-        console.log("Going to do parse_manta_search");
-        the_manta.parse_manta_search();
-    }
-    else if(state==="parse") {
-        the_manta=new MyManta(temp_manta);
-        console.log("Going to do parse_manta");
-        the_manta.parse_manta();
-    }
-}
-
 function MyManta(name,resolve,reject,location,status) {
     var x;
     if(typeof name ==="object") {
@@ -447,7 +426,7 @@ function MyManta(name,resolve,reject,location,status) {
     }
     // this.init();
 
-};
+}
 MyManta.prototype.init=function() {
     console.log("Calling init"); };
 MyManta.prototype.parse_manta_search=function() {
@@ -496,6 +475,29 @@ MyManta.prototype.parse_manta=function(response) {
     }
 
 };
+
+
+/* Basic code to always run */
+if(/\.manta.com(\/|$)/.test(window.location.href)) {
+    var temp_manta=GM_getValue("manta_instance");
+    var state=GM_getValue("manta_state");
+    var the_manta;
+    console.log("the_manta="+JSON.stringify(the_manta)+", the_manta="+the_manta);
+    
+    if(state==="begin") {
+        GM_setValue("manta_state","search");
+        the_manta=new MyManta(temp_manta.name,temp_manta.resolve,temp_manta.reject,temp_manta.location,"search");
+        console.log("Going to do parse_manta_search");
+        the_manta.parse_manta_search();
+    }
+    else if(state==="parse") {
+        the_manta=new MyManta(temp_manta);
+        console.log("Going to do parse_manta");
+        the_manta.parse_manta();
+    }
+}
+
+
 
 
 function Buzzfile(name,address,resolve,reject) {
