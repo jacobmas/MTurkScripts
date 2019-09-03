@@ -405,6 +405,11 @@ AggParser.do_manta_search=function(name,location,resolve,reject) {
                 the_tab.close();
                 resolve(the_manta);
             }
+	    else if(new_val==="fail") {
+		    the_manta=GM_getValue("manta_instance",{});
+                the_tab.close();
+                reject(the_manta);
+	    }
         });
 };
 
