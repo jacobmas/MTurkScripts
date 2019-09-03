@@ -642,6 +642,7 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
     var term_map={"Website":"url","Official site":"url","Company":"company"};
     var field_map=function(field) { return term_map[field]!==undefined?term_map[field]:field; };
     var b_entityTP=b_context.querySelector(".b_entityTP");
+    var geochain=b_context.querySelectorAll(".geochainSegment");
     var parsed_entity;
     disambig=b_context.querySelectorAll(".disambig-outline .b_slyGridItem");
     b_entityTitle=b_context.getElementsByClassName("b_entityTitle");
@@ -683,6 +684,10 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
 	}
 	else result.thing=parsed_entity;
     }
+    if(geochain.length>0) {
+	result.geochain=[];
+	for(j of geochain) result.geochain.push(j.innerText.trim()); }
+	
     return result;
 };
 
@@ -1607,7 +1612,7 @@ MTurkScript.prototype.longest_common_subsequence=function(set1, set2) {
     return longestSequence;
 };
 /* TODO: FIX TO NOT DEPEND ON my_query */
-MTurkScript.prototype.is_bad_name=function(b_name,p_caption,i) {
+MTurkScript.prototype.is_bad_name=function(orig_name,b_name,p_caption,i) {
     function is_bad_name_replacer(match,p1,p2,p3) {
 	if(/Saint/i.test(p2)) return p1+"St"+p3;
         else return p1+"Mt"+p3;
@@ -1616,24 +1621,25 @@ MTurkScript.prototype.is_bad_name=function(b_name,p_caption,i) {
     
     var orig_b_name=b_name;
     var reg=/[-\s\'\"’]+/g,b_replace_reg=/\s+[\-\|–]{1}.*$/g;
-    var lower_b=b_name.toLowerCase().replace(reg,""),lower_my=my_query.name.replace(/\s(-|@|&|and)\s.*$/).toLowerCase().replace(reg,"");
+    var lower_b=b_name.toLowerCase().replace(reg,"");
+    var lower_my=orig_name.replace(/\s(-|@|&|and)\s.*$/).toLowerCase().replace(reg,"");
     if(lower_b.indexOf(lower_my)!==-1 || lower_my.indexOf(lower_b)!==-1) return false;
     b_name=b_name.replace(b_replace_reg,"").replace(/(^|[^A-Za-z0-9]+)(Saint|Mount)($|[^A-Za-z0-9]+)/i,
                                                     is_bad_name_replacer);
-    my_query.name=my_query.name.replace("’","\'").replace(/(^|[^A-Za-z0-9]+)(Saint|Mount)($|[^A-Za-z0-9]+)/i,
+    orig_name=orig_name.replace("’","\'").replace(/(^|[^A-Za-z0-9]+)(Saint|Mount)($|[^A-Za-z0-9]+)/i,
                                                          is_bad_name_replacer);
-    console.log("b_name="+b_name+", my_query.name="+my_query.name);
-    if(MTP.matches_names(b_name,my_query.name)) return false;
+    console.log("b_name="+b_name+", orig_name="+orig_name);
+    if(MTP.matches_names(b_name,orig_name)) return false;
     var b_name2=orig_b_name.split(/\s+[\-\|–]{1}\s+/),j;
     console.log("b_name2="+JSON.stringify(b_name2));
     for(j=0;j<b_name2.length;j++) {
-        my_query.name=my_query.name.replace("’","\'");
-        console.log("b_name="+b_name2[j]+", my_query.name="+my_query.name);
-        if(MTP.matches_names(b_name2[j],my_query.name)) return false;
-        if(b_name2[j].toLowerCase().indexOf(my_query.name.split(" ")[0].toLowerCase())!==-1) return false;
+        orig_name=orig_name.replace("’","\'");
+        console.log("b_name="+b_name2[j]+", orig_name="+orig_name);
+        if(MTP.matches_names(b_name2[j],orig_name)) return false;
+        if(b_name2[j].toLowerCase().indexOf(orig_name.split(" ")[0].toLowerCase())!==-1) return false;
     }
 
-    if(i===0 && b_name.toLowerCase().indexOf(my_query.name.split(" ")[0].toLowerCase())!==-1) return false;
+    if(i===0 && b_name.toLowerCase().indexOf(orig_name.split(" ")[0].toLowerCase())!==-1) return false;
     return true;
 };
 /* 
@@ -1642,7 +1648,6 @@ full should be result of MTP.parse_name or equivalent */
 MTurkScript.prototype.found_good_person=function(people,full,resolve,reject,type) {
     let curr_person;
     for(curr_person of people) {
-        //console.log("state_map[my_query.state]="+state_map[my_query.state]);
         curr_person.name=curr_person.name.replace(/,.*$/,"").replace(/\s*\([^\)]*\)/g,"").trim();
         console.log("curr_person.name="+curr_person.name);
       
@@ -1673,6 +1678,8 @@ MTurkScript.prototype.proper_name_casing=function(name) {
 
 
 var MTP=MTurkScript.prototype;
+
+
 /*\
 |*|
 |*|  :: cookies.js ::
