@@ -549,7 +549,12 @@ AggParser.do_buzzfile_search=function(name,address,resolve,reject) {
             console.log("Done, the_buzzfile="+JSON.stringify(the_buzzfile));
             the_tab.close();
             console.log("closed the tab");
-            resolve(the_buzzfile);
+	    if(the_buzzfile.failed) {
+		reject(the_buzzfile);
+	    }
+	    else {
+		resolve(the_buzzfile);
+	    }
             return;
         }
     });
