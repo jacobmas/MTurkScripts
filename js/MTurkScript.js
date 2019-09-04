@@ -1313,7 +1313,6 @@ MTurkScript.prototype.json_to_post=function(obj) {
 
 /* matches_names Checks whether two names of places match, will need to be adjusted for use with b_name, e.g. split and iterate  */
 MTurkScript.prototype.matches_names=function(name1,name2,debug) {
-    if(!debug) debug=false;
     var num_replace={"$10$2":/(^|[^A-Za-z])Zero($|[^A-Za-z])/i,"$11$2":/(^|[^A-Za-z])One($|[^A-Za-z])/i,"$12$2":/(^|[^A-Za-z])Two($|[^A-Za-z])/i,
                      "$13$2":/(^|[^A-Za-z])Three($|[^A-Za-z])/i,"$14$2":/(^|[^A-Za-z])Four($|[^A-Za-z])/i,"$15$2":/(^|[^A-Za-z])Five($|[^A-Za-z])/i,
 		     "$16$2":/(^|[^A-Za-z])Six($|[^A-Za-z])/i,"$17$2":/(^|[^A-Za-z])Seven($|[^A-Za-z])/i,"$18$2":/(^|[^A-Za-z])Eight($|[^A-Za-z])/i,
