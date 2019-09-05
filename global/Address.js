@@ -213,7 +213,7 @@ Address.scrape_address=function(doc,url,resolve,reject,extra,debug) {
                && !bad_contact_regex.test(links[i].href) &&
                !Address.queryList.includes(links[i].href) && Address.queryList.length<10) {
                 Address.queryList.push(links[i].href);
-                //console.log("*** Following link labeled "+links[i].innerText+" to "+links[i].href);
+                if(Address.debug) console.log("*** Following link labeled "+links[i].innerText+" to "+links[i].href);
                 promise_list.push(MTP.create_promise(links[i].href,Address.scrape_address_page,function(result) {
                     console.log("! Finished parsing ") },MTP.my_catch_func,type));
                 continue;
@@ -232,6 +232,7 @@ Address.scrape_address=function(doc,url,resolve,reject,extra,debug) {
 };
 
 Address.scrape_address_page=function(doc,url,resolve,reject,type) {
+    
     var posts=doc.querySelectorAll("[itemtype='https://schema.org/PostalAddress']");
     posts.forEach(function(elem) { Address.parse_postal_elem(elem,1,type,url); });
     var divs=doc.querySelectorAll("div,p,span,td"),i;
