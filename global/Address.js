@@ -173,6 +173,7 @@ Address.cmp=function(add1,add2) {
 };
 Address.phone_re=/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}(\s*x\s*[\d]{1,3})?/i;
 
+Address.debug=false;
 Address.queryList=[];
 Address.addressList=[];
 Address.phoneList=[];
@@ -194,7 +195,7 @@ Address.parse_postal_elem=function(elem,priority,site,url) {
     if(ret.address1&&ret.city&&ret.state&&ret.zip) {
         //text=ret.address1+","+ret.city+", "+ret.state+" "+ret.zip;
         //console.log("* Adding address in parse_postal_elem for "+site+", text");
-        Address.addressList.push(new Address(ret,priority,url));
+        Address.addressList.push(new Address(ret,priority,url,Address.debug));
     }
     
 };
@@ -275,7 +276,7 @@ Address.scrape_address_elem=function(doc,div,type,url) {
 //    console.log("Begin scrape_address_elem on "+div_text);
     try {
         if(div.tagName==="DIV" && /sqs-block-map/.test(div.className) && (jsonstuff=JSON.parse(div.dataset.blockJson))) {
-            Address.addressList.push(new Address(jsonstuff.location.addressLine1+","+jsonstuff.location.addressLine2,0,url));
+            Address.addressList.push(new Address(jsonstuff.location.addressLine1+","+jsonstuff.location.addressLine2,0,url,Address.debug));
         }
     }
     catch(error) { console.log("Error parsing jsonstuff"); }
@@ -290,18 +291,18 @@ Address.scrape_address_elem=function(doc,div,type,url) {
         // console.log("add_regex1, div="+div.innerText);
         if(!Address.addressStrList.includes(text)) {
             text=text.replace(/,[\s,]*/g,",");
-            var address=new Address(text,1,url);
+            var address=new Address(text,1,url,Address.debug);
             if(address.city==="") {
                 //console.log("temp_text="+temp_text);
                 let temp_text=text;
                 while(address.city==="" && temp_text.match(/^[^,]*,\s*/)) {
                     temp_text=temp_text.replace(/^[^,]*,\s*/,"");
-                    address=new Address(temp_text,1,url);
+                    address=new Address(temp_text,1,url,Address.debug);
                 }
             }
             if(address.city==="") {
                 var split=address.split(/\s*|\s*/);
-                for(i=0;i<split.length;i++) if((address=new Address(split[i],2,url)) && address.city.length>0) break;
+                for(i=0;i<split.length;i++) if((address=new Address(split[i],2,url,Address.debug)) && address.city.length>0) break;
             }
             Address.addressList.push(address);
             Address.addressStrList.push(text);
@@ -329,7 +330,7 @@ Address.paste_address=function(e,obj,field_map,callback) {
     e.preventDefault();
     var text = e.clipboardData.getData("text/plain").replace(/\s*\n\s*/g,",").replace(/,,/g,",").replace(/,\s*$/g,"").trim();
     console.log("address text="+text);
-    var add=new Address(text,-50,""),x;
+    var add=new Address(text,-50,"",Address.debug),x;
     for(x in field_map) if(add[x]!==undefined) obj[field_map[x]]=add[x];
     if(callback!==undefined && typeof(callback)==='function') callback();    
 };
