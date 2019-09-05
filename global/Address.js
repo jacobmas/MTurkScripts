@@ -1,6 +1,7 @@
 /* Text can be an object or a string with address text, location currently unused */
-function Address(text,priority,url) {
-    console.log("# In address for "+text);
+function Address(text,priority,url,debug) {
+    if(!debug) this.debug=false;
+    if(this.debug) console.log("# In address for "+text);
     this.priority=priority;
     this.url=url;
     this.text=text;
@@ -124,7 +125,7 @@ Address.prototype.parse_address_Europe=function(text) {
     if((match=text.match(regex3)) && this.set_address(match[1],"",match[2],"",match[3],match[4])) return true;
     if((match=text.match(regex4)) && this.set_address(match[1],"",match[3],"",match[2],"")) return true;
 
-    console.log("parse_address_Europe,"+text);
+    if(this.debug) console.log("parse_address_Europe,"+text);
     return false;
 };
 Address.prototype.parse_address_Belgium=function(text) {
@@ -198,8 +199,9 @@ Address.parse_postal_elem=function(elem,priority,site,url) {
     
 };
 /* Extra has some kinda of type field and a depth field indicating the depth */
-Address.scrape_address=function(doc,url,resolve,reject,extra) {
+Address.scrape_address=function(doc,url,resolve,reject,extra,debug) {
     var type=extra.type,depth=extra.depth,links=doc.links,i,promise_list=[];
+    Address.debug=debug;
     var contact_regex=/(Contact|Location|Privacy|Kontakt)/i,bad_contact_regex=/^\s*(javascript|mailto):/i,contact2_regex=/contact[^\/]*/i;
     // if(/^(404|403|503|\s*Error)/i.test(doc.title) || /\?reqp\=1&reqr\=/.test(url)) my_query.failed_urls+=2;
     //console.log("In scrape_address for type="+type+", url="+url);
@@ -222,16 +224,13 @@ Address.scrape_address=function(doc,url,resolve,reject,extra) {
         Address.scrape_address_page(doc,url,resolve1,reject1,type);
     }).then(MTP.my_then_func).catch(MTP.my_catch_func));
     Promise.all(promise_list).then(function(result) {
-        // console.log("Done all promises in scrape_address for "+type);
-        //console.log("&& my_query.address_str_list="+JSON.stringify(Address.addressStrList));
         resolve(""); })
-        .catch(function(result) { console.log("Done all promises in scrape_address for "+type);
-				  console.log("&& my_query.address_str_list="+JSON.stringify(Address.addressStrList));
+        .catch(function(result) { if(Address.debug) console.log("Done all promises in scrape_address for "+type);
+				  if(Address.debug) console.log("&& my_query.address_str_list="+JSON.stringify(Address.addressStrList));
 				  resolve(""); });
 };
 
 Address.scrape_address_page=function(doc,url,resolve,reject,type) {
-//    console.log("scrape_address_page,url="+url);
     var posts=doc.querySelectorAll("[itemtype='https://schema.org/PostalAddress']");
     posts.forEach(function(elem) { Address.parse_postal_elem(elem,1,type,url); });
     var divs=doc.querySelectorAll("div,p,span,td"),i;
