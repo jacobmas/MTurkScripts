@@ -405,7 +405,6 @@ Gov.parse_contact_elems=function(doc,url,resolve,reject,name) {
     var my_count=0;
     div.forEach(function(elem) {
 	/* Skip if there is exactly 1 nested child */
-	if(elem.children.length===1) console.log("elem.children[0]="+elem.children[0].tagName);
 	if(elem.children.length===1 && /^(P|DIV|SECTION|TD|LI)$/.test(elem.children[0].tagName)) return;
 	
 	my_count++;
