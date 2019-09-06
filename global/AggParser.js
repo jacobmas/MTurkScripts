@@ -59,8 +59,9 @@ AggParser.parse_buzzfile=function(doc,url,resolve,reject,quality) {
 	    }
 	}
     }
-    for(i=0;i<headers.length;i++) {
-	result[headers[i].innerText.replace(/:\s*$/,"").trim()]=content[i].innerText.trim(); }
+    for(i=0;i<content.length;i++) {
+	let curr_header=content[i].previousElementSibling;
+	result[curr_header.innerText.replace(/:\s*$/,"").trim()]=content[i].innerText.trim(); }
     if(!div && !divorg && (resolve({success:false,site:"buzzfile"})||true)) return;
     if(div) result.address=AggParser.parse_postal_elem(div,4,result.site,url);
     if(divorg && (employee=divorg.querySelector("[itemprop='employee']")) &&
