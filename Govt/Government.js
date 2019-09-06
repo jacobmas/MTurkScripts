@@ -73,13 +73,9 @@ Gov.scrape_lone_emails=function(doc,url) {
         for(j=0; j < email_matches.length; j++) {
             if(!MTP.is_bad_email(email_matches[j]) && email_matches[j].length>0 &&
 	       !Gov.email_list.includes({email:email_matches[j],url:url})) Gov.email_list.push({email:email_matches[j],url:url});              
-        }
-       
+        }  
     }
-
-   
-    for(i=0; i < links.length; i++)
-    {   
+    for(i=0; i < links.length; i++) {   
         
         if((temp_email=links[i].href.replace(/^mailto:\s*/,"").match(email_re)) &&
            !MTurkScript.prototype.is_bad_email(temp_email[0])) Gov.email_list.push({email:temp_email.toString(),url:url});
@@ -407,6 +403,8 @@ Gov.parse_contact_elems=function(doc,url,resolve,reject,name) {
     console.log("parse_contact_divs, length="+div.length);
     console.time("parse_contact_div");
     div.forEach(function(elem) {
+	/* Skip if there is exactly 1 nested child */
+	if(elem.children.length===1 && /^(P|DIV|SECTION|TD|LI)$/.test(elem.children[0].tagName)) return;
 
 	add_count+=Gov.parse_contact_div(elem,name,url); });
     console.timeEnd("parse_contact_div");
@@ -1662,6 +1660,7 @@ Gov.init_Gov=function(doc,url,resolve,reject,query) {
     var refresh=Gov.needs_refresh(doc,url),promise;
     if(refresh && (promise=MTP.create_promise(refresh,Gov.init_Gov,resolve,reject,query)||1)) return;
     var dom=url.replace(/^https?:\/\//,"").replace(/^www\./,"");
+    
     Gov.init_nlp();
     //console.log("doc.head.innerHTML="+doc.head.innerHTML);
     // console.log("doc.body.innerHTML="+doc.body.innerHTML);
