@@ -31,8 +31,18 @@ AggParser.parse_postal=function(doc,url,resolve,reject,type) {
 };
 
 /* TODO: finish */
-AggParser.search_buzzfile=function(query,resolve,reject) {
-    
+AggParser.parse_bbb=function(query,resolve,reject) {
+    console.log("In parse_bbb,url="+url);
+    var script=doc.querySelectorAll("script"),i,split_text,fullname;
+    var regex=/\s*window\.__PRELOADED_STATE__\s*\=\s*(.*);\s*$/,match,parsed,x;
+    for(i=0;i<script.length;i++) {
+        if((match=script[i].innerHTML.match(regex))) {
+            // console.log("script["+i+"].innerHTML="+script[i].innerHTML);
+            parsed=JSON.parse(match[1]);
+            parse_bbb_inner(doc,url,resolve,reject,parsed);
+            resolve(parsed);
+        }
+    }
 };
 
 AggParser.parse_buzzfile=function(doc,url,resolve,reject,quality) {
@@ -40,6 +50,17 @@ AggParser.parse_buzzfile=function(doc,url,resolve,reject,quality) {
     var div=doc.querySelector("[itemtype='https://schema.org/PostalAddress']");
     var divorg=doc.querySelector("[itemtype='https://schema.org/Organization']"),employee,title;    
     var result={success:true,site:"buzzfile",quality:quality,fields:{}};
+    var headers=doc.querySelectorAll(".company-info-header"),content=doc.querySelectorAll(".company-info-content"),i;
+    var sector_table=doc.querySelectorAll(".company-info-box table"),curr_row;
+    if(sector_table.length>=2) {
+	for(curr_row of sector_table[1].rows) {
+	    if(curr_row.cells.length>=2) {
+		result[curr_row.cells[0].innerText.replace(/:\s*$/,"").trim()]=curr_row.cells[1].innerText.trim();
+	    }
+	}
+    }
+    for(i=0;i<headers.length;i++) {
+	result[headers[i].innerText.replace(/:\s*$/,"").trim()]=content.innerText.trim(); }
     if(!div && !divorg && (resolve({success:false,site:"buzzfile"})||true)) return;
     if(div) result.address=AggParser.parse_postal_elem(div,4,result.site,url);
     if(divorg && (employee=divorg.querySelector("[itemprop='employee']")) &&
@@ -521,6 +542,7 @@ function Buzzfile(name,address,resolve,reject) {
 Buzzfile.prototype.parse_buzzfile_search=function() {
     console.log("In buzzfile search");
     var table=document.querySelector("table#companyList"),i,curr_row,comp={};
+    
     for(i=1;i<table.rows.length;i++) {
         curr_row=table.rows[i];
         if(curr_row.cells.length<=5) continue;
