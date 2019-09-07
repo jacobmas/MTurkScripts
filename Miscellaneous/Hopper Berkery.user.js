@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Gary Phipps
+// @name         Hopper Berkery
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Multiple off website
+// @description  New script
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -24,21 +24,23 @@
 // @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Email/MailTester.js
+// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=["spokeo.com","pinterest.com"];
-    var MTurk=new MTurkScript(20000,1000+Math.random()*500,[],begin_script,"A2N94CACCP1WIH",true);
+    var bad_urls=[];
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A3EQGQRBVNCWFF",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
-        if(MTP.matches_names(b_name,my_query.name) ||
-           MTP.matches_names(MTP.shorten_company_name(my_query.short_name),b_name) ||
-           b_name.toLowerCase().indexOf(my_query.name)!==-1) return false;
-        return true;
+        return false;
     }
 
     function query_response(response,resolve,reject,type) {
@@ -55,22 +57,10 @@
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
-            if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-
-
-                console.log("parsed_context="+JSON.stringify(parsed_context));
-                if(parsed_context.url&&!MTP.is_bad_url(parsed_context.url,bad_urls,6) && (resolve(parsed_context.url)||true)) return;
-
-            }
+	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
+                console.log("parsed_context="+JSON.stringify(parsed_context)); } 
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
-                 console.log("parsed_lgb="+JSON.stringify(parsed_lgb));
-                var cbtns=lgb_info.querySelectorAll(".cbtn");
-                for(i=0;i<cbtns.length;i++) {
-                    console.log("cbtns["+i+"].innerText="+cbtns[i].innerText);
-                    if(/Clinic/i.test(cbtns[i].innerText) && (resolve(cbtns[i].url)||true)) return;
-                }
-
-                    }
+                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
             for(i=0; i < b_algo.length; i++) {
                 b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
@@ -78,7 +68,7 @@
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls,4,2) && !is_bad_name(b_name) && (b1_success=true)) break;
+                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !is_bad_name(b_name) && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
         }
@@ -86,20 +76,16 @@
             reject(error);
             return;
         }
-        if(my_query.try_count[type]===0 && /^query$/.test(type)) {
-            my_query.try_count[type]++;
-            query_search(my_query.short_name,resolve,reject,query_response,"query");
-            return;
-        }
         reject("Nothing found");
         return;
     }
 
     /* Search on bing for search_str, parse bing response with callback */
-    function query_search(search_str, resolve,reject, callback,type) {
+    function query_search(search_str, resolve,reject, callback,type,filters) {
         console.log("Searching with bing for "+search_str);
+        if(!filters) filters="";
         var search_URIBing='https://www.bing.com/search?q='+
-            encodeURIComponent(search_str)+"&first=1&rdr=1";
+            encodeURIComponent(search_str)+"&filters="+filters+"&first=1&rdr=1";
         GM_xmlhttpRequest({method: 'GET', url: search_URIBing,
                            onload: function(response) { callback(response, resolve, reject,type); },
                            onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
@@ -108,8 +94,6 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.fields.website=result;
-        submit_if_done();
     }
 
     function begin_script(timeout,total_time,callback) {
@@ -128,7 +112,10 @@
 
     function add_to_sheet() {
         var x,field;
-        for(x in my_query.fields) if(field=document.getElementsByName(x)[0]) field.value=my_query.fields[x];
+        for(x in my_query.fields) {
+            if((MTurk.is_crowd && (field=document.getElementsByName(x)[0])) ||
+               (!MTurk.is_crowd && (field=document.getElementById(x)))) field.value=my_query.fields[x];
+        }
     }
 
     function submit_if_done() {
@@ -137,18 +124,60 @@
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
+     function proper_casing(match,p1,p2) {
+        return p1+p2.toLowerCase(); }
+    function name_paste(e) {
+        e.preventDefault();
+        // get text representation of clipboard
+        var i;
+        console.log("Moo in name_paste");
+        var text = ""+e.clipboardData.getData("text/plain");
+        var prefix=e.target.name.match(/contact[\d]/)[0];
+        console.log("text="+text);
+        var ret=Gov.parse_data_func(text);
+        console.log("ret="+JSON.stringify(ret));
+        if(ret.name===undefined) my_query.fields[prefix+"FirstName"]=text;
+        if(ret.title===undefined) ret.title="";
+        var fullname=MTurkScript.prototype.parse_name(ret.name);
+        my_query.fields[prefix+"Email"]=ret.email?ret.email:"";
+        my_query.fields[prefix+"FirstName"]=fullname.fname.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing);
+        my_query.fields[prefix+"LastName"]=fullname.lname.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing);
+        if(ret.title) my_query.fields[prefix+"Title"]=ret.title;
+        var x;
+
+        var person_data=nlp(ret.name).people().out('tags');
+        if(person_data.length>0) {
+//            console.log("Found person_data");
+            for(x of person_data[0].tags) {
+  //              console.log("x="+x);
+                if(/FemaleName/.test(x)) my_query.fields[prefix+"Prefix"]="Ms";
+                if(/MaleName/.test(x)) my_query.fields[prefix+"Prefix"]="Mr";
+            }
+        }
+
+        my_query.paste_count++;
+        submit_if_done();
+
+
+
+    }
 
     function init_Query()
     {
         console.log("in init_query");
         var i;
-        bad_urls=bad_urls.concat(default_bad_urls);
-        
-        my_query={name:document.querySelector("form strong").innerText,fields:{},done:{},submitted:false,
-                 try_count:{"query":0}};
+        //var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
+        //var dont=document.getElementsByClassName("dont-break-out");
+        var name_thing=document.querySelector(".instructions li");
+        my_query={name:name_thing.innerText.replace(/\s-.*$/,""),fields:{},done:{},submitted:false};
 	console.log("my_query="+JSON.stringify(my_query));
-        my_query.short_name=my_query.name.replace(/^.*? DBA /,"");
-        var search_str=my_query.name;
+        var search_str;
+        var x=document.querySelectorAll("[name$='FirstName']");
+        x.forEach(function(elem) {
+            elem.addEventListener("paste",name_paste);
+        });
+
+        search_str=my_query.name;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");
@@ -156,6 +185,7 @@
         queryPromise.then(query_promise_then)
             .catch(function(val) {
             console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
+        
     }
 
 })();

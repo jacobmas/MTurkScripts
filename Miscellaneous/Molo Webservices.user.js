@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Molo Webservices
+// @name         Molo_Webservices
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  Find marinas
