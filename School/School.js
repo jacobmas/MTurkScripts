@@ -31,7 +31,7 @@ function School(query,then_func,catch_func) {
     this.reject=catch_func ? catch_func : MTP.my_catch_func;
     this.apptegy={parser:this.parse_apptegy,suffix:"/staff",find_base:this.find_base_apptegy};
     this.blackboard={parser:this.parse_blackboard,find_directory:this.find_dir_bb,href_rx:/.*/i,
-                     text_rx:/(Campus Directory)|(^Directory)|((Staff|Employee) Directory(\s|$|,))|(^Faculty$)|(^Faculty\s*(&|and)\s*Staff$)|(^Staff$)|(^Staff Contacts)/i,
+                     text_rx:/(Campus Directory)|(^Directory)|((Staff|Employee) Directory(\s|$|,))|(^Faculty$)|(^Faculty\s*(&|and)\s*Staff$)|(^Staff$)|(^Staff Contacts)|(^[A-Z]+\sDirectory)/i,
                      find_base:this.find_base_blackboard};
     this.catapultk12={parser:this.parse_catapultk12,find_directory:this.find_dir,href_rx:/\/Staff-Directory/,text_rx:/Directory/i};
     this.cyberschool={parser:this.parse_cyberschool,suffix:/\/District\/Staff/};
@@ -103,7 +103,7 @@ School.prototype.search_none=function(doc,url,resolve,reject,extra) {
           ) {
             console.log("@@: links["+i+"].innerText="+links[i].innerText+", href="+links[i].href+", TITLE_MATCH="+(self.title_str_regex.test(links[i].innerText)));
             self.query_list.push(links[i].href);
-            var dept_regex_lst=["staff"];
+            var dept_regex_lst=["staff","STAFF"];
 
             var title_regex_lst=[/Teacher|Math|Computer Science|Engineering|Programming/i];
             //var promise=MTP.create_promise(
