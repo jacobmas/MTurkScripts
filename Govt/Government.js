@@ -664,7 +664,7 @@ Gov.parse_contacts_then=function(result) {
  * TODO: make suitable for annoying weird-type tables with multiple elements per column */
 Gov.guess_title_map=function(row) {
     var i,curr_cell,ret={},x;
-    var title_map={"department":/(Department|Dept)/i,"first":/First/i,"last":/Last/i,name:/(Staff|Name|Employee|Contact)/i,"email":/mail/i,
+    var title_map={"department":/(Department|Dept)/i,"first":/First/i,"last":/Last/i,name:/(Staff|(^Name)|Employee|Contact)/i,"email":/mail/i,
 		   "title":/(Title|Position|Profession|Rank|Job)/i,phone:/(Tel|Phone|Number|Voicemail)/i,"officer":/officer/i};
     for(i=0;i<row.cells.length; i++) {
 	curr_cell=row.cells[i].innerText.trim();
