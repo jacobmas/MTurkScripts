@@ -628,9 +628,9 @@ Gov.parse_table=function(table,title_map,begin_row,end_row,dept,url) {
 	    if(title==="phone" && !curr_contact[title].match(phone_re) &&curr_contact[title].length>0 &&
 	       !curr_contact[title].match(Gov.area_code)) curr_contact[title]=Gov.area_code+curr_contact[title].trim();
 	    if(title==="title") curr_contact[title]=curr_contact[title];
-	    if(title_map.email===undefined && (inner_a=curr_cell.getElementsByTagName("a")).length>0 &&
-	       /^\s*mailto:\s*/.test(inner_a[0].href)) {
-		curr_contact.email=inner_a[0].href.replace(/^\s*mailto:\s*/,"").replace(/\n.*$/,"");
+	    if((title_map.email===undefined || title_map.email===title_map.phone) && (inner_a=curr_cell.querySelector("a")) &&
+	       /^\s*mailto:\s*/.test(inner_a.href)) {
+		curr_contact.email=inner_a.href.replace(/^\s*mailto:\s*/,"").replace(/\n.*$/,"");
 	    }
 
 	}
