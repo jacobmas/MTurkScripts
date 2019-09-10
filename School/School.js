@@ -86,7 +86,7 @@ School.prototype.search_none=function(doc,url,resolve,reject,extra) {
     var self=extra.self,depth=extra.depth;
     console.log("search_none,url="+url+", depth="+depth);
     var MAX_QUERIES=15;
-    var good_link_str="(^(Admin|District|Central|Personnel|Employee|Staff))|Contact|Directory|Staff|About|Leadership|Team|Departments|Faculty";
+    var good_link_str="(^(Admin|District|Central|Personnel|Employee|Staff))|Administration|Contact|Directory|Staff|About|Leadership|Team|Departments|Faculty";
     if(depth>0) good_link_str="(^(Admin|District|Central|Personnel|Employee|Contact|Directory|Staff|About|Leadership|Team|Departments|Faculty))";
     var good_link_re=new RegExp(good_link_str,"i");
     var i,links=doc.links,promise_list=[];
@@ -99,7 +99,7 @@ School.prototype.search_none=function(doc,url,resolve,reject,extra) {
            links[i].href.indexOf(self.base.replace(/^(https:\/\/[^\/]*).*$/,"$1"))!==-1 &&
 
            (self.title_str_regex.test(links[i].innerText.trim()) ||
-            good_link_re.test(links[i].innerText.trim())) && links[i].innerText.length<30 && !self.is_bad_link(links[i].href)
+            good_link_re.test(links[i].innerText.trim())) && links[i].innerText.length<40 && !self.is_bad_link(links[i].href)
            && !self.query_list.includes(links[i].href) && self.query_list.length<MAX_QUERIES
           ) {
             console.log("@@: links["+i+"].innerText="+links[i].innerText+", href="+links[i].href+", TITLE_MATCH="+(self.title_str_regex.test(links[i].innerText)));
