@@ -77,7 +77,7 @@ function School(query,then_func,catch_func) {
 }
 School.prototype.is_bad_link=function(url) {
     url=url.toLowerCase();
-    if(/^mailto|javascript|tel/.test(url)||/\.pdf([^a-z]+|$)/.test(url)) return true;
+    if(/^mailto|javascript|tel/.test(url)||/\.pdf$/.test(url)) return true;
     return false;
 };
 /**
@@ -86,14 +86,14 @@ School.prototype.search_none=function(doc,url,resolve,reject,extra) {
     var self=extra.self,depth=extra.depth;
     console.log("search_none,url="+url+", depth="+depth);
     var MAX_QUERIES=15;
-    var good_link_str="(^(Admin|District|Central|Personnel|Employee))|Contact|Directory|Staff|About|Leadership|Team|Departments|Faculty";
+    var good_link_str="(^(Admin|District|Central|Personnel|Employee|Staff))|Contact|Directory|Staff|About|Leadership|Team|Departments|Faculty";
     if(depth>0) good_link_str="(^(Admin|District|Central|Personnel|Employee|Contact|Directory|Staff|About|Leadership|Team|Departments|Faculty))";
     var good_link_re=new RegExp(good_link_str,"i");
     var i,links=doc.links,promise_list=[];
     for(i=0;i<links.length;i++) {
         links[i].href=MTP.fix_remote_url(links[i].href,url).replace(/\/$/,"");
         links[i].innerText=links[i].innerText.trim();
-        console.log("links["+i+"].innerText="+links[i].innerText+", href="+links[i].href);
+        //console.log("links["+i+"].innerText="+links[i].innerText+", href="+links[i].href);
         if(MTP.get_domain_only(links[i].href,true)===MTP.get_domain_only(url,true) &&
            links[i].href.indexOf(self.base.replace(/^(https:\/\/[^\/]*).*$/,"$1"))!==-1 &&
 
