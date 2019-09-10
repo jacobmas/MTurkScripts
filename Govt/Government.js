@@ -615,7 +615,16 @@ Gov.parse_table=function(table,title_map,begin_row,end_row,dept,url) {
 		curr_contact.name=match[1].trim();
 		curr_contact.title=match[2].trim();
 	    }
-	    else if(title) curr_contact[title]=curr_cell.innerText.replace(/\s+\n\s+/g," ").trim();
+	    else if(title) {
+		var str="",x;
+		for(x of curr_cell.childNodes) {
+		    
+		    if(str.length>0 && x.nodeType===Node.ELEMENT_NODE&&x.tagName==="BR") break;
+		    else if(x.nodeType===Node.TEXT_NODE) str=str+(str.length>0?"\n":"")+x.textContent;
+		    else if(x.nodeType=Node.ELEMENT_NODE &&x.innerText.trim().length>0) str=str+(str.length>0?"\n":"")+x.innerText.trim();
+		}
+		curr_contact[title]=str.trim();
+	    }
 	    if(title==="phone" && !curr_contact[title].match(phone_re) &&curr_contact[title].length>0 &&
 	       !curr_contact[title].match(Gov.area_code)) curr_contact[title]=Gov.area_code+curr_contact[title].trim();
 	    if(title==="title") curr_contact[title]=curr_contact[title];
