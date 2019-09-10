@@ -46,7 +46,7 @@ function School(query,then_func,catch_func) {
     this.campussuite={parser:this.parse_campussuite,href_rx:/staff-directory/i,text_rx:/.*/,find_directory:this.find_dir};
     this.schoolblocks={parser:this.parse_schoolblocks,suffix:"/staff"};
     this.schoolpointe={parser:this.parse_schoolpointe,suffix:"/staff"};
-    this.schoolmessenger={parser:this.parse_schoolmessenger,href_rx:/.*/i,text_rx:/^(Staff )?(Information|Directory)/i,find_directory:this.find_dir,
+    this.schoolmessenger={parser:this.parse_schoolmessenger,href_rx:/.*/i,text_rx:/^(((Staff )?(Information|Directory))|(Staff$))/i,find_directory:this.find_dir,
                           find_base:this.find_base_schoolmessenger};
     this.page_regex_str="(www\\.|\/\/)(apptegy|catapultk12|cms4schools)\\.com|(www\\.4lpi\\.com)|adventistschoolconnect\\.org|"+
 	"www\\.campussuite\\.com|crescerance\\.com|cyberschool\\.com|"+
@@ -1307,6 +1307,7 @@ School.prototype.parse_eschoolview_response=function(doc,url,resolve, reject,sel
                       phone:spans[i].querySelector(".scPhone")&&spans[i].querySelector(".scPhone").innerText.length>0
                       ?spans[i].querySelector(".scPhone").innerText.trim():self.phone,url:url,
                       email:spans[i].querySelector(".scEmail")?spans[i].querySelector(".scEmail").innerText.trim():""};
+	if(!/@/.test(curr_contact.email)) curr_contact.email="";
         if(curr_contact.title && self.matches_title_regex(curr_contact.title)) self.contact_list.push(curr_contact);
     }
     if(spans.length===0) { console.log("doc.body.innerHTML="+doc.body.innerHTML); }
