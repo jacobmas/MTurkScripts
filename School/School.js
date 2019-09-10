@@ -93,7 +93,7 @@ School.prototype.search_none=function(doc,url,resolve,reject,extra) {
     for(i=0;i<links.length;i++) {
         links[i].href=MTP.fix_remote_url(links[i].href,url).replace(/\/$/,"");
         links[i].innerText=links[i].innerText.trim();
-        //console.log("links["+i+"].innerText="+links[i].innerText+", href="+links[i].href);
+        console.log("links["+i+"].innerText="+links[i].innerText+", href="+links[i].href);
         if(MTP.get_domain_only(links[i].href,true)===MTP.get_domain_only(url,true) &&
            links[i].href.indexOf(self.base.replace(/^(https:\/\/[^\/]*).*$/,"$1"))!==-1 &&
 
