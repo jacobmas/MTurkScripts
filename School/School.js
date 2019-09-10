@@ -94,7 +94,8 @@ School.prototype.search_none=function(doc,url,resolve,reject,extra) {
         links[i].href=MTP.fix_remote_url(links[i].href,url).replace(/\/$/,"");
         links[i].innerText=links[i].innerText.trim();
         //console.log("links["+i+"].innerText="+links[i].innerText+", href="+links[i].href);
-        if(MTP.get_domain_only(links[i].href,true)===MTP.get_domain_only(url,true) &&
+	
+        if(
            links[i].href.indexOf(self.base.replace(/^(https:\/\/[^\/]*).*$/,"$1"))!==-1 &&
 
            (self.title_str_regex.test(links[i].innerText.trim()) ||
