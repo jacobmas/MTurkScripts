@@ -1799,4 +1799,4 @@ MTurkScript.prototype.fix_incomplete_url=function(url) {
     if(!/^http/.test(url) && !/^www\./.test(url)) url="http://www."+url;
     else if(!/^http/.test(url)) url="http://"+url;
     return url;
-}
+};
