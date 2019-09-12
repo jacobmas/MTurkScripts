@@ -38,7 +38,7 @@ var reverse_state_map={},reverse_province_map={};
 for(let x in state_map)     reverse_state_map[state_map[x]]=x;
 for(let x in province_map)     reverse_province_map[province_map[x]]=x;
 
-var default_bad_urls=["facebook.com","youtube.com","twitter.com","instagram.com","opendi.us",".business.site","plus.google.com",".alibaba.com",".trystuff.com",".mturkcontent.com",".amazonaws.com",".medium.com",".google.com",".opencorporates.com",".thefreedictionary.com",".dictionary.com",".crunchbase.com"];
+var default_bad_urls=["facebook.com","youtube.com","twitter.com","instagram.com","opendi.us",".business.site","plus.google.com",".alibaba.com",".trystuff.com",".mturkcontent.com",".amazonaws.com",".medium.com",".google.com",".opencorporates.com",".thefreedictionary.com",".dictionary.com",".crunchbase.com",".urbandictionary.com",".vimeo.com"];
 
 /* Regular expressions for emails, phones, faxes */
 var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%\*]{1,40}(\.[^<>\/()\[\]\\.,;:：\s\*@"\?]{1,40}){0,5}))@((([a-zA-Z\-0-9]{1,30}\.){1,8}[a-zA-Z]{2,20}))/g;
@@ -775,6 +775,7 @@ MTurkScript.prototype.parse_entityTP=function(b_context) {
    // console.log(splspli);
     if(splspli && (exp=splspli.querySelector("h2")) &&
        exp.innerText.indexOf("Experience")!==-1) ret.experience=MTurkScript.prototype.scrape_spli_experience(splspli);
+    if(b_entityTP.dataset.feedbkIds==="Restaurant") ret.restaurant=MTurkScript.prototype.parse_bing_restaurant(b_entityTP);
     return ret;
 };
 
@@ -792,6 +793,15 @@ MTurkScript.prototype.scrape_spli_experience=function(spli) {
     }
     return ret;
     
+};
+
+MTurkScript.prototype.parse_bing_restaurant=function(b_entityTP) {
+    var ret={in_business:false},x,open_hrs=b_entityTP.querySelector("#mh_cdb_datagroupid_openhours");
+    var footnote_sites=b_entityTP.querySelectorAll(".b_suppModule .b_footnote a");
+    if(open_hrs) ret.in_business=true;
+    if(b_entityTP.querySelector("#permanentlyClosedIcon")) ret.in_business=false;
+    for(x of footnote_sites) ret[x.innerText.trim()]=x.href;
+    return ret;
 };
 
 /**
@@ -1783,3 +1793,10 @@ var docCookies = {
     return aKeys;
   }
 };
+
+MTurkScript.prototype.fix_incomplete_url=function(url) {
+    
+    if(!/^http/.test(url) && !/^www\./.test(url)) url="http://www."+url;
+    else if(!/^http/.test(url)) url="http://"+url;
+    return url;
+}
