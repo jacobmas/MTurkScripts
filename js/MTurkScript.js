@@ -380,8 +380,7 @@ MTurkScript.prototype.prefix_in_string=function(prefixes, to_check) {
     return false;
 }
 /* Parse a person's name, somewhat exhaustive */
-MTurkScript.prototype.parse_name=function(to_parse)
-{
+MTurkScript.prototype.parse_name=function(to_parse) {
     //console.log("Doing parse_name on "+to_parse);
     var first_pos=0,j,last,ret={};
     var suffixes=[/^Jr\.?/i,/^II$/i,/^III$/i,/^IV$/i,/^CPA$/i,/^CGM$/i,/^Sr\.?$/i],prefixes=["Mr","Ms","Mrs","Dr","Rev"],split_parse;
@@ -410,8 +409,7 @@ MTurkScript.prototype.parse_name=function(to_parse)
     return ret;
 };
 
-MTurkScript.prototype.shorten_company_name=function(name)
-{
+MTurkScript.prototype.shorten_company_name=function(name) {
     var first_suffix_str="(Pty Ltd(\\.)?)|Limited|LLC(\\.?)|KG|LLP";
     var first_regex=new RegExp("\\s*"+first_suffix_str+"$","ig");
     name=MTurkScript.prototype.removeDiacritics(name);
@@ -432,130 +430,6 @@ MTurkScript.prototype.shorten_company_name=function(name)
 }
 
 
-/* do_bloomberg_snapshot parses
- * https://www.bloomberg.com/research/stocks/private/snapshot.asp?privcapId=[\d+] pages
- * doc the document to use to parse it, to allow use for either xmlhttprequest or open in
- *       new window
- */
-MTurkScript.prototype.parseext_bloomberg_snapshot=function(doc)
-{
-    console.log("Doing bloomberg ");
-
-    var result={"phone":"","country":"",url:"","name":"","state":"","city":"","streetAddress":"","postalCode":""};
-   
-    var address=doc.querySelector("[itemprop='address']");
-    var phone=doc.querySelector("[itemprop='telephone']");
-    var name=doc.querySelector("[itemprop='name']");
-    var url=doc.querySelector("[itemprop='url']");
-    var executives=doc.querySelectorAll("[itemprop='member']");
-    var add_match, add_regex=/^([^,]+)(?:,\s*(.*?))?\s*((?:[A-Z]*[\d]+[A-Z\d]+[A-Z]*))$/;
-
-    if(phone!==null && phone!==undefined) result.phone=phone.innerText;
-
-    if(address!==null && address!==undefined)
-    {
-        var add_split=address.innerText.split("\n");
-        var add_len=add_split.length;
-        var curr_pos=add_len-1,i;
-
-        while(curr_pos>=0 && add_split[curr_pos].length<2) curr_pos--;
-        console.log("add_len="+add_len);
-        if(curr_pos>=0) {
-            result.country=add_split[curr_pos]; }
-        curr_pos--;
-        while(curr_pos>=0 && add_split[curr_pos].length<2) curr_pos--;
-        if(curr_pos>=0) {
-            add_match=add_split[curr_pos].match(add_regex);
-            console.log("add_match="+JSON.stringify(add_match));
-            if(add_match)
-            {
-                result.city=add_match[1];
-                result.state=add_match[2];
-                result.postalCode=add_match[3];
-            }
-
-        }
-
-        result.streetAddress="";
-        for(i=0; i < curr_pos; i++)
-        {
-            if(add_split[i].length<2) continue;
-            result.streetAddress=result.streetAddress+add_split[i];
-            if(i<curr_pos-1) result.streetAddress=result.streetAddress+",";
-        }
-        result.streetAddress=result.streetAddress.replace(/,$/,"");
-    }
-    if(url!==undefined && url!==null) { result.url=url.href; }
-    if(name!==undefined && name!==null) { result.name=name.innerText; }
-    console.log("this="+this.prototype);
-    result.name=MTurkScript.prototype.shorten_company_name(result.name);
-    console.log("result="+JSON.stringify(result));
-    console.log("Setting bloom_result");
-    GM_setValue("bloomberg.com/research/stocks/private/snapshot.asp"+"_result",result);
-    return;
-
-}
-
-MTurkScript.prototype.parseext_bloomberg_profile=function(doc,url,resolve,reject,response)
-{
-    var result={"phone":"","country":"",url:"","name":"","state":"","city":"","streetAddress":"","postalCode":"",
-                sector:"","industry":"","sub_industry":"",executives:[],description:""};
-    var i;
-    var address=document.getElementsByClassName("address");
-    var phone=doc.querySelector("[itemprop='telephone']");
-    var name=doc.querySelector("[itemprop='name']");
-    var url=document.getElementsByClassName("website");
-    var executives=document.getElementsByClassName("executive");
-    var desc=document.getElementsByClassName("description");
-    var fields=["sector","industry","sub_industry"];
-    var add_match, add_regex=/^([^,]+)(?:,\s*(.*?))?\s*((?:[A-Z]*[\d]+[A-Z\d]+[A-Z]*))$/;
-    if(desc.length>0) result.description=desc[0].innerText;
-    for(i=0; i < fields.length; i++)
-    {
-        let curr_field=document.getElementsByClassName(fields[i]);
-        if(curr_field.length>0) result[fields[i]]=curr_field[0].innerText.replace(/^[^:]+:\s*/,"");
-    }
-    for(i=0; i < executives.length; i++)
-    {
-        try
-        {
-            result.executives.push({name:executives[i].getElementsByClassName("name")[0].innerText,
-                                    position:executives[i].getElementsByClassName("position")[0].innerText});
-        }
-        catch(error) { console.log("error pushing "+error); }
-    }
-    if(url.length>0 && url[0].getElementsByTagName("a").length>0) { result.url=url[0].getElementsByTagName("a")[0].href; }
-    if(name!==undefined && name!==null) { result.name=name.content; }
-    if(phone!==null && phone!==undefined) result.phone=phone.content;
-    if(address.length>0)
-    {
-        var add_split=address[0].innerText.split("\n");
-        let curr_pos=add_split.length-1;
-        if(curr_pos>0) result.country=add_split[curr_pos--].trim();
-        if(curr_pos>=0) {
-            add_match=add_split[curr_pos].match(add_regex);
-            console.log("add_match="+JSON.stringify(add_match));
-            if(add_match)
-            {
-                result.city=add_match[1];
-                result.state=add_match[2];
-                result.postalCode=add_match[3];
-            }
-
-        }
-        for(i=0; i < curr_pos; i++)
-        {
-            if(add_split[i].length<2) continue;
-            result.streetAddress=result.streetAddress+add_split[i];
-            if(i<curr_pos-1) result.streetAddress=result.streetAddress+",";
-        }
-
-
-    }
-    console.log("result="+JSON.stringify(result));
-    console.log("Setting bloom_result");
-    GM_setValue("bloomberg.com/profiles/companies/"+"_result",result);
-}
 
 /* reload_parser reloads the parser if the page hasn't parsed yet and we have attempts left
    (number of attempts is currently a magic number here of 30, timeout is 500 milliseconds
@@ -569,61 +443,6 @@ MTurkScript.prototype.reload_parser=function(doc,instance,fragment)
         setTimeout(instance.site_parser_map[fragment],500,doc,instance,fragment);
     }
 }
-/**
- * parse_instagram parses an instagram page, scrapes page name, insta_name (the instagram handle sans @), followers,posts, following,
- url of instagram, an external url linked to if existing, description */
-MTurkScript.prototype.parseext_instagram=function(doc,instance,fragment)
-{
-    if(instance===undefined) {
-	console.log("instance is undefined"); return; }
-    console.log("Doing IG attempts="+instance.attempts[fragment]);
-    var j,x;
-    // for(x in instance) { console.log("instance["+x+"]="+instance[x]); }
-    var result={email:"",name:"",insta_name:"",followers:"",url:window.location.href,posts:"",following:"",
-                external_url:"",description:""};
-    var accountname=doc.getElementsByClassName("AC5d8");
-    var name=doc.getElementsByClassName("rhpdm");
-    var counts=doc.getElementsByClassName("g47SY");
-    var text_div=doc.getElementsByClassName("-vDIg");
-
-    var error_container=doc.getElementsByClassName("error-container");
-    if(accountname.length===0) {
-        console.log("Calling reload_parser");
-        instance.reload_parser(doc,instance,fragment);
-        return;
-    }
-
-    if(error_container.length>0)
-    {
-        result.insta_name=window.location.href.replace(/https:\/\/(www\.)?instagram\.com\//,"").replace(/\//g,"");
-    }
-    if(accountname.length>0) result.insta_name="@"+accountname[0].innerText;
-    if(name.length>0) result.name=name[0].innerText.replace(/|.*$/,"").trim() ;
-    if(counts.length>=3)
-    {
-        result.posts=counts[0].innerText.replace(/[\.\,]+/g,"");
-        result.followers=counts[1].innerText.replace(/[\.\,]+/g,"");
-        result.following=counts[2].innerText.replace(/[\.\,]+/g,"");
-    }
-    if(text_div.length>0)
-    {
-        var email_matches=text_div[0].innerText.match(email_re);
-        if(email_matches!==null && email_matches.length>0) {
-            for(j=0; j < email_matches.length; j++) {
-                if(!MTurkScript.is_bad_email(email_matches[j]) && (result.email=email_matches[j])) break;
-            }
-        }
-        if(text_div[0].getElementsByTagName("span").length>0) result.description=text_div[0].getElementsByTagName("span")[0].innerText;
-        if(text_div[0].getElementsByClassName("yLUwa").length>0)
-        {
-            let url_match=text_div[0].getElementsByClassName("yLUwa")[0].href.match(/\?u\=([^&]+)&/);
-            if(url_match) result.external_url=decodeURIComponent(url_match[1]);
-        }
-    }
-    console.log("Done IG, result="+JSON.stringify(result));
-
-    GM_setValue("instagram.com_result",result);
-};
 
 /**
  * query_search does a Bing search
@@ -1800,3 +1619,35 @@ MTurkScript.prototype.fix_incomplete_url=function(url) {
     else if(!/^http/.test(url)) url="http://"+url;
     return url;
 };
+
+/* Checks incompletely whether a company is likely to accept credit cards */
+MTurkScript.prototype.company_accepts_cards=function(doc,url) {
+    var links=doc.links,x;
+    for(x of links) {
+        if(/\/(donate|cart)$/.test(x.href.replace(/\/$/,"")) ||
+           /^(Donate|Cart)$/i.test(x.innerText)) return true;
+    }
+    return false;
+};
+/* Gets company name (or a list of potential names, rather) from copyright if one exists */
+MTurkScript.prototype.company_from_copyright=function(doc,url) {
+    var div_list=doc.querySelectorAll("div,p");
+    var copyright_list=[];
+    div_list.forEach(function(elem) {
+            if(elem.querySelector("div,p")) return;
+            MTurkScript.prototype.find_copyright_elem(elem,copyright_list); });
+    return copyright_list;
+};
+/* Helper for company_from_copyright */
+MTurkScript.prototype.find_copyright_elem=function(elem,lst) {
+    var re=/^\s*(?:Copyright)?\s*(?:©)\s*(?:Copyright)?\s*(?:[\d\-]{4,})?(?:[\s\|\.·]*)([^\n\t\|\-\.·,]*)/,match;
+    var re2=/^\s*©(?: Copyright)? \s*(?:[\d\-]*)\s*([^\n\t\|\-\.·,]*)/;
+    var my_match;
+    if((match=elem.innerText.match(re))||(match=elem.innerText.match(re2))) {
+        my_match=match[1].trim().replace(/((19[\d]{2})|(20[\d]{2}))$/,"").trim();
+        my_match=my_match.replace(/\s*All Rights Reserved$/,"");
+        if(my_match.length>0) lst.push(my_match);
+    }
+};
+
+
