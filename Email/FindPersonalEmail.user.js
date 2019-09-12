@@ -446,7 +446,6 @@
         var search_str="+\""+curr_email+"\"";// OR "+
          //   "+\""+lname.toLowerCase()+fname.charAt(0).toLowerCase()+"@"+my_query.domain+"\"";
         console.log("new search_str for emails ="+search_str);
-        //do_mailtester_query(curr_email);
 
         const emailPromise = new Promise((resolve, reject) => {
             

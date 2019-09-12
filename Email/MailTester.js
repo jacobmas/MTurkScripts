@@ -1,13 +1,20 @@
 /** 
  * 
+ * @author Jacob Alperin-Sheriff
  * Module for finding emails, something to do to trick mailtester eventually I dunno 
+ * parameters
+ * Depends on MTurkScript.js as well as
  * 
- * Depends on MTurkScript.js
+ * jacobmas/pdf.js/master/dist/pdf.js
+ * jacobmas/pdf.js/master/dist/pdf.worker.js
+ *
+ * also searches for common email address forms 
  */
 
 /* EmailQual is an object taking an email address, the url on which it was found, 
  * the_name={fname:John,mname:Quentin,lname:Doe}, desired_domain either undefined or the domain we're looking for emails for */
 function EmailQual(email,url,the_name,desired_domain) {
+    if(the_name===undefined) the_name={fname:"",lname:"",mname:""};
     var fname=the_name.fname.replace(/\'/g,"").toLowerCase(),lname=the_name.lname.replace(/[\'\s]/g,"").toLowerCase();
     this.fname=the_name.fname;
     this.lname=the_name.lname;
@@ -98,7 +105,7 @@ MailTester.email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%\*]{1,40}(\.[^<>\/()\[\]\
 
 MailTester.bad_urls=["facebook.com","youtube.com","twitter.com","instagram.com","opendi.us",".business.site","plus.google.com",
 		     ".alibaba.com",".trystuff.com",".mturkcontent.com",".amazonaws.com",".medium.com",".google.com",
-		     ".opencorporates.com",".thefreedictionary.com",".dictionary.com",".crunchbase.com",
+		     ".opencorporates.com",".thefreedictionary.com",".dictionary.com",".crunchbase.com",".yumpu.com",
 		     
 		     "beenverified.com","downloademail.info","email-format.com",".facebook.com",".niche.com","en.wikipedia.org",
 		     "hunter.io","issuu.com","/app.lead411.com","linkedin.com",".lead411.com",
@@ -121,7 +128,7 @@ MailTester.prototype.do_next_email_query=function(self) {
 	    self.do_mailtester_query(curr_email,self); }
 	
         // Leaving out search initially???
-	else if(self.resolve_early&&self.email_list.length>0 && self.email_list[0].quality>=6) {
+	else if(self.resolve_early&&self.email_list.length>0 && self.email_list[0].quality>=6&&false) {
 	    console.log("Resolving early");
 	    self.resolve(self.email_list);
 	    return;
@@ -184,7 +191,7 @@ MailTester.prototype.mailtester_response=function(doc,url,resolve,reject,email,s
         let cellText=lastCell.innerText;
         console.log("email="+email+", lastCell="+lastCell.innerHTML);
         if(cellText.indexOf("E-mail address is valid")!==-1||
-           cellText.indexOf("The user you are trying to contact is receiving mail at a rate that")!==-1) {
+           cellText.indexOf("The user you are trying to contact is receiving mail at a rate that")!==-1||) {
             this.email_list.push(new EmailQual(email,url,this.fullname,this.domain));
             this.done_with_mailtester=true;
         }
@@ -245,30 +252,40 @@ MailTester.prototype.query_response=function(response,resolve,reject,type,self) 
 MailTester.prototype.query_response_loop=function(b_algo,i,type,promise_list,resolve,reject,b1_success,self) {
     var b_name,b_url,p_caption,b_caption;
     var mtch,j,people;
+    var self=this;
     b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
     b_url=b_algo[i].getElementsByTagName("a")[0].href;
     b_caption=b_algo[i].getElementsByClassName("b_caption");
     p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
         p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
 
-   
+    p_caption=p_caption.replace(/\.\s+/g," ");
     if(/(email|query)/.test(type) && (mtch=p_caption.match(MailTester.email_re))) {
         for(j=0; j < mtch.length; j++) {
 	    if(!MTurkScript.prototype.is_bad_email(mtch[j]) &&
 	       mtch[j].length>0) self.email_list.push(new EmailQual(mtch[j],b_url,self.fullname,self.domain));
 	}
     }
-    /* TODO: integrate PDF parser at some point */
+    /*  Hopefully PDF parser is integrated now? */
     if(type==="email" && i <=3 && !/\.(xls|xlsx|pdf|doc)$/.test(b_url)&&
        !MTurkScript.prototype.is_bad_url(b_url,MailTester.bad_urls,-1)) {
         promise_list.push(MTurkScript.prototype.create_promise(
 	    b_url,self.contact_response,MTurkScript.prototype.my_then_func,MTurkScript.prototype.my_catch_func,self));
     }
+    else if(type=="email" && i<=3 && /\.pdf$/test(b_url)) {
+	var parser=new PDFParser(b_url);
+	promise_list.push(new Promise((inner_resolve,inner_reject) => {
+	    parser.parsePDF(inner_resolve,inner_reject);
+	}).then(function(result) {
+	    let x;
+	    for(x of result) self.email_list.push(new EmailQual(x,parser.url));
+	}).catch(MTurkScript.prototype.my_catch_func));
+    }
     return null;
 };
 
 /**
-     * contact_response Here it searches for an email TODO:FIX */
+     * contact_response Here it searches for an email, the "gold standard" short version of contact_response */
 MailTester.prototype.contact_response=function(doc,url,resolve,reject,self) {
     console.log("in contact_response,url="+url);
     var i,j,temp_email,links=doc.links,email_matches;
@@ -285,7 +302,8 @@ MailTester.prototype.contact_response=function(doc,url,resolve,reject,self) {
     for(i=0; i < links.length; i++) {
         try {
             if((temp_email=links[i].href.replace(/^mailto:\s*/,"").match(MailTester.email_re)) &&
-               !MTurkScript.prototype.is_bad_email(temp_email[0])) self.email_list.push(new EmailQual(temp_email.toString(),url,self.fullname,self.domain));
+               !MTurkScript.prototype.is_bad_email(temp_email[0])) {
+		self.email_list.push(new EmailQual(temp_email.toString(),url,self.fullname,self.domain)); }
         }
         catch(error) { console.log("Error with emails "+error); }
     }
@@ -293,3 +311,4 @@ MailTester.prototype.contact_response=function(doc,url,resolve,reject,self) {
     resolve("");
     return;
 };
+
