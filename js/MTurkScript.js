@@ -17,16 +17,18 @@ var province_map={"Alberta": "AB", "British Columbia": "BC", "Manitoba": "MB", "
 		  "Saskatchewan": "SK","Yukon":"YT"
 		 };
 
-var email_domain_only_str="(^([\\d]{3}\\.com|163\\.com|aon\\.at|bigpond\\.(com|net)\\.au|bk\\.ru|bluewin\\.ch|btopenworld\\.com|"+
-            "cableone\\.net|charter\\.net|comcast\\.net|"+
-            "cox\\.net|earthlink\\.net|emirates\\.net\\.ae|free\\.fr|freenet\\.de|fuse\\.net|"+
-            "gmx\\.(at|ch|de|net)|hush\\.com|ig\\.com\\.br|knology\\.net|"+
-            "libero\\.it|live\\.(ca|co\\.uk|de)|live\\.cn|live\\.nl|list\\.ru|mac\\.com|mail\\.de|mindspring\\.com|mweb\\.co\\.za|"+
-            "online\.no|optusnet\\.com\\.au|(.*net\\.com)|orange\\.fr|"+
-            "pacbell\\.net|protonmail\\.com|qq\\.com|rocketmail\\.com|rogers\\.com|([^\\.]*\\.rr\\.com)|runbox\\.com|"+
-            "sbcglobal\\.net|seznam\\.cz|shaw\\.ca|sternemails\\.com|suddenlink\\.net|"+
-            "swissmail\.org|sympatico\\.ca|tbaytel\\.net|telkomsa\\.net|telus\\.net|uol\\.com\\.br|"+
-            "verizon\\.net|walla\.com|wanadoo\\.fr|web\\.de|windstream\\.net|ya(ndex)?\\.ru|ymail\\.com"+
+var email_domain_only_str="(^([\\d]{3}\\.com|163\\.com|aol\\.com|aon\\.at|"+
+    "bigpond\\.(com|net)\\.au|bk\\.ru|bluewin\\.ch|btopenworld\\.com|"+
+    "cableone\\.net|charter\\.net|comcast\\.net|"+
+    "cox\\.net|earthlink\\.net|emirates\\.net\\.ae|free\\.fr|freenet\\.de|fuse\\.net|"+
+    "gmail\\.com|gmx\\.(at|ch|de|net)|hush\\.com|ig\\.com\\.br|knology\\.net|"+
+    "libero\\.it|live\\.(ca|co\\.uk|de)|live\\.cn|live\\.nl|list\\.ru|"+
+    "mac\\.com|mail\\.de|mindspring\\.com|mweb\\.co\\.za|"+
+    "online\.no|optusnet\\.com\\.au|(.*net\\.com)|orange\\.fr|"+
+    "pacbell\\.net|protonmail\\.com|qq\\.com|rocketmail\\.com|rogers\\.com|([^\\.]*\\.rr\\.com)|runbox\\.com|"+
+    "sbcglobal\\.net|seznam\\.cz|shaw\\.ca|sternemails\\.com|suddenlink\\.net|"+
+    "swissmail\.org|sympatico\\.ca|tbaytel\\.net|telkomsa\\.net|telus\\.net|uol\\.com\\.br|"+
+    "verizon\\.net|walla\.com|wanadoo\\.fr|web\\.de|windstream\\.net|ya(ndex)?\\.ru|yahoo\\.com|ymail\\.com"+
     "))$";
 
 var email_domain_only_re=new RegExp(email_domain_only_str,"i");
