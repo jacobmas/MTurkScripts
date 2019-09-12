@@ -1,4 +1,7 @@
-/* File with various useful site parsers, still relatively informal */
+/**
+ * File with various useful site parsers, still relatively informal 
+ * Contains special parsers which search Buzzfile and Manta directly by opening new tabs
+ */
 var AggParser={}; // generic object
 
 
@@ -403,6 +406,131 @@ AggParser.parse_youtube=function(doc,url,resolve,reject) {
 };
 
 
+/* do_bloomberg_snapshot parses
+ * https://www.bloomberg.com/research/stocks/private/snapshot.asp?privcapId=[\d+] pages
+ * doc the document to use to parse it, to allow use for either xmlhttprequest or open in
+ *       new window
+ */
+AggParser.parseext_bloomberg_snapshot=function(doc) {
+    console.log("Doing bloomberg ");
+
+    var result={"phone":"","country":"",url:"","name":"","state":"","city":"","streetAddress":"","postalCode":""};
+   
+    var address=doc.querySelector("[itemprop='address']");
+    var phone=doc.querySelector("[itemprop='telephone']");
+    var name=doc.querySelector("[itemprop='name']");
+    var url=doc.querySelector("[itemprop='url']");
+    var executives=doc.querySelectorAll("[itemprop='member']");
+    var add_match, add_regex=/^([^,]+)(?:,\s*(.*?))?\s*((?:[A-Z]*[\d]+[A-Z\d]+[A-Z]*))$/;
+
+    if(phone!==null && phone!==undefined) result.phone=phone.innerText;
+
+    if(address!==null && address!==undefined)
+    {
+        var add_split=address.innerText.split("\n");
+        var add_len=add_split.length;
+        var curr_pos=add_len-1,i;
+
+        while(curr_pos>=0 && add_split[curr_pos].length<2) curr_pos--;
+        console.log("add_len="+add_len);
+        if(curr_pos>=0) {
+            result.country=add_split[curr_pos]; }
+        curr_pos--;
+        while(curr_pos>=0 && add_split[curr_pos].length<2) curr_pos--;
+        if(curr_pos>=0) {
+            add_match=add_split[curr_pos].match(add_regex);
+            console.log("add_match="+JSON.stringify(add_match));
+            if(add_match)
+            {
+                result.city=add_match[1];
+                result.state=add_match[2];
+                result.postalCode=add_match[3];
+            }
+
+        }
+
+        result.streetAddress="";
+        for(i=0; i < curr_pos; i++)
+        {
+            if(add_split[i].length<2) continue;
+            result.streetAddress=result.streetAddress+add_split[i];
+            if(i<curr_pos-1) result.streetAddress=result.streetAddress+",";
+        }
+        result.streetAddress=result.streetAddress.replace(/,$/,"");
+    }
+    if(url!==undefined && url!==null) { result.url=url.href; }
+    if(name!==undefined && name!==null) { result.name=name.innerText; }
+    console.log("this="+this.prototype);
+    result.name=MTurkScript.prototype.shorten_company_name(result.name);
+    console.log("result="+JSON.stringify(result));
+    console.log("Setting bloom_result");
+    GM_setValue("bloomberg.com/research/stocks/private/snapshot.asp"+"_result",result);
+    return;
+
+}
+
+AggParser.parseext_bloomberg_profile=function(doc,url,resolve,reject,response)
+{
+    var result={"phone":"","country":"",url:"","name":"","state":"","city":"","streetAddress":"","postalCode":"",
+                sector:"","industry":"","sub_industry":"",executives:[],description:""};
+    var i;
+    var address=document.getElementsByClassName("address");
+    var phone=doc.querySelector("[itemprop='telephone']");
+    var name=doc.querySelector("[itemprop='name']");
+    var url=document.getElementsByClassName("website");
+    var executives=document.getElementsByClassName("executive");
+    var desc=document.getElementsByClassName("description");
+    var fields=["sector","industry","sub_industry"];
+    var add_match, add_regex=/^([^,]+)(?:,\s*(.*?))?\s*((?:[A-Z]*[\d]+[A-Z\d]+[A-Z]*))$/;
+    if(desc.length>0) result.description=desc[0].innerText;
+    for(i=0; i < fields.length; i++)
+    {
+        let curr_field=document.getElementsByClassName(fields[i]);
+        if(curr_field.length>0) result[fields[i]]=curr_field[0].innerText.replace(/^[^:]+:\s*/,"");
+    }
+    for(i=0; i < executives.length; i++)
+    {
+        try
+        {
+            result.executives.push({name:executives[i].getElementsByClassName("name")[0].innerText,
+                                    position:executives[i].getElementsByClassName("position")[0].innerText});
+        }
+        catch(error) { console.log("error pushing "+error); }
+    }
+    if(url.length>0 && url[0].getElementsByTagName("a").length>0) { result.url=url[0].getElementsByTagName("a")[0].href; }
+    if(name!==undefined && name!==null) { result.name=name.content; }
+    if(phone!==null && phone!==undefined) result.phone=phone.content;
+    if(address.length>0)
+    {
+        var add_split=address[0].innerText.split("\n");
+        let curr_pos=add_split.length-1;
+        if(curr_pos>0) result.country=add_split[curr_pos--].trim();
+        if(curr_pos>=0) {
+            add_match=add_split[curr_pos].match(add_regex);
+            console.log("add_match="+JSON.stringify(add_match));
+            if(add_match)
+            {
+                result.city=add_match[1];
+                result.state=add_match[2];
+                result.postalCode=add_match[3];
+            }
+
+        }
+        for(i=0; i < curr_pos; i++)
+        {
+            if(add_split[i].length<2) continue;
+            result.streetAddress=result.streetAddress+add_split[i];
+            if(i<curr_pos-1) result.streetAddress=result.streetAddress+",";
+        }
+
+
+    }
+    console.log("result="+JSON.stringify(result));
+    console.log("Setting bloom_result");
+    GM_setValue("bloomberg.com/profiles/companies/"+"_result",result);
+};
+
+
 /** 
  * Parser for manta.com, happening live to avoid distil getting around
  * can deal with finding coords later if aI care  
@@ -430,7 +558,7 @@ AggParser.do_manta_search=function(name,location,resolve,reject) {
 	    else if(new_val==="fail") {
 		    the_manta=GM_getValue("manta_instance",{});
                 the_tab.close();
-                reject(the_manta);
+		reject(the_manta);
 	    }
         });
 };
