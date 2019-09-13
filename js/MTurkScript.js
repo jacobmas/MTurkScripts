@@ -1354,6 +1354,9 @@ MTurkScript.prototype.fix_emails_in_scripts=function(doc,url,the_script) {
     if(the_script) the_script.innerHTML="";
 };
 
+
+
+
 /* Fixes the hidden emails in a document
  */
 MTurkScript.prototype.fix_emails=function(doc,url) {
@@ -1377,8 +1380,12 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
             for(j=0; j < match_split.length; j++) temp_email=temp_email+String.fromCharCode(match_split[j].trim());
             if(!MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
         }
+	else if(links[i].href.indexOf("javascript:linkTo_UnCryptMailto(")!==-1 &&
+		(encoded_match=links[i].href.match(/linkTo_UnCryptMailTo\(\'([^\)]*)\'\)/)) &&
+		(temp_email=MTurkScript.linkTo_UnCryptMailto(encoded_match[1].trim()))) links[i].href="mailto:"+temp_email;
         else if(links[i].href.indexOf("javascript:DeCryptX(")!==-1 &&
-		(encoded_match=links[i].href.match(/DeCryptX\(\'([^\)]+)\'\)/))) links[i].href="mailto:"+temp_email;
+		(encoded_match=links[i].href.match(/DeCryptX\(\'([^\)]+)\'\)/)) &&
+		(temp_email=MTurkScript.prototype.DeCryptX(encoded_match[1].trim()))) links[i].href="mailto:"+temp_email;
         else if((script=links[i].querySelector("script")) &&
 		/var addy[\d]+/.test(script.innerHTML)) MTurkScript.prototype.fix_addy_script(links[i],script);
 	else if((clicky=links[i].getAttribute("onclick"))&&
@@ -1391,6 +1398,34 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
     }
     for(x=0;x<scripts.length;x++) MTurkScript.prototype.fix_emails_in_scripts(doc,url,scripts[x]);
 };
+
+// decrypt helper function
+MTurkScript.prototype.decryptCharcode=function(n,start,end,offset) {
+    n = n + offset;
+    if (offset > 0 && n > end) n = start + (n - end - 1);
+    else if (offset < 0 && n < start) n = end - (start - n - 1);
+    return String.fromCharCode(n);
+};
+// decrypt string
+MTurkScript.prototype.UnCrypt_decryptString=function(enc,offset) {
+    var dec = "",len = enc.length;
+    for(var i=0; i < len; i++) {
+	var n = enc.charCodeAt(i);
+	if (n >= 0x2B && n <= 0x3A) {
+	    dec += MTurkScript.prototype.UnCrypt_decryptCharcode(n,0x2B,0x3A,offset);	// 0-9 . , - + / :
+	} else if (n >= 0x40 && n <= 0x5A) {
+	    dec += MTurkScript.prototype.UnCrypt_decryptCharcode(n,0x40,0x5A,offset);	// A-Z @
+	} else if (n >= 0x61 && n <= 0x7A) {
+	    dec += MTurkScript.prototype.UnCrypt_decryptCharcode(n,0x61,0x7A,offset);	// a-z
+	} else dec += enc.charAt(i);
+    }
+    return dec;
+};
+// decrypt spam-protected emails
+MTurkScript.prototype.linkTo_UnCryptMailto=function(s) {
+    location.href = MTurkScript.prototype.UnCrypt_decryptString(s,-1);
+};
+
 MTurkScript.prototype.is_bad_page=function(doc,url) {
     var links=doc.links,i,scripts=doc.scripts;
     var title=doc.title;
