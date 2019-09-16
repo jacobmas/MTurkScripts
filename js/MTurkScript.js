@@ -150,9 +150,11 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
     if ((window.location.href.indexOf("mturkcontent.com") !== -1 ||
          window.location.href.indexOf("amazonaws.com") !== -1) &&
         ((!is_crowd && document.getElementById("submitButton") && !document.getElementById("submitButton").disabled) ||
-	 (is_crowd && document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled)) &&
+	 (is_crowd && this.is_crowd_ready())) &&
 	GM_getValue("req_id","")===this.requester_id) {
-	this.submit_button=is_crowd?document.querySelector("crowd-button"):document.getElementById("submitButton");
+	this.submit_button=is_crowd?(document.querySelector("crowd-button")||
+				     document.querySelector("#footerContainer awsui-button button"))
+				     :document.getElementById("submitButton");
 	let assignmentId=document.querySelector("#assignmentId");
 	if(assignmentId) this.assignment_id=assignmentId.value;
 	else { console.log("No assignmentId found"); }
@@ -167,6 +169,12 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
 	this.setup_worker_mturk();
     }
 	
+};
+
+MTurkScript.prototype.is_crowd_ready=function() {
+    if(document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled) return true;
+    else if(document.querySelector("crowd-classifier") && !document.querySelector("crowd-classifier").disabled) return true;
+    return false;
 };
 
 
