@@ -272,7 +272,7 @@ MailTester.prototype.query_response_loop=function(b_algo,i,type,promise_list,res
         promise_list.push(MTurkScript.prototype.create_promise(
 	    b_url,self.contact_response,MTurkScript.prototype.my_then_func,MTurkScript.prototype.my_catch_func,self));
     }
-    else if(type=="email" && i<=3 && /\.pdf$/test(b_url)) {
+    else if(type=="email" && i<=3 && /\.pdf$/.test(b_url)) {
 	var parser=new PDFParser(b_url);
 	promise_list.push(new Promise((inner_resolve,inner_reject) => {
 	    parser.parsePDF(inner_resolve,inner_reject);
