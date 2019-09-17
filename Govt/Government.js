@@ -616,7 +616,7 @@ Gov.parse_table=function(table,title_map,begin_row,end_row,dept,url) {
 		curr_contact.title=match[2].trim();
 	    }
 	    else if(title) {
-		var str="",x;
+		var str="";
 		for(x of curr_cell.childNodes) {
 		    
 		    if(str.length>0 && x.nodeType===Node.ELEMENT_NODE&&x.tagName==="BR") break;
