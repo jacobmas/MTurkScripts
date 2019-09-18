@@ -1581,6 +1581,44 @@ MTurkScript.prototype.proper_name_casing=function(name) {
 };
 
 
+MTurkScript.prototype.fix_incomplete_url=function(url) {
+    
+    if(!/^http/.test(url) && !/^www\./.test(url)) url="http://www."+url;
+    else if(!/^http/.test(url)) url="http://"+url;
+    return url;
+};
+
+/* Checks incompletely whether a company is likely to accept credit cards */
+MTurkScript.prototype.company_accepts_cards=function(doc,url) {
+    var links=doc.links,x;
+    for(x of links) {
+        if(/\/(donate|cart)$/.test(x.href.replace(/\/$/,"")) ||
+           /^(Donate|Cart)$/i.test(x.innerText)) return true;
+    }
+    return false;
+};
+/* Gets company name (or a list of potential names, rather) from copyright if one exists */
+MTurkScript.prototype.company_from_copyright=function(doc,url) {
+    var div_list=doc.querySelectorAll("div,p");
+    var copyright_list=[];
+    div_list.forEach(function(elem) {
+            if(elem.querySelector("div,p")) return;
+            MTurkScript.prototype.find_copyright_elem(elem,copyright_list); });
+    return copyright_list;
+};
+/* Helper for company_from_copyright */
+MTurkScript.prototype.find_copyright_elem=function(elem,lst) {
+    var re=/^\s*(?:Copyright)?\s*(?:©)\s*(?:Copyright)?\s*(?:[\d\-]{4,})?(?:[\s\|\.·]*)([^\n\t\|\-\.·,]*)/,match;
+    var re2=/^\s*©(?: Copyright)? \s*(?:[\d\-]*)\s*([^\n\t\|\-\.·,]*)/;
+    var my_match;
+    if((match=elem.innerText.match(re))||(match=elem.innerText.match(re2))) {
+        my_match=match[1].trim().replace(/((19[\d]{2})|(20[\d]{2}))$/,"").trim();
+        my_match=my_match.replace(/\s*All Rights Reserved$/,"");
+        if(my_match.length>0) lst.push(my_match);
+    }
+};
+
+
 var MTP=MTurkScript.prototype;
 
 
@@ -1658,41 +1696,5 @@ var docCookies = {
   }
 };
 
-MTurkScript.prototype.fix_incomplete_url=function(url) {
-    
-    if(!/^http/.test(url) && !/^www\./.test(url)) url="http://www."+url;
-    else if(!/^http/.test(url)) url="http://"+url;
-    return url;
-};
-
-/* Checks incompletely whether a company is likely to accept credit cards */
-MTurkScript.prototype.company_accepts_cards=function(doc,url) {
-    var links=doc.links,x;
-    for(x of links) {
-        if(/\/(donate|cart)$/.test(x.href.replace(/\/$/,"")) ||
-           /^(Donate|Cart)$/i.test(x.innerText)) return true;
-    }
-    return false;
-};
-/* Gets company name (or a list of potential names, rather) from copyright if one exists */
-MTurkScript.prototype.company_from_copyright=function(doc,url) {
-    var div_list=doc.querySelectorAll("div,p");
-    var copyright_list=[];
-    div_list.forEach(function(elem) {
-            if(elem.querySelector("div,p")) return;
-            MTurkScript.prototype.find_copyright_elem(elem,copyright_list); });
-    return copyright_list;
-};
-/* Helper for company_from_copyright */
-MTurkScript.prototype.find_copyright_elem=function(elem,lst) {
-    var re=/^\s*(?:Copyright)?\s*(?:©)\s*(?:Copyright)?\s*(?:[\d\-]{4,})?(?:[\s\|\.·]*)([^\n\t\|\-\.·,]*)/,match;
-    var re2=/^\s*©(?: Copyright)? \s*(?:[\d\-]*)\s*([^\n\t\|\-\.·,]*)/;
-    var my_match;
-    if((match=elem.innerText.match(re))||(match=elem.innerText.match(re2))) {
-        my_match=match[1].trim().replace(/((19[\d]{2})|(20[\d]{2}))$/,"").trim();
-        my_match=my_match.replace(/\s*All Rights Reserved$/,"");
-        if(my_match.length>0) lst.push(my_match);
-    }
-};
 
 
