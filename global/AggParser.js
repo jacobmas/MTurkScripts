@@ -731,3 +731,78 @@ if(/\.buzzfile.com(\/|$)/.test(window.location.href)) {
     }
     
 }
+
+/** 
+ * TODO: Yelp doesn't grab stuff for non-restaurants now
+ */
+
+AggParser.parse_yelp_inner=function(parsed) {
+    console.log("in parse_yelp_inner");
+    function decodeHtml(html) {
+        var txt = document.createElement("textarea");
+        txt.innerHTML = html;
+        return txt.value;
+    }
+    var ret={},y;
+    var details=parsed.bizDetailsPageProps,x;
+    var contact=details.bizContactInfoProps;
+    ret.name=details.businessName;
+    if(details.bizHoursProps) ret.hours=details.bizHoursProps.hoursInfoRows;
+    if(details.fromTheBusinessProps) ret.fromBusiness=details.fromTheBusinessProps.fromTheBusinessContentProps;
+    ret.businessInfoItems={};
+    if(details.moreBusinessInfoProps&&details.moreBusinessInfoProps.businessInfoItems) {
+        for(x of details.moreBusinessInfoProps.businessInfoItems) {
+            ret.businessInfoItems[x.title]=decodeHtml(x.label);
+        }
+    }
+
+    if(contact) {
+        if(contact.businessWebsite && contact.businessWebsite.href) {
+            ret.website=decodeURIComponent(contact.businessWebsite.href.replace("/biz_redir?url=",""))
+		.replace(/\&.*$/,""); }
+        ret.phone=contact.phoneNumber;
+    }
+
+    if(details.mapBoxProps && details.mapBoxProps.addressLines) {
+        ret.address="";
+        for(y of details.mapBoxProps.addressLines) ret.address=ret.address+(ret.address.length>0?",":"")+y;
+    }
+
+    return ret;
+};
+
+AggParser.parse_yelp=function(doc,url,resolve,reject) {
+    /* Only parses restaurants properly at present, use other previous work to parse other things */
+    var result={},is_parsed=false;
+    var yelp_re=/^\s*\<\!\-\-\s*(.*)\s*\-\-\>s*$/;
+    var yelp_match,curr_script,parsed;
+    for(curr_script of doc.scripts) {
+        yelp_match="";
+        if((yelp_match=curr_script.innerHTML.match(yelp_re))&&/footerProps/.test(yelp_match[1])) {
+            try {
+                parsed=JSON.parse(yelp_match[1]);
+                result=AggParser.parse_yelp_inner(parsed);
+                is_parsed=true;
+            } catch(error) {
+                //reject("Error parsing JSON on YELP");
+                return;
+            }
+        }
+        else if(true||!/^\s*\(function/.test(curr_script.innerHTML)) {
+            /*  if(false&&yelp_match) {
+                try {
+                parsed=JSON.parse(yelp_match[1]);
+                if(parsed&&parsed.messages) parsed.messages="";
+                console.log("parsed="+JSON.stringify(parsed));
+                }
+                catch(error) {
+                console.log("not matched, curr_script.innerHTML="+curr_script.innerHTML);
+                }
+                }
+                else                 console.log("not matched, curr_script.innerHTML="+curr_script.innerHTML); */
+        }
+
+    }
+    resolve(result);
+};
+
