@@ -152,13 +152,14 @@ MailTester.prototype.do_next_email_query=function(self) {
 };
    
 /* do a query of mailtester.com */
+/* do a query of mailtester.com */
 MailTester.prototype.do_mailtester_query=function(email,self) {
 
-    var url="http://mailtester.com/testmail.php";
+    var url="https://mailtester.com/testmail.php";
     var data={"lang":"en","email":email};
-    var headers={"host":"mailtester.com","origin":"http://mailtester.com",
+    var headers={"host":"mailtester.com","origin":"https://mailtester.com",
 		 "Content-Type": "application/x-www-form-urlencoded",
-                 "referer":"http://mailtester.com/testmail.php",
+                 "referer":"https://mailtester.com/testmail.php",
 		 "Sec-Fetch-Mode": "navigate",
 		 "Sec-Fetch-Site": "same-origin",
 "Sec-Fetch-User": "?1"
@@ -184,6 +185,7 @@ MailTester.prototype.do_mailtester_query=function(email,self) {
     });
 };
 
+
 /* response to a mailtester query */
 MailTester.prototype.mailtester_response=function(doc,url,resolve,reject,email,self) {
     if(!self) self=this;
@@ -194,7 +196,7 @@ MailTester.prototype.mailtester_response=function(doc,url,resolve,reject,email,s
         let lastRow=table.rows[table.rows.length-1];
         let lastCell=lastRow.cells[lastRow.cells.length-1];
         let cellText=lastCell.innerText;
-        console.log("email="+email);//+", lastCell="+lastCell.innerHTML);
+        console.log("email="+email+", lastCell="+lastCell.innerHTML);
         if(cellText.indexOf("E-mail address is valid")!==-1||
            cellText.indexOf("The user you are trying to contact is receiving mail at a rate that")!==-1) {
             this.email_list.push(new EmailQual(email,url,this.fullname,this.domain));
@@ -210,7 +212,7 @@ MailTester.prototype.mailtester_response=function(doc,url,resolve,reject,email,s
 
     }
     else {
-        console.log("doc.body.innerHTML="+doc.body.innerHTML);
+        console.log("no table");//doc.body.innerHTML="+doc.body.innerHTML);
     }
     resolve("");
 };
