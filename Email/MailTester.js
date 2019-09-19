@@ -154,10 +154,15 @@ MailTester.prototype.do_next_email_query=function(self) {
 /* do a query of mailtester.com */
 MailTester.prototype.do_mailtester_query=function(email,self) {
 
-    var url="http://mailtester.com/index.php";
+    var url="http://mailtester.com/testmail.php";
     var data={"lang":"en","email":email};
-    var headers={"host":"mailtester.com","origin":"http://mailtester.com","Content-Type": "application/x-www-form-urlencoded",
-                 "referer":"http://mailtester.com/index.php"};
+    var headers={"host":"mailtester.com","origin":"http://mailtester.com",
+		 "Content-Type": "application/x-www-form-urlencoded",
+                 "referer":"http://mailtester.com/testmail.php",
+		 "Sec-Fetch-Mode": "navigate",
+		 "Sec-Fetch-Site": "same-origin",
+"Sec-Fetch-User": "?1"
+		};
     var data_str=MTurkScript.prototype.json_to_post(data);
     console.log("do_mailtester_query, email="+email+", data_str="+data_str);
     if(!self) self=this;
