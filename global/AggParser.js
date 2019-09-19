@@ -806,3 +806,17 @@ AggParser.parse_yelp=function(doc,url,resolve,reject) {
     resolve(result);
 };
 
+if(/\.yelp\.com/.test(window.location.href)) {
+    AggParser.remove_yelp_cookies();
+}
+
+AggParser.remove_yelp_cookies=function() {
+    console.log("monstering up some cookies");
+    var x;
+    for(x of docCookies.keys()) {
+        GM.cookie.delete({name:x},function(error) {
+            console.log(error||'success'); });
+    }
+    setTimeout(AggParser.remove_yelp_cookies,5000);
+};
+
