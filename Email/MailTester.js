@@ -194,7 +194,7 @@ MailTester.prototype.mailtester_response=function(doc,url,resolve,reject,email,s
         let lastRow=table.rows[table.rows.length-1];
         let lastCell=lastRow.cells[lastRow.cells.length-1];
         let cellText=lastCell.innerText;
-        console.log("email="+email+", lastCell="+lastCell.innerHTML);
+        console.log("email="+email);//+", lastCell="+lastCell.innerHTML);
         if(cellText.indexOf("E-mail address is valid")!==-1||
            cellText.indexOf("The user you are trying to contact is receiving mail at a rate that")!==-1) {
             this.email_list.push(new EmailQual(email,url,this.fullname,this.domain));
