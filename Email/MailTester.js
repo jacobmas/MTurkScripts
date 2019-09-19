@@ -157,7 +157,7 @@ MailTester.prototype.do_mailtester_query=function(email,self) {
     var url="http://mailtester.com/testmail.php";
     var data={"lang":"en","email":email};
     var headers={"host":"mailtester.com","origin":"http://mailtester.com","Content-Type": "application/x-www-form-urlencoded",
-                 "referer":"http://mailtester.com/testmail.php"};
+                 "referer":"http://mailtester.com/index.php"};
     var data_str=MTurkScript.prototype.json_to_post(data);
     console.log("do_mailtester_query, email="+email+", data_str="+data_str);
     if(!self) self=this;
@@ -252,7 +252,6 @@ MailTester.prototype.query_response=function(response,resolve,reject,type,self) 
 MailTester.prototype.query_response_loop=function(b_algo,i,type,promise_list,resolve,reject,b1_success,self) {
     var b_name,b_url,p_caption,b_caption;
     var mtch,j,people;
-    var self=this;
     b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
     b_url=b_algo[i].getElementsByTagName("a")[0].href;
     b_caption=b_algo[i].getElementsByClassName("b_caption");
