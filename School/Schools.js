@@ -731,6 +731,7 @@ Schools.AR.get_school_info=function(doc,url,resolve,reject) {
 };
 
 Schools.CA.get_state_dir=function(resolve,reject) {
+    console.log("CA, query with name="+Schools.name);
     var url="https://www.cde.ca.gov/SchoolDirectory/districtschool?allSearch="+Schools.name.replace(/\s/g,"+")+"&simpleSearch=Y&page=0&tab=3";
     var promise=MTP.create_promise(url,Schools.CA.get_school_search,resolve,reject);
 };
@@ -738,8 +739,9 @@ Schools.CA.get_school_search=function(doc,url,resolve,reject) {
     if(/\/details\?/.test(url) && Schools.CA.parse_school(doc,url,resolve,reject)) return;
     var table=doc.getElementsByTagName("table")[0],i,row,next_url,promise;
     //        console.log("table.outerHTML="+table.outerHTML);
-    if(!table) {
-	console.log("url="+url+", doc.body.innerHTML="+doc.body.innerHTML);
+    if(!table && /\s/.test(Schools.name)) {
+	Schools.name=Schools.name.replace(/\s[^\s]*$/,"").trim();
+	return Schools.CA.get_state_dir(resolve,reject);
     }
     for(i=0;i<table.rows.length;i++) {
         if((row=table.rows[i]).cells.length>=4 && Schools.matches_name(row.cells[3].innerText.trim())
