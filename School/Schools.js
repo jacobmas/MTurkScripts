@@ -732,7 +732,7 @@ Schools.AR.get_school_info=function(doc,url,resolve,reject) {
 
 Schools.CA.get_state_dir=function(resolve,reject) {
     console.log("CA, query with name="+Schools.name);
-    var url="https://www.cde.ca.gov/SchoolDirectory/districtschool?allSearch="+Schools.name.replace(/\s/g,"+")+"&simpleSearch=Y&page=0&tab=3";
+    var url="https://www.cde.ca.gov/SchoolDirectory/districtschool?allSearch="+encodeURIComponent(Schools.name).replace(/%20/g,"+")+"&simpleSearch=Y&page=0&tab=3";
     var promise=MTP.create_promise(url,Schools.CA.get_school_search,resolve,reject);
 };
 Schools.CA.get_school_search=function(doc,url,resolve,reject) {
