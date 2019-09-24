@@ -25,6 +25,11 @@
 // @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Email/MailTester.js
+// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
@@ -109,6 +114,7 @@
         var x,field;
         //update_address();
         for(x in my_query.fields) {
+            if(/^undefined/.test(x)) continue;
             console.log("my_query.fields["+x+"]="+my_query.fields[x]);
             if(field=document.getElementsByName(x)[0]) field.value=my_query.fields[x];
         }
@@ -120,58 +126,12 @@
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
-    function Address(text,priority) {
-        console.log("# In address for "+text);
-        var fl_regex=/(,\s*)?([\d]+(th|rd|nd) Fl(?:(?:oo)?r)?)\s*,/i,match;
-        var floor=text.match(fl_regex);
-        text=text.replace(fl_regex,",").replace(/,\s*USA$/,"").trim();
-        var parsed=parseAddress.parseLocation(text);
-        if(parsed&&parsed.city&&parsed.zip) {
-            this.address1=(parsed.number?parsed.number+" ":"")+(parsed.prefix?parsed.prefix+" ":"")+
-                (parsed.street?parsed.street+" ":"")+(parsed.type?parsed.type+" ":"")+(parsed.suffix?parsed.suffix+" ":"");
-            this.address2="";
-            this.address2=(parsed.sec_unit_type?parsed.sec_unit_type+" ":"")+
-                (parsed.sec_unit_num?parsed.sec_unit_num+" ":"");
-            if(!this.address2 || this.address2==="undefined") this.address2="";
-            if(floor) this.address2=this.address2+(this.address2.length>0?",":"")+floor[1];
-            if(!this.address2 || this.address2==="undefined") this.address2="";
-
-            this.city=parsed.city?parsed.city:"";
-            this.state=parsed.state?parsed.state:"";
-            this.zip=parsed.zip?parsed.zip:"";
-            console.log("state_map["+my_query.location+"]="+state_map[my_query.location]+", this.state="+this.state);
-
-            if(!(state_map[my_query.location]===parsed.state)) priority*=2;
-            this.priority=priority;
-        }
-        else if(match=text.match(/([A-Z]{1}\d{1}[A-Z]{1} \d{1}[A-Z]{1}\d{1})$/)) {
-            /* Canada */
-            this.zip=match[0];
-            text=text.replace(/,?\s*([A-Z]{1}\d{1}[A-Z]{1} \d{1}[A-Z]{1}\d{1})$/,"");
-            console.log("text="+text);
-            if(match=text.match(/(?:,|\s)\s*([A-Z]+)\s*$/)) {
-                this.state=match[1];
-                text=text.replace(/(,|\s)\s*([A-Z]+)\s*$/,"");
-            }
-
-            console.log("text="+text);
-            if(match=text.match(/^(.*),\s*([^,]*)$/)) {
-                this.address1=match[1];
-                this.city=match[2];
-            }
-            console.log("state_map[my_query.location]="+state_map[my_query.location]+", this.state="+this.state);
-            if(!(state_map[my_query.location]===this.state)) priority*=2;
-            this.priority=priority;
-
-        }
-        else if(true) { }
-        else {
-            this.priority=(1 << 25);;
-        }
-    }
+   
     function update_address(address,suffix) {
         var top,x;
         top=address;
+        console.log("address="+JSON.stringify(address));
+        top.zip=top.postcode;
         console.log("top="+JSON.stringify(top));
         var add_field_prefix={"office_name1_01":"01","address1_01":"02",
                               "address2_01":"03","city_01":"04","state_01":"05","zip_01":"06","phone_01":"07","fax_01":"08",
@@ -188,6 +148,7 @@
         var split=text.split(/\n/);
 
         var ret="",match,matched_phone=false,i;
+        var phone_prefix_map={"01":"07","02":"16"},fax_prefix_map={"01":"08","02":"17"};
         var pasted_name=/office_name/.test(target.name);
         for(i=0;i<split.length;i++) {
             if(i==0 && pasted_name && !/[\d]/.test(split[i])) {
@@ -197,8 +158,12 @@
             }
             match=split[i].match(phone_re);
             if(match) {
-                if(!matched_phone && (matched_phone=true)) my_query.fields["phone_"+suffix]=match[0];
-                else my_query.fields["fax_"+suffix]=match[0]; }
+                if(!matched_phone && (matched_phone=true)) {
+                    my_query.fields[phone_prefix_map[suffix]+"_phone_"+suffix]=match[0].replace(/[^\d]+/g,"");
+                }
+                else {
+                    my_query.fields[fax_prefix_map[suffix]+"_fax_"+suffix]=match[0].replace(/[^\d]+/g,""); }
+            }
             else {
                 ret=ret+(ret.length>0?"\n":"")+split[i];
             }
@@ -219,10 +184,19 @@
         text=text.replace(/\s*\n\s*/g,",").replace(/,,/g,",").replace(/,\s*$/g,"").trim();
         console.log("e.target.name="+e.target.name);
         console.log("text="+text);
-
-        update_address(new Address(text,-50),suffix);
+        var my_add=new Address(text,-50);
+        if(my_add.priority<1000) {
+            update_address(my_add,suffix); }
         add_to_sheet();
      //  add_text(text);
+    }
+
+    function do_phone_paste(e) {
+        e.preventDefault();
+        var text = e.clipboardData.getData("text/plain");
+        text=text.replace(/[^\d]+/g,"").replace(/^1/,"");
+        my_query.fields[e.target.name]=text;
+        add_to_sheet();
     }
 
     function addr_cmp(add1,add2) {
@@ -235,11 +209,16 @@
     function init_Query()
     {
         console.log("in init_query rochargrove");
-        var i;
+        var i,x;
+        var phone_list=["07_phone_01","08_fax_01","16_phone_02","17_fax_02"];
         document.getElementsByName("02_address1_01")[0].addEventListener("paste",do_address_paste);
          document.getElementsByName("01_office_name1_01")[0].addEventListener("paste",do_address_paste);
         document.getElementsByName("10_office_name1_02")[0].addEventListener("paste",do_address_paste);
+        document.getElementsByName("11_address1_02")[0].addEventListener("paste",do_address_paste);
 
+        for(x of phone_list) {
+            document.querySelector("[name='"+x+"']").addEventListener("paste",do_phone_paste);
+        }
         //var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         //var dont=document.getElementsByClassName("dont-break-out");
         my_query={url:"",fields:
