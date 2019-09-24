@@ -736,6 +736,7 @@ Schools.CA.get_state_dir=function(resolve,reject) {
     var promise=MTP.create_promise(url,Schools.CA.get_school_search,resolve,reject);
 };
 Schools.CA.get_school_search=function(doc,url,resolve,reject) {
+    console.log("Schools.CA.get_school_search,url="+url);
     if(/\/details\?/.test(url) && Schools.CA.parse_school(doc,url,resolve,reject)) return;
     var table=doc.getElementsByTagName("table")[0],i,row,next_url,promise;
     //        console.log("table.outerHTML="+table.outerHTML);
