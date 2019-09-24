@@ -737,6 +737,7 @@ Schools.CA.get_state_dir=function(resolve,reject) {
 };
 Schools.CA.get_school_search=function(doc,url,resolve,reject) {
     console.log("Schools.CA.get_school_search,url="+url);
+    var promise_list=[];
     if(/\/details\?/.test(url) && Schools.CA.parse_school(doc,url,resolve,reject)) return;
     var table=doc.getElementsByTagName("table")[0],i,row,next_url="",promise;
     //        console.log("table.outerHTML="+table.outerHTML);
@@ -746,21 +747,34 @@ Schools.CA.get_school_search=function(doc,url,resolve,reject) {
     }
     for(i=0;i<table.rows.length;i++) {
         if((row=table.rows[i]).cells.length>=4 && MTP.matches_names(row.cells[3].innerText.trim(),Schools.name)
-           && (next_url=row.cells[3].getElementsByTagName("a")).length>0) break;
+           && (next_url=row.cells[3].getElementsByTagName("a")).length>0) {
+	    promise_list.push(MTP.create_promise(MTP.fix_remote_url(next_url[0].href,url),Schools.CA.parse_school,MTP.my_then_func,MTP.my_catch_func));
+	}
     }
-    if(next_url.length>0) promise=MTP.create_promise(MTP.fix_remote_url(next_url[0].href,url),Schools.CA.parse_school,resolve,reject);
-    else resolve("");
+    Promise.all(promise_list).then(function(response) { resolve(""); }).catch(function(response) { reject(""); });
     return true;
 };
 Schools.CA.parse_school=function(doc,url,resolve,reject) {
     var table=doc.getElementsByClassName("table"),i,row,curr_contact;
+    var the_address="",childs;
+    var temp_contact_list=[];
     for(i=0;i<table[0].rows.length;i++) {
         row=table[0].rows[i];
         curr_contact={};
         if(row.cells.length<2) continue;
+	if(/Mailing Address/.test(row.cells[0].innerText)) {
+	    let add_str="";
+	    for(childs of row.cells[1]) {
+		if(childs.nodeType===Node.TEXT_NODE) add_str=(add_str.length>0?",":"")+childs.textContent;
+	    }
+	    the_address=new Address(add_str);
+	}
         if(/Administrator|Chief Business Official|CDS Coordinator/.test(row.cells[0].innerText)) {
             curr_contact=Schools.parse_data_func(row.cells[1].innerText.replace(/\n\n+\s*/g,"\n")); }
-        if(curr_contact && curr_contact.name&&curr_contact.title&&curr_contact.email) Schools.contact_list.push(curr_contact);
+        if(curr_contact && curr_contact.name&&curr_contact.title&&curr_contact.email) temp_contact_list.push(curr_contact);
+    }
+    if(the_address&&Schools.city&&Schools.city===the_address.city) {
+	Schools.contact_list.concat(temp_contact_list);
     }
     resolve("");
     return true;
