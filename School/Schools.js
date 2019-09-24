@@ -738,14 +738,14 @@ Schools.CA.get_state_dir=function(resolve,reject) {
 Schools.CA.get_school_search=function(doc,url,resolve,reject) {
     console.log("Schools.CA.get_school_search,url="+url);
     if(/\/details\?/.test(url) && Schools.CA.parse_school(doc,url,resolve,reject)) return;
-    var table=doc.getElementsByTagName("table")[0],i,row,next_url,promise;
+    var table=doc.getElementsByTagName("table")[0],i,row,next_url="",promise;
     //        console.log("table.outerHTML="+table.outerHTML);
     if(!table && /\s/.test(Schools.name)) {
 	Schools.name=Schools.name.replace(/\s[^\s]*$/,"").trim();
 	return Schools.CA.get_state_dir(resolve,reject);
     }
     for(i=0;i<table.rows.length;i++) {
-        if((row=table.rows[i]).cells.length>=4 && Schools.matches_name(row.cells[3].innerText.trim())
+        if((row=table.rows[i]).cells.length>=4 && MTP.matches_names(row.cells[3].innerText.trim(),my_query.name)
            && (next_url=row.cells[3].getElementsByTagName("a")).length>0) break;
     }
     if(next_url.length>0) promise=MTP.create_promise(MTP.fix_remote_url(next_url[0].href,url),Schools.CA.parse_school,resolve,reject);
