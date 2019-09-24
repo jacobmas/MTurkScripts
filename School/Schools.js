@@ -738,6 +738,9 @@ Schools.CA.get_school_search=function(doc,url,resolve,reject) {
     if(/\/details\?/.test(url) && Schools.CA.parse_school(doc,url,resolve,reject)) return;
     var table=doc.getElementsByTagName("table")[0],i,row,next_url,promise;
     //        console.log("table.outerHTML="+table.outerHTML);
+    if(!table) {
+	console.log("url="+url+", doc.body.innerHTML="+doc.body.innerHTML);
+    }
     for(i=0;i<table.rows.length;i++) {
         if((row=table.rows[i]).cells.length>=4 && Schools.matches_name(row.cells[3].innerText.trim())
            && (next_url=row.cells[3].getElementsByTagName("a")).length>0) break;
