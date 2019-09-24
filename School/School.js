@@ -733,6 +733,7 @@ School.prototype.get_bing_str=function(str) { return 'https://www.bing.com/searc
 School.prototype.parse_bing_then=function(result) {
     var promise,self=result.self;
     result.self.url=result.url;
+    if(self.url_only && (resolve("URL Only")||true)) return;
     promise=MTP.create_promise(self.url,self.init_SchoolSearch,self.resolve,self.reject,self);
 };
 School.prototype.matches_school_names=function(name1,name2) {
