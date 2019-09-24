@@ -745,7 +745,7 @@ Schools.CA.get_school_search=function(doc,url,resolve,reject) {
 	return Schools.CA.get_state_dir(resolve,reject);
     }
     for(i=0;i<table.rows.length;i++) {
-        if((row=table.rows[i]).cells.length>=4 && MTP.matches_names(row.cells[3].innerText.trim(),my_query.name)
+        if((row=table.rows[i]).cells.length>=4 && MTP.matches_names(row.cells[3].innerText.trim(),Schools.name)
            && (next_url=row.cells[3].getElementsByTagName("a")).length>0) break;
     }
     if(next_url.length>0) promise=MTP.create_promise(MTP.fix_remote_url(next_url[0].href,url),Schools.CA.parse_school,resolve,reject);
