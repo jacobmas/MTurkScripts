@@ -745,6 +745,10 @@ Schools.CA.get_school_search=function(doc,url,resolve,reject) {
 	Schools.name=Schools.name.replace(/\s[^\s]*$/,"").trim();
 	return Schools.CA.get_state_dir(resolve,reject);
     }
+    else if(!table) {
+	reject("Failed to find school");
+	return;
+    }
     for(i=0;i<table.rows.length;i++) {
         if((row=table.rows[i]).cells.length>=4 && MTP.matches_names(row.cells[3].innerText.trim(),Schools.name)
            && (next_url=row.cells[3].getElementsByTagName("a")).length>0) {
