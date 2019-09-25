@@ -723,7 +723,7 @@ School.prototype.init=function() {
     this.try_count=0;
     if(this.url===undefined) { promise=MTP.create_promise(this.get_bing_str(this.name+" "+(this.city||"")+" "+
                                                                             (reverse_state_map[this.state]||(this.state||""))+" "),
-                                                          this.parse_bing,this.parse_bing_then,this.failed_search_func||MTP.my_catch_func,this); }
+                                                          this.parse_bing,this.parse_bing_then,this.failed_search_func?this.failed_search_func:MTP.my_catch_func,this); }
     else promise=MTP.create_promise(this.url,this.init_SchoolSearch,this.resolve,this.reject,this);
 };
 /* TODO: tune */
@@ -778,13 +778,6 @@ School.prototype.parse_bing=function(doc,url,resolve,reject,self) {
             entry_result=self.parse_bing_entry(b_algo,i,self);
             if(entry_result.success && (resolve(entry_result)||true)) return;
             else if(entry_result.closed && (reject(entry_result)||true)) return;
-            /*  b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
-                b_url=b_algo[i].getElementsByTagName("a")[0].href.replace(/\/Domain\/.*$/,"");
-                b_caption=b_algo[i].getElementsByClassName("b_caption");
-                p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0)?b_caption[0].getElementsByTagName("p")[0].innerText:"";
-                if(self.query.debug) console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if((!MTP.is_bad_url(b_url,self.bad_urls,6,4)||/\/vnews\/display\.v\/SEC\//.test(b_url)) && !self.is_bad_name(b_name,p_caption) && (b1_success=true)) break;
-                if(self.bing_school_closed(b_name,b_url,b_caption,p_caption) && (reject({closed:true})||true)) return;*/
         }
         if(b1_success && (resolve({url:b_url,self:self})||true)) return;
         /* Do lgb only if everything else fails? */
@@ -809,14 +802,6 @@ School.prototype.parse_bing=function(doc,url,resolve,reject,self) {
             entry_result=self.parse_bing_entry(b_algo,i,self);
             if(entry_result.success && (resolve(entry_result)||true)) return;
             else if(entry_result.closed && (reject(entry_result)||true)) return;
-
-            /*b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
-              b_url=b_algo[i].getElementsByTagName("a")[0].href.replace(/\/Domain\/.*$/,"");
-              b_caption=b_algo[i].getElementsByClassName("b_caption");
-              p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0)?b_caption[0].getElementsByTagName("p")[0].innerText:"";
-              if(self.query.debug) console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-              if((!MTP.is_bad_url(b_url,self.bad_urls,6,4)||/\/vnews\/display\.v\/SEC\//.test(b_url)) && !self.is_bad_name(b_name,p_caption) && (b1_success=true)) break;
-              if(self.bing_school_closed(b_name,b_url,b_caption,p_caption) && (reject({closed:true})||true)) return;*/
         }
         if(b1_success && (resolve({url:b_url,self:self})||true)) return;
     }
