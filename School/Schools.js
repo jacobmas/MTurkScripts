@@ -767,12 +767,15 @@ Schools.CA.parse_school=function(doc,url,resolve,reject) {
 	    for(childs of row.cells[1].childNodes) {
 		if(childs.nodeType===Node.TEXT_NODE) add_str=(add_str.length>0?",":"")+childs.textContent;
 	    }
+	    console.log("add_str="+add_str);
 	    the_address=new Address(add_str);
 	}
+	
         if(/Administrator|Chief Business Official|CDS Coordinator/.test(row.cells[0].innerText)) {
             curr_contact=Schools.parse_data_func(row.cells[1].innerText.replace(/\n\n+\s*/g,"\n")); }
         if(curr_contact && curr_contact.name&&curr_contact.title&&curr_contact.email) temp_contact_list.push(curr_contact);
     }
+    console.log("url="+url+",the_address="+(the_address?JSON.stringify(the_address):"NA"));
     if(the_address&&Schools.city&&Schools.city===the_address.city) {
 	Schools.contact_list.concat(temp_contact_list);
     }
