@@ -780,7 +780,7 @@ Schools.CA.parse_school=function(doc,url,resolve,reject) {
     console.log("url="+url+"\nthe_address="+(the_address?JSON.stringify(the_address):"NA"));
     console.log("matches_names="+MTP.matches_names(Schools.city.toLowerCase(),the_address.city.toLowerCase()));
     if(!Schools.city||(the_address&&MTP.matches_names(Schools.city.toLowerCase(),the_address.city.toLowerCase()))) {
-	Schools.contact_list.concat(temp_contact_list);
+	Schools.contact_list=Schools.contact_list.concat(temp_contact_list);
     }
     resolve("");
     return true;
