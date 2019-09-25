@@ -778,7 +778,7 @@ Schools.CA.parse_school=function(doc,url,resolve,reject) {
         if(curr_contact && curr_contact.name&&curr_contact.title&&curr_contact.email) temp_contact_list.push(curr_contact);
     }
     console.log("url="+url+",the_address="+(the_address?JSON.stringify(the_address):"NA"));
-    if(the_address&&Schools.city&&MTP.matches_names(Schools.city,the_address.city)) {
+    if(!Schools.city||(the_address&&MTP.matches_names(Schools.city.toLowerCase(),the_address.city.toLowerCase()))) {
 	Schools.contact_list.concat(temp_contact_list);
     }
     resolve("");
