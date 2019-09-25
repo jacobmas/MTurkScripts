@@ -765,7 +765,7 @@ Schools.CA.parse_school=function(doc,url,resolve,reject) {
 	if(/Mailing Address/.test(row.cells[0].innerText)) {
 	    let add_str="";
 	    for(childs of row.cells[1].childNodes) {
-		if(childs.nodeType===Node.TEXT_NODE) add_str=(add_str.length>0?",":"")+childs.textContent;
+		if(childs.nodeType===Node.TEXT_NODE) add_str+=(add_str.length>0?",":"")+childs.textContent;
 	    }
 	    console.log("add_str="+add_str);
 	    the_address=new Address(add_str);
