@@ -755,6 +755,7 @@ Schools.CA.get_school_search=function(doc,url,resolve,reject) {
     return true;
 };
 Schools.CA.parse_school=function(doc,url,resolve,reject) {
+    console.log("parse_school,url="+url);
     var table=doc.getElementsByClassName("table"),i,row,curr_contact;
     var the_address="",childs;
     var temp_contact_list=[];
@@ -765,10 +766,11 @@ Schools.CA.parse_school=function(doc,url,resolve,reject) {
 	if(/Mailing Address/.test(row.cells[0].innerText)) {
 	    let add_str="";
 	    for(childs of row.cells[1].querySelector("div").childNodes) {
-		if(childs.nodeType===Node.TEXT_NODE) add_str+=(add_str.length>0?",":"")+childs.textContent;
+		if(childs.nodeType===Node.TEXT_NODE) add_str+=(add_str.length>0?",":"")+childs.textContent.trim();
 	    }
 	    console.log("add_str="+add_str);
-	    the_address=new Address(add_str);
+	    the_address=new Address(add_str,0);
+	    console.log("the_address="+JSON.stringify(the_address));
 	}
 	
         if(/Administrator|Chief Business Official|CDS Coordinator/.test(row.cells[0].innerText)) {
