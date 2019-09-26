@@ -210,6 +210,10 @@
     {
         console.log("in init_query rochargrove");
         var i,x;
+        var links=document.querySelectorAll("form a");
+        links[2].href=links[2].href.replace(/\+Fax$/i,"");
+
+
         var phone_list=["07_phone_01","08_fax_01","16_phone_02","17_fax_02"];
         document.getElementsByName("02_address1_01")[0].addEventListener("paste",do_address_paste);
          document.getElementsByName("01_office_name1_01")[0].addEventListener("paste",do_address_paste);
