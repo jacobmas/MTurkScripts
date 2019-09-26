@@ -40,7 +40,11 @@ var reverse_state_map={},reverse_province_map={};
 for(let x in state_map)     reverse_state_map[state_map[x]]=x;
 for(let x in province_map)     reverse_province_map[province_map[x]]=x;
 
-var default_bad_urls=["facebook.com","youtube.com","twitter.com","instagram.com","opendi.us",".business.site","plus.google.com",".alibaba.com",".trystuff.com",".mturkcontent.com",".amazonaws.com",".medium.com",".google.com",".opencorporates.com",".thefreedictionary.com",".dictionary.com",".crunchbase.com",".urbandictionary.com",".vimeo.com"];
+var default_bad_urls=[".alibaba.com",".amazonaws.com",".business.site",".crunchbase.com",".dictionary.com","facebook.com",".google.com",
+		      "instagram.com",".medium.com",".mturkcontent.com",".mylife.com",".opencorporates.com","opendi.us","peekyou.com",
+		      "plus.google.com",".spokeo.com",".thefreedictionary.com",".trystuff.com",
+		      "twitter.com",
+		      ".urbandictionary.com",".vimeo.com","youtube.com"];
 
 /* Regular expressions for emails, phones, faxes */
 var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%\*]{1,40}(\.[^<>\/()\[\]\\.,;:：\s\*@"\?]{1,40}){0,5}))@((([a-zA-Z\-0-9]{1,30}\.){1,8}[a-zA-Z]{2,20}))/g;
@@ -339,13 +343,9 @@ MTurkScript.prototype.is_bad_url=function(the_url, bad_urls, max_depth, max_dash
     if((slash_split=the_url.split("/")).length >= 4 && do_dashes) {
 	for(i=3;i<slash_split.length;i++) {
 	    if(slash_split[i].split("-").length>max_dashes||slash_split[i].split("_").length>max_dashes||
-	       slash_split[i].split("+").length>max_dashes) return true;
-	    
+	       slash_split[i].split("+").length>max_dashes) return true;   
 	}
-	
-	
     }
-    return false;
 }
 
 /* TODO: Can be improved greatly, need a good way to parse addresses globally */
@@ -625,7 +625,7 @@ MTurkScript.prototype.scrape_spli_experience=function(spli) {
 };
 
 MTurkScript.prototype.parse_bing_restaurant=function(b_entityTP) {
-    var ret={in_business:false},x,open_hrs=b_entityTP.querySelector("#mh_cdb_datagroupid_openhours");
+    var ret={in_business:true},x,open_hrs=b_entityTP.querySelector("#mh_cdb_datagroupid_openhours");
     var footnote_sites=b_entityTP.querySelectorAll(".b_suppModule .b_footnote a");
     if(open_hrs) ret.in_business=true;
     if(b_entityTP.querySelector("#permanentlyClosedIcon")) ret.in_business=false;
@@ -1445,7 +1445,7 @@ MTurkScript.prototype.is_bad_page=function(doc,url) {
         if(iframes[i].src&&/parked\-content\.godaddy\.com/.test(iframes[i].src)) return true;
     }
     if(/hugedomains\.com|qfind\.net|\?reqp\=1&reqr\=/.test(url)) { return true; }
-    else if(/Expired|^404|Error|is for sale/.test(title)) return true;
+    else if(/Expired|^404|Error|is for sale|^502 Bad/.test(title)) return true;
     else if(doc.querySelector("div.leftblk h3.domain_name")) return true;
     if(/^(IIS7|404)/.test(title.trim())) return true;
     if((doc.title===MTP.get_domain_only(url,true)||(doc.title===MTP.get_domain_only(url,false)))
