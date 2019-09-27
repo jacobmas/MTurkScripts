@@ -574,7 +574,7 @@ MTurkScript.prototype.parse_entityTP=function(b_context) {
     var ret={};
     var b_entityTP=b_context.querySelector(".b_entityTP");
     var b_entityTitle,infoCard,about,x,match,b_subModule,b_entitySubTitle;
-    var splspli,exp,prof;
+    var splspli,exp,prof,linkedinurl;
     if(!b_entityTP) return ret;
     b_entityTitle=b_entityTP.querySelector(".b_entityTitle");
     b_entitySubTitle=b_entityTP.querySelector(".b_entitySubTitle");
@@ -601,6 +601,8 @@ MTurkScript.prototype.parse_entityTP=function(b_context) {
     prof=b_entityTP.querySelectorAll(".spl-spli-flt .b_entitySubTitle");
     if(prof.length>=1) ret.Location=prof[prof.length-1].innerText.trim();
     splspli=b_entityTP.querySelector(".spl-spli-dg");
+    if((linkedinurl=b_entityTP.querySelector("div.spl-spli-connect a")) &&
+       /LinkedIn/.test(linkedinurl.innerText)) ret.linkedin_url=linkedinurl.href;
    // console.log(splspli);
     if(splspli && (exp=splspli.querySelector("h2")) &&
        exp.innerText.indexOf("Experience")!==-1) ret.experience=MTurkScript.prototype.scrape_spli_experience(splspli);
@@ -1445,7 +1447,7 @@ MTurkScript.prototype.is_bad_page=function(doc,url) {
         if(iframes[i].src&&/parked\-content\.godaddy\.com/.test(iframes[i].src)) return true;
     }
     if(/hugedomains\.com|qfind\.net|\?reqp\=1&reqr\=/.test(url)) { return true; }
-    else if(/Expired|^404|Error|is for sale|^502 Bad/.test(title)) return true;
+    else if(/(Expired)|(^404)|(Error)|(is for sale)|(^502 )/.test(title)) return true;
     else if(doc.querySelector("div.leftblk h3.domain_name")) return true;
     if(/^(IIS7|404)/.test(title.trim())) return true;
     if((doc.title===MTP.get_domain_only(url,true)||(doc.title===MTP.get_domain_only(url,false)))
