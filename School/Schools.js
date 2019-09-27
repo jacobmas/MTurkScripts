@@ -767,7 +767,7 @@ Schools.CA.parse_school=function(doc,url,resolve,reject) {
         row=table[0].rows[i];
         curr_contact={};
         if(row.cells.length<2) continue;
-	if(/Mailing Address/.test(row.cells[0].innerText)) {
+	if(/Mailing Address/.test(row.cells[0].innerText)&&row.cells[1].querySelector("div")) {
 	    let add_str="";
 	    for(childs of row.cells[1].querySelector("div").childNodes) {
 		if(childs.nodeType===Node.TEXT_NODE) add_str+=(add_str.length>0?",":"")+childs.textContent.trim();
