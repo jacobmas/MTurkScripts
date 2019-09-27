@@ -750,7 +750,7 @@ Schools.CA.get_school_search=function(doc,url,resolve,reject) {
 	return;
     }
     for(i=0;i<table.rows.length;i++) {
-        if((row=table.rows[i]).cells.length>=4 && MTP.matches_names(row.cells[3].innerText.trim(),Schools.name)
+        if((row=table.rows[i]).cells.length>=4 && (MTP.matches_names(row.cells[3].innerText.trim(),Schools.name)||true)
            && (next_url=row.cells[3].getElementsByTagName("a")).length>0) {
 	    promise_list.push(MTP.create_promise(MTP.fix_remote_url(next_url[0].href,url),Schools.CA.parse_school,MTP.my_then_func,MTP.my_catch_func));
 	}
