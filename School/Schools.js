@@ -782,7 +782,7 @@ Schools.CA.parse_school=function(doc,url,resolve,reject) {
         if(curr_contact && curr_contact.name&&curr_contact.title&&curr_contact.email) temp_contact_list.push(curr_contact);
     }
     console.log("url="+url+"\nthe_address="+(the_address?JSON.stringify(the_address):"NA"));
-    console.log("matches_names="+MTP.matches_names(Schools.city.toLowerCase(),the_address.city.toLowerCase()));
+    console.log("matches_names="+the_address&the_address.city?MTP.matches_names(Schools.city.toLowerCase(),the_address.city.toLowerCase()):"NA");
     if(!Schools.city||(the_address&&MTP.matches_names(Schools.city.toLowerCase(),the_address.city.toLowerCase()))) {
 	Schools.contact_list=Schools.contact_list.concat(temp_contact_list);
     }
