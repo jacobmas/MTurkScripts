@@ -610,7 +610,8 @@ Gov.parse_table=function(table,title_map,begin_row,end_row,dept,url) {
 		curr_contact[title]=curr_cell.innerText.trim();
 		// console.log("veryFirst: curr_contact["+title+"]="+curr_contact.title);
 	    }
-	    else if((title==="name" && title_map["title"]===undefined)||((title==="name" || title==="title" && title_map.name===title_map.title)) &&
+	    else if(((title==="name" && title_map["title"]===undefined)||
+		    ((title==="name" || title==="title" && title_map.name===title_map.title))) &&
 		    (match=curr_cell.innerText.trim().match(/^([^\s,]+\s+[^\s,]+[^,]*),(.*)$/))) {
 		curr_contact.name=match[1].trim();
 		curr_contact.title=match[2].trim();
