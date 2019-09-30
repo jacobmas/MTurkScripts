@@ -1371,9 +1371,12 @@ MTurkScript.prototype.fix_emails_in_scripts=function(doc,url,the_script) {
  */
 MTurkScript.prototype.fix_emails=function(doc,url) {
     var i,links=doc.links,j,script,scripts=doc.scripts;
-    var my_match,temp_email,encoded_match,match_split,clicky;
+    var my_match,temp_email,encoded_match,match_split,clicky,local,domain;
     for(i=0; i < links.length; i++) {
         //console.log("("+i+"): "+links[i].href+", "+links[i].innerText);
+	if((local=links[i].querySelector(".localMail")) && (domain=links[i].querySelector(".domainMail"))) {
+	    links[i].href=links[i].innerText="mailto:"+local.innerText.trim+"@"+domain.innerText.trim();
+	}
         if(links[i].dataset.encEmail && (temp_email=MTurkScript.prototype.swrot13(links[i].dataset.encEmail.replace(/\[at\]/,"@")))
            && !MTurkScript.prototype.is_bad_email(temp_email)) links[i].href="mailto:"+temp_email;
 	else if(/mailto/.test(links[i].className) && (temp_email=MTP.swrot13(links[i].href)) &&
