@@ -106,7 +106,7 @@ School.prototype.search_none=function(doc,url,resolve,reject,extra) {
             self.query_list.push(links[i].href);
             var dept_regex_lst=["staff","STAFF"];
 
-            var title_regex_lst=[/Teacher|Math|Computer Science|Engineering|Programming/i];
+            var title_regex_lst=self.title_regex;
             //var promise=MTP.create_promise(
             Gov.query={dept_regex_lst:dept_regex_lst,
                        title_regex_lst:title_regex_lst,id_only:false,default_scrape:false,debug:false};
