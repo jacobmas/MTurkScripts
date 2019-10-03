@@ -834,6 +834,7 @@ Gov.initial_cleanup_text_for_parse=function(text) {
 /* Basic check of bad ret, can be improved */
 Gov.parsed_ret_is_bad=function(ret) {
     if(ret && ret.name && /\s+for\s+/.test(ret.name)) return true;
+    if(ret&&ret.title&& /[\d]{2,}/.test(ret.title)) return true;
     return false;
 };
 
