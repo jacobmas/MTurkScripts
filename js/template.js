@@ -26,6 +26,11 @@
 // @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Email/MailTester.js
+// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
@@ -75,8 +80,11 @@
             reject(error);
             return;
         }
-        reject("Nothing found");
+	do_next_query(resolve,reject,type);
         return;
+    }
+    function do_next_query(resolve,reject,type) {
+        reject("Nothing found");
     }
 
     /* Search on bing for search_str, parse bing response with callback */
@@ -130,7 +138,9 @@
         var i;
         var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         var dont=document.getElementsByClassName("dont-break-out");
-        my_query={name,fields:{},done:{},submitted:false};
+        my_query={name,fields:{},done:{},
+		  try_count:{"query":0},
+		  submitted:false};
 	console.log("my_query="+JSON.stringify(my_query));
         var search_str;
         const queryPromise = new Promise((resolve, reject) => {
