@@ -65,6 +65,78 @@ EmailQual.email_cmp=function(a,b) {
     catch(error) { return 0; }
 };
 
+function PDFParser(url) {
+    //        console.log("fuck");
+    this.url=url;
+    //      this.pdf=pdf;
+    this.email_list=[];
+    this.pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+    // The workerSrc property shall be specified.
+    this.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://raw.githubusercontent.com/jacobmas/pdf.js/master/dist/pdf.worker.js';
+    console.log("MUck");
+}
+
+PDFParser.prototype.parsePDF=function(resolve,reject) {
+    var parser=this;
+    // Asynchronous download of PDF
+    var src={url:this.url,mode:'no-cors'};
+    var loadingTask = this.pdfjsLib.getDocument(src);
+    loadingTask.promise.then(function(pdf) {
+        parser.pdf=pdf;
+
+
+        var curr_promise=new Promise((resolve,reject) => {
+
+            parser.extractEmails(resolve,reject);
+        });
+        curr_promise.then(function() {
+            console.log("parser.email_list="+parser.email_list);
+            resolve(parser.email_list);
+        }).catch(function(response) {
+            console.log("failed curr_promise,response="+response); });
+    })
+        .catch(function(response) {
+        console.log("error in loadingTask="+JSON.stringify(response));});
+}
+
+PDFParser.prototype.extractEmails=function(resolve,reject) {
+    var i;
+    console.log("in extractEmails");
+    var email_promise_list=[];
+    var parser=this;
+    for(i=1;i<=this.pdf.numPages;i++) {
+        email_promise_list.push(this.createEmailPromise(this,this.pdf,i));
+    }
+    Promise.all(email_promise_list).then(function() { resolve(parser.email_list); }).catch(reject);
+}
+PDFParser.prototype.createEmailPromise=function(parser,pdf,pageNum) {
+    return new Promise((inner_resolve,inner_reject) => {
+        pdf.getPage(pageNum).then(function(page) {
+            console.log("page=");
+            console.log(page);
+            parser.parseEmails(page,pageNum,inner_resolve,inner_reject); }).catch(function(response) {
+            console.log("Failed getting page "+response); })
+    }).then(function(email_list) {
+        parser.email_list=parser.email_list.concat(email_list);
+    });
+}
+
+
+
+PDFParser.prototype.parseEmails=function(page,pageNum,resolve,reject) {
+    var my_email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%\*]{1,40}(\.[^<>\/()\[\]\\.,;:：\s\*@"\?]{1,40}){0,5}))@((([a-zA-Z\-0-9]{1,30}\.){1,8}[a-zA-Z]{2,20}))/g;
+    var email_list=[];
+    console.log(page);
+    page.getTextContent().then(function(textContent) {
+        var curr,match;
+        for(curr of textContent.items) {
+            if((match=curr.str.match(my_email_re))) email_list=email_list.concat(match);
+        }
+        resolve(email_list);
+    });
+};
+
 
 /* the_name is of the format {fname:John,mname:Quentin,lname:Doe} or such, domain is the email domain being attempted,
 * resolve and reject should come from a Promise
