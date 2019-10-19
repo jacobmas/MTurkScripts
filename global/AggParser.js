@@ -826,7 +826,8 @@ AggParser.fix_yelp_time=function(to_fix)
 
 AggParser.parse_yelp_noscript=function(doc,url,result) {
     var i;
-    Object.assign(result,{closed:[],openTime:[],closeTime:[],categories:"",bizinfo:"",city:"",state:""});
+    Object.assign(result,{closed:[],openTime:[],closeTime:[],
+			  cleanOpenTime:[],cleanCloseTime:[],categories:"",bizinfo:"",city:"",state:""});
     var weekday, hours;
     var street_add=doc.getElementsByClassName("map-box-address");
     var day_map={"Sun": 0, "Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6};
@@ -846,7 +847,9 @@ AggParser.parse_yelp_noscript=function(doc,url,result) {
     for(i=0; i < 7; i++) {
         result.closed.push(false);
         result.openTime.push("");
+	result.cleanOpenTime.push("");
         result.closeTime.push("");
+	result.cleanCloseTime.push("");
     }
     var hours_t=doc.getElementsByClassName("hours-table");
     if(hours_t.length>0) {
@@ -863,7 +866,10 @@ AggParser.parse_yelp_noscript=function(doc,url,result) {
             {
                 var the_spans=hours_t[0].rows[i].cells[1].getElementsByTagName("span");
                 result.openTime[day_map[weekday]]=AggParser.fix_yelp_time(the_spans[0].innerText);
+		result.cleanOpenTime[day_map[weekday]]=the_spans[0].innerText.trim();
                 result.closeTime[day_map[weekday]]=AggParser.fix_yelp_time(the_spans[1].innerText);
+		result.cleanCloseTime[day_map[weekday]]=the_spans[1].innerText.trim();
+
             }
             else  console.log("Error parsing time");
         }
