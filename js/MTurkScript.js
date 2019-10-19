@@ -531,12 +531,12 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
     if(geochain.length>0) {
 	result.geochain=[];
 	for(j of geochain) result.geochain.push(j.innerText.trim()); }
-    MTurkScript.prototype.parse_b_footnote(doc,result);
+    MTurkScript.prototype.parse_b_footnote(b_context,result);
     return result;
 };
 
-MTurkScript.prototype.parse_b_footnote=function(doc,result) {
-    var b_footnote=doc.querySelectorAll(".b_footnote a"),x;
+MTurkScript.prototype.parse_b_footnote=function(b_context,result) {
+    var b_footnote=b_context.querySelectorAll(".b_footnote a"),x;
     var site_map={"Yelp":/\.yelp\.com/,"Facebook":/\.facebook\.com/},y;
     for(x of b_footnote) {
 	for(y in site_map) {
