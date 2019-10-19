@@ -537,7 +537,7 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
 
 MTurkScript.prototype.parse_b_footnote=function(b_context,result) {
     var b_footnote=b_context.querySelectorAll(".b_footnote a"),x;
-    var site_map={"Yelp":/\.yelp\.com/,"Facebook":/\.facebook\.com/},y;
+    var site_map={"Yelp":/(^|\.)yelp\.(com|ca)/,"Facebook":/\.facebook\.com/},y;
     for(x of b_footnote) {
 	for(y in site_map) {
 	    if(site_map[y].test(x.href)) result[y]=x.href;
