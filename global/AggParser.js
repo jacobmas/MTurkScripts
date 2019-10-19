@@ -807,6 +807,23 @@ AggParser.parse_yelp=function(doc,url,resolve,reject) {
     resolve(result);
 };
 
+AggParser.parse_yelp_time_replacer=function(match, p1, p2, p3, offset, string) {
+        // p1 is nondigits, p2 digits, and p3 non-alphanumerics
+        var time12=parseInt(p1);
+        if(p3.toLowerCase()==="pm" && time12!==12) time12=time12+12;
+        else if(p3==="am" && time12==="12") time12=0;
+        var hrstr="";
+        if(time12<10) hrstr="0";
+        hrstr=hrstr+time12;
+        return hrstr+":"+p2;
+};
+
+
+AggParser.fix_yelp_time=function(to_fix)
+{
+    return to_fix.replace(/(\d+):(\d+) ([A-Za-z][A-Za-z])/,AggParser.parse_yelp_time_replacer);
+};
+
 AggParser.parse_yelp_noscript=function(doc,url,result) {
     var i;
     Object.assign(result,{closed:[],openTime:[],closeTime:[],categories:"",bizinfo:"",city:"",state:""});
@@ -845,8 +862,8 @@ AggParser.parse_yelp_noscript=function(doc,url,result) {
             else if(hours.indexOf("-")!==-1)
             {
                 var the_spans=hours_t[0].rows[i].cells[1].getElementsByTagName("span");
-                result.openTime[day_map[weekday]]=fix_time(the_spans[0].innerText);
-                result.closeTime[day_map[weekday]]=fix_time(the_spans[1].innerText);
+                result.openTime[day_map[weekday]]=AggParser.fix_yelp_time(the_spans[0].innerText);
+                result.closeTime[day_map[weekday]]=AggParser.fix_yelp_time(the_spans[1].innerText);
             }
             else  console.log("Error parsing time");
         }
