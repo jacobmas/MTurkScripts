@@ -531,9 +531,20 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
     if(geochain.length>0) {
 	result.geochain=[];
 	for(j of geochain) result.geochain.push(j.innerText.trim()); }
-	
+    MTurkScript.prototype.parse_b_footnote(result);
     return result;
 };
+
+MTurkScript.prototype.parse_b_footnote=function(result) {
+    var b_footnote=doc.querySelectorAll(".b_footnote a"),x;
+    var site_map={"Yelp":/\.yelp\.com/,"Facebook":/\.facebook\.com/},y;
+    for(x of b_footnote) {
+	for(y in site_map) {
+	    if(site_map[y].test(x.href)) result[y]=x.href;
+	}
+    }	
+};
+
 
 MTurkScript.prototype.parse_b_context_disambig=function(disambig,result) {
     result.people=[];
