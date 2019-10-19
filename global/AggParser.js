@@ -776,7 +776,7 @@ AggParser.parse_yelp=function(doc,url,resolve,reject) {
     var result={},is_parsed=false;
     var yelp_re=/^\s*\<\!\-\-\s*(.*)\s*\-\-\>s*$/;
     var yelp_match,curr_script,parsed;
-    AggParser.parse_yelp_noscript(doc,url,result);
+ //   AggParser.parse_yelp_noscript(doc,url,result);
     for(curr_script of doc.scripts) {
         yelp_match="";
         if((yelp_match=curr_script.innerHTML.match(yelp_re))&&/footerProps/.test(yelp_match[1])) {
@@ -806,7 +806,7 @@ AggParser.parse_yelp=function(doc,url,resolve,reject) {
     }
     resolve(result);
 };
-
+/*
 AggParser.parse_yelp_noscript=function(doc,url,result) {
     var i;
     Object.assign(result,{closed:[];openTime:[],closeTime:[],categories:"",bizinfo:"",city:"",state:""});
@@ -864,7 +864,7 @@ AggParser.parse_yelp_noscript=function(doc,url,result) {
         }
     }
     console.log("result="+JSON.stringify(result));
-};
+};*/
 
 /* Doesn't seem to work, seems to use IP :( */
 if(/\.yelp\.com/.test(window.location.href)) {
