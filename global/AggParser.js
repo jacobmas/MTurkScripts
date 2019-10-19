@@ -1,5 +1,5 @@
 /**
- * File with various useful site parsers, still relatively informal 
+ * File with various useful common (mostly aggregator type) site parsers, still relatively informal 
  * Contains special parsers which search Buzzfile and Manta directly by opening new tabs
  */
 var AggParser={}; // generic object
@@ -776,6 +776,7 @@ AggParser.parse_yelp=function(doc,url,resolve,reject) {
     var result={},is_parsed=false;
     var yelp_re=/^\s*\<\!\-\-\s*(.*)\s*\-\-\>s*$/;
     var yelp_match,curr_script,parsed;
+    AggParser.parse_yelp_noscript(doc,url,result);
     for(curr_script of doc.scripts) {
         yelp_match="";
         if((yelp_match=curr_script.innerHTML.match(yelp_re))&&/footerProps/.test(yelp_match[1])) {
@@ -806,6 +807,66 @@ AggParser.parse_yelp=function(doc,url,resolve,reject) {
     resolve(result);
 };
 
+AggParser.parse_yelp_noscript=function(doc,url,result) {
+    var i;
+    Object.assign(result,{closed:[];openTime:[],closeTime:[],categories:"",bizinfo:"",city:"",state:""});
+    var weekday, hours;
+    var street_add=doc.getElementsByClassName("map-box-address");
+    var day_map={"Sun": 0, "Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6};
+    var biz_header=doc.getElementsByClassName("biz-page-header");
+    var ywidget=doc.getElementsByClassName("ywidget");
+    if(street_add.length>0) {
+        var real_address=street_add[0].getElementsByTagName("address")[0].innerText;
+        if(real_address.indexOf("\n")===-1) real_address="Fake Street\n"+real_address;
+        real_address=real_address.replace(/\n/,",");
+        real_address=real_address.replace(",Ft ",",Fort ").replace(" Bch "," Beach ").replace( "Ft "," Fort ");
+        var new_add=parseAddress.parseLocation(real_address);
+        console.log("new_add="+JSON.stringify(new_add));
+        Object.assign(result,{city:new_add.city,state:new_add.state});
+        
+    } 
+    else  console.log("No street add found");
+    for(i=0; i < 7; i++) {
+        result.closed.push(false);
+        result.openTime.push("");
+        result.closeTime.push("");
+    }
+    var hours_t=doc.getElementsByClassName("hours-table");
+    if(hours_t.length>0) {
+        for(i=0; i < hours_t[0].rows.length; i++) {
+            weekday=hours_t[0].rows[i].cells[0].innerText;
+            hours=hours_t[0].rows[i].cells[1].innerText;
+            if(hours.indexOf("Closed")!==-1) result.closed[day_map[weekday]]=true;
+            if(hours.indexOf("Open 24")!==-1)
+            {
+                result.openTime[day_map[weekday]]="12:00 am";
+                result.closeTime[day_map[weekday]]="11:59 pm";
+            }
+            else if(hours.indexOf("-")!==-1)
+            {
+                var the_spans=hours_t[0].rows[i].cells[1].getElementsByTagName("span");
+                result.openTime[day_map[weekday]]=fix_time(the_spans[0].innerText);
+                result.closeTime[day_map[weekday]]=fix_time(the_spans[1].innerText);
+            }
+            else  console.log("Error parsing time");
+        }
+    }
+    else console.log("Can't find hours table");
+    if(biz_header.length>0) {
+        var cat_str=biz_header[0].getElementsByClassName("category-str-list");
+        if(cat_str.length>0) result.categories=cat_str[0].innerText;
+    }
+    for(i=0; i < ywidget.length; i++) {
+        var h3=ywidget[i].getElementsByTagName("h3");
+        if(h3.length>0 && h3[0].innerText.indexOf("More business info")!==-1) {
+            var ylist=ywidget[i].getElementsByClassName("ylist");
+            if(ylist.length>0) result.bizinfo=ylist[0].innerText;
+        }
+    }
+    console.log("result="+JSON.stringify(result));
+};
+
+/* Doesn't seem to work, seems to use IP :( */
 if(/\.yelp\.com/.test(window.location.href)) {
     AggParser.remove_yelp_cookies();
 }
