@@ -1713,7 +1713,8 @@ DQ.FordDirect={suffix:"/used-inventory",parser:DQ.parse_FordDirect,
 	       team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,
 	       team_parser:DQ.parse_team_FordDirect};
 DQ.foxdealerinteractive={suffix:"/inventory/used/",parser:DQ.parse_foxdealerinteractive};
-DQ.fzautomotive={suffix:"/inventory?type=used",parser:DQ.parse_fzautomotive};
+DQ.fzautomotive={suffix:"/inventory?type=used",parser:DQ.parse_fzautomotive,team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
+             team_parser:DQ.parse_team_fzautomotive};
 DQ.goauto={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_goauto};
 DQ.hasyourcar={suffix:"/Inventory",parser:DQ.parse_hasyourcar};
 DQ.higherturnover={find_link:DQ.find_link,parser:DQ.parse_higherturnover,href_rx:/\/(inventory|vehicles\-for\-sale)/,text_rx:/Vehicles|Inventory/i};
