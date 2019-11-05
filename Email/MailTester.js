@@ -299,7 +299,7 @@ MailTester.prototype.query_response=function(response,resolve,reject,type,self) 
     try {
         search=doc.getElementById("b_content");
         b_algo=search.getElementsByClassName("b_algo");
-        for(i=0; i < b_algo.length&&i<=3; i++) {
+        for(i=0; i < b_algo.length; i++) {
             b_url=self.query_response_loop(b_algo,i,type,promise_list,resolve,reject,b1_success,self);
             if(b_url&&(b1_success=true)) break;
         }
