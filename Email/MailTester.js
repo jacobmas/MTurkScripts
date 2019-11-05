@@ -194,7 +194,7 @@ MailTester.prototype.do_next_email_query=function(self) {
     if(self.curr_mailtester_num<self.email_types.length) {
         let curr_email=self.email_types[self.curr_mailtester_num];
         self.curr_mailtester_num++;
-        search_str="\""+curr_email+"\"";
+        search_str="+\""+curr_email+"\"";
 	// Don't do mailtester queries if we've found one already 
         if(!self.done_with_mailtester && (self.email_list.length===0 || self.email_list[0].quality<6)) {
 	    self.do_mailtester_query(curr_email,self); }
