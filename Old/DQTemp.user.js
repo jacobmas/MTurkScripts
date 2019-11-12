@@ -23,7 +23,7 @@ var DQ={dealer_regex:new RegExp(
         "www\\.stormdivision\\.com|strathcom\\.com|"+
         "www\\.vicimus\\.com|(www|cdn-w)\\.v12soft(|ware)\\.com|"+
         "(\\/\\/|www\\.)waynereaves\\.com|www\\.(wearefullthrottle|webstreak)\\.com|www\\.yourcarlot\\.com","i"),
-        
+
         dealer_map:{"fridaynet":"lotwizard","dealersocket":"dealerfire","dealerseo":"automotiveleads",
                     "dealerleads":"automotiveleads","v12soft":"v12software","jazelc":"jazelauto","dealerspiketruck":"dealerspike",
                     "solutionsmedias360":"360"
@@ -34,6 +34,9 @@ var DQ={dealer_regex:new RegExp(
         "Mazda|Mercedes-Benz|Mercury|Mini|Mitsubishi|Nissan|Plymouth|Pontiac|Porsche|"+
         "Ram|Saab|Saturn|Scion|Smart|Subaru|Suzuki|Toyota|Volkswagen|Volvo",
         employee_list:[],email_list:[]};
+
+DQ.make_rx=new RegExp("([\\d]{4})\\s+("+DQ.make_rx_str+")","ig");
+
 DQ.carSearchShit=function(t, n, r,doc,url) {
     function i(o, s) {
         if (!n[o]) {
@@ -924,7 +927,6 @@ var _0x174c = ["/lawaitlakjhngozb.js?PID=A52A50FA-E350-3E55-8F5D-B0667BDD6BF3", 
         }
     }
 })(window);
-
 /* Straightforward enough parsers for # vehicles */
 DQ.parse_allautonetwork=function(doc,url,resolve,reject) {
     var text=doc.body.innerHTML,parsed,count=0,num,x,split_text=doc.body.innerHTML.split("\n");
@@ -1398,7 +1400,7 @@ DQ.parse_hasyourcar=function(doc,url,resolve,reject) {
 
     for(i=0; i < scripts.length; i++) if(scripts[i].src && /\/vehicles\?/.test(scripts[i].src)) script_url=scripts[i].src;
     if(script_url.length===0) promise=MTurkScript.prototype.create_promise(temp_url,DQ.parse_hasyourcar_Service,resolve,reject,url);
-    else promise=MTurkScript.prototype.create_promise(MTurkScript.prototypte.fix_remote_url(script_url,url),DQ.parse_hasyourcar_vehicle,resolve,reject,url);
+    else promise=MTurkScript.prototype.create_promise(MTurkScript.prototype.fix_remote_url(script_url,url),DQ.parse_hasyourcar_vehicle,resolve,reject,url);
 };
 DQ.parse_hasyourcar_Service=function(doc,url,resolve,reject,prev_url) {
     var parsed,text=doc.body.innerHTML;
@@ -1563,17 +1565,6 @@ DQ.find_link=function(doc,url,resolve,reject,page_type) {
            page_type.text_rx.test(doc.links[i].innerText)) return MTurkScript.prototype.fix_remote_url(doc.links[i].href,url);}
     return url;
 };
-/* Find link for team specifically */
-DQ.find_team_link=function(doc,url,resolve,reject,page_type) {
-    for(var i=0; i < doc.links.length; i++) {
-        doc.links[i].href=MTurkScript.prototype.fix_remote_url(doc.links[i].href,url);
-        //  console.log("doc.links["+i+"]="+doc.links[i].href+", "+doc.links[i].innerText);
-        if(page_type.team_href_rx.test(doc.links[i].href) &&
-           page_type.team_text_rx.test(MTP.removeDiacritics(doc.links[i].innerText))
-           && (!page_type.team_bad_text_rx || !page_type.team_bad_text_rx.test(MTP.removeDiacritics(doc.links[i].innerText)))
-          ) return MTurkScript.prototype.fix_remote_url(doc.links[i].href,url);}
-    return url;
-};
 DQ.find_link_carmax=function(doc,url,resolve,reject,page_type) {
     var primary=doc.getElementsByClassName("primary");
     if(primary.length>0) return MTurkScript.prototype.fix_remote_url(primary[0].href,"https://websearch-website.carmax.com");
@@ -1643,8 +1634,7 @@ DQ.find_links_none=function(doc,url,resolve,reject,page_type) {
     }
     return url_list;
 };
-DQ["360"]={team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel|Meet .*Family/i,team_parser:DQ.parse_team_360};
-DQ["assets-cdk"]={suffix:"/VehicleSearchResults?search=used",parser:DQ.parse_assets_cdk,team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_assets_cdk};
+DQ["assets-cdk"]={suffix:"/VehicleSearchResults?search=used",parser:DQ.parse_assets_cdk};
 DQ.allautonetwork={suffix:"/isapi_xml.php?module=inventory&sold=Available&main=&orderby=when_added,desc&offset=0",parser:DQ.parse_allautonetwork};
 DQ.auction123={find_link:DQ.find_link,parser:DQ.parse_auction123,href_rx:/\/inventory/,text_rx:/Inventory/i};
 DQ.autoconx={suffix:"/used/for-sale/",parser:DQ.parse_autoconx};
@@ -1660,7 +1650,6 @@ DQ.autosearchtech={suffix:"/autos.php",parser:DQ.parse_autosearchtech};
 DQ.autotrader={find_link:function(doc,url,resolve,reject,page_type) { return url; },parser:DQ.parse_autotrader};
 DQ.autosalesweb={suffix:"/inventory",parser:DQ.parse_autosalesweb};
 DQ.autowebexpress={suffix:"/inventory.php",parser:DQ.parse_autowebexpress};
-DQ.bwebauto={team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_bwebauto};
 DQ.carbase={find_link:DQ.find_link,parser:DQ.parse_carbase,href_rx:/used-inventory|inventory\.aspx/i,text_rx:/.*/i};
 DQ.carguywebdesign={suffix:"/invList.php",parser:DQ.parse_carguywebdesign};
 DQ.carmax={find_link:DQ.find_link_carmax,parser:DQ.parse_carmax};
@@ -1670,732 +1659,46 @@ DQ.carthink={find_link:DQ.find_link,parser:DQ.parse_carthink,href_rx:/\/inventor
 /** Needs work **/
 DQ.carwizard={suffix:"",parser:DQ.parse_carwizard};
 DQ.chromacars={suffix:"/vehicle-inventory.php",parser:DQ.parse_chromacars};
-DQ.convertus={team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,team_parser:DQ.parse_team_convertus};
-DQ.d2cmedia={team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,team_parser:DQ.parse_team_d2cmedia};
-DQ.dealer={suffix:"/used-inventory/index.htm",parser:DQ.parse_dealer,team_find_link:DQ.find_team_link,
-	   team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe/i,team_bad_text_rx:/(^\s*Join)|Body Shop|Collision|Finance|Parts|Service/i,
-           team_parser:DQ.parse_team_dealer};
-DQ.dealercity={team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
-               team_parser:DQ.parse_team_dealercity};
+DQ.dealer={suffix:"/used-inventory/index.htm",parser:DQ.parse_dealer};
 DQ.dealerclick={suffix:"/inventory",parser:DQ.parse_dealerclick};
 DQ.dealercarsearch={suffix:"/newandusedcars.aspx?clearall=1",parser:DQ.parse_dealercarsearch};
 DQ.dealercenter={suffix:"/inventory",parser:DQ.parse_dealercenter};
 DQ.dealereprocess={suffix:"/search/used/tp/",parser:DQ.parse_dealereprocess};
 DQ.dealerexpress={find_link:DQ.find_link_dealerexpress,parser:DQ.parse_dealerexpress};
-DQ.dealerfire={find_link:DQ.find_link,parser:DQ.parse_dealerfire,href_rx:/\/(preowned|used)-cars/,text_rx:/View all|Inventory/i,
-	      team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_dealerfire};
-DQ.dealerinspire={suffix:"/used-vehicles/",parser:DQ.parse_dealerinspire,team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_dealerinspire};
-DQ.dealeron={suffix:"/searchused.aspx",parser:DQ.parse_dealeron,team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
-             team_parser:DQ.parse_team_dealeron};
+DQ.dealerfire={find_link:DQ.find_link,parser:DQ.parse_dealerfire,href_rx:/\/(preowned|used)-cars/,text_rx:/View all|Inventory/i};
+DQ.dealerinspire={suffix:"/used-vehicles/",parser:DQ.parse_dealerinspire};
+DQ.dealeron={suffix:"/searchused.aspx",parser:DQ.parse_dealeron};
 DQ.dealerpac={find_link:DQ.find_link,parser:DQ.parse_dealerpac,href_rx:/\/external\/listveh.php\?/,text_rx:/.*/i};
 DQ.dealerpeak={find_link:DQ.find_link,parser:DQ.parse_dealerpeak,href_rx:/(\/used-cars\/for-sale)|(\/VehicleSearch\/UsedVehicles)/i,text_rx:/.*/};
 DQ.dealerscloud={suffix:"/used-cars",parser:DQ.parse_dealerscloud};
-DQ.dealersiteplus={team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|People/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
-                   team_parser:DQ.parse_team_dealersiteplus};
 DQ.dealersolutionssoftware={suffix:"/inventory.aspx",parser:DQ.parse_dealersolutionssoftware};
 DQ.dealerspecialties={find_link:DQ.find_link_dealerspecialties,parser:DQ.parse_dealerspecialties};
-DQ.dealerspike={suffix:"/default.asp?page=xPreOwnedInventory",parser:DQ.parse_dealerspike,team_find_link:DQ.find_team_link,
-		team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
-                team_parser:DQ.parse_team_dealerspike};
+DQ.dealerspike={suffix:"/default.asp?page=xPreOwnedInventory",parser:DQ.parse_dealerspike};
 DQ.dealersync={suffix:"/pre-owned-cars",parser:DQ.parse_dealersync};
 DQ.dealerwebsites={suffix:"/Search/List?CurrentPage=1&VehicleCategory=0&Make=&VehicleModel=&Stock=&MinPrice=&MaxPrice=&MinYear=0&MaxYear=0&Sort=Make&Type=&Mileage=&pageSize=1000",
                    parser:DQ.parse_dealerwebsites};
 DQ.drivedominion={suffix:"/used-inventory",parser:DQ.parse_drivedominion};
 DQ.drivetime={find_link:DQ.find_link,parser:DQ.parse_drivetime,href_rx:/\/inventory/,text_rx:/Search/i};
-DQ.drivingdealersolutions={team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel|Meet .*Family/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
-			   team_parser:DQ.parse_team_drivingdealersolutions};
 DQ.dssal={suffix:"",parser:DQ.parse_dssal};
 DQ.ebizautos={find_link:DQ.find_link,parser:DQ.parse_ebizautos,href_rx:/\/(used-cars|view-(all-)?inventory)\.aspx/,text_rx:/Inventory|Pre(-)?Owned/i};
-DQ.edealer={team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel|Meet .*Family/i,
-            team_bad_text_rx:/(^\s*Join)|Body Shop|Collision|Finance|Parts|Service/i,team_parser:DQ.parse_team_edealer};
-DQ.evolio={team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_evolio};
-DQ["ez-results"]={team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_ez_results};
-DQ.FordDirect={suffix:"/used-inventory",parser:DQ.parse_FordDirect,
-	       team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,
-	       team_parser:DQ.parse_team_FordDirect};
+DQ.FordDirect={suffix:"/used-inventory",parser:DQ.parse_FordDirect};
 DQ.foxdealerinteractive={suffix:"/inventory/used/",parser:DQ.parse_foxdealerinteractive};
-DQ.fzautomotive={suffix:"/inventory?type=used",parser:DQ.parse_fzautomotive,team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
-             team_parser:DQ.parse_team_fzautomotive};
-DQ.goauto={team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_goauto};
+DQ.fzautomotive={suffix:"/inventory?type=used",parser:DQ.parse_fzautomotive};
 DQ.hasyourcar={suffix:"/Inventory",parser:DQ.parse_hasyourcar};
 DQ.higherturnover={find_link:DQ.find_link,parser:DQ.parse_higherturnover,href_rx:/\/(inventory|vehicles\-for\-sale)/,text_rx:/Vehicles|Inventory/i};
 DQ.interactivedms={find_link:DQ.find_link,parser:DQ.parse_interactivedms,href_rx:/\/inventory/,text_rx:/.*/i};
 DQ.jazelauto={find_link:DQ.find_link_jazel,parser:DQ.parse_jazelauto,href_rx:/\/inventory\/(all|used)-vehicles/,text_rx:/.*/i};
 DQ.jdbyrider={find_link:DQ.find_link_jdbyrider,parser:DQ.parse_jdbyrider};
 DQ.kukui={suffix:"",parser:function(doc,url,resolve,reject) { resolve({count:0,url:url}); } };
-DQ.leadboxhq={team_suffix:"/resources/staff.json",team_parser:DQ.parse_team_leadboxhq};
 DQ.lotwizard={find_link:DQ.find_link,parser:DQ.parse_lotwizard,href_rx:/\/inventory/,text_rx:/Inventory/i};
 DQ.motionfuze={suffix:"/used.cfm",parser:DQ.parse_motionfuze};
 DQ.motorcarmarketing={suffix:"",parser:DQ.parse_motorcarmarketing};
-DQ.nakedlime={team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_parser:DQ.parse_team_nakedlime};
 DQ.none={suffix:"",parser:DQ.parse_none};
 DQ.prontodealer={suffix:"/inventory.php",parser:DQ.parse_prontodealer};
 DQ.remora={find_link:DQ.find_link,parser:DQ.parse_remora,href_rx:/\/sale\/used-cars/,text_rx:/Pre-Owned|Used/i};
-DQ.stormdivision={team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
-                  team_parser:DQ.parse_team_stormdivision};
-DQ.strathcom={team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
-              team_parser:DQ.parse_team_strathcom};
-DQ.vicimus={team_find_link:DQ.find_team_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,team_bad_text_rx:/(^\s*Join)|Finance|Parts|Service/i,
-            team_parser:DQ.parse_team_vicimus};
 DQ.v12software={suffix:"/inventory/?per_page=1000",parser:DQ.parse_v12software};
 DQ.waynereaves={find_link:DQ.find_link_waynereaves,parser:DQ.parse_waynereaves};
 DQ.wearefullthrottle={suffix:"/used-inventory",parser:DQ.parse_wearefullthrottle};
 DQ.webstreak={suffix:"/preownedvehicles",parser:DQ.parse_webstreak};
 /* Needs special work */
 DQ.yourcarlot={find_link:DQ.find_link_yourcarlot,parser:DQ.parse_yourcarlot,href_rx:/\/(inventory|view_all)\.php/,text_rx:/Inventory/i};
-
-
-
-
-
-
-//  DQ.none={team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|Equipe|Personnel/i,
-//           team_bad_text_rx:/(^\s*Join)|Body Shop|Collision|Finance|Parts|Service/i,
-//         team_parser:DQ.parse_team_none};
-
-
-
-
-DQ.init_DQ=function(doc,url,resolve,reject,response) {
-    var curr_page,curr_url,promise;
-    //  console.log(url+", response="+JSON.stringify(response));
-    //console.log("init_DQ, url="+url);
-    DQ.page_type=DQ.id_page_type(doc,url,resolve,reject);
-    if(DQ.dealer_map[DQ.page_type]) DQ.page_type=DQ.dealer_map[DQ.page_type];
-    console.log(url+": page_type="+DQ.page_type);
-    curr_page=DQ[DQ.page_type];
-    //console.log(url+": curr_page="+JSON.stringify(curr_page));
-    if(curr_page) {
-        curr_url=url.replace(/(https?:\/\/[^\/]+).*$/,"$1");
-        if(curr_page.suffix) curr_url=curr_url+curr_page.suffix;
-        else if(curr_page.find_link) curr_url=curr_page.find_link(doc,url,resolve,reject,curr_page);
-        if(curr_page.parser) promise=MTurkScript.prototype.create_promise(curr_url,curr_page.parser,scrape_then,my_catch_func);
-        else if(curr_page.parser_special) curr_page.parser_special(curr_url);
-    }
-    
-
-};
-
-DQ.try_carsforsale=function(doc,url,resolve,reject) {
-    var meta=doc.querySelector("meta[http-equiv='refresh']"),curr_page,curr_url,promise;
-    if(meta) {
-        console.log("meta.content="+meta.content);
-        DQ.carSearchShit(DQ.param1,DQ.param2,DQ.param3,doc,url);
-        DQ.page_type="carsforsale";
-        if((curr_page=DQ[DQ.page_type]) && curr_page.suffix) {
-            curr_url=url.replace(/(https?:\/\/[^\/]+).*$/,"$1")+curr_page.suffix;
-            console.log("curr_url="+curr_url);
-            if(curr_page.parser) {
-                setTimeout(function() {
-                    promise=MTurkScript.prototype.create_promise(curr_url,curr_page.parser,scrape_then,my_catch_func); },250);
-                return true;
-            }
-
-        }
-    }
-    return false;
-};
-// Identify the type of page
-DQ.id_page_type=function(doc,url,resolve,reject) {
-    var page_type="none",i,match,src,copyright,item,links=doc.getElementsByTagName("link");
-    var thei=doc.getElementsByTagName("iframe"),twitter;
-    if((match=url.match(DQ.dealer_regex)) &&
-       (page_type=match[0].replace(/\/\//,"").replace(/\.[^\.]*$/,"").toLowerCase()
-        .replace(/[^\.]+\./,"").replace(/\./g,"_"))) return page_type;
-    for(i=0; i < doc.links.length; i++) {
-        if((match=doc.links[i].href.match(DQ.dealer_regex)) &&
-           (page_type=match[0].replace(/\/\//,"").replace(/\.[^\.]*$/,"").toLowerCase()
-            .replace(/[^\.]+\./,"").replace(/\./g,"_"))) return page_type;
-        else if(/prontodealer\.com/i.test(doc.links[i].innerText)) return "prontodealer";
-    }
-    for(i=0; i < doc.scripts.length; i++) {
-        // if(doc.scripts[i].src) console.log("doc.scripts["+i+"].src="+doc.scripts[i].src);
-        if(doc.scripts[i].src && (match=doc.scripts[i].src.match(DQ.dealer_regex)) &&
-           (page_type=match[0].replace(/\.[^\.]*$/,"").toLowerCase().replace(/\//g,"")
-            .replace(/[^\.]+\./,"").replace(/\./g,"_"))) return page_type; }
-    for(i=0; i < links.length; i++) {
-        if(links[i].href && (match=links[i].href.match(DQ.dealer_regex)) &&
-           (page_type=match[0].replace(/\/\//,"").replace(/\.[^\.]*$/,"").toLowerCase()
-            .replace(/[^\.]+\./,"").replace(/\./g,"_"))) return page_type; }
-    for(i=0; i < thei.length; i++) {
-        if(thei[i].src && (match=thei[i].src.match(DQ.dealer_regex)) &&
-           (page_type=match[0].replace(/\/\//,"").replace(/\.[^\.]*$/,"").toLowerCase()
-            .replace(/[^\.]+\./,"").replace(/\./g,"_"))) return page_type; }
-    if((copyright=doc.getElementsByClassName("copyrightProvider")).length>0
-       && /FordDirect|DealerDirect/.test(copyright[0].innerText)) return "FordDirect";
-    if((copyright=doc.getElementById("footer-copyright")) &&
-       /FordDirect|DealerDirect/i.test(copyright.innerText)) return "FordDirect";
-    if((copyright=doc.querySelector(".legal")) &&
-       /FordDirect|DealerDirect/i.test(copyright.innerText)) return "FordDirect";
-    copyright=doc.querySelectorAll("footer");
-    for(i=0;i<copyright.length;i++) {
-        if(/FordDirect|DealerDirect/i.test(copyright[i].innerText)) return "FordDirect";
-        else if(/Driving Dealer Solutions/i.test(copyright[i].innerText)) return "drivingdealersolutions";
-    }
-    if((copyright=doc.getElementsByName("copyright")).length>0
-       && /^AutoCorner/i.test(copyright[0].content)) return "autocorner";
-    if((copyright=doc.getElementsByClassName("copyright-wrap")).length>0 &&
-       /InterActive DMS/.test(copyright[0].innerText)) return "interactivedms";
-    if(doc.querySelector(".legacy-redirect")) return "waynereaves";
-    if((twitter=doc.getElementsByName("twitter:creator")[0]) && twitter.content==="@leadbox") return "leadboxhq";
-    if(/\.hasyourcar\./.test(url)) return "hasyourcar";
-    return page_type;
-};
-
-DQ.parse_team_360=function(doc,url,resolve,reject) {
-    console.log("In parse_team_360 at "+url);
-    var team=doc.querySelectorAll(".listing-employee__department-employee-item,.listing-employee__preview"),match;
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={".listing-employee__department-employee-name,[itemprop='headline']":"name",
-                      ".listing-employee__department-employee-job,[itemprop='reviewBody']":"title",
-                      ".listing-employee__department-employee-phone":"phone",".listing-employee__department-employee-email":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        DQ.employee_list.push(emp);
-
-    });
-    team=doc.querySelectorAll(".employee");
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={".employee__box-info_name,.employee-name":"name",
-                      ".employee-firstname":"firstname",".employee-lastname":"lastname",
-                      ".employee__box-info_job,.employee-job,.employee-department":"title",".employee__box-info_cta,a.cta,.employee-email a":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        if(emp.firstname && emp.lastname) emp.name=emp.firstname+" "+emp.lastname;
-        DQ.employee_list.push(emp);
-
-    });
-    team=doc.querySelectorAll(".listing-employees .card"),match;
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={".name":"name",".jobTitle":"title"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        if(dets.href && (match=dets.href.match(/mailto:\s*(.*)$/))) emp.email=match[1];
-        DQ.employee_list.push(emp);
-
-    });
-    team=doc.querySelectorAll(".employee-listing,.listing-employee-premium__department-employee-item,.departement_employee");
-    team.forEach(function(dets) {
-        Gov.fix_emails(dets,true);
-        var ret=Gov.parse_data_func(dets.innerText);
-        if(ret) DQ.employee_list.push(ret);
-    });
-    resolve("");
-};
-DQ.parse_team_assets_cdk=function(doc,url,resolve,reject) {
-    DQ.parse_employees(doc,url,resolve,reject);
-    resolve("");
-};
-DQ.parse_team_bwebauto=function(doc,url,resolve,reject) {
-    console.log("In DQ.parse_team_bwebauto,url="+url);
-    var team=doc.querySelectorAll(".team-list-item"),match;
-    team.forEach(DQ.parseEmployee);
-    team=doc.querySelectorAll(".item"),match;
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={".title":"name",".job":"title",".phone":"phone",".email a":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && field.href && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else if(term_map[x]!=="email") emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        DQ.employee_list.push(emp);
-
-    });
-    team=doc.querySelectorAll(".employee"),match;
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={".employee__name":"name","[itemprop='reviewBody']":"title",".phone":"phone","[itemprop='url']":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && field.href && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else if(term_map[x]!=="email") emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        DQ.employee_list.push(emp);
-
-    });
-    resolve("");
-};
-DQ.parse_team_convertus=function(doc,url,resolve,reject) {
-    console.log("In parse_team_convertus at "+url);
-    var scripts=doc.scripts,i,regex=/var convertusMethods/,emailMatch;
-    for(i=0;i<scripts.length;i++) if(scripts[i].innerHTML.match(regex) && (emailMatch=scripts[i].innerHTML.match(email_re))) break;
-    var team=doc.querySelectorAll(".team-info"),match;
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""},temp_email;
-        var term_map={"h4":"name","p":"title",},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && field.href && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        if(emp.name.length>0 && emailMatch.length>0 && (temp_email=DQ.match_email(emailMatch,emp.name))) emp.email=temp_email;
-        else if(emailMatch.length>0) emp.email=emailMatch[0];
-        DQ.employee_list.push(emp);
-
-    });
-    resolve("");
-};
-DQ.parse_team_d2cmedia=function(doc,url,resolve,reject) {
-    console.log("In parse_team_d2cmedia at "+url);
-    var team=doc.querySelectorAll(".mainbox291"),match,temp_email;
-    var email_items=doc.querySelectorAll("input[id*='email' i]");
-    email_items.forEach(function(item) {
-        if((match=item.value.match(email_re))) {
-            for(var i=0;i<match.length;i++) if(!DQ.email_list.includes(match[i])) DQ.email_list.push(match[i]);
-        }
-    });
-    console.log("DQ.email_list="+JSON.stringify(DQ.email_list));
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={"[itemprop='name']":"name","[itemprop='title']":"title","[itemprop='phone']":"phone","[itemprop='email']":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        if(emp.name.length>0 && (temp_email=DQ.match_email(DQ.email_list,emp.name))) emp.email=temp_email;
-        DQ.employee_list.push(emp);
-    });
-    resolve("");
-};
-DQ.parse_team_dealer=function(doc,url,resolve,reject) {
-    DQ.parse_vcard(doc,url,resolve,reject);
-    var team=doc.querySelectorAll(".mainbox291");
-    team.forEach(DQ.parseEmployee);
-    var td=doc.querySelectorAll("td");
-    td.forEach(function(elem) {
-        var ret=Gov.parse_data_func(elem.innerText);
-        if(ret) DQ.employee_list.push(ret);
-    });
-    var ddc=doc.querySelectorAll(".ddc-content .content");
-    ddc.forEach(function(elem) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var name=elem.querySelector("div span font b"),parentdiv,a,match;
-        emp.name=name?name.innerText:"";
-        if(name&&(parentdiv=name.parentNode.parentNode.parentNode.querySelector("div"))) {
-
-            var title=parentdiv.querySelector("div font");
-            emp.title=title?title.innerText:"";
-            a=parentdiv.querySelector("a");
-            if(a && a.href && (match=a.href.match(/mailto:\s*(.*)$/))) emp.email=match[1];
-        }
-        DQ.employee_list.push(emp);
-    });
-
-    resolve("");
-};
-DQ.parse_team_dealercity=function(doc,url,resolve,reject) {
-    console.log("In parse_team_dealercity at "+url);
-    var team=doc.querySelectorAll(".our-team"),match;
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={".name":"name",".position":"title",".phone":"phone",".email":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && field.href && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        DQ.employee_list.push(emp);
-
-    });
-    resolve("");
-};
-DQ.parse_team_dealerfire=function(doc,url,resolve,reject) {
-    DQ.parse_vcard(doc,url,resolve,reject);
-    var team=doc.querySelectorAll(".com-our-team-responsive2__employee");
-    team.forEach(function(dets) {
-        Gov.fix_emails(dets,true);
-        var ret=Gov.parse_data_func(dets.innerText);
-        if(ret) DQ.employee_list.push(ret);
-    });
-    resolve("");
-};
-DQ.parse_team_dealerinspire=function(doc,url,resolve,reject) {
-    console.log("In parse_team_dealerinspire at "+url);
-    var team=doc.querySelectorAll(".staff-item"),match;
-    if(!team || team.length===0) team=doc.querySelectorAll(".staff");
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={"h3":"name","h4":"title",".staffphone":"phone",".staff-email-button,.staff-button":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        DQ.employee_list.push(emp);
-
-    });
-    resolve("");
-};
-DQ.parse_team_dealeron=function(doc,url,resolve,reject) {
-    console.log("In parse_team_dealeron at "+url);
-    var team=doc.querySelectorAll(".staff-card"),match;
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={".staff-title":"name",".staff-desc":"title",".phone1":"phone",".email":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        DQ.employee_list.push(emp);
-
-    });
-    resolve("");
-};
-DQ.parse_team_dealerspike=function(doc,url,resolve,reject) {
-    console.log("In parse_team_dealerspike at "+url);
-    var team=doc.querySelectorAll(".person"),match;
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={".name":"name",".title":"title"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        DQ.employee_list.push(emp);
-
-    });
-    resolve("");
-};
-DQ.parse_team_dealersiteplus=function(doc,url,resolve,reject) {
-    var container=doc.querySelectorAll(".container");
-    container.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var ret=Gov.parse_data_func(dets.innerText);
-        if(ret) DQ.employee_list.push(ret);
-    });
-    resolve("");
-};
-DQ.parse_team_drivingdealersolutions=function(doc,url,resolve,reject) {
-    console.log("In parse_team_drivingdealersolutions at "+url);
-    var team=doc.querySelectorAll(".ourteam-usergroup ul"),match;
-    team.forEach(function(dets) {
-        var ret=Gov.parse_data_func(dets.innerText);
-        DQ.employee_list.push(ret);
-
-    });
-    resolve("");
-};
-DQ.parse_team_edealer=function(doc,url,resolve,reject) {
-    console.log("In parse_team_edealer at "+url);
-    var details=doc.querySelectorAll(".details-sect,.team-items item"),match;
-    if(details.length===0) details=doc.querySelectorAll(".member-list .box-container");
-    details.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={".name,.team-title":"name",".title,.team-position":"title",".phone-num":"phone",".email":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else if(term_map[x]!=="email") emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        if(emp.email.length===0 && (match=dets.innerText.match(email_re))) emp.email=match[0];
-        DQ.employee_list.push(emp);
-    });
-    resolve("");
-};
-DQ.parse_team_evolio=function(doc,url,resolve,reject) {
-    console.log("In parse_team_evolio at "+url);
-    var team=doc.querySelectorAll(".our-team"),a;
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={".name":"name",".position":"title",".phone":"phone",".email":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" &&
-                   ((field.href &&
-                     (match=field.href.match(/mailto:\s*(.*)$/))) || ((a=field.querySelector("a")) &&
-                                                                      (match=a.href.match(/mailto:\s*(.*)$/))
-                                                                     ))) emp[term_map[x]]=match[1];
-                else  emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        DQ.employee_list.push(emp);
-
-    });
-    team=doc.querySelectorAll(".box-inner");
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={"h2":"name","h3.tm-title":"title",".phone":"phone",".tm-member-contact a":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) emp[term_map[x]]=field.innerText.trim();
-        }
-        DQ.employee_list.push(emp);
-
-    });
-    resolve("");
-};
-DQ.parse_team_ez_results=function(doc,url,resolve,reject) {
-    console.log("In parse_team_ez_results at "+url);
-    var team=doc.querySelectorAll(".teamColumn,.team,.teamCol"),match;
-    if(team.length===0) team=doc.querySelectorAll(".wbox");
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={".teamName,.name":"name",".teamPosition,.position":"title",".teamPhone":"phone",".btn-email,.ez-btn,.emailButton":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        DQ.employee_list.push(emp);
-
-    });
-
-    resolve("");
-};
-DQ.parse_team_FordDirect=function(doc,url,resolve,reject) {
-    let temp_url=url.replace(/(https?:\/\/[^\/]*).*$/,"$1");
-    temp_url=temp_url+"/data/employees.json";
-    console.log("temp_url="+temp_url);
-    var promise=MTP.create_promise(temp_url,DQ.parse_team_FordDirect_JSON,resolve,reject);
-};
-DQ.parse_team_FordDirect_JSON=function(doc,url,resolve,reject,response) {
-    try {
-        let parsed=JSON.parse(response.responseText),x,emp,i;
-        if(!parsed.staff) {
-            // console.log("Not parsed.staff, parsed="+JSON.stringify(parsed));
-            parsed.staff=[];
-            for(i=0;i<parsed.length;i++) {
-                parsed.staff=parsed.staff.concat(parsed[i].staff); }
-        }
-
-        if(parsed&&parsed.staff) {
-            // console.log("parsed.staff="+JSON.stringify(parsed.staff));
-            for(x of parsed.staff) {
-                //console.log("x="+JSON.stringify(x));
-                emp={name:"",title:"",email:"",phone:""};
-                if(x.firstname || x.lastname) emp.name=(x.firstname?x.firstname:"")+" "+(x.lastname?x.lastname:"");
-                if(x.email) emp.email=x.email;
-                if(x.title) emp.title=x.title;
-                DQ.employee_list.push(emp);
-
-            }
-        }
-        else if(parsed) {
-            for(x in parsed) console.log("parsed["+x+"]="+JSON.stringify(parsed[x]));
-            console.log("Could not find parsed.staff");
-            reject("");
-        }
-
-    }
-    catch(error) {
-        console.log("Error parsing JSON in FordDirect "+error);
-        reject("");
-        return;
-    }
-    resolve("");
-
-
-};
-DQ.parse_team_goauto=function(doc,url,resolve,reject) {
-    console.log("In parse_team_goauto at "+url);
-    var team=doc.querySelectorAll(".staff-card"),match;
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={".name":"name",".position":"title",".contact-email":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        DQ.employee_list.push(emp);
-
-    });
-    resolve("");
-};
-DQ.parse_team_leadboxhq=function(doc,url,resolve,reject,response) {
-    var parsed,i,x,emp;
-    try {
-        parsed=JSON.parse(response.responseText);
-        for(i=0;i<parsed.length;i++) {
-            emp={name:(parsed[i].name?parsed[i].name+" ":"")+(parsed[i].lastname?parsed[i].lastname:""),
-                 title:parsed[i].title?parsed[i].title:"",email:parsed[i].email?parsed[i].email:"",
-                 phone:parsed[i].phone?parsed[i].phone:""};
-            DQ.employee_list.push(emp);
-        }
-    }
-    catch(error) { console.log("Error parsing JSON "+error);
-                   reject("");
-                   return; }
-    resolve("");
-};
-DQ.parse_team_nakedlime=function(doc,url,resolve,reject) {
-    console.log("In parse_team_nakedlime at "+url);
-    var team=doc.querySelectorAll(".staff"),match;
-    team.forEach(DQ.parseEmployee);
-    resolve("");
-};
-DQ.parse_team_stormdivision=function(doc,url,resolve,reject) {
-    console.log("In parse_team_stormdivision at "+url);
-    var team=doc.querySelectorAll(".staff"),match;
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={".sname":"name",".sjob":"title",".sphone":"phone",".semail":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        DQ.employee_list.push(emp);
-
-    });
-    DQ.parse_employees(doc,url,resolve,reject);
-    resolve("");
-};
-DQ.parse_team_strathcom=function(doc,url,resolve,reject) {
-    console.log("In parse_team_strathcom at "+url);
-    var team=doc.querySelectorAll(".staff-card,.staff-container"),match;
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={".name,.staff-name":"name",".position,.staff-title":"title",".phone1,.staff-phone":"phone",".contact-email,.staff-email":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        DQ.employee_list.push(emp);
-
-    });
-    DQ.parse_employees(doc,url,resolve,reject);
-    resolve("");
-};
-DQ.parse_team_vicimus=function(doc,url,resolve,reject) {
-    console.log("In parse_team_vicimus at "+url);
-    var team=doc.querySelectorAll(".staff-details"),match;
-    team.forEach(function(dets) {
-        var emp={name:"",title:"",phone:"",email:""};
-        var term_map={".name":"name",".position":"title",".phone":"phone",".email,.email a":"email"},x,field,match;
-        for(x in term_map) {
-            if((field=dets.querySelector(x))) {
-                if(term_map[x]==="email" && field.href && (match=field.href.match(/mailto:\s*(.*)$/))) emp[term_map[x]]=match[1];
-                else emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        DQ.employee_list.push(emp);
-
-    });
-    resolve("");
-};
-DQ.parse_team_none=function(doc,url,resolve,reject) {
-    console.log("In parse_team_none at "+url);
-    Gov.parse_contact_elems(doc,url,resolve,reject,"");
-    DQ.employee_list=DQ.employee_list.concat(Gov.contact_list);
-    var insp_promise=new Promise((resolve,reject) => {
-        DQ.parse_team_dealerinspire(doc,url,resolve,reject); }).then(MTP.my_then_func);
-    var promise_list=[insp_promise];
-    Promise.all(promise_list).then(function(response) {
-        resolve(""); });
-
-}
-//team_find_link:DQ.find_link,team_href_rx:/.*/,team_text_rx:/Staff|Team|ÉQUIPE|Personnel/i
-
-
-DQ.match_email=function(email_list,name) {
-    let fullname=MTP.parse_name(name),i,j;
-    let email_regexes=[new RegExp(fullname.fname.charAt(0)+fullname.lname+"@","i"),
-                       new RegExp(fullname.fname.charAt(0)+"."+fullname.lname+"@","i"),
-                       new RegExp(fullname.fname+fullname.lname+"@","i"),new RegExp(fullname.fname+"."+fullname.lname+"@","i"),
-                       new RegExp(fullname.fname+"@","i")];
-    for(i=0;i<email_list.length;i++) {
-        let temp=email_list[i];
-        for(j=0;j<email_regexes.length;j++) {
-            if(email_regexes[j].test(temp)) {
-                return temp;
-                break; }
-        }
-    }
-    return null;
-}
-DQ.parse_vcard=function(doc,url,resolve,reject) {
-    var vcard=doc.querySelectorAll(".vcard");
-    vcard.forEach(function(v) {
-        var emp={name:"",title:"",email:"",phone:""},x,field;
-        var term_map={".fn":"name",".title":"title",".email,[itemprop='email']":"email",".phone":"phone"};
-        for(x in term_map) {
-            if((field=v.querySelector(x))) {
-                //console.log("field.outerHTML="+field.outerHTML+", field.tagName="+field.tagName+", field.content="+field.content);
-                if(field.tagName==="META") emp[term_map[x]]=field.content;
-                else emp[term_map[x]]=field.innerText.trim();
-            }
-        }
-        DQ.employee_list.push(emp);
-    });
-};
-DQ.parseEmployee=function(emp) {
-    var data={name:"",title:"",email:"",phone:""},match;
-    var first=emp.querySelector("[itemprop='givenName']"),last=emp.querySelector("[itemprop='familyName']");
-    var name=emp.querySelector("[itemprop='name']");
-    var title=emp.querySelector("[itemprop='jobTitle']");
-    var email=emp.querySelector("[itemprop='email']");
-    if(first&&last) data.name=first.innerText.trim()+" "+last.innerText.trim();
-    else if(name) data.name=name.innerText.trim();
-    if(title) data.title=title.innerText.trim();
-    if(email && email.href && (match=email.href.match(/mailto:\s*(.*)$/))) data.email=match[1];
-    if(!data.email && (match=emp.innerHTML.match(email_re))) data.email=match[0];
-    DQ.employee_list.push(data);
-};
-/* parse employee schema */
-DQ.parse_employees=function(doc,url,resolve,reject) {
-    var employees=doc.querySelectorAll("[itemprop='employee']");
-    employees.forEach(DQ.parseEmployee);
-};
-
-DQ.init_teamDQ=function(doc,url,resolve,reject,response) {
-    var curr_page,curr_url,promise;
-    //  console.log(url+", response="+JSON.stringify(response));
-    //console.log("init_DQ, url="+url);
-    DQ.page_type=DQ.id_page_type(doc,url,resolve,reject);
-    console.log(url+": page_type="+DQ.page_type);
-
-    if(DQ.dealer_map[DQ.page_type]) DQ.page_type=DQ.dealer_map[DQ.page_type];
-    console.log(url+": page_type="+DQ.page_type);
-
-    curr_page=DQ[DQ.page_type];
-    //console.log(url+": curr_page="+JSON.stringify(curr_page));
-    if(curr_page) {
-        curr_url=url.replace(/(https?:\/\/[^\/]+).*$/,"$1");
-        if(curr_page.team_suffix) curr_url=curr_url+curr_page.team_suffix;
-        else if(curr_page.team_find_link) curr_url=curr_page.team_find_link(doc,url,resolve,reject,curr_page);
-        console.log("Found team page at "+curr_url);
-        if(curr_page.team_parser) promise=MTurkScript.prototype.create_promise(curr_url,curr_page.team_parser,resolve,reject);
-        else {
-	    resolve("no parser");
-	    return;
-        }
-    }
-    else {
-	resolve("curr_page is undefined for "+DQ.page_type);
-        return;
-    }
-};
-// Identify the typ

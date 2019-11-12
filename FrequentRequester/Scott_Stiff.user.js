@@ -24,15 +24,14 @@
 // @connect bing.com
 // @connect yellowpages.com
 // @connect *
+// @require https://raw.githubusercontent.com/jacobmas/pdf.js/master/dist/pdf.js
+// @require https://raw.githubusercontent.com/jacobmas/pdf.js/master/dist/pdf.worker.js
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
-// @require https://raw.githubusercontent.com/jacobmas/pdf.js/master/dist/pdf.js
-// @require https://raw.githubusercontent.com/jacobmas/pdf.js/master/dist/pdf.worker.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/89a01cbbe764ca599bcedca95ab4baac6df7759a/Email/MailTester.js
-
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/9b8a01bacbf96ea1cf8ce57deb9073b925690277/Email/MailTester.js
 // @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
@@ -40,7 +39,7 @@
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=["lead411.com","prospectworx.com"];
+    var bad_urls=["lead411.com","prospectworx.com","infofree.com"];
     var MTurk=new MTurkScript(20000,200,[],begin_script,"ASE78OM24HQVZ",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_algo,b_name,p_caption,i,type) {
@@ -521,6 +520,7 @@
 
     function mailpromise_then(result) {
         var x,y;
+        console.log("mailpromise_then,result="+JSON.stringify(result));
         my_query.done.email=true;
         for(x of my_query.people) {
             //if(x.quality>=100) x.quality=80;
@@ -873,6 +873,7 @@
             my_query.done.manta=true;
             submit_if_done();
         });*/
+	//var parser=new PDFParser("http://www.lvmspta.org/docs/LVMSPTA-Contacts.pdf");
 
         var dept_regex_lst=[];
 

@@ -53,7 +53,12 @@
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context)); } 
+                console.log("parsed_context="+JSON.stringify(parsed_context));
+            if(parsed_context.Title) {
+                resolve(parsed_context.Title);
+                return;
+            }
+        }
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
             for(i=0; i < b_algo.length; i++) {
@@ -63,9 +68,10 @@
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !is_bad_name(b_name) && (b1_success=true)) break;
+                if((true||(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !is_bad_name(b_name))) && (b1_success=true)) break;
             }
-            if(b1_success && (resolve(b_url)||true)) return;
+            b_name=b_name.replace(/^(Welcome|Start |Home[a-z]*).*?\s[\-\|]/,"");
+            if(b1_success && (resolve(b_name.replace(/\s[\-\|].*$/,""))||true)) return;
         }
         catch(error) {
             reject(error);
@@ -85,6 +91,24 @@
                            onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
                           });
     }
+    function my_query_promise_then(result) {
+        var temp_name=result;
+        my_query.temp_name=result;
+        my_query.json_url="https://www.northdata.de/search.json?query="+encodeURIComponent(my_query.name.replace(/\&.*$/,""));
+        	console.log("my_query="+JSON.stringify(my_query));
+
+        var promise=MTP.create_promise(my_query.json_url,parse_json,query_promise_then,try_temp_name);
+    }
+
+    function try_temp_name() {
+        console.log("## Trying temp_name="+my_query.temp_name);
+        my_query.name=my_query.temp_name;
+         my_query.json_url="https://www.northdata.de/search.json?query="+encodeURIComponent(my_query.name);
+        	console.log("my_query="+JSON.stringify(my_query));
+
+        var promise=MTP.create_promise(my_query.json_url,parse_json,query_promise_then,fail_function);
+    }
+
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
@@ -124,8 +148,13 @@
           var json_promise;
          try {
              console.log("parsed.items.length="+parsed.items.length);
+             if(parsed.items.length===0) {
+                 reject("");
+                 return;
+             }
              console.log("parsed="+JSON.stringify(parsed.items));
              my_query.company_url="https://www.northdata.de"+parsed.items[0].details.uri;
+             my_query.fields.url=my_query.company_url;
              console.log("my_query.company_url="+my_query.company_url);
              var promise=MTP.create_promise(my_query.company_url,parse_company,resolve,reject);
          }
@@ -181,11 +210,14 @@
             if(german_english_map[curr_title]!==undefined && curr_item.data&&curr_item.data.data) {
                 curr_eng_title=german_english_map[curr_title];
                 if(curr_item.data.data.length>=1) {
+                    if(my_query.fields[curr_eng_title+" Years"]==="No data") my_query.fields[curr_eng_title+" Years"]="";
                     curr_year=curr_item.data.data[curr_item.data.data.length-1];
                     my_query.fields[curr_eng_title+" 1"]=curr_year.formattedValue;
                     my_query.fields[curr_eng_title+" Years"]+=curr_year.year;
                 }
                 if(curr_item.data.data.length>=2) {
+                    if(my_query.fields[curr_eng_title+" Years"]==="No data") my_query.fields[curr_eng_title+" Years"]="";
+
                     curr_year=curr_item.data.data[curr_item.data.data.length-2];
                     my_query.fields[curr_eng_title+" 2"]=curr_year.formattedValue;
                     my_query.fields[curr_eng_title+" Years"]+=", "+curr_year.year;
@@ -212,15 +244,20 @@
         var i;
        
         my_query={name:document.querySelector("form a").innerText.trim(),
-                  fields:{"on Northdata":"Yes","Company ID":"","Profit 1":"","Profit 2":"","Profit Years":"","Revenue 1":"",
-                         "Revenue 2":"","Revenue Years":"","Assets 1":"","Assets 2":"","Assets Years":"","Employee":""},
+                  fields:{"on Northdata":"Yes","Company ID":"","Profit 1":"No data","Profit 2":"No data","Profit Years":"No data","Revenue 1":"No data",
+                         "Revenue 2":"No data","Revenue Years":"No data","Assets 1":"No data","Assets 2":"No data","Assets Years":"No data","Employee":"No data"},
                   done:{},submitted:false,try_count:{"json":0}};
         my_query.name=my_query.name.replace(/\(.*$/,"");
-        var search_str;
-        my_query.json_url="https://www.northdata.de/search.json?query="+encodeURIComponent(my_query.name);
-        	console.log("my_query="+JSON.stringify(my_query));
+        var search_str=my_query.name.replace(/\&.*$/,"");
 
-        var promise=MTP.create_promise(my_query.json_url,parse_json,query_promise_then,fail_function);
+        const queryPromise = new Promise((resolve, reject) => {
+            console.log("Beginning URL search");
+            query_search(search_str, resolve, reject, query_response,"query");
+        });
+        queryPromise.then(my_query_promise_then)
+            .catch(function(val) {
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
+        
     }
 
 })();

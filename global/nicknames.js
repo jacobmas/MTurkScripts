@@ -3,9 +3,11 @@
 Nicknames={
     "alexander":["alex"],
     "andrew":["drew","andy"],
+    "angela":["angie"],
     "andy":["andrew","drew"],
     "anthony":["tony"],
     "benjamin":["ben"],
+    "bradley":["brad"],
     "bob":["robert","rob","bobby"],
     "bill":["william","will","billy"],
     "charlie":["charles","chuck"],
@@ -66,6 +68,8 @@ Nicknames={
     "tim":["timothy"],
     "timothy":["tim"],
     "tom":["thomas"],
+    "val":["valerie"],
+    "valerie":["val"],
     "vince":["vincent"],
     "vincent":["vince"],
     "william":["will","bill","billy"]

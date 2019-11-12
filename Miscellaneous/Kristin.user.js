@@ -83,8 +83,8 @@
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
-	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-            if(parsed_context.Phone) {
+	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context)) && parsed_context.url) {
+            if(site==="web" && parsed_context.Phone) {
                 my_query.fields.phone=parsed_context.Phone; resolve(""); return }
                 console.log("parsed_context="+JSON.stringify(parsed_context)); }
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
@@ -133,6 +133,7 @@
 
     /* Following the finding the district stuff */
     function buzzfile_promise_then(result) {
+        console.log("buzzfile_promise_then,result="+JSON.stringify(result));
         my_query.buzzfile_url=result.url;
         var promise=MTP.create_promise(my_query.buzzfile_url,parse_buzzfile,parse_site_then,MTP.my_catch_func,result.quality);
     }
@@ -173,7 +174,10 @@
         var table=doc.querySelector("table[itemtype='https://schema.org/Person']");
         var result={success:true,site:"bizapedia",quality:quality};
         console.log("table="+table);
-        if(!table || table.rows.length<3) resolve({success:false,site:"bizapedia"});
+        if(!table || table.rows.length<3) {
+            resolve({success:false,site:"bizapedia"});
+            return;
+        }
         result={site:"bizapedia",quality:quality,name:table.rows[0].innerText.trim(),title:table.rows[2].innerText.trim(),success:true};
         console.log("parse_bizapedia, result="+JSON.stringify(result));
         resolve(result);
@@ -290,7 +294,7 @@
         });
         buzzfilePromise.then(buzzfile_promise_then)
             .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+            console.log("Failed at this buzzfilePromise " + val); GM_setValue("returnHit",true); });
        const fbPromise = new Promise((resolve, reject) => {
             search_str=my_query.name+" "+my_query.location+" site:facebook.com";
             query_search(search_str, resolve, reject, query_response,"facebook.com");
@@ -327,7 +331,7 @@
         });
       const chamberPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
-            search_str=my_query.name+" "+my_query.location+" site:chamberofcommerce.comx";
+            search_str=my_query.name+" "+my_query.location+" site:chamberofcommerce.com";
             query_search(search_str, resolve, reject, query_response,"chamberofcommerce.com");
         });
         chamberPromise.then(chamber_promise_then)

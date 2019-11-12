@@ -35,7 +35,7 @@
 (function() {
     'use strict';
 
-    var MTurk=new MTurkScript(20000,200,[],begin_script,"A3W0AYFYLP1OIS",false);
+    var MTurk=new MTurkScript(20000,2000+Math.random()*250+Math.random()*250,[],begin_script,"A3W0AYFYLP1OIS",false);
     var MTP=MTurkScript.prototype;
    
     var fax_re=/Fax[:]?[\s]?([\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6})/im;
@@ -57,7 +57,7 @@
                  "citymaps.com","advrider.com","twitter.com","findmeglutenfree.com",".net","hotfrog.com","foodtrucksin.com",
                  "ourvalleyevents.com",".pdf","locu.com","restaurantguru.com","chinesemenu.com","trycaviar","beyondmenu","allmenus","groupon.com",
                  "tripadvisor.com","alohaorderonline.com","singleplatform.com","timetemperature.com","www.restaurant.com","menutoeat.com",
-                  "cylex.us.com","www.zillow.com","www.realtor.com","www.trulia.com","www.homes.com","s3.amazonaws.com",
+                  "cylex.us.com","www.zillow.com","www.realtor.com","www.trulia.com","www.homes.com","s3.amazonaws.com","us-business.info",
                   "www.yelp.co","www.yooying.com",".opendi.us","tablehero.com"];
     var country_domains=[".ar",".at",".au",".br",".ch",".cn",".de",".eu",".fr",".it",".jp",".ro",".ru",".se",".tw",".uk",".uy",".vn"];
     var first_try=true;
@@ -98,20 +98,7 @@
         }
         return false;
     }
-    function add_to_sheet(address,phone)
-    {
-        if(address.state===undefined || address.city===undefined || address.state===undefined)
-        {
-            GM_setValue("returnHit"+MTurk.assignmenet_id,true);
-        }
-        document.getElementById("addressLine1").value=address.street;
-        document.getElementById("city").value=address.city;
-        document.getElementById("state").value=address.state;
-        document.getElementById("zip").value=address.zip;
-        document.getElementById("phoneNumber").value=phone;
-
-    }
-
+    
     function my_parse_address(to_parse)
     {
         var ret_add={};
@@ -208,23 +195,24 @@
         var b_top;
         var good_url,found_url=false;
         var lgb_info;
-        var b_context;
+        var b_context,parsed_context;
         var b_factrow, b_caption;
         var b1_success=false, b_header_search;
-        var inner_a;
-        var name_split;
-        var the_address="";
-        var the_phone="";
+        var inner_a,name_split,the_address="",the_phone="";
         var b_vList, b_entityTP, cbl,p_caption;
 
-        var job_text,job_split;
+        var job_text,job_split,parsed_lgb;
         var add_success=false, phone_success=false;
         var epc;
         var permanent="";
-        try
-        {
+        try {
             search=doc.getElementById("b_content");
             lgb_info=doc.getElementById("lgb_info");
+            console.log("MUNK");
+            b_context=doc.getElementById("b_context");
+                        console.log("MUNK");
+
+
             console.log("hello");
             permanent=doc.getElementById("permanentlyClosedIcon");
             if(permanent)
@@ -235,24 +223,29 @@
                 MTurk.check_and_submit();
                 return;
             }
-            if(lgb_info!==null && lgb_info!==undefined)
-            {
-                console.log("lgb_info");
-                inner_a=lgb_info.getElementsByTagName("a");
-                if(inner_a!==null && inner_a!==undefined && inner_a.length>0 &&
-                   !MTP.is_bad_url(inner_a[0].href.replace(/\/$/,""),bad_urls,5,2) && !is_bad_url2(inner_a[0].href))
-                {
-                    console.log("Glunk");
-                    document.getElementById("webpage_url").value=inner_a[0].href;
+            if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
+                console.log("parsed_context="+JSON.stringify(parsed_context));
+
+                if(parsed_context.Title&&MTP.matches_names(parsed_context.Title,my_query.name) &&
+                                     parsed_context.SubTitle && (parsed_context.thing&&!parsed_context.thing.restaurant)) {
+                    document.querySelector("[name='not_valid']").checked=true;
+                    MTurk.check_and_submit();
+                    return;
+                }
+
+            }
+            if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
+                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb));
+                if(parsed_lgb.url) parsed_lgb.url=parsed_lgb.url.replace(/\?utm_source.*$/,"");
+                if(parsed_lgb.url&&!MTP.is_bad_url(parsed_lgb.url,bad_urls,5,2)) {
+                    document.getElementById("webpage_url").value=parsed_lgb.url;
                     GM_setValue("success",my_query.success+1);
                     MTurk.check_and_submit();
                     return;
                 }
-                else if(inner_a.length>0)
-                {
-                    console.log("lgbinfo:inner_a[0].href="+inner_a[0].href+", is_bad_url(*)="+is_bad_url(inner_a[0].href,bad_urls));
-                }
+
             }
+           
 
             b_algo=search.getElementsByClassName("b_algo");
 
@@ -290,7 +283,7 @@
                 else if(!MTP.is_bad_url(b_url,bad_urls,5,2) && !is_bad_url2(b_url,bad_urls))
                 {
                     console.log("BAD can't guess");
-                    GM_setValue("return",my_query.return+1);
+                    
                     GM_setValue("returnHit"+MTurk.assignment_id,true);
                     return;
                 }
@@ -298,12 +291,12 @@
 
             }
             console.log("MOO");
-            if(my_query.try_count===0)
+           /* if(my_query.try_count===0)
             {
                 my_query.try_count++;
                 query_search(my_query.name+" "+my_query.city+" "+my_query.state,resolve,reject,camp_response);
                 return;
-            }
+            }*/
             GM_setValue("no_webpage",my_query.no_webpage+1);
             document.getElementsByName("no_page")[0].checked=true;
             MTurk.check_and_submit();
@@ -421,6 +414,21 @@
             return;
         }
         else { console.log("Failed to begin script"); }
+    }
+
+    function add_to_sheet() {
+        var x,field;
+        for(x in my_query.fields) {
+            if((MTurk.is_crowd && (field=document.getElementsByName(x)[0])) ||
+               (!MTurk.is_crowd && (field=document.getElementById(x)))) field.value=my_query.fields[x];
+        }
+    }
+
+    function submit_if_done() {
+        var is_done=true,x;
+        add_to_sheet();
+        for(x in my_query.done) if(!my_query.done[x]) is_done=false;
+        if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
 
     function init_Query() {
