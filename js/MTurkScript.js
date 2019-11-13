@@ -1461,7 +1461,7 @@ MTurkScript.prototype.is_bad_page=function(doc,url) {
     for(i=0;i<iframes.length;i++) {
         if(iframes[i].src&&/parked\-content\.godaddy\.com/.test(iframes[i].src)) return true;
     }
-    if(/cgi-sys\/defaultwebpage.cgi$/.test(url.replace(/\$/,""))) return true;
+    if(/cgi-sys\/(suspendedpage\.cgi|defaultwebpage\.cgi)$/.test(url.replace(/\$/,""))) return true;
     if(/hugedomains\.com|qfind\.net|\?reqp\=1&reqr\=/.test(url)) { return true; }
     else if(/(Expired)|(^404)|(Error)|(is for sale)|(^502 )/.test(title)) return true;
     else if(doc.querySelector("div.leftblk h3.domain_name")) return true;
