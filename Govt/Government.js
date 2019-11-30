@@ -1652,16 +1652,16 @@ Gov.needs_refresh=function(doc,url) {
 };
 /* Initialize the nlp compromise thing */
 Gov.init_nlp=function() {
-    var plugin = {
-	words:{
+    var myPlugin = function(Doc, world) {
+	world.addWords({
 	    'chief':'Honorific',
 	    'patrol officer': 'Honorific',
 	    'detective': 'Honorific',
 	    'capt.':'Honorific',
 	    'sgt.':'Honorific'
-	}
-    };
-    nlp.plugin(plugin);
+	});
+    }
+    nlp.extend(myPlugin);
 };
 /** Gov.init_Gov will initialize government search being given a url (string) and a query (object)
  *
