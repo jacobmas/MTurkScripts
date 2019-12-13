@@ -584,9 +584,9 @@
             let fullname=MTP.parse_name(my_query.fields.person_name_full_name);
             my_query.fields.person_name_given_name=fullname.fname.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing);
             my_query.fields.person_name_family_name=fullname.lname?fullname.lname.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing):"Not Found";
-            var person_data=nlp(my_query.fields.person_name_given_name).people().out('tags');
-            if(person_data.length>0) {
-
+            var person_data=nlp(my_query.fields.person_name_given_name).people().json().terms;
+            console.log("person_data="+JSON.stringify(person_data));
+            if(person_data&&person_data.length>0) {
                 for(x of person_data[0].tags) {
                     if(/FemaleName/.test(x)) my_query.fields.gender="Female";
                     if(/MaleName/.test(x)) my_query.fields.gender="Male";
@@ -672,7 +672,7 @@
             my_query.fields.email=ret.email?ret.email:"";
             my_query.fields.person_name_given_name=fullname.fname.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing);
             my_query.fields.person_name_family_name=fullname.lname?fullname.lname.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing):"";
-            var person_data=nlp(ret.name).people().out('tags'),x;
+            var person_data=nlp(ret.name).people().json().terms,x;
             if(person_data.length>0) {
 
                 for(x of person_data[0].tags) {
@@ -843,13 +843,13 @@
            // begin_searching_company();
         });
         Address.debug=true;
-        const plugin = {
-            regex: {
+        var myPlugin = function(Doc, world) {
+            world.addWords({
                 'avi':'MaleName',
                 '^[A-Z][a-z]{0,6}ius':'MaleName'
-            }
+            })
         };
-        nlp.plugin(plugin);
+        nlp.extend(myPlugin);
         begin_searching_company();
     }
 
