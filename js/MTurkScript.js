@@ -178,6 +178,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
 MTurkScript.prototype.is_crowd_ready=function() {
     if(document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled) return true;
     else if(document.querySelector("crowd-classifier") && !document.querySelector("crowd-classifier").disabled) return true;
+    else if(document.querySelector("button#btnSubmit") && !document.querySelector("button#btnSubmit").disabled) return true;
     return false;
 };
 
