@@ -179,6 +179,8 @@ MTurkScript.prototype.is_crowd_ready=function() {
     if(document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled) return true;
     else if(document.querySelector("crowd-classifier") && !document.querySelector("crowd-classifier").disabled) return true;
     else if(document.querySelector("button#btnSubmit") && !document.querySelector("button#btnSubmit").disabled) return true;
+    else {
+	console.log(document.querySelector("button#btnSubmit")); }
     return false;
 };
 
