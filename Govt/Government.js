@@ -729,7 +729,7 @@ Gov.add_columns=function(table) {
 	added_column=false;
 	for(j=0;j<row.cells.length; j++) {
 	    cell=row.cells[j];
-	    if((inner_a=cell.getElementsByTagName("a")).length>0 && !/(^|[^A-Za-z]{1})(Click|Contact|E(-)?mail)/.test(cell.innerText.trim()) && /\t[^\s]*@/.test(inner_a[0].innerHTML)) {
+	    if((inner_a=cell.getElementsByTagName("a")).length>0 && !/(^|[^A-Za-z]{1})(Click|Contact|E(-)?mail)/.test(cell.innerText.trim()) && /\t[a-zA-Z0-9_\.\-]*@/.test(inner_a[0].innerHTML)) {
 		my_text=inner_a[0].innerHTML.split("\t");
 		if(Gov.debug) {
 		    console.log("Gov.add_columns,found good row, row="+row.innerHTML+", cell="+cell.innerHTML);
