@@ -3,7 +3,7 @@
 //var MTP=MTurkScript.prototype;
 /* Gov.script_loaded is a map of urls to number loaded there, script total is a map of urls to total number needed there */
 var Gov=Gov||{contact_list:[],email_list:[],scripts_loaded:{},scripts_total:{},area_code:"",
-	      split_lines_regex:/\s*\n\s*|—|\s*\t\s*|–|(\s*-\s+)|\||                     |	|	|●|(\s+~\s+)|•|\s{3,}|\s+[*≈]+\s+|(\s+\/\s+)|\.{3,}/,
+	      split_lines_regex:/\s*\n\s*|—|\s*\t\s*|–|(\s*-\s+)|\||                     |	|	|●|(\s+~\s+)|•|\s{3,}|\s+[*≈]+\s+|(\s+\/\s+)|\.{3,}|�/,
 	      id_map:{"ahaconsulting":"municodeweb","seamlessgov":"seamlessdocs","townwebdesign":"townweb","civicasoft":"granicus"},
 	      title_regex:new RegExp("(^|[^A-Za-z]{1})"+
 	"(Administrator|Advisor|Assistant|Attorney|Building Services|Clerk[\/\-]+Treasurer|"+
