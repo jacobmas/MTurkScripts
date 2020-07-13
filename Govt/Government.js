@@ -730,15 +730,19 @@ Gov.add_columns=function(table) {
 	for(j=0;j<row.cells.length; j++) {
 	    cell=row.cells[j];
 	    if((inner_a=cell.getElementsByTagName("a")).length>0 && !/(^|[^A-Za-z]{1})(Click|Contact|E(-)?mail)/.test(cell.innerText.trim()) && /\t[^\s]*@/.test(inner_a[0].innerHTML)) {
+		my_text=inner_a[0].innerHTML.split("\t");
 		if(Gov.debug) {
 		    console.log("Gov.add_columns,found good row, row="+row.innerHTML+", cell="+cell.innerHTML);
 		}
-		cell.innerHTML=cell.innerText;
-		row.insertCell().innerHTML=email_match[1].replace(/^.*%3C/,"").replace(/%3E$/,"");
+		if(my_text.length>=2) {
+		    if(Gov.debug) console.log("Adding column");
+		    cell.innerHTML=my_text[0];
+		    row.insertCell().innerHTML=my_text[1].replace(/^.*%3C/,"").replace(/%3E$/,"");
+		}
 	    }
 	    else {
-		console.log("Gov.add_columns, found bad cell="+cell.innerHTML);
-		console.log("cell.innerHTML test for '\t' is "+/\t/.test(cell.innerHTML)+", text="+/\t/.test(cell.innerText))
+	//	console.log("Gov.add_columns, found bad cell="+cell.innerHTML);
+	//	console.log("cell.innerHTML test for '\t' is "+/\t/.test(cell.innerHTML)+", text="+/\t/.test(cell.innerText))
 	    }
 	    /*if(cell.innerText.split(/[\n,]/).length>1 && !added_column) {
 	      added_column=true;
