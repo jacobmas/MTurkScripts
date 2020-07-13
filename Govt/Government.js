@@ -737,6 +737,17 @@ Gov.add_columns=function(table) {
 		cell.innerHTML=cell.innerText;
 		row.insertCell().innerHTML=email_match[1].replace(/^.*%3C/,"").replace(/%3E$/,"");
 	    }
+	    else if((inner_a=cell.getElementsByTagName("a")).length>0 && 
+		    (email_match=inner_a[0].href.match(/^\s*mailto:\s*(.*)$/i))) {
+		if(Gov.debug) {
+		    console.log("Gov.add_columns,found good row, row="+row.innerHTML+", cell="+cell.innerHTML);
+		}
+		cell.innerHTML=cell.innerText;
+		row.insertCell().innerHTML=email_match[1].replace(/^.*%3C/,"").replace(/%3E$/,"");
+	    }
+	    else {
+		console.log("Gov.add_columns, found bad cell="+cell.innerHTML);
+	    }
 	    /*if(cell.innerText.split(/[\n,]/).length>1 && !added_column) {
 	      added_column=true;
 	      (new_cell=row.insertCell(j+1)).innerHTML=cell.innerText.replace(/^[^\n,]+/,"");
