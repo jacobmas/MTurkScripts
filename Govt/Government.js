@@ -731,6 +731,9 @@ Gov.add_columns=function(table) {
 	    cell=row.cells[j];
 	    if((inner_a=cell.getElementsByTagName("a")).length>0 && !/(^|[^A-Za-z]{1})(Click|Contact|E(-)?mail)/.test(cell.innerText.trim()) &&
 	       (email_match=inner_a[0].href.match(/^\s*mailto:\s*(.*)$/i))) {
+		if(Gov.debug) {
+		    console.log("Gov.add_columns,found good row, row="+row.innerHTML+", cell="+cell.innerHTML);
+		}
 		cell.innerHTML=cell.innerText;
 		row.insertCell().innerHTML=email_match[1].replace(/^.*%3C/,"").replace(/%3E$/,"");
 	    }
