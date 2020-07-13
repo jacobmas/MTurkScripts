@@ -10,7 +10,7 @@ var Gov=Gov||{contact_list:[],email_list:[],scripts_loaded:{},scripts_total:{},a
 	"Chief of Police|Chief|Clerk|Code Enforcement|Commissioner|Constable|Coordinator|Council Member|"+
 	"Director|Department|Det\.|Detective|Editor|Engineer|Fire|Founder|Foreman|Head of School|Inspector|"+
 	"Manager|Marshal|Mayor|Officer|Official|Operations|Planner|Police|President|Principal|Public|Publisher|Reporter|"+
-	"Recorder|Roadmaster|Scientist|Secretary|Sheriff|Specialist|Superintendent|Supervisor|Sgt\.|"+
+	"Recorder|Roadmaster|Scientist|Secretary|Sheriff|Specialist|Superintendent|Supervisor|Sgt\.|Staff Writer|"+
 	"Undersheriff)($|[^A-Za-z0-9]{1})","i"),
 	      title_prefix_regex:/^(Director|Mayor|Commissioner|Senator|Police Chief|Chief|Chief [Oo]f Police|Chief Deputy|Constable|Councilman|Councilwoman|Secretary|Sheriff|Sergeant|Patrol Officer|Lieutenant|Detective|Sgt\.|Lt\.)((?:\s+[A-Z0-9\"][\-\.\'a-z0-9]+[0-9\-\.\'\"a-zA-Z]*)+)(.*)$/,
 	      bad_stuff_re:/(\/\*)|(^Wh.*\?$)|(\sand\s)|([\d]+)|(I want to\s.*$)|Printer-Friendly|(^Home.*)|(…)|((City|Town) Hall)|City Hall|Welcome to/i
