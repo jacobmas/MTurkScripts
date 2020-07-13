@@ -753,7 +753,7 @@ Gov.find_col=function(table,type) {
 	for(j=0;j<table.rows[i].cells.length;j++) {
 	    if(table.rows[i].cells[j].innerText.trim().length>250) continue;
 	    if(type==="honorifics" && (result=nlp(table.rows[i].cells[j].innerText).people().out('terms'))) {
-		for(k=0;k<result.length;k++) if(result[k].tags.includes("Honorific")&&result[k].tags.includes("Person")) return j; }
+		for(k=0;k<result.length;k++) if(result[k].tags!==undefined && result[k].tags.includes("Honorific")&&result[k].tags.includes("Person")) return j; }
 	    else if(type==="commas" && (match=table.rows[i].cells[j].innerText.match(/^([^,]+),(.*)$/))) {
 		for(k=1;k<match.length;k++) if(result=nlp(match[k]).people().out('terms').length>1) return j; }
 	}
