@@ -283,13 +283,25 @@ Gov.get_area_code=function(doc) {
 
 /* Gov.is_good_person tries to verify if it's a good person */
 Gov.is_good_person=function(ret) {
+    var bool_ret=false;
+    
     if(Gov.debug) console.log("Gov.is_good_person, ret="+JSON.stringify(ret));
     if(!(ret.name && ret.title)) return false;
-    if(!(ret.name&&ret.name.split(/\s+/).length<=4)) return false;
-    if(nlp(ret.name).people().out('terms').length===0 && !(ret.email&&email_re.test(ret.email))) return false;
+    else if(!(ret.name&&ret.name.split(/\s+/).length<=4)) {
+	if(Gov.debug) console.log("Name too long, failed");
+
+	return false;
+    }
+    else if(nlp(ret.name).people().out('terms').length===0 && !(ret.email&&email_re.test(ret.email))) {
+	if(Gov.debug) console.log("Found bad name via nlp, no email");
+	return false;
+    }
     else {
 	if(Gov.debug) console.log("nlp name="+JSON.stringify((nlp(ret.name).people().out('terms')))); }
-    if(!(ret.email&&email_re.test(ret.email)) && !Gov.matches_title_regex(ret.title)) return false;
+    if(!(ret.email&&email_re.test(ret.email)) && !Gov.matches_title_regex(ret.title)) {
+	console.log("Not good email or good title");
+	return false;
+    }
     if(/^[^A-Z]+/.test(ret.title)) return false;
 //    ret.name && ret.title
     //		       && ret.email
