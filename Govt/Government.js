@@ -894,6 +894,11 @@ Gov.split_into_lines=function(text,ret) {
 	if(/,(Tel|Ph|E(?:-?)mail|P)[a-z]*:/.test(split_lines[i])) {
 	    split_lines=split_lines.slice(0,i).concat(split_lines[i].split(/,(Tel|Ph|E(?:-?)mail|P)[a-z]*:/)).concat(split_lines.slice(i+1));
 	}
+	else if(/,\s*(Ext\.)/i.test(split_lines[i])) {
+	    let begin_part=split_lines[i].replace(/,\s*(Ext\.).*$/,"");
+	    let end_part=split_lines[i].replace(/^.*,\s*(Ext\..*)$/,"$1");
+	    split_lines=split_lines.slice(0,i).concat([begin_part,end_part]).concat(split_lines.slice(i+1));
+	}
 	split_lines[i]=split_lines[i].replace(/^,\s*/,"");
     }
 	
