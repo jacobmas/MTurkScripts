@@ -299,7 +299,6 @@ Gov.is_good_person=function(ret) {
     else {
 	if(Gov.debug) console.log("nlp name="+JSON.stringify((nlp(ret.name).people().out('terms')))); }
     if(!(ret.email&&email_re.test(ret.email)) && !Gov.matches_title_regex(ret.title)) {
-	console.log("Not good email or good title");
 	return false;
     }
     if(/^[^A-Z]+/.test(ret.title)) return false;
