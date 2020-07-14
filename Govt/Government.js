@@ -292,8 +292,8 @@ Gov.is_good_person=function(ret) {
 
 	return false;
     }
-    else if(nlp(ret.name).people().out('terms').length===0 && (!ret.email || !email_re.test(ret.email))) {
-	if(Gov.debug) console.log("Found bad name via nlp, no email, email_re.test("+ret.email+")="+(email_re.test(ret.email)));
+    else if(nlp(ret.name).people().out('terms').length===0 && (ret.email===undefined || !email_re.test(ret.email))) {
+	if(Gov.debug) console.log("Found bad name via nlp, no email, email_re.test("+ret.email+")="+(email_re.test(ret.email))+",ret.email===undefined="+(ret.email===undefined));
 	return false;
     }
     else {
