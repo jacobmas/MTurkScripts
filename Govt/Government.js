@@ -899,7 +899,7 @@ Gov.split_into_lines=function(text,ret) {
     if(split_lines.length>0&&(split_comma=split_lines[0].split(","))&&split_comma.length>1&&
        Gov.title_regex.test(split_lines[0])) split_lines=split_comma.concat(split_lines.slice(1));
     if(Gov.debug||Gov.debug_parse) console.log("split_lines after filtering="+JSON.stringify(split_lines));
-
+    var comma_phone_re=/^(.*)(,\s*[\+]?[\(]?[0-9]{3}([\)]?[-\s\.\/]|\))[0-9]{3}[-\s\.\/]+[0-9]{4,6}(\s*(x|ext\.?)\s*[\d]{1,5})?.*)$/im;
     // Split Phone, Email, from things
     for(i=split_lines.length-1;i>=0;i--) {
 	if(/,(Tel|Ph|E(?:-?)mail|P)[a-z]*:/.test(split_lines[i])) {
@@ -910,6 +910,13 @@ Gov.split_into_lines=function(text,ret) {
 	    let end_part=split_lines[i].replace(/^.*,\s*(Ext\..*)$/,"$1");
 	    split_lines=split_lines.slice(0,i).concat([begin_part,end_part]).concat(split_lines.slice(i+1));
 	}
+	else if(comma_phone_re.test(split_lines[i])) {
+	    let comma_phone_match=split_lines[i].match(comma_phone_re);
+	    if(comma_phone_match) {
+		split_lines=split_lines.slice(0,i).concat([comma_phone_match[1],comma_phone_match[2]]).concat(split_lines.slice(i+1));
+	    }
+	}
+	
 	split_lines[i]=split_lines[i].replace(/^,\s*/,"");
     }
 	
