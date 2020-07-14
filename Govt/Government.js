@@ -293,7 +293,7 @@ Gov.is_good_person=function(ret) {
 	return false;
     }
     else if(nlp(ret.name).people().out('terms').length===0 && !(ret.email&&email_re.test(ret.email))) {
-	if(Gov.debug) console.log("Found bad name via nlp, no email, email_re.test("+ret.email+")="+(email_re.test(ret.email));
+	if(Gov.debug) console.log("Found bad name via nlp, no email, email_re.test("+ret.email+")="+(email_re.test(ret.email)));
 	return false;
     }
     else {
