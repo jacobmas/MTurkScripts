@@ -143,22 +143,28 @@
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
-     function parse_json(doc,url,resolve,reject,response) {
+    function parse_json(doc,url,resolve,reject,response) {
         var parsed=JSON.parse(response.responseText);
           var json_promise;
          try {
-             console.log("parsed.items.length="+parsed.items.length);
-             if(parsed.items.length===0) {
+             //console.log("response.responseText="+response.responseText);
+             //console.log("parsed.items.length="+parsed.results.length);
+             if(parsed.results.length===0) {
                  reject("");
                  return;
              }
-             console.log("parsed="+JSON.stringify(parsed.items));
-             my_query.company_url="https://www.northdata.de"+parsed.items[0].details.uri;
+             console.log("parsed="+JSON.stringify(parsed.results));
+             console.log("parsed[0]="+JSON.stringify(parsed.results[0].company));
+             for(let x in parsed.results[0]) {
+                 console.log("x="+x);
+             }
+             my_query.company_url=parsed.results[0].company.northDataUrl;
              my_query.fields.url=my_query.company_url;
              console.log("my_query.company_url="+my_query.company_url);
              var promise=MTP.create_promise(my_query.company_url,parse_company,resolve,reject);
          }
          catch(error) {
+             console.log("error in parse_json "+error);
              if(my_query.try_count.json===0) {
                  my_query.try_count.json++;
                  my_query.name=my_query.name.replace(/\s+GmbH(\s|$).*$/,"");
@@ -193,7 +199,7 @@
             return;
         }
         var charts=doc.querySelector(".has-bar-charts");
-        console.log("charts="+charts);
+        console.log("charts="+JSON.stringify(charts));
         if(!charts || !charts.dataset || !charts.dataset.data) {
             resolve("");
             return;
@@ -201,10 +207,11 @@
                // console.log("Trying to parse "+charts.dataset.data);
 
         var data=JSON.parse(charts.dataset.data);
+        //console.log(JSON.stringify(data));
         var curr_item,curr_title, curr_data_data, curr_eng_title,curr_data_thing;
         var curr_year,last_year;
         for(curr_item of data.item) {
-           // console.log("curr_item="+JSON.stringify(curr_item));
+           console.log("curr_item="+JSON.stringify(curr_item));
             curr_title=curr_item.title;
             console.log("curr_title="+curr_title);
             if(german_english_map[curr_title]!==undefined && curr_item.data&&curr_item.data.data) {
@@ -213,14 +220,14 @@
                     if(my_query.fields[curr_eng_title+" Years"]==="No data") my_query.fields[curr_eng_title+" Years"]="";
                     curr_year=curr_item.data.data[curr_item.data.data.length-1];
                     my_query.fields[curr_eng_title+" 1"]=curr_year.formattedValue;
-                    my_query.fields[curr_eng_title+" Years"]+=curr_year.year;
+                    my_query.fields[curr_eng_title+" Years1"]=curr_year.year;
                 }
                 if(curr_item.data.data.length>=2) {
                     if(my_query.fields[curr_eng_title+" Years"]==="No data") my_query.fields[curr_eng_title+" Years"]="";
 
                     curr_year=curr_item.data.data[curr_item.data.data.length-2];
                     my_query.fields[curr_eng_title+" 2"]=curr_year.formattedValue;
-                    my_query.fields[curr_eng_title+" Years"]+=", "+curr_year.year;
+                    my_query.fields[curr_eng_title+" Years2"]=curr_year.year;
                 }
             }
             else if(curr_title==="Mitarbeiter" && curr_item.data&&curr_item.data.data) {
