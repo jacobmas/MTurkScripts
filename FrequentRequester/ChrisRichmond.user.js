@@ -25,7 +25,7 @@
 // @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/fac73fd4d89a71cb3adb7b75e6e137c409c9502a/Govt/Government.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
 // @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
