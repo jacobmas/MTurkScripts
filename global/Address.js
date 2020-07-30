@@ -14,7 +14,7 @@ function Address(text,priority,url,debug) {
     this.address1=this.address1.replace(/^[^\d]*/,""); }
 }
 
-Address.street_type_map={allee:"aly", alley:"aly", ally:"aly", anex:"anx", annex:"anx",
+/*Address.street_type_map={allee:"aly", alley:"aly", ally:"aly", anex:"anx", annex:"anx",
 annx:"anx", arcade:"arc", av:"ave", aven:"ave", avenu:"ave", avenue:"ave",
 avn:"ave", avnue:"ave", bayoo:"byu", bayou:"byu", beach:"bch", bend:"bnd",
 bluf:"blf", bluff:"blf", bluffs:"blfs", bot:"btm", bottm:"btm", bottom:"btm",
@@ -76,7 +76,7 @@ union:"un", unions:"uns", valley:"vly", valleys:"vlys", vally:"vly", vdct:"via",
 viadct:"via", viaduct:"via", view:"vw", views:"vws", vill:"vlg", villag:"vlg",
 village:"vlg", villages:"vlgs", ville:"vl", villg:"vlg", villiage:"vlg", vist:"vis",
 vista:"vis", vlly:"vly", vst:"vis", vsta:"vis", wall:"wall", walks:"walk",
-well:"wl", wells:"wls", wy:"way"};
+well:"wl", wells:"wls", wy:"way"};*/
 
 Address.country_list=[
 {"name": "Afghanistan", "code": "AF"},{"name": "Åland Islands", "code": "AX"},{"name": "Albania", "code": "AL"},
@@ -271,7 +271,7 @@ Address.country_list=[
 
 Address.prototype.parse_address=function(text) {
     this.text=this.text.replace(/\|/g,",");
-    this.fix_nonewlinestreets();
+    //this.fix_nonewlinestreets();
     if(this.parse_address_US(text)) return 1;
     if(this.parse_address_Canada(text)) return 1;
     if(/[^A-Za-z]Sweden$/.test(text) && this.parse_address_Sweden(text)) return 1;
@@ -282,14 +282,14 @@ Address.prototype.parse_address=function(text) {
     return 1<<25;
 };
 
-Address.prototype.fix_nonewlinestreets=function() {
+/*Address.prototype.fix_nonewlinestreets=function() {
     var x,temp_re;
     for(x in Address.street_type_map) {
         x=x[0].toUpperCase()+x.slice(1);
         temp_re=new RegExp('('+x+')([A-Z])');
         this.text=this.text.replace(temp_re,"$1\n$2");
     }
-};
+};*/
 
 
 // Set the address of something directly */
