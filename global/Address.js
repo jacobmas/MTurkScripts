@@ -601,7 +601,7 @@ Address.prototype.fix_nonewlinestreets=function() {
     for(x in Address.street_type_map) {
         x=x[0].toUpperCase()+x.slice(1);
         temp_re=new RegExp('('+x+')([A-Z])');
-        this.text=this.text.replace(temp_re,"$1\n$2");
+        this.text=this.text.replace(temp_re,"$1,$2");
     }
 };
 
