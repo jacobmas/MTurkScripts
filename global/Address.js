@@ -11,7 +11,7 @@ function Address(text,priority,url,debug) {
     else if((ret=this.parse_address(this.text.trim()))||true) this.priority=this.priority+ret;
     else this.priority=(1 << 25);
     if(this.address1 && /^[^\d]{2,}/.test(this.address1) && /[\d]+.{4,}/.test(this.address1)) {
-	this.address1=this.address1.replace(/^[^\d]*/,""); }
+    this.address1=this.address1.replace(/^[^\d]*/,""); }
 }
 
 Address.street_type_map={allee:"aly", alley:"aly", ally:"aly", anex:"anx", annex:"anx",
@@ -282,7 +282,7 @@ Address.prototype.parse_address=function(text) {
     return 1<<25;
 };
 
-Address.prototype.fix_nonewlinestreets() {
+Address.prototype.fix_nonewlinestreets=function() {
     var x,temp_re;
     for(x in Address.street_type_map) {
         x=x[0].toUpperCase()+x.slice(1);
@@ -342,10 +342,10 @@ Address.prototype.parse_address_US=function(text) {
     //console.log("parsed="+JSON.stringify(parsed));
     if(parsed&&parsed.city&&parsed.zip) {
         this.address1=((parsed.number?parsed.number+" ":"")+(parsed.prefix?parsed.prefix+" ":"")+
-		       (parsed.street?parsed.street+" ":"")+(parsed.type?parsed.type+" ":"")+(parsed.suffix?parsed.suffix+" ":"")).trim();
+      (parsed.street?parsed.street+" ":"")+(parsed.type?parsed.type+" ":"")+(parsed.suffix?parsed.suffix+" ":"")).trim();
         this.address2="";
         this.address2=((parsed.sec_unit_type?parsed.sec_unit_type+" ":"")+
-		       (parsed.sec_unit_num?parsed.sec_unit_num+" ":"")).trim();
+      (parsed.sec_unit_num?parsed.sec_unit_num+" ":"")).trim();
         if(!this.address2 || this.address2==="undefined") this.address2="";
         if(ret.add2_extra) this.address2=this.address2.trim()+(this.address2.length>0?", ":"")+ret.add2_extra;
         if(!this.address2 || this.address2==="undefined") this.address2="";
@@ -507,14 +507,14 @@ Address.find_phones=function(doc,div,type) {
     var phoneMatch=div.innerText.match(/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}(\s*x\s*[\d]{1,3})?/ig);
     var i,match;
     if(tel&&tel.length>0) {
-	for(i=0;i<tel.length;i++) {
-	    if((match=tel[i].innerText.match(Address.phone_re))) {
-		Address.phoneList.push({phone:match[0].trim(),priority:2});
-	    }
-	}
+    for(i=0;i<tel.length;i++) {
+        if((match=tel[i].innerText.match(Address.phone_re))) {
+        Address.phoneList.push({phone:match[0].trim(),priority:2});
+      }
+    }
     }
     if(phoneMatch&&phoneMatch.length>0) {
-	for(i=1;i<phoneMatch.length;i++) Address.phoneList.push({phone:phoneMatch[i].trim(),priority:1});
+    for(i=1;i<phoneMatch.length;i++) Address.phoneList.push({phone:phoneMatch[i].trim(),priority:1});
     }
 };
 Address.scrape_address_elem=function(doc,div,type,url) {
@@ -526,9 +526,9 @@ Address.scrape_address_elem=function(doc,div,type,url) {
     div_text="";
 
     for(i=0;i<nodelist.length;i++) {
-	curr_node=nodelist[i];
-	if(curr_node.nodeType===Node.TEXT_NODE) div_text=div_text+"\n"+curr_node.textContent.trim();
-	else if(curr_node.nodeType===Node.ELEMENT_NODE&&curr_node.innerText) div_text=div_text+"\n"+curr_node.innerText.trim();
+    curr_node=nodelist[i];
+    if(curr_node.nodeType===Node.TEXT_NODE) div_text=div_text+"\n"+curr_node.textContent.trim();
+    else if(curr_node.nodeType===Node.ELEMENT_NODE&&curr_node.innerText) div_text=div_text+"\n"+curr_node.innerText.trim();
     }
     div_text=div_text.trim().replace(/\n\n+/g,"\n").replace(/(\s)\s+/g,"$1");
     var add_regex1=/Address: (.*)$/,match,add_elem=div.querySelector("address"),text,jsonstuff;
