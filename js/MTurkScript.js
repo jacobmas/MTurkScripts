@@ -490,6 +490,7 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
     var b_entityTP=b_context.querySelector(".b_entityTP");
     var geochain=b_context.querySelectorAll(".geochainSegment");
     var parsed_entity;
+    var url;
     if(b_context.querySelector("#permanentlyClosedIcon")) result.closed=true;
     disambig=b_context.querySelectorAll(".disambig-outline .b_slyGridItem");
     b_entityTitle=b_context.getElementsByClassName("b_entityTitle");
@@ -502,6 +503,10 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
             if(field_match=inner_li[i].innerText.match(field_regex)) result[field_map(field_match[1].trim())]=field_match[2];
         }
     }
+    if((url=b_context.querySelector("[aria-label='Website']"))) {
+	result.url=url.href;
+    }
+    
     if((bm_details_overlay=b_context.getElementsByClassName("bm_details_overlay")).length>0) {
         details=JSON.parse(bm_details_overlay[0].dataset.detailsoverlay);
         result.latitude=details.centerLatitude;
