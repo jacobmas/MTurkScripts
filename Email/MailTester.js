@@ -144,7 +144,7 @@ PDFParser.prototype.parseEmails=function(page,pageNum,resolve,reject) {
 * resolve_early is an indicator variable for if we should resolve as soon as a good enough email is found
 *
 * Program logic: we do another do_next_email_query after resolving a Promise where we search for the email using Bing
-*
+* do_mailtester false lets us not use contact_response
 *
 *
 */
@@ -171,6 +171,7 @@ function MailTester(the_name,domain,resolve,reject,resolve_early,mailtester_call
     // Indicator variable if we either confirmed an email successfully or can't confirm with this domain
     this.done_with_mailtester=false;
     if(this.mailtester_callback!==undefined) {
+	    console.log("this.mailtester_callback="+this.mailtester_callback);
 	    this.do_next_email_query();
     }
 };
