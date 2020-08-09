@@ -875,7 +875,7 @@ Gov.fix_bad_title_data_func=function(ret) {
 };
 
 Gov.is_good_filter_line=function(line) {
-    if(/^(Contact(s)?|Click)($|[^A-Za-z])/i.test(line) && !Gov.title_regex.test(line)) return false;
+    if(/^(View|Contact(s)?|Click)($|[^A-Za-z])/i.test(line) && !Gov.title_regex.test(line)) return false;
     return true;
 };
 
