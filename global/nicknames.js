@@ -1,6 +1,6 @@
 // Nicknames
 
-Nicknames={
+var Nicknames={
     "alexander":["alex"],
     "andrew":["drew","andy"],
     "angela":["angie"],
@@ -29,7 +29,7 @@ Nicknames={
     "jacob":["jake"],
     "jake":["jacob"],
     "james":["jim"],
-    "jeffery":["jeff"]
+    "jeffery":["jeff"],
     "jeffrey":["jeff"],
     "jim":["james"],
     "joe":["joseph"],
