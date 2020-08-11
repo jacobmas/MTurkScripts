@@ -29,7 +29,7 @@ Nicknames={
     "jacob":["jake"],
     "jake":["jacob"],
     "james":["jim"],
-    "jeffery":["jeff"]
+    "jeffery":["jeff"],
     "jeffrey":["jeff"],
     "jim":["james"],
     "joe":["joseph"],
