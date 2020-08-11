@@ -635,12 +635,12 @@ MTurkScript.prototype.scrape_spli_experience=function(spli) {
     var grp=spli.querySelectorAll(".spl-spli-dg-group"),ret=[];
     var head,promote,demote,curr;
     for(curr of grp) {
-	if(!(head=curr.querySelector(".spl-spli-dg-group-head"))) continue;
-	promote=curr.querySelector(".b_promoteText");
-	demote=curr.querySelector(".b_demoteText");
-	if(head && promote && demote) {
-	    ret.push({title:promote.innerText.trim(),company:head.innerText.trim(),time:demote.innerText.trim()});
-	}   
+        if(!(head=curr.querySelector(".spl-spli-dg-group-head"))) continue;
+        promote=curr.querySelector(".splm-spli-dg-group-prp-highlight");
+        demote=curr.querySelector(".b_demoteText");
+        if(head && promote && demote) {
+            ret.push({title:promote.innerText.trim(),company:head.innerText.trim(),time:demote.innerText.trim()});
+        }   
     }
     return ret;
     
