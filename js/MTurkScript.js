@@ -631,7 +631,7 @@ MTurkScript.prototype.parse_entityTP=function(b_context) {
 };
 
 MTurkScript.prototype.scrape_spli_experience=function(spli) {
-    
+    console.log("in scrape_split_experience")
     var grp=spli.querySelectorAll(".spl-spli-dg-group"),ret=[];
     var head,promote,demote,curr;
     for(curr of grp) {
