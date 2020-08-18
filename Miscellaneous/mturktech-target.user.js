@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         StevenAirTable
+// @name         mturktech-target
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  New script
@@ -9,7 +9,6 @@
 // @include        http://*.amazonaws.com/*
 // @include        https://*.amazonaws.com/*
 // @include https://worker.mturk.com/*
-// @include https://airtable.com/*
 // @grant  GM_getValue
 // @grant GM_setValue
 // @grant GM_deleteValue
@@ -39,52 +38,9 @@
     'use strict';
     var my_query = {};
     var bad_urls=[];
-    var MTurk,MTP;
     /* TODO should be requester #, last field should be if it's crowd or not */
-    if(/airtable\.com/.test(window.location.href)) {
-        console.log("In airtable");
-         GM_setValue("my_query","");
-
-        GM_addValueChangeListener("my_query",function() {
-            if(arguments[2]==="") {
-                console.log("arguments[2]="+arguments[2]); return;
-            }
-            console.log("other arguments[2]="+arguments[2]);
-            my_query=arguments[2];
-                setTimeout(do_airtable,200);
-
-        });
-    }
-    else {
-        MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"AVIEM6HO9Z9VC",false);
-        MTP=MTurkScript.prototype;
-    }
-
-    function do_airtable() {
-        var record=document.querySelector(".addRecordSelector");
-        //record.focus();
-        record.click();
-        record.click();
-        console.log("Done clicking,my_query="+JSON.stringify(my_query));
-        setTimeout(find_correct_airtable,250);
-
-    }
-    function find_correct_airtable() {
-        var rowSugg=document.querySelectorAll(".rowSuggestion");
-        var x;
-        for(x of rowSugg) {
-            //console.log(x);
-            //console.log("x="+JSON.stringify(x));
-            var text=x.innerText.trim();
-            console.log("text="+text+", code="+my_query.code);
-            if(text===my_query.code) {
-                console.log("Found text=code at "+text);
-                x.click();
-                x.click();
-                break;
-            }
-        }
-    }
+    var MTurk=new MTurkScript(10000,750+(Math.random()*1000),[],begin_script,"AV55UB3QHLV8E",true);
+    var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
         return false;
@@ -108,14 +64,14 @@
                 console.log("parsed_context="+JSON.stringify(parsed_context)); } 
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length; i++) {
+            for(i=0; i < b_algo.length&&i<3; i++) {
                 b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
+                if(!is_bad_url(b_url, bad_urls) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
 		   && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
@@ -143,8 +99,51 @@
                           });
     }
 
+    function is_bad_url(the_url, bad_urls, max_depth, max_dashes)
+{
+    var i,dash_split,do_dashes,slash_split;
+    console.log("the_url="+the_url);
+    the_url=the_url.replace(/\/$/,"")
+	.replace(/(https?:\/\/[^\/]*)\/en(\/.*|)$/,"$1");
+        console.log("the_url="+the_url);
+
+    if(max_depth===undefined) max_depth=4;
+    if(max_dashes===undefined || max_dashes===-1) do_dashes=false;
+    else do_dashes=true;
+    for(i=0; i < bad_urls.length; i++) {
+        if(the_url.indexOf(bad_urls[i])!==-1) return true;
+    }
+    // -1 means we just check for specific bad stuff, not length
+    if(max_depth!==-1 && the_url.split("/").length>max_depth) return true;
+    else console.log("length="+the_url.split("/").length+", "+the_url.split("/"));
+    var temp_url=the_url.replace(/\.com\/.*$/,"");
+    console.log("new length="+temp_url+", "+temp_url.split("/").length);
+    if((slash_split=the_url.split("/")).length >= 4 && do_dashes) {
+	for(i=3;i<slash_split.length;i++) {
+	    if(slash_split[i].split("-").length>max_dashes||slash_split[i].split("_").length>max_dashes||
+	       slash_split[i].split("+").length>max_dashes) return true;
+	}
+    }
+}
     /* Following the finding the district stuff */
     function query_promise_then(result) {
+        my_query.fields.newurl=result;
+        var checkplace=document.querySelector("#correct");
+        console.log("checkplace=");
+        console.log(checkplace);
+        console.log(checkplace.children);
+        for(var x of checkplace.childNodes) { console.log(x.innerHTML); }
+        if(document.getElementById("newurl").disabled) {
+            console.log("checkplace not disabled");
+            var domain=MTP.get_domain_only(result);
+            if(result.toLowerCase()===domain.toLowerCase()) {
+            }
+            GM_setValue("returnHit",true);
+            return;
+        }
+        else {
+            submit_if_done();
+        }
     }
 
     function begin_script(timeout,total_time,callback) {
@@ -180,12 +179,30 @@
     {
         console.log("in init_query");
         var i;
-        var well=document.querySelectorAll(".well");
-        my_query={code:well[0].innerText.trim(),url:well[1].innerText.trim()};
-        setTimeout(function() {
-            GM_setValue("my_query",my_query);
-            console.log("Reset my_query");
-        },1000);
+        for(i in unsafeWindow) {
+            console.log("i="+i);
+        }
+        bad_urls=default_bad_urls;//extend(['twitter.com','linkedin.com']);
+        var google_click=document.querySelector("form div a");
+        //google_click.click();
+        var divs=document.querySelectorAll("#DivSearch div");
+        var divsHas=document.querySelectorAll("#DivHasDomain div");
+
+        var my_text=divs[1].innerText.replace(/^[^]*:/,'').trim();
+        var my_domain=divs[1].innerText.replace(/^[^]*Domain: /,'').trim();
+        document.querySelector("#hiddenCompanyClicked").value=1;
+        my_query={name:my_text,domain:my_domain,fields:{},done:{},
+		  try_count:{"query":0},
+		  submitted:false};
+	console.log("my_query="+JSON.stringify(my_query));
+        var search_str=my_query.name;
+        const queryPromise = new Promise((resolve, reject) => {
+            console.log("Beginning URL search");
+            query_search(search_str, resolve, reject, query_response,"query");
+        });
+        queryPromise.then(query_promise_then)
+            .catch(function(val) {
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
     }
 
 })();

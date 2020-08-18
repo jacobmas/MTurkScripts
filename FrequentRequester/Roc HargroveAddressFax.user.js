@@ -39,8 +39,9 @@
     var bad_urls=['.healthgrades.com','.vitals.com','.medicarelist.com','.healthcare4ppl.com','.yelp.com','.zocdoc.com',
                  '.npidb.com','/npino.com','.ehealthscores.com','/npiprofile.com','/healthprovidersdata.com','.usnews.com','.doximity.com',
                  '.linkedin.com','.sharecare.com','.caredash.com','.healthcare6.com','.topnpi.com','.md.com','.yellowpages.com','.mapquest.com',
-                 '.hipaaspace.com','.spokeo.com','/npidb.com','.webmd.com','.whitepages.com',
-                 '.beenverified.com','.peoplefinders.com'];
+                 '.hipaaspace.com','.spokeo.com','/npidb.com','.webmd.com','.whitepages.com','.bizapedia.com','.facebook.com',".myheritage.com",
+                 '.beenverified.com','.peoplefinders.com','.doctorhelps.com','.instantcheckmate.com','.wikipedia.org','/npidb.org',
+                 '.medicinenet.com'];
     var MTurk=new MTurkScript(20000,500,[],begin_script,"A1SK2GV23YJWN9",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
@@ -74,13 +75,16 @@
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
             for(i=0; i < b_algo.length&&i<5; i++) {
+                if(type==='webmdquery' && i>=3) break;
                 b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if((!MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1)||(type==='webmdquery' && /\.webmd\.com/.test(b_url))) &&  (b1_success=true)) break;
+                if((!MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1)||
+
+                    (type==='webmdquery' && /\.webmd\.com/.test(b_url) && /\/doctor\//.test(b_url) && !/find\-a\-doctor\//.test(b_url))) &&  (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
         }
@@ -88,10 +92,12 @@
             reject(error);
             return;
         }
-        reject("Nothing found");
+    	do_next_query(resolve,reject,type);
         return;
     }
-
+    function do_next_query(resolve,reject,type) {
+        reject("Nothing found");
+    }
     /* Search on bing for search_str, parse bing response with callback */
     function query_search(search_str, resolve,reject, callback,type) {
         console.log("Searching with bing for "+search_str);
@@ -146,7 +152,10 @@
             specialty=doc.querySelector(".prov-specialty-name").innerText.trim();
             specialty=specialty.replace("Geriatric Medicine","Geriatrics").replace("Pulmonary Disease","Pulmonary Medicine")
             .replace(/^Diabetes$/,"Endocrinology, Diabetes, & Metabolism").replace("General Practice","Internal Medicine")
-            .replace("Child & Adolescent Psychiatry","Psychiatry");
+            .replace("Child & Adolescent Psychiatry","Psychiatry").replace("Pulmonary Critical Care","Pulmonary Medicine")
+            .replace("Cardiovascular Disease","Cardiology").replace("Endocrinology, Diabetes & Metabolism","Endocrinology, Diabetes, & Metabolism")
+            .replace("Podiatric Medicine","Podiatry").replace("Child Neurology","Neurology").replace("Hematology/Oncology","Hematology & Oncology")
+            .replace("Pediatric Pulmonology","Pulmonary Medicine");
             console.log("SPECIALTY: "+specialty);
             document.querySelector("[name='Select Specialty 1']").value=specialty;
         }
@@ -307,16 +316,32 @@
     {
         console.log("in init_query rochargrove");
         var i,x;
+
         var links=document.querySelectorAll("form a");
-        links[2].href=links[2].href.replace(/\+Fax$/i,"").replace(/\+NULL/ig,"");
-        var their_query_str=document.querySelectorAll("form div div span")[2].innerText.trim();
+        links[2].href=links[2].href.replace(/\+Fax$/i,"").replace(/\+NULL/ig,"")
+        var my_href=links[2].href.replace(/\+Fax$/i,"").replace(/\+NULL/ig,"").replace(/\%20/g," ").replace(/^.*\?q\=(.*)$/,"$1");
+
+        var split=my_href.split("++");
+               split[0]=split[0].replace(/\+/g," ");
+        if(split.length<2) {
+            let my_match_re=/^(.*)\s((?:[^\s]+)\s(?:[^\s]+))$/;
+            let match=my_href.replace(/\+/g," ").match(my_match_re);
+            if(match) {
+                split=[match[1],match[2]];
+            }
+        }
+        split[1]=split[1].replace(/\+/g," ");
+        console.log("my_href="+my_href+",split="+split);
+
+        var their_query_str=split[0];//document.querySelectorAll("form div div span")[2].innerText.trim();
         console.log("their_query_str="+their_query_str);
-        var name_re=/^([A-Z\-\s\.]+)?\s(?:(?:MD)|(?:DO)|(?:FNP)|(?:NP)|(?:[A-Z][a-z]+))/;
+        var name_re=/^([A-Z\-\s\.,]+)?\s(?:(?:MD)|(?:DO)|(?:FNP)|(?:NP)\s)?(.*)$/;
+      //var end_re=/[A-Z][a-z]+(\s)
         var name_match=their_query_str.match(name_re);
         if(name_match && name_match[1]) {
             //name_match[1]=name_match[1].replace(/\s(MD|DO|FNP|Physician|NP).*$/,"");
         }
-        var state_match=their_query_str.match(/, ([A-Z]{2})\s*$/);
+        var state_match=split[1].match(/ ([A-Z]{2})\s*$/);
         console.log("name_match="+JSON.stringify(name_match));
         var phone_list=["07_phone_01","08_fax_01","16_phone_02","17_fax_02"];
         document.getElementsByName("02_address1_01")[0].addEventListener("paste",do_address_paste);
@@ -332,7 +357,7 @@
         my_query={name:name_match?name_match[1]:'',state:state_match?reverse_state_map[state_match[1]]:'',url:"",fields:
                   {},done:{},submitted:false};
 	console.log("my_query="+JSON.stringify(my_query));
-         var search_str=my_query.name+" "+my_query.state;
+         var search_str=my_query.name+" "+name_match[2]+" "+my_query.state;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");

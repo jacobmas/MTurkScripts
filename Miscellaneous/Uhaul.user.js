@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         StevenAirTable
+// @name         Uhaul
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  New script
@@ -9,7 +9,6 @@
 // @include        http://*.amazonaws.com/*
 // @include        https://*.amazonaws.com/*
 // @include https://worker.mturk.com/*
-// @include https://airtable.com/*
 // @grant  GM_getValue
 // @grant GM_setValue
 // @grant GM_deleteValue
@@ -39,52 +38,9 @@
     'use strict';
     var my_query = {};
     var bad_urls=[];
-    var MTurk,MTP;
     /* TODO should be requester #, last field should be if it's crowd or not */
-    if(/airtable\.com/.test(window.location.href)) {
-        console.log("In airtable");
-         GM_setValue("my_query","");
-
-        GM_addValueChangeListener("my_query",function() {
-            if(arguments[2]==="") {
-                console.log("arguments[2]="+arguments[2]); return;
-            }
-            console.log("other arguments[2]="+arguments[2]);
-            my_query=arguments[2];
-                setTimeout(do_airtable,200);
-
-        });
-    }
-    else {
-        MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"AVIEM6HO9Z9VC",false);
-        MTP=MTurkScript.prototype;
-    }
-
-    function do_airtable() {
-        var record=document.querySelector(".addRecordSelector");
-        //record.focus();
-        record.click();
-        record.click();
-        console.log("Done clicking,my_query="+JSON.stringify(my_query));
-        setTimeout(find_correct_airtable,250);
-
-    }
-    function find_correct_airtable() {
-        var rowSugg=document.querySelectorAll(".rowSuggestion");
-        var x;
-        for(x of rowSugg) {
-            //console.log(x);
-            //console.log("x="+JSON.stringify(x));
-            var text=x.innerText.trim();
-            console.log("text="+text+", code="+my_query.code);
-            if(text===my_query.code) {
-                console.log("Found text=code at "+text);
-                x.click();
-                x.click();
-                break;
-            }
-        }
-    }
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A36VGYHLZLIRIU",true);
+    var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
         return false;
@@ -168,24 +124,21 @@
                (!MTurk.is_crowd && (field=document.getElementById(x)))) field.value=my_query.fields[x];
         }
     }
-
+    function do_uhaul(response) {
+        console.log(JSON.stringify(response));
+    }
     function submit_if_done() {
         var is_done=true,x;
         add_to_sheet();
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
-
+    var uhaul='https://www.uhaul.com/Misc/EquipmentSearch/?Area=&scenario=TruckOnly&isActionForm=False&isAlternateLayout=False&isTowMycar=True';
     function init_Query()
     {
         console.log("in init_query");
-        var i;
-        var well=document.querySelectorAll(".well");
-        my_query={code:well[0].innerText.trim(),url:well[1].innerText.trim()};
-        setTimeout(function() {
-            GM_setValue("my_query",my_query);
-            console.log("Reset my_query");
-        },1000);
+
+        GM_xmlhttpRequest({method:'GET',url:'https://www.uhaul.com/',onload:function(response) { do_uhaul(response); }});
     }
 
 })();

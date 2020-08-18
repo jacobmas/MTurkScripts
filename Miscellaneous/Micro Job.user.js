@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         StevenAirTable
+// @name        Micro Job
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  New script
@@ -9,7 +9,6 @@
 // @include        http://*.amazonaws.com/*
 // @include        https://*.amazonaws.com/*
 // @include https://worker.mturk.com/*
-// @include https://airtable.com/*
 // @grant  GM_getValue
 // @grant GM_setValue
 // @grant GM_deleteValue
@@ -39,52 +38,9 @@
     'use strict';
     var my_query = {};
     var bad_urls=[];
-    var MTurk,MTP;
     /* TODO should be requester #, last field should be if it's crowd or not */
-    if(/airtable\.com/.test(window.location.href)) {
-        console.log("In airtable");
-         GM_setValue("my_query","");
-
-        GM_addValueChangeListener("my_query",function() {
-            if(arguments[2]==="") {
-                console.log("arguments[2]="+arguments[2]); return;
-            }
-            console.log("other arguments[2]="+arguments[2]);
-            my_query=arguments[2];
-                setTimeout(do_airtable,200);
-
-        });
-    }
-    else {
-        MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"AVIEM6HO9Z9VC",false);
-        MTP=MTurkScript.prototype;
-    }
-
-    function do_airtable() {
-        var record=document.querySelector(".addRecordSelector");
-        //record.focus();
-        record.click();
-        record.click();
-        console.log("Done clicking,my_query="+JSON.stringify(my_query));
-        setTimeout(find_correct_airtable,250);
-
-    }
-    function find_correct_airtable() {
-        var rowSugg=document.querySelectorAll(".rowSuggestion");
-        var x;
-        for(x of rowSugg) {
-            //console.log(x);
-            //console.log("x="+JSON.stringify(x));
-            var text=x.innerText.trim();
-            console.log("text="+text+", code="+my_query.code);
-            if(text===my_query.code) {
-                console.log("Found text=code at "+text);
-                x.click();
-                x.click();
-                break;
-            }
-        }
-    }
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A4ZH9G76LX05L",true);
+    var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
         return false;
@@ -105,7 +61,17 @@
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context)); } 
+            if(parsed_context.Address && parsed_context.Phone && parsed_context.url) {
+                var add=new Address(parsed_context.Address);
+                Object.assign(my_query.fields,{address1:add.address1,address2:add.address2,city:add.city,state:add.state,Zip:add.postcode,
+                                               phone:parsed_context.Phone,website:parsed_context.url});
+                resolve();
+                return;
+            }
+                console.log("parsed_context="+JSON.stringify(parsed_context));
+        }
+            reject("failed to find parsed_context");
+            return;
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
             for(i=0; i < b_algo.length; i++) {
@@ -145,6 +111,7 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
+        submit_if_done();
     }
 
     function begin_script(timeout,total_time,callback) {
@@ -180,12 +147,21 @@
     {
         console.log("in init_query");
         var i;
-        var well=document.querySelectorAll(".well");
-        my_query={code:well[0].innerText.trim(),url:well[1].innerText.trim()};
-        setTimeout(function() {
-            GM_setValue("my_query",my_query);
-            console.log("Reset my_query");
-        },1000);
+        var p=document.querySelectorAll("form p");
+
+        my_query={name,search_str:p[2].innerText.trim().replace(/^[^:]*:\s*/,""),
+                  fields:{address1:'',address2:'',city:'',state:'',Zip:'',phone:'',website:''},done:{},
+		  try_count:{"query":0},
+		  submitted:false};
+	console.log("my_query="+JSON.stringify(my_query));
+        var search_str=my_query.search_str;
+        const queryPromise = new Promise((resolve, reject) => {
+            console.log("Beginning URL search");
+            query_search(search_str, resolve, reject, query_response,"query");
+        });
+        queryPromise.then(query_promise_then)
+            .catch(function(val) {
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
     }
 
 })();
