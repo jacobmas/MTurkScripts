@@ -27,6 +27,7 @@
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/jacobsscriptfuncs.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
@@ -105,6 +106,11 @@
     }
     function parse_youtube_inner(text) {
         var parsed,ret={},runs,match,x,content,contents,i,tabs,label,links,url;
+        var bad_site_re_str="plus\\.google\\.com|"+
+            "((\\/|\\.)(amazon|youtube|gofundme|patreon|facebook|instagram|twitter|teespring|udemy|audibletrial|vk)\\.com)|"+
+            "(\\.business\\.site)|(amzn\\.to|goo\\.gl)";
+        var bad_site_re=new RegExp(bad_site_re_str,"i");
+        console.log("bad_site_re="+bad_site_re);
         try { parsed=JSON.parse(text); }
         catch(error) { console.log("error parsing="+error+", text="+text); return; }
         tabs=parsed.contents.twoColumnBrowseResultsRenderer.tabs;
@@ -118,11 +124,15 @@
         if((links=contents.primaryLinks)===undefined) links=[];
         for(i=0; i < links.length; i++) {
             url=decodeURIComponent(links[i].navigationEndpoint.urlEndpoint.url.replace(/^.*(&|\?)q\=/,"")).replace(/(&|\?).*$/,"");
+            if(!/^h/.test(url) && /^www/.test(url)) url="https://"+url;
             console.log("url["+i+"]="+url);
             if(/instagram\.com/.test(url)) ret.insta=url; 
             else if(/facebook\.com/.test(url)) ret.fb=url.replace(/\/$/,"").replace(/facebook\.com\//,"facebook.com/pg/")+"/about"; 
             else if(/twitter\.com/.test(url)) ret.twitter=url;
-            else if(!/plus\.google\.com|((youtube|gofundme|patreon)\.com)/.test(url) && i===0) ret.url=url;
+            else if(!bad_site_re.test(url)) {
+                if(ret.url===undefined) ret.url=url;
+                //ret.url_list.append(url);
+            }
         }
         if(contents.description && contents.description.simpleText && (ret.description=contents.description.simpleText.replace(/\\n/g,"\n"))) {
             if(match=ret.description.match(email_re)) ret.email=match[0];
@@ -144,7 +154,14 @@
                 text=scripts[i].innerHTML.replace(script_regex_begin,"");
                 console.log(text.indexOf(";"));
                 if(text.indexOf(";")!==-1) text=text.substr(0,text.indexOf("};")+1);
-                ret=parse_youtube_inner(text);      
+                try {
+                    ret=parse_youtube_inner(text);
+                }
+                catch(error) {
+            my_query.fields.email="NULL";
+            submit_if_done();
+                    return;
+        }
                 if(!ret) {
                     my_query.fields.email="NULL";
                     my_query.done.web=my_query.done.fb=my_query.done.insta=true;
@@ -163,11 +180,11 @@
         }
         console.log("ret="+JSON.stringify(ret));
 
-        if(ret.insta) promise_list.push(MTurkScript.prototype.create_promise(ret.insta,MTurkScript.prototype.parse_instagram,parse_insta_then));
+        if(ret.insta&&(my_query.fields.email===undefined || my_query.fields.email==="")) promise_list.push(MTurkScript.prototype.create_promise(ret.insta,AggParser.parse_instagram,parse_insta_then));
         else if(my_query.done["insta"]=true) submit_if_done();
         if(ret.fb) promise_list.push(MTurkScript.prototype.create_promise(ret.fb,MTurkScript.prototype.parse_FB_about,parse_fb_then));
         else if(my_query.done["fb"]=true) submit_if_done();
-        if(ret.url && my_query.fields.email.length===0) {
+        if((my_query.fields.email===undefined || my_query.fields.email==="")&&ret.url!= undefined && ret.url!="" && my_query.fields.email.length===0) {
 
             call_contact_page(ret.url,submit_if_done);
         }
@@ -336,6 +353,8 @@
         my_query={url:wT.rows[0].cells[1].innerText+"/about",fields:{email:""},submitted:false,done:{"insta":false,"fb":false,"web":false}};
         console.log("my_query.url="+my_query.url);
         var promise=MTurkScript.prototype.create_promise(my_query.url,parse_youtube,parse_youtube_then);
+
+
 	var search_str;
       
     }
