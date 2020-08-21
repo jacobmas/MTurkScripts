@@ -1551,8 +1551,8 @@ MTurkScript.prototype.is_bad_name=function(orig_name,b_name,p_caption,i) {
     
     var orig_b_name=b_name;
     var reg=/[-\s\'\"’]+/g,b_replace_reg=/\s+[\-\|–]{1}.*$/g;
-    var lower_b=b_name.toLowerCase().replace(reg,"");
-    var lower_my=orig_name.replace(/\s(-|@|&|and)\s.*$/).toLowerCase().replace(reg,"");
+    var lower_b=MTurkScript.prototype.removeDiacritics(b_name.toLowerCase().replace(reg,""));
+    var lower_my=MTurkScript.prototype.removeDiacritics(orig_name).replace(/\s(-|@|&|and)\s.*$/).toLowerCase().replace(reg,"");
     if(lower_b.indexOf(lower_my)!==-1 || lower_my.indexOf(lower_b)!==-1) return false;
     b_name=b_name.replace(b_replace_reg,"").replace(/(^|[^A-Za-z0-9]+)(Saint|Mount)($|[^A-Za-z0-9]+)/i,
                                                     is_bad_name_replacer);
