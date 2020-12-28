@@ -506,7 +506,7 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
         }
     }
 	if(b_context.querySelector("#saplacesvg") && (place=b_context.querySelector("#saplacesvg").parentNode)) result['Address']=place.innerText.trim();
-	if(b_context.querySelector("#sacallvg") && (place=b_context.querySelector("#saplacesvg").parentNode)) result['Phone']=place.innerText.trim();
+	if(b_context.querySelector("#sacallvg") && (phone=b_context.querySelector("#sacallsvg").parentNode)) result['Phone']=phone.innerText.trim();
     if((url=b_context.querySelector("[aria-label='Website']"))) {
 	result.url=url.href;
     }
