@@ -77,6 +77,7 @@ AggParser.parse_bbb=function(doc,url,resolve,reject) {
 AggParser.parse_bbb_inner=function(doc,url,resolve,reject,parsed) {
 	var i;
 	var result=[];
+	console.log(parsed);
 	var contacts=parsed.businessProfile.contactInformation.contacts;
 	for(i=0;i<contacts.length;i++) {
 		console.log("contacts["+i+"]="+JSON.stringify(contacts[i]));
