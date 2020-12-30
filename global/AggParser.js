@@ -93,7 +93,9 @@ AggParser.parse_bbb_inner=function(doc,url,resolve,reject,parsed) {
 		}
 
 		result.push(new Person({name:{first:contacts[i].name.first.replace(/\s.*$/,""),last:contacts[i].name.last},title:contacts[i].title,email:""},url,""));
+		console.log(result);
 	}
+	console.log(result);
 	resolve(result);
 	return;
 }
