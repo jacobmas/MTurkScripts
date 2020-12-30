@@ -5,6 +5,33 @@
 var AggParser={}; // generic object
 
 
+function Person(curr,nameSource,emailDomain,quality) {
+	var name,title,email;
+	name=curr.name;
+	title=curr.title;
+	email=curr.email;
+	if(name&&typeof(name)==="object" &&
+	   name.first && name.last) Object.assign(this,{first:name.first,middle:"",last:name.last});
+	else if(name&&typeof(name)==="string") {
+		let fullname=MTP.parse_name(name);
+		Object.assign(this,{first:fullname.fname,middle:fullname.mname,last:fullname.lname}); }
+	this.first=this.first.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing);
+	this.last=this.last.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing);
+
+	this.title=title||"";
+	this.nameSource=nameSource||"";
+	this.email=email||"";
+	this.emailDomain=emailDomain||"";
+	this.emailSource=curr.emailSource||"";
+	this.quality=0;
+	if(quality) this.quality=quality;
+	//if(/buzzfile\.com/.test(nameSource)) this.quality+=4;
+	if(/CEO|Chief Executive|President|Founder|Owner|Principal/i.test(this.title) && !/Vice President/i.test(this.title)) this.quality+=3;
+
+	Object.assign({email:"",emailSource:""});
+        
+}
+
 AggParser.parse_postal_elem=function(elem,priority,site,url) {
     var ret={},text;
     var term_map={"streetaddress":"address1","addressLocality":"city","addressRegion":"state","postalCode":"postcode","addressCountry":"country"};
@@ -34,19 +61,40 @@ AggParser.parse_postal=function(doc,url,resolve,reject,type) {
 };
 
 /* TODO: finish */
-AggParser.parse_bbb=function(query,resolve,reject) {
-    console.log("In parse_bbb,url="+url);
-    var script=doc.querySelectorAll("script"),i,split_text,fullname;
-    var regex=/\s*window\.__PRELOADED_STATE__\s*\=\s*(.*);\s*$/,match,parsed,x;
-    for(i=0;i<script.length;i++) {
-        if((match=script[i].innerHTML.match(regex))) {
-            // console.log("script["+i+"].innerHTML="+script[i].innerHTML);
-            parsed=JSON.parse(match[1]);
-            parse_bbb_inner(doc,url,resolve,reject,parsed);
-            resolve(parsed);
-        }
-    }
+AggParser.parse_bbb=function(doc,url,resolve,reject) {
+	console.log("In parse_bbb,url="+url);
+	var script=doc.querySelectorAll("script"),i,split_text,fullname;
+	var regex=/\s*window\.__PRELOADED_STATE__\s*\=\s*(.*);\s*$/,match,parsed,x;
+	for(i=0;i<script.length;i++) {
+		if((match=script[i].innerHTML.match(regex))) {
+		   // console.log("script["+i+"].innerHTML="+script[i].innerHTML);
+			parsed=JSON.parse(match[1]);
+			AggParser.parse_bbb_inner(doc,url,resolve,reject,parsed);
+			return;
+		}
+	}
 };
+AggParser.parse_bbb_inner=function(doc,url,resolve,reject,parsed) {
+	var i;
+	var result=[];
+	var contacts=parsed.businessProfile.contactInformation.contacts;
+	for(i=0;i<contacts.length;i++) {
+		console.log("contacts["+i+"]="+JSON.stringify(contacts[i]));
+		if(contacts[i].name.first===null && contacts[i].name.last!==null) {
+			let fullname=MTP.parse_name(contacts[i].name.last);
+			if(fullname&&fullname.fname&&fullname.lname) {
+				contacts[i].name.first=fullname.fname;
+				contacts[i].name.last=fullname.lname;
+			}
+			else continue;
+		}
+
+		result.push(new Person({name:{first:contacts[i].name.first.replace(/\s.*$/,""),last:contacts[i].name.last},title:contacts[i].title,email:""},url,""));
+	}
+	resolve("");
+	return;
+}
+
 
 AggParser.parse_buzzfile=function(doc,url,resolve,reject,quality) {
     console.log("in parse_buzzfile, url="+url);
