@@ -4,6 +4,8 @@
  */
 var AggParser={}; // generic object
 
+function proper_casing(match,p1,p2) {
+        return p1+p2.toLowerCase(); }
 
 function Person(curr,nameSource,emailDomain,quality) {
 	var name,title,email;
