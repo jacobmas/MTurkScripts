@@ -30,8 +30,7 @@ function Person(curr,nameSource,emailDomain,quality) {
 	this.quality=0;
 	if(quality) this.quality=quality;
 	//if(/buzzfile\.com/.test(nameSource)) this.quality+=4;
-	if(/CEO|Chief Executive|President|Founder|Owner|Principal/i.test(this.title) && !/Vice President/i.test(this.title)) this.quality+=3;
-
+	
 	Object.assign({email:"",emailSource:""});
         
 }
