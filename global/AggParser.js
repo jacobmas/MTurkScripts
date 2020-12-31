@@ -8,10 +8,11 @@ function proper_casing(match,p1,p2) {
         return p1+p2.toLowerCase(); }
 
 function Person(curr,nameSource,emailDomain,quality) {
-	var name,title,email;
+	var name,title,email,phone;
 	name=curr.name;
 	title=curr.title;
 	email=curr.email;
+	phone=curr.phone;
 	if(name&&typeof(name)==="object" &&
 	   name.first && name.last) Object.assign(this,{first:name.first,middle:"",last:name.last});
 	else if(name&&typeof(name)==="string") {
@@ -22,6 +23,7 @@ function Person(curr,nameSource,emailDomain,quality) {
 
 	this.title=title||"";
 	this.nameSource=nameSource||"";
+	this.phone=phone||"";
 	this.email=email||"";
 	this.emailDomain=emailDomain||"";
 	this.emailSource=curr.emailSource||"";
