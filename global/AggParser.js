@@ -125,7 +125,7 @@ AggParser.parse_buzzfile=function(doc,url,resolve,reject,quality) {
        (title=divorg.querySelector("[itemprop='contactType']"))) {
 	Object.assign(result,{name:employee.innerText.trim(),title:title.innerText.trim()});
     }
-    console.log("parse_buzzfile, result="+JSON.stringify(result));
+    //console.log("parse_buzzfile, result="+JSON.stringify(result));
     resolve(result);
 };
 
