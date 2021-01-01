@@ -753,12 +753,12 @@ MTurkScript.prototype.add_to_sheet=function(fields_to_add,field_map) {
    and the promise does (mandatory) then_func on resolving, (optional, otherwise just prints a message) catch_func on
    rejecting
 */
-MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func,extra_arg) {
+MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func,extra_arg,headers) {
     if(catch_func===undefined) catch_func=MTurkScript.prototype.my_catch_func;
-
+	if(headers===undefined) headers={};
     const queryPromise = new Promise((resolve, reject) => {
         GM_xmlhttpRequest(
-            {method: 'GET', url: url,timeout:30000,
+            {method: 'GET', url: url,headers:headers,timeout:30000,
              onload: function(response) {
                  var doc = new DOMParser()
                      .parseFromString(response.responseText, "text/html");
