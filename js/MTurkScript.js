@@ -216,12 +216,12 @@ MTurkScript.prototype.setup_worker_mturk=function() {
         else btn_automate.innerHTML="Automate";
         GM_setValue("automate",!auto);
     });
-    GM_setValue("returnHit"+this.assignment_id,false);
-    GM_addValueChangeListener("returnHit"+this.assignment_id, function() {
+    GM_setValue("returnHit",false);
+    GM_addValueChangeListener("returnHit", function() {
 	console.log("this.assignment_id="+this.assignment_id+", arguments="+JSON.stringify(arguments));
 	var assignment_id=arguments[0].replace(/^returnHit/,"");
 	if(arguments[2]!==undefined) {
-	    GM_deleteValue(arguments[0]);
+	    try { GM_deleteValue(arguments[0]); } catch(error) { }
             if(!self.submitted && 
 		btn_secondary && btn_secondary.innerText==="Return" && (GM_getValue("automate"))) {
 		
