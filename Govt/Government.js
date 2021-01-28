@@ -118,6 +118,10 @@ Gov.scrape_none=function(doc,url,resolve,reject) {
     }
     console.log("scrape_none: promise_list.length="+promise_list.length);
     Promise.all(promise_list).then(function(response) {
+		var y;
+		for(y of Gov.contact_list) {
+			y.email=y.email.replace(/(@.*(\.com|\.org))[A-Z]+.*$/,"$1");
+		}
 	console.log("Finished scrape_none promises "+response);
 	resolve("MOOOOOOOOOOOO "+response); })
 	.catch(function(response) {

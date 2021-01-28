@@ -216,12 +216,12 @@ MTurkScript.prototype.setup_worker_mturk=function() {
         else btn_automate.innerHTML="Automate";
         GM_setValue("automate",!auto);
     });
-    GM_setValue("returnHit"+this.assignment_id,false);
-    GM_addValueChangeListener("returnHit"+this.assignment_id, function() {
+    GM_setValue("returnHit",false);
+    GM_addValueChangeListener("returnHit", function() {
 	console.log("this.assignment_id="+this.assignment_id+", arguments="+JSON.stringify(arguments));
 	var assignment_id=arguments[0].replace(/^returnHit/,"");
 	if(arguments[2]!==undefined) {
-	    GM_deleteValue(arguments[0]);
+	    try { GM_deleteValue(arguments[0]); } catch(error) { }
             if(!self.submitted && 
 		btn_secondary && btn_secondary.innerText==="Return" && (GM_getValue("automate"))) {
 		
@@ -491,7 +491,8 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
     var b_entityTP=b_context.querySelector(".b_entityTP");
     var geochain=b_context.querySelectorAll(".geochainSegment");
     var parsed_entity;
-    var url;
+    var url,place,phone;
+	
     if(b_context.querySelector("#permanentlyClosedIcon")) result.closed=true;
     disambig=b_context.querySelectorAll(".disambig-outline .b_slyGridItem");
     b_entityTitle=b_context.getElementsByClassName("b_entityTitle");
@@ -504,6 +505,8 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
             if(field_match=inner_li[i].innerText.match(field_regex)) result[field_map(field_match[1].trim())]=field_match[2];
         }
     }
+	if(b_context.querySelector("#saplacesvg") && (place=b_context.querySelector("#saplacesvg").parentNode)) result['Address']=place.innerText.trim();
+	if(b_context.querySelector("#sacallsvg") && (phone=b_context.querySelector("#sacallsvg").parentNode)) result['Phone']=phone.innerText.trim();
     if((url=b_context.querySelector("[aria-label='Website']"))) {
 	result.url=url.href;
     }
@@ -750,12 +753,12 @@ MTurkScript.prototype.add_to_sheet=function(fields_to_add,field_map) {
    and the promise does (mandatory) then_func on resolving, (optional, otherwise just prints a message) catch_func on
    rejecting
 */
-MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func,extra_arg) {
+MTurkScript.prototype.create_promise=function(url, parser, then_func, catch_func,extra_arg,headers) {
     if(catch_func===undefined) catch_func=MTurkScript.prototype.my_catch_func;
-
+	if(headers===undefined) headers={};
     const queryPromise = new Promise((resolve, reject) => {
         GM_xmlhttpRequest(
-            {method: 'GET', url: url,timeout:30000,
+            {method: 'GET', url: url,headers:headers,timeout:30000,
              onload: function(response) {
                  var doc = new DOMParser()
                      .parseFromString(response.responseText, "text/html");
@@ -1393,6 +1396,16 @@ MTurkScript.prototype.fix_emails_in_scripts=function(doc,url,the_script) {
 MTurkScript.prototype.fix_emails=function(doc,url) {
     var i,links=doc.links,j,script,scripts=doc.scripts;
     var my_match,temp_email,encoded_match,match_split,clicky,local,domain;
+	
+	doc.querySelectorAll(".emailli").forEach(function(elem) {
+		let a;
+		if(elem.dataset.l && elem.dataset.r && (a=elem.querySelector("a"))) {
+			a.href="mailto:"+elem.dataset.l+"@"+elem.dataset.r.replace(/%/g,".");
+			a.innerHTML=elem.dataset.l+"@"+elem.dataset.r.replace(/%/g,".");
+		}
+		
+	});
+	
     for(i=0; i < links.length; i++) {
         //console.log("("+i+"): "+links[i].href+", "+links[i].innerText);
 	if((local=links[i].querySelector(".localMail")) && (domain=links[i].querySelector(".domainMail"))) {
