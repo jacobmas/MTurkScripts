@@ -774,6 +774,10 @@ School.prototype.parse_bing=function(doc,url,resolve,reject,self) {
         b_algo=search.getElementsByClassName("b_algo");
         lgb_info=doc.getElementById("lgb_info");
         b_context=doc.getElementById("b_context");
+		if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
+			console.log("parsed_lgb="+parsed_lgb);
+			if(parsed_lgb.phone) self.phone=parsed_lgb.phone;
+		}
         for(i=0; i < b_algo.length&&i<2; i++) {
             entry_result=self.parse_bing_entry(b_algo,i,self);
             if(entry_result.success && (resolve(entry_result)||true)) return;
@@ -799,10 +803,7 @@ School.prototype.parse_bing=function(doc,url,resolve,reject,self) {
             resolve({url:parsed_lgb.url,self:self});
             return;
         }
-		if(lgb_info&&parsed_lgb) {
-			console.log("parsed_lgb="+parsed_lgb);
-			if(parsed_lgb.phone) self.phone=parsed_lgb.phone;
-		}
+
         for(i=2; i < b_algo.length&&i<6; i++) {
             entry_result=self.parse_bing_entry(b_algo,i,self);
             if(entry_result.success && (resolve(entry_result)||true)) return;
