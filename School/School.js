@@ -794,6 +794,7 @@ School.prototype.parse_bing=function(doc,url,resolve,reject,self) {
         }
         if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info)) && parsed_lgb.url&&parsed_lgb.url.length>0 &&
            MTP.get_domain_only(window.location.href,true)!==MTP.get_domain_only(parsed_lgb.url,true)&&!MTP.is_bad_url(parsed_lgb.url,self.bad_urls,6,3)) {
+			   if(lgb_info.phone) self.phone=lgb.phone;
             if(self.query.debug) console.log("parsed_lgb="+JSON.stringify(parsed_lgb));
             resolve({url:parsed_lgb.url,self:self});
             return;
