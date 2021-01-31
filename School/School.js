@@ -794,11 +794,15 @@ School.prototype.parse_bing=function(doc,url,resolve,reject,self) {
         }
         if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info)) && parsed_lgb.url&&parsed_lgb.url.length>0 &&
            MTP.get_domain_only(window.location.href,true)!==MTP.get_domain_only(parsed_lgb.url,true)&&!MTP.is_bad_url(parsed_lgb.url,self.bad_urls,6,3)) {
-			   if(lgb_info.phone) self.phone=lgb.phone;
+			  
             if(self.query.debug) console.log("parsed_lgb="+JSON.stringify(parsed_lgb));
             resolve({url:parsed_lgb.url,self:self});
             return;
         }
+		if(lgb_info&&parsed_lgb) {
+			console.log("parsed_lgb="+parsed_lgb);
+			if(parsed_lgb.phone) self.phone=parsed_lgb.phone;
+		}
         for(i=2; i < b_algo.length&&i<6; i++) {
             entry_result=self.parse_bing_entry(b_algo,i,self);
             if(entry_result.success && (resolve(entry_result)||true)) return;
