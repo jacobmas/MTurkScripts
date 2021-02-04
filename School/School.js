@@ -23,7 +23,7 @@ function School(query,then_func,catch_func) {
                    ".schoolbug.org",".schoolfamily.com",".schooldigger.com","//twitter.com",".youtube.com",
                    ".teacherlists.com",".trueschools.com",".trulia.com",".usnews.com","raise.me",
                    ".wagenersc.com",".wikipedia.org",".wikispaces.com",".wyzant.com",
-                   ".yellowbook.com",".yellowpages.com",".yelp.com",".zillow.com",".usa.com"];
+                   ".yellowbook.com",".yellowpages.com",".yelp.com",".zillow.com",".usa.com",".cde.ca.gov"];
     this.query=query;
     this.name="";this.city="";this.state="";
     this.base="";
