@@ -485,7 +485,8 @@ MTurkScript.prototype.query_search=function(search_str, resolve,reject, callback
 MTurkScript.prototype.parse_b_context=function(b_context) {
     var b_vList,i,bm_details_overlay,b_entityTitle,b_entitySubTitle,b_subModule_h2,j;
     var b_hList=b_context.getElementsByClassName("b_hList"),inner_a,details,inner_li,split_exp;
-    var field_regex=/^([^:]+):\s*(.*)$/,field_match,result={},disambig;
+    var field_regex=/^([^:]+):\s*(.*)$/,field_match,disambig;
+	var result={};
     var term_map={"Website":"url","Official site":"url","Company":"company"};
     var field_map=function(field) { return term_map[field]!==undefined?term_map[field]:field; };
     var b_entityTP=b_context.querySelector(".b_entityTP");
@@ -508,6 +509,9 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
     }
 	if(b_context.querySelector("#saplacesvg") && (place=b_context.querySelector("#saplacesvg").parentNode)) result['Address']=place.innerText.trim();
 	if(b_context.querySelector("#sacallsvg") && (phone=b_context.querySelector("#sacallsvg").parentNode)) result['Phone']=phone.innerText.trim();
+	MTurkScript.prototype.parse_b_infocardFactRows(b_context,result);
+	
+	
     if((url=b_context.querySelector("[aria-label='Website']"))) {
 	result.url=url.href;
     }
@@ -547,6 +551,22 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
     MTurkScript.prototype.parse_b_footnote(b_context,result);
     return result;
 };
+
+/**
+ * parse the b_infocardFactRows in the b_context 
+ */
+MTurkScript.prototype.parse_b_infocardFactRows=function(b_context,result) {
+	var factRows=b_context.querySelectorAll('.b_infocardFactRows');
+	var currRow, cbl, cbl_text;
+	var wanted=['Address','Phone'];
+	for(currRow of factRows) {
+		if((cbl=currRow.querySelector(".cbl")) && (cbl_text=cbl.innerText.replace(/\:.*$/,"")) && (wanted.includes(cbl_text))) {
+			cbl.parentNode.removeChild(cbl);
+			result[cbl_text]=currRow.innerText;
+		}
+	}
+};
+
 
 MTurkScript.prototype.parse_b_footnote=function(b_context,result) {
     var b_footnote=b_context.querySelectorAll(".b_footnote a"),x;
