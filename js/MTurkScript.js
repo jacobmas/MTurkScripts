@@ -490,14 +490,14 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
     var field_map=function(field) { return term_map[field]!==undefined?term_map[field]:field; };
     var b_entityTP=b_context.querySelector(".b_entityTP");
     var geochain=b_context.querySelectorAll(".geochainSegment");
-    var parsed_entity;
+    var parsed_entity,temp_span;
     var url,place,phone;
 	
     if(b_context.querySelector("#permanentlyClosedIcon")) result.closed=true;
     disambig=b_context.querySelectorAll(".disambig-outline .b_slyGridItem");
-    b_entityTitle=b_context.getElementsByClassName("b_entityTitle");
+    b_entityTitle=b_context.querySelector(".b_entityTitle");
     b_entitySubTitle=b_context.getElementsByClassName("b_entitySubTitle");
-    if(b_entityTitle.length>0) result.Title=b_entityTitle[0].innerText;
+    if(b_entityTitle&&(temp_span=b_entityTitle.querySelector("span")) && temp_span.title) result.Title=temp_span.title;
     if(b_entitySubTitle.length>0) result.SubTitle=b_entitySubTitle[0].innerText;
     if((b_vList=b_context.getElementsByClassName("b_vList")).length>0) {
         inner_li=b_vList[0].getElementsByTagName("li");
