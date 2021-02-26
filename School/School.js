@@ -1510,7 +1510,7 @@ School.prototype.getWestPrivateEmail=function(doc,url,resolve,reject,extra) {
     var i=extra.i,self=extra.self;
     console.log("url="+url);
     var headers={"Content-Type":"application/json;charset=UTF-8"};
-	self.westResults[i].email=doc.getElementById("ctl00_ContentPlaceHolder1_ctl00_txtTo")?.doc.getElementById("ctl00_ContentPlaceHolder1_ctl00_txtTo").value:"";
+	self.westResults[i].email=doc.getElementById("ctl00_ContentPlaceHolder1_ctl00_txtTo")?doc.getElementById("ctl00_ContentPlaceHolder1_ctl00_txtTo").value:"";
 	self.westResults[i].url=url;
 	self.westPrivateDone++;
     console.log("Done "+self.westPrivateDone+" private emails");
