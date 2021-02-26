@@ -29,7 +29,7 @@ function School(query,then_func,catch_func) {
     this.base="";
 	var temp_self=this;
     this.resolve=function() {
-		this.consolidate_contacts(temp_self);
+		temp_self.consolidate_contacts(temp_self);
 		then_func();
 	};
     this.reject=catch_func ? catch_func : MTP.my_catch_func;
