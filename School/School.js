@@ -27,7 +27,11 @@ function School(query,then_func,catch_func) {
     this.query=query;
     this.name="";this.city="";this.state="";
     this.base="";
-    this.resolve=then_func;
+	var temp_self=this;
+    this.resolve=function() {
+		this.consolidate_contacts(temp_self);
+		then_func();
+	};
     this.reject=catch_func ? catch_func : MTP.my_catch_func;
     this.apptegy={parser:this.parse_apptegy,suffix:"/staff",find_base:this.find_base_apptegy};
     this.blackboard={parser:this.parse_blackboard,find_directory:this.find_dir_bb,href_rx:/.*/i,
@@ -75,6 +79,34 @@ function School(query,then_func,catch_func) {
 
 
 }
+/* Consolidate contacts */
+School.prototype.consolidate_contacts=function(self) {
+	function cmp_contacts(a,b) {
+		if(a.name===b.name) {
+			if(a.email && !b.email) return -1;
+			else if(!a.email && b.email) return 1;
+			else if(a.title && !b.title) return -1;
+			else if(!a.title && b.title) return 1;
+			else if(a.phone && !b.phone) return -1;
+			else if(!a.phone && b.phone) return -1;
+			else return 0;
+		}
+		if(a.name < b.name) return -1;
+		else if(a.name>b.name) return 1;
+		else return 0;
+	}
+	self.contact_list.sort(cmp_contacts);
+	var i;
+	for(i=self.contact_list.length-1;i>0;i--) {
+		if(self.contact_list[i].name===self.contact_list[i-1].name) {
+			self.contact_list.splice(i,1);
+		}
+	}
+	
+	
+};
+
+
 School.prototype.is_bad_link=function(url) {
     url=url.toLowerCase();
     if(/^mailto|javascript|tel/.test(url)||/\.pdf$/.test(url)) return true;
@@ -723,7 +755,7 @@ School.prototype.init=function() {
     var promise;
     this.try_count=0;
     if(this.url===undefined) { promise=MTP.create_promise(this.get_bing_str(this.name+" "+(this.city||"")+" "+
-                                                                            (reverse_state_map[this.state]||(this.state||""))+" "),
+    (reverse_state_map[this.state]||(this.state||""))+" "),
                                                           this.parse_bing,this.parse_bing_then,this.failed_search_func?this.failed_search_func:MTP.my_catch_func,this); }
     else promise=MTP.create_promise(this.url,this.init_SchoolSearch,this.resolve,this.reject,this);
 };
