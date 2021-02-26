@@ -1,3 +1,5 @@
+/* Bad schools kept for legacy purpose */
+
 var Schools={
         contact_list:[],
     page_regex_str:"(www\\.|\/\/)(apptegy|catapultk12|cms4schools)\\.com|(www\\.4lpi\\.com)|adventistschoolconnect\\.org|"+

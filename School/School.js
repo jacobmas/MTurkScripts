@@ -23,7 +23,7 @@ function School(query,then_func,catch_func) {
                    ".schoolbug.org",".schoolfamily.com",".schooldigger.com","//twitter.com",".youtube.com",
                    ".teacherlists.com",".trueschools.com",".trulia.com",".usnews.com","raise.me",
                    ".wagenersc.com",".wikipedia.org",".wikispaces.com",".wyzant.com",
-                   ".yellowbook.com",".yellowpages.com",".yelp.com",".zillow.com",".usa.com",".cde.ca.gov"];
+                   ".yellowbook.com",".yellowpages.com",".yelp.com",".zillow.com",".usa.com","cde.ca.gov"];
     this.query=query;
     this.name="";this.city="";this.state="";
     this.base="";
@@ -693,6 +693,7 @@ School.prototype.parse_schoolblockperson=function(response,resolve,reject,self,u
 
 };
 School.prototype.parse_apptegy=function(doc,url,resolve,reject,self) {
+	self.staff_dir=url;
     console.log("in School.prototype.parse_apptegy at url="+url);
     doc.querySelectorAll(".contact-info").forEach(function(elem) { self.parse_apptegy_field(elem,self,url); });
     resolve(self);
@@ -1509,9 +1510,9 @@ School.prototype.getWestPrivateEmail=function(doc,url,resolve,reject,extra) {
     var i=extra.i,self=extra.self;
     console.log("url="+url);
     var headers={"Content-Type":"application/json;charset=UTF-8"};
-    self.westResults[i].email=doc.getElementById("ctl00_ContentPlaceHolder1_ctl00_txtTo").value;
-    self.westResults[i].url=url;
-    self.westPrivateDone++;
+	self.westResults[i].email=doc.getElementById("ctl00_ContentPlaceHolder1_ctl00_txtTo")?.doc.getElementById("ctl00_ContentPlaceHolder1_ctl00_txtTo").value:"";
+	self.westResults[i].url=url;
+	self.westPrivateDone++;
     console.log("Done "+self.westPrivateDone+" private emails");
     resolve(i);
 };
