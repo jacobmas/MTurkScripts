@@ -7,7 +7,7 @@ var Gov=Gov||{contact_list:[],email_list:[],scripts_loaded:{},scripts_total:{},a
 	      id_map:{"ahaconsulting":"municodeweb","seamlessgov":"seamlessdocs","townwebdesign":"townweb","civicasoft":"granicus"},
 	      title_regex:new RegExp("(^|[^A-Za-z]{1})"+
 	"(Administrator|Advisor|Assistant|Attorney|Building Services|Clerk[\/\-]+Treasurer|"+
-	"Chief of Police|Chief|Clerk|Code Enforcement|Commissioner|Constable|Coordinator|Council Member|"+
+	"Chief of Police|Chief|Clerk|Code Enforcement|Commissioner|Constable|Coordinator|Counselor|Council Member|"+
 	"Director|Department|Det\.|Detective|Editor|Engineer|Fire|Founder|Foreman|Head of School|Inspector|"+
 	"Manager|Marshal|Mayor|Officer|Official|Operations|Planner|Police|President|Principal|Public|Publisher|Reporter|"+
 	"Recorder|Roadmaster|Scientist|Secretary|Sheriff|Specialist|Superintendent|Supervisor|Sgt\.|Staff Writer|"+
