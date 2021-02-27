@@ -1258,13 +1258,13 @@ School.prototype.find_dir_eschoolview=function(doc,url,resolve,reject,self) {
         links[i].href=MTP.fix_remote_url(links[i].href,url);
         if(/Staff Directory/i.test(links[i].innerText)) {
             console.log("Resolving on "+links[i].href); resolve({url:links[i].href,self:self}); return; }
-		if(/Staff\.Aspx/i.test(links[i].href)&&!staff) {
+		if(/Staff/i.test(links[i].href)&&!staff) {
 			staff=links[i].href;
 		}
     }
     console.log("Done for");
 	if(staff) {
-		promise=MTP.create_promise(self.base+"/ContactUs.aspx",self.find_dir_eschoolview,resolve,reject,self);
+		resolve({url:staff,self:self})
 		return;
 	}
     else if(self.count++===0 && (promise=MTP.create_promise(self.base+"/ContactUs.aspx",self.find_dir_eschoolview,resolve,reject,self))) return;
