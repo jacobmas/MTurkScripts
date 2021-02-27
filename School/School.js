@@ -23,7 +23,7 @@ function School(query,then_func,catch_func) {
                    ".schoolbug.org",".schoolfamily.com",".schooldigger.com","//twitter.com",".youtube.com",
                    ".teacherlists.com",".trueschools.com",".trulia.com",".usnews.com","raise.me",
                    ".wagenersc.com",".wikipedia.org",".wikispaces.com",".wyzant.com",
-                   ".yellowbook.com",".yellowpages.com",".yelp.com",".zillow.com",".usa.com","cde.ca.gov"];
+                   ".yellowbook.com",".yellowpages.com",".yelp.com",".zillow.com",".usa.com","cde.ca.gov",".bigteams.com"];
     this.query=query;
     this.name="";this.city="";this.state="";
     this.base="";
@@ -59,6 +59,7 @@ function School(query,then_func,catch_func) {
 	"www\\.osvoffertory\\.com|\\.renweb\\.com|"+
         "schooldesk\\.net|schoolloop\\.com|"+
         "www\\.school(blocks|insites|messenger|pointe|webmasters)\\.com|"+
+		"\.schoolblocks\.com|"+
         "socs\\.fes\\.org|www\\.(weebly|zumu)\\.com";
     this.page_map={"edlioschool":"edlio","renweb":"factsmgt"};
     this.script_regex_lst=[{regex:/apptegy_cms\//,name:"apptegy"}];
