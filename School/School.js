@@ -1258,7 +1258,7 @@ School.prototype.find_dir_eschoolview=function(doc,url,resolve,reject,self) {
         links[i].href=MTP.fix_remote_url(links[i].href,url);
         if(/Staff Directory/i.test(links[i].innerText)) {
             console.log("Resolving on "+links[i].href); resolve({url:links[i].href,self:self}); return; }
-		if(/^Staff/i.test(links[i].innerText)&&!staff) {
+		if(/Staff\.Aspx/i.test(links[i].href)&&!staff) {
 			staff=links[i].href;
 		}
     }
