@@ -59,7 +59,7 @@ function School(query,then_func,catch_func) {
 	"www\\.osvoffertory\\.com|\\.renweb\\.com|"+
         "schooldesk\\.net|schoolloop\\.com|"+
         "www\\.school(blocks|insites|messenger|pointe|webmasters)\\.com|"+
-		"\.schoolblocks\.com|"+
+		"schoolblocks\.com|"+
         "socs\\.fes\\.org|www\\.(weebly|zumu)\\.com";
     this.page_map={"edlioschool":"edlio","renweb":"factsmgt"};
     this.script_regex_lst=[{regex:/apptegy_cms\//,name:"apptegy"}];
