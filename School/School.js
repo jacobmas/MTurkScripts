@@ -1252,14 +1252,22 @@ School.prototype.parse_bb_swdirectory=function(doc,url,resolve,reject,self) {
 School.prototype.find_dir_eschoolview=function(doc,url,resolve,reject,self) {
     if(self.count===undefined || typeof(self.count)==="object") self.count=0;
     console.log("in find_dir_eschoolview, url="+url+" ,count="+self.count);
+	var staff="";
     var links=doc.links,i,promise;
     for(i=0;i<links.length;i++) {
         links[i].href=MTP.fix_remote_url(links[i].href,url);
         if(/Staff Directory/i.test(links[i].innerText)) {
             console.log("Resolving on "+links[i].href); resolve({url:links[i].href,self:self}); return; }
+		if(/^Staff/i.test(links[i].innerText)&&!staff) {
+			staff=links[i].href;
+		}
     }
     console.log("Done for");
-    if(self.count++===0 && (promise=MTP.create_promise(self.base+"/ContactUs.aspx",self.find_dir_eschoolview,resolve,reject,self))) return;
+	if(staff) {
+		promise=MTP.create_promise(self.base+"/ContactUs.aspx",self.find_dir_eschoolview,resolve,reject,self);
+		return;
+	}
+    else if(self.count++===0 && (promise=MTP.create_promise(self.base+"/ContactUs.aspx",self.find_dir_eschoolview,resolve,reject,self))) return;
     else { console.log("Resolving on StaffDirectory.aspx"); resolve({url:self.base+"/StaffDirectory.aspx",self:self}); }
 
 };
