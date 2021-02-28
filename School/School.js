@@ -867,15 +867,9 @@ School.prototype.parse_bing=function(doc,url,resolve,reject,self) {
 			console.log("parsed_lgb="+JSON.stringify(parsed_lgb));
 			if(parsed_lgb.phone) self.phone=parsed_lgb.phone;
 		}
-		  if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info)) && parsed_lgb.url&&parsed_lgb.url.length>0 &&
-           MTP.get_domain_only(window.location.href,true)!==MTP.get_domain_only(parsed_lgb.url,true)&&!MTP.is_bad_url(parsed_lgb.url,self.bad_urls,6,3)) {
-			  
-            if(self.query.debug) console.log("parsed_lgb="+JSON.stringify(parsed_lgb));
-            resolve({url:parsed_lgb.url,self:self});
-            return;
-        }
 		
-        for(i=0; i < b_algo.length&&i<2; i++) {
+		
+        for(i=0; i < b_algo.length&&i<1; i++) {
             entry_result=self.parse_bing_entry(b_algo,i,self);
             if(entry_result.success && (resolve(entry_result)||true)) return;
             else if(entry_result.closed && (reject(entry_result)||true)) return;
@@ -901,7 +895,7 @@ School.prototype.parse_bing=function(doc,url,resolve,reject,self) {
             return;
         }
 
-        for(i=2; i < b_algo.length&&i<6; i++) {
+        for(i=1; i < b_algo.length&&i<6; i++) {
             entry_result=self.parse_bing_entry(b_algo,i,self);
             if(entry_result.success && (resolve(entry_result)||true)) return;
             else if(entry_result.closed && (reject(entry_result)||true)) return;
