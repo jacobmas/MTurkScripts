@@ -26,7 +26,7 @@ function School(query,then_func,catch_func) {
                    ".schoolbug.org",".schoolfamily.com",".schooldigger.com","//twitter.com",".youtube.com",
                    ".teacherlists.com",".trueschools.com",".trulia.com",".usnews.com","raise.me",
                    ".wagenersc.com",".wikipedia.org",".wikispaces.com",".wyzant.com",
-                   ".yellowbook.com",".yellowpages.com",".yelp.com",".zillow.com",".usa.com","cde.ca.gov",".bigteams.com"];
+                   ".yellowbook.com",".yellowpages.com",".yelp.com",".zillow.com",".usa.com","cde.ca.gov",".bigteams.com",".britannica.com"];
     this.query=query;
     this.name="";this.city="";this.state="";
     this.base="";
@@ -865,6 +865,14 @@ School.prototype.parse_bing=function(doc,url,resolve,reject,self) {
 			console.log("parsed_lgb="+JSON.stringify(parsed_lgb));
 			if(parsed_lgb.phone) self.phone=parsed_lgb.phone;
 		}
+		  if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info)) && parsed_lgb.url&&parsed_lgb.url.length>0 &&
+           MTP.get_domain_only(window.location.href,true)!==MTP.get_domain_only(parsed_lgb.url,true)&&!MTP.is_bad_url(parsed_lgb.url,self.bad_urls,6,3)) {
+			  
+            if(self.query.debug) console.log("parsed_lgb="+JSON.stringify(parsed_lgb));
+            resolve({url:parsed_lgb.url,self:self});
+            return;
+        }
+		
         for(i=0; i < b_algo.length&&i<2; i++) {
             entry_result=self.parse_bing_entry(b_algo,i,self);
             if(entry_result.success && (resolve(entry_result)||true)) return;
