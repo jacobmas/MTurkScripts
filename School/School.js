@@ -113,6 +113,20 @@ School.prototype.is_bad_link=function(url) {
     if(/^mailto|javascript|tel/.test(url)||/\.pdf$/.test(url)) return true;
     return false;
 };
+
+
+School.prototype.find_phone=function(doc,url) {
+    var schoolphone,phone,match;
+    var phone_re_str_begin="(?:Tel|Telephone|Phone|Ph|P|T):\\s*";
+    var phone_re_str_end="([(]?[0-9]{3}[)]?[-\\s\\.\\/]+[0-9]{3}[-\\s\\.\\/]+[0-9]{4,6}(\\s*(x|ext\\.?)\\s*[\\d]{1,5})?)";
+    var ext_phone_re=new RegExp(phone_re_str_begin+phone_re_str_end,"i");
+    if((schoolphone=doc.querySelector("a[href^='tel:']"))) phone=schoolphone.innerText.trim();
+    else if(!phone && (match=doc.body.innerHTML.match(ext_phone_re))) phone=match[1];
+    // else if((match=doc.body.innerHTML.match(phone_re))) console.log("phone alone match="+match);
+    if(phone) this.phone=phone;
+    return phone;
+};
+
 /**
  * Do a search for links, up to a certain depth */
 School.prototype.search_none=function(doc,url,resolve,reject,extra) {
@@ -294,17 +308,7 @@ School.prototype.parse_schoolpointe_profile=function(doc,url,resolve,reject,self
     self.contact_list.push(curr);
     resolve();
 };
-School.prototype.find_phone=function(doc,url) {
-    var schoolphone,phone,match;
-    var phone_re_str_begin="(?:Tel|Telephone|Phone|Ph|P|T):\\s*";
-    var phone_re_str_end="([(]?[0-9]{3}[)]?[-\\s\\.\\/]+[0-9]{3}[-\\s\\.\\/]+[0-9]{4,6}(\\s*(x|ext\\.?)\\s*[\\d]{1,5})?)";
-    var ext_phone_re=new RegExp(phone_re_str_begin+phone_re_str_end,"i");
-    if((schoolphone=doc.querySelector("a[href^='tel:']"))) phone=schoolphone.innerText.trim();
-    else if(!phone && (match=doc.body.innerHTML.match(ext_phone_re))) phone=match[1];
-    // else if((match=doc.body.innerHTML.match(phone_re))) console.log("phone alone match="+match);
-    if(phone) this.phone=phone;
-    return phone;
-};
+
 
 /* Converts cyberschools and IES email from encoded form */
 School.prototype.convert_cyberschools_email=function(text) {
@@ -448,6 +452,13 @@ School.prototype.parse_finalsite_fsPageLayout=function(doc,url,resolve,reject,se
 School.prototype.parse_finalsite_fsConstituentItem=function(doc,url,resolve,reject,self) {
     var items=doc.querySelectorAll(".fsConstituentItem"),i,curr={},title,phone,emailscript,match;
     var colon_re=/^[^:]*:/;
+
+	var full_section=doc.querySelector(".fsDirectory");
+	
+	var full_sec_prefix=full_section.id.match(/[\d]+$/);
+	console.log("prefix="+full_sec_prefix);
+	var curr_person_link,curr_person_num;
+
     var fsemail_re=/insertEmail\(\"([^\"]*)\",\s*\"([^\"]*)\",\s*\"([^\"]*)\"/;
     console.log("items.length="+items.length);
     for(i=0;i<items.length;i++) {
@@ -461,7 +472,11 @@ School.prototype.parse_finalsite_fsConstituentItem=function(doc,url,resolve,reje
         console.log("("+i+"), curr="+JSON.stringify(curr));
         if(!curr.phone && self.phone) curr.phone=self.phone;
         curr.url=url;
-        if(curr.title && self.matches_title_regex(curr.title)) self.contact_list.push(curr);
+		if(!curr.email&&full_sec_prefix && (curr_person_link=items[i].querySelector(".fsConstituentProfileLink")) && (curr_person_num=curr_person_link.dataset.constituent.id)) {
+			console.log("prefix="+full_sec_prefix[0]+", curr_person_num="+curr_person_num);
+			
+		}
+        else if(curr.title && self.matches_title_regex(curr.title)) self.contact_list.push(curr);
     }
     return;
 };
