@@ -100,6 +100,8 @@ School.prototype.consolidate_contacts=function(self) {
 		else return 0;
 	}
 	self.contact_list.sort(cmp_contacts);
+	console.log("pre-consolidation, contacts=");
+	console.log(self.contact_list);
 	var i;
 	for(i=self.contact_list.length-1;i>0;i--) {
 		if(self.contact_list[i].name===self.contact_list[i-1].name) {
