@@ -11,6 +11,9 @@ function LinkQual(href,innerText) {
 /** 
  * Class for parsing schools
  *
+ * TODO: add ability to follow link in a clear directory page as email is sometimes listed
+ * on individual page
+ *
  */
 function School(query,then_func,catch_func) {
     var x;
@@ -951,6 +954,11 @@ School.prototype.call_parser=function(result) {
         console.log("Done pushing promises");
         Promise.all(promise_list).then(function() {
             console.log("#### done with url_lst promises");
+			if(self.page_type==="blackboard" && self.contact_list.length===0) {
+				console.log("Blackboard failed, trying parse none");
+				promise=MTP.create_promise(url,self.parse_none,self.resolve,self.reject,self);
+				return;
+			}
 
             self.resolve(); }).catch(function(response) {
                 console.log("FAiled url_lst something "+response);
