@@ -975,7 +975,7 @@ School.prototype.call_parser=function(result) {
                 self.resolve(); });
         return;
     }
-    else if(result.url && result.url!==self.base) promise=MTP.create_promise(self.base,self[self.page_type].parser,self.resolve,self.reject,self);
+    else if(result.url && result.url!==self.base) promise=MTP.create_promise(result.url,self[self.page_type].parser,self.resolve,self.reject,self);
     else promise=MTP.create_promise(self.base,self.parse_none,self.resolve,self.reject,self);
 };
 School.prototype.find_base_blackboard=function(doc,url,resolve,reject,self) {
