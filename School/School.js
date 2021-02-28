@@ -472,8 +472,9 @@ School.prototype.parse_finalsite_fsConstituentItem=function(doc,url,resolve,reje
         console.log("("+i+"), curr="+JSON.stringify(curr));
         if(!curr.phone && self.phone) curr.phone=self.phone;
         curr.url=url;
-		if(!curr.email&&full_sec_prefix && (curr_person_link=items[i].querySelector(".fsConstituentProfileLink")) && (curr_person_num=curr_person_link.dataset.constituent.id)) {
-			console.log("prefix="+full_sec_prefix[0]+", curr_person_num="+curr_person_num);
+		if(!curr.email&&full_sec_prefix && (curr_person_link=items[i].querySelector(".fsConstituentProfileLink"))) {
+			console.log("prefix="+full_sec_prefix[0]+", curr_person_link="+curr_person_link);
+			console.log("dataset="+JSON.stringify(curr_person_link.dataset));
 			
 		}
         else if(curr.title && self.matches_title_regex(curr.title)) self.contact_list.push(curr);
