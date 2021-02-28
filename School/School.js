@@ -494,6 +494,8 @@ School.prototype.parse_finalsite_profile=function(doc,url,resolve,reject,self) {
 	console.log("url="+url);
 	var curr={};
 	var emailscript,phone,match;
+	    var fsemail_re=/insertEmail\(\"([^\"]*)\",\s*\"([^\"]*)\",\s*\"([^\"]*)\"/;
+
 	curr.first=doc.querySelector(".fsFullNameFirst")?doc.querySelector(".fsFullNameFirst").innerText.trim():"";
 	curr.last=doc.querySelector(".fsFullNameLast")?doc.querySelector(".fsFullNameLast").innerText.trim():"";
 	curr.name=curr.first+" "+curr.last;
