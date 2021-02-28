@@ -467,7 +467,6 @@ School.prototype.parse_finalsite_fsConstituentItem=function(doc,url,resolve,reje
 
     var fsemail_re=/insertEmail\(\"([^\"]*)\",\s*\"([^\"]*)\",\s*\"([^\"]*)\"/;
     console.log("items.length="+items.length);
-	var promise_list=
     for(i=0;i<items.length;i++) {
         curr={};
         let full1=items[i].querySelector(".fsFullName a"),full2=items[i].querySelector("h3.fsFullName");
@@ -495,7 +494,7 @@ School.prototype.parse_finalsite_profile=function(doc,url,resolve,reject,self) {
 	console.log("url="+url);
 	var curr={};
 	var emailscript,phone,match;
-	/*curr.first=doc.querySelector(".fsFullNameFirst")?doc.querySelector(".fsFullNameFirst").innerText.trim():"";
+	curr.first=doc.querySelector(".fsFullNameFirst")?doc.querySelector(".fsFullNameFirst").innerText.trim():"";
 	curr.last=doc.querySelector(".fsFullNameLast")?doc.querySelector(".fsFullNameLast").innerText.trim();
 	curr.name=curr.first+" "+curr.last;
 	curr.title=doc.querySelector(".fsTitle .fsProfileSectionFieldValue")?doc.querySelector(".fsTitle .fsProfileSectionFieldValue").innerText.trim():"";
@@ -508,7 +507,7 @@ School.prototype.parse_finalsite_profile=function(doc,url,resolve,reject,self) {
 	if(curr.name && curr.title) {
 		self.contact_list.push(curr);
 	}
-	resolve("");*/
+	resolve("");
 
 	
 	
