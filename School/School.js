@@ -489,7 +489,7 @@ School.prototype.parse_finalsite_fsConstituentItem=function(doc,url,resolve,reje
     }
     return promise_list;
 };
-
+/*
 School.prototype.parse_finalsite_profile=function(doc,url,resolve,reject,self) {
 	console.log("url="+url);
 	var curr={};
@@ -512,7 +512,7 @@ School.prototype.parse_finalsite_profile=function(doc,url,resolve,reject,self) {
 	
 	
 	
-};
+};*/
 
 School.prototype.parse_finalsite_fsDirEntry=function(doc,url,resolve,reject,self) {
     var items=doc.querySelectorAll(".fsDirEntry"),i,curr={},title,phone,emailscript,match;
