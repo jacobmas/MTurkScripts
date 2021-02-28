@@ -956,7 +956,7 @@ School.prototype.call_parser=function(result) {
             console.log("#### done with url_lst promises");
 			if(self.page_type==="blackboard" && self.contact_list.length===0) {
 				console.log("Blackboard failed, trying parse none");
-				promise=MTP.create_promise(result.url,self.parse_none,self.resolve,self.reject,self);
+				promise=MTP.create_promise(self.base,self.parse_none,self.resolve,self.reject,self);
 				return;
 			}
 
@@ -965,8 +965,8 @@ School.prototype.call_parser=function(result) {
                 self.resolve(); });
         return;
     }
-    else if(result.url!==self.base) promise=MTP.create_promise(result.url,self[self.page_type].parser,self.resolve,self.reject,self);
-    else promise=MTP.create_promise(result.url,self.parse_none,self.resolve,self.reject,self);
+    else if(result.url && result.url!==self.base) promise=MTP.create_promise(self.base,self[self.page_type].parser,self.resolve,self.reject,self);
+    else promise=MTP.create_promise(self.base,self.parse_none,self.resolve,self.reject,self);
 };
 School.prototype.find_base_blackboard=function(doc,url,resolve,reject,self) {
     var lst=doc.querySelectorAll(".schoollist a,ul[aria-label='Schools'] li a"),inner_a,i;
