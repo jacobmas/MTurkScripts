@@ -494,8 +494,8 @@ School.prototype.parse_finalsite_fsConstituentItem=function(doc,url,resolve,reje
 School.prototype.parse_finalsite_profile=function(doc,url,resolve,reject,self) {
 	console.log("url="+url);
 	var curr={};
-	var emailscript,phone;
-	curr.first=doc.querySelector(".fsFullNameFirst")?doc.querySelector(".fsFullNameFirst").innerText.trim():"";
+	var emailscript,phone,match;
+	/*curr.first=doc.querySelector(".fsFullNameFirst")?doc.querySelector(".fsFullNameFirst").innerText.trim():"";
 	curr.last=doc.querySelector(".fsFullNameLast")?doc.querySelector(".fsFullNameLast").innerText.trim();
 	curr.name=curr.first+" "+curr.last;
 	curr.title=doc.querySelector(".fsTitle .fsProfileSectionFieldValue")?doc.querySelector(".fsTitle .fsProfileSectionFieldValue").innerText.trim():"";
@@ -508,7 +508,7 @@ School.prototype.parse_finalsite_profile=function(doc,url,resolve,reject,self) {
 	if(curr.name && curr.title) {
 		self.contact_list.push(curr);
 	}
-	resolve("");
+	resolve("");*/
 
 	
 	
