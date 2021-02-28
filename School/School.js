@@ -443,16 +443,22 @@ School.prototype.parse_finalsite=function(doc,url,resolve,reject,self) {
 School.prototype.parse_finalsite_fsPageLayout=function(doc,url,resolve,reject,self) {
     console.log("in School.prototype.parse_finalsite_fsPageLayout at url="+url);
     // Two types (at least) of entries, .fsConsituentItem and .fsDirEntry
+	var promise_list=[];
+    promise_list=self.parse_finalsite_fsConstituentItem(doc,url,resolve,reject,self);
+	
+	if(promise_list.length===0) {
+		self.parse_finalsite_fsDirEntry(doc,url,resolve,reject,self);
 
-    self.parse_finalsite_fsConstituentItem(doc,url,resolve,reject,self);
-    self.parse_finalsite_fsDirEntry(doc,url,resolve,reject,self);
-
-    resolve("");
+		resolve("");
+	}
+	else {
+		Promise.all(promise_list).then(resolve);
+	}
 };
 School.prototype.parse_finalsite_fsConstituentItem=function(doc,url,resolve,reject,self) {
     var items=doc.querySelectorAll(".fsConstituentItem"),i,curr={},title,phone,emailscript,match;
     var colon_re=/^[^:]*:/;
-
+	var promise_list=[];
 	var full_section=doc.querySelector(".fsDirectory");
 	
 	var full_sec_prefix=full_section.id.match(/[\d]+$/);
@@ -461,6 +467,7 @@ School.prototype.parse_finalsite_fsConstituentItem=function(doc,url,resolve,reje
 
     var fsemail_re=/insertEmail\(\"([^\"]*)\",\s*\"([^\"]*)\",\s*\"([^\"]*)\"/;
     console.log("items.length="+items.length);
+	var promise_list=
     for(i=0;i<items.length;i++) {
         curr={};
         let full1=items[i].querySelector(".fsFullName a"),full2=items[i].querySelector("h3.fsFullName");
@@ -472,14 +479,40 @@ School.prototype.parse_finalsite_fsConstituentItem=function(doc,url,resolve,reje
         console.log("("+i+"), curr="+JSON.stringify(curr));
         if(!curr.phone && self.phone) curr.phone=self.phone;
         curr.url=url;
-		if(!curr.email&&full_sec_prefix && (curr_person_link=items[i].querySelector(".fsConstituentProfileLink"))) {
-			console.log("prefix="+full_sec_prefix[0]+", curr_person_link="+curr_person_link);
-			console.log("dataset="+JSON.stringify(curr_person_link.dataset));
+		if(!curr.email&&full_sec_prefix && (curr_person_link=items[i].querySelector(".fsConstituentProfileLink")) && (curr_person_num=curr_person_link.dataset.constituentId)) {
+			let temp_url=self.base+"/fs/elements/"+full_sec_prefix[0]+"?const_id="+curr_person_num+"&show_profile=true&is_draft=false";
+			console.log("temp_url="+temp_url);
+	
+			promise_list.push(MTP.create_promise(temp_url,self.parse_finalsite_profile,function() { },function(response) { console.log("Fail "+response); }, self));
 			
 		}
         else if(curr.title && self.matches_title_regex(curr.title)) self.contact_list.push(curr);
     }
-    return;
+    return promise_list;
+};
+
+School.prototype.parse_finalsite_profile=function(doc,url,resolve,reject,self) {
+	console.log("url="+url);
+	var curr={};
+	var emailscript,phone;
+	curr.first=doc.querySelector(".fsFullNameFirst")?doc.querySelector(".fsFullNameFirst").innerText.trim():"";
+	curr.last=doc.querySelector(".fsFullNameLast")?doc.querySelector(".fsFullNameLast").innerText.trim();
+	curr.name=curr.first+" "+curr.last;
+	curr.title=doc.querySelector(".fsTitle .fsProfileSectionFieldValue")?doc.querySelector(".fsTitle .fsProfileSectionFieldValue").innerText.trim():"";
+	curr.department=doc.querySelector(".fsDepartment .fsProfileSectionFieldValue")?
+	doc.querySelector(".fsDepartment .fsProfileSectionFieldValue").innerText.trim():"";
+	if((emailscript=doc.querySelector(".fsEmail script")) &&
+           (match=emailscript.innerHTML.match(fsemail_re))) curr.email=match[3].split("").reverse().join("")+"@"+match[2].split("").reverse().join("");
+	if((phone=doc.querySelectorAll(".fsPhone div")) && phone.length>=2) {
+	curr.phone=phone[1].innerText.trim(); }
+	if(curr.name && curr.title) {
+		self.contact_list.push(curr);
+	}
+	resolve("");
+
+	
+	
+	
 };
 
 School.prototype.parse_finalsite_fsDirEntry=function(doc,url,resolve,reject,self) {
