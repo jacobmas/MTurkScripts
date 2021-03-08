@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         FritzHammer
+// @name         JonahTurcotte
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  New script
+// @description  Company urls
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -18,47 +18,38 @@
 // @grant GM_openInTab
 // @grant GM_getResourceText
 // @grant GM_addStyle
+// @grant GM_cookie
+// @grant GM.cookie
 // @connect google.com
 // @connect bing.com
 // @connect yellowpages.com
 // @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/fcb809afe3137d2b080bf43ab6050cecb0b2421b/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Email/MailTester.js
+// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=[".facebook.com"];
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A24JORM0PZYVEL",false);
+    var bad_urls=[".firmenwissen.com"];
+    /* TODO should be requester #, last field should be if it's crowd or not */
+    var MTurk=new MTurkScript(10000,750+(Math.random()*1000),[],begin_script,"A8C75GM7L6MT7",true);
     var MTP=MTurkScript.prototype;
-       function is_bad_name(b_algo,b_name,p_caption,i,type) {
-        try {
-            var reg=/[-\s\'\"’]+/g,b_replace_reg=/\s+[\-\|–]{1}.*$/g;
-            var lower_b=b_name.toLowerCase().replace(reg,""),lower_my=my_query.name.replace(/\s(-|@|&|and)\s.*$/).toLowerCase().replace(reg,"");
-       //       if(type==="linkedin" && /(^|[^A-Za-z])Inc($|[^A-Za-z\.])/i.test(b_name.replace(/\-\|.*$/,"").trim())) return true;
-
-
-            if(lower_b.indexOf(lower_my)!==-1 || lower_my.indexOf(lower_b)!==-1) return false;
-            b_name=b_name.replace(b_replace_reg,"");
-            let bob_name=my_query.name.replace("’","\'");
-            if(!/linkedin/.test(type)) console.log("b_name="+b_name+", bob_name="+bob_name);
-            if(type==="linkedin" &&
-               b_algo.innerText.toLowerCase().indexOf(MTP.shorten_company_name(bob_name).toLowerCase())!==-1) return false;
-            if((b_name && bob_name && MTP.matches_names(b_name,bob_name)) ||
-               b_name.toLowerCase().indexOf(bob_name.toLowerCase())!==-1 ||
-               bob_name.toLowerCase().indexOf(b_name.toLowerCase())!==-1) return false;
-        }
-        catch(error) { console.log("Error="+error); }
-
-        return true;
+    function is_bad_name(b_name)
+    {
+        return false;
     }
 
     function query_response(response,resolve,reject,type) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-        console.log("in query_response\n"+response.finalUrl);
+        console.log("in query_response\n"+response.finalUrl+", type="+type);
         var search, b_algo, i=0, inner_a;
         var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
         var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
@@ -69,23 +60,26 @@
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
-            if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
+	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
                 console.log("parsed_context="+JSON.stringify(parsed_context));
-                if(parsed_context.url && !MTurkScript.prototype.is_bad_url(parsed_context.url, bad_urls,-1)) {
-                    resolve(parsed_context.url);
-                    return;
-                }
+            if(parsed_context.url&&!MTP.is_bad_url(parsed_context.url,4)) {
+                resolve(parsed_context.url);
+                return;
             }
+        }
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length; i++) {
+            for(i=0; i < b_algo.length&&i<3; i++) {
                 b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !is_bad_name(b_name,p_caption,i) && (b1_success=true)) break;
+                if(!MTP.is_bad_url(b_url, bad_urls,4,2) && (!MTP.is_bad_name(b_name,my_query.name,p_caption,i)
+                                                            || (i===0 && !MTP.is_bad_name(b_name,my_query.name.replace(/\s.*$/,""),p_caption,i))
+                                                            )
+		   && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
         }
@@ -93,8 +87,17 @@
             reject(error);
             return;
         }
-        reject("Nothing found");
+	do_next_query(resolve,reject,type);
         return;
+    }
+    function do_next_query(resolve,reject,type) {
+        if(type==='query' && my_query.try_count[type]===0) {
+            my_query.try_count[type]++;
+            my_query.name=MTP.shorten_company_name(my_query.name);
+            query_search(my_query.name, resolve, reject, query_response,"query");
+            return;
+        }
+        reject("Nothing found");
     }
 
     /* Search on bing for search_str, parse bing response with callback */
@@ -109,15 +112,41 @@
                           });
     }
 
+    function is_bad_url(the_url, bad_urls, max_depth, max_dashes)
+{
+    var i,dash_split,do_dashes,slash_split;
+    console.log("the_url="+the_url);
+    the_url=the_url.replace(/\/$/,"")
+	.replace(/(https?:\/\/[^\/]*)\/en(\/.*|)$/,"$1");
+        console.log("the_url="+the_url);
+
+    if(max_depth===undefined) max_depth=4;
+    if(max_dashes===undefined || max_dashes===-1) do_dashes=false;
+    else do_dashes=true;
+    for(i=0; i < bad_urls.length; i++) {
+        if(the_url.indexOf(bad_urls[i])!==-1) return true;
+    }
+    // -1 means we just check for specific bad stuff, not length
+    if(max_depth!==-1 && the_url.split("/").length>max_depth) return true;
+    else console.log("length="+the_url.split("/").length+", "+the_url.split("/"));
+    var temp_url=the_url.replace(/\.com\/.*$/,"");
+    console.log("new length="+temp_url+", "+temp_url.split("/").length);
+    if((slash_split=the_url.split("/")).length >= 4 && do_dashes) {
+	for(i=3;i<slash_split.length;i++) {
+	    if(slash_split[i].split("-").length>max_dashes||slash_split[i].split("_").length>max_dashes||
+	       slash_split[i].split("+").length>max_dashes) return true;
+	}
+    }
+}
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.fields.entity_url=result;
+        my_query.fields.Website=result;
         submit_if_done();
     }
 
     function begin_script(timeout,total_time,callback) {
         if(timeout===undefined) timeout=200;
-        if(total_time===undefined) total_time=0; 
+        if(total_time===undefined) total_time=0;
         if(callback===undefined) callback=init_Query;
         if(MTurk!==undefined) { callback(); }
         else if(total_time<2000) {
@@ -147,20 +176,24 @@
     function init_Query()
     {
         console.log("in init_query");
-        bad_urls=bad_urls.concat(default_bad_urls);
         var i;
-        //var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
-        //var dont=document.getElementsByClassName("dont-break-out");
-        my_query={name:document.querySelector("#companyname").innerText.trim(),fields:{},done:{},submitted:false};
+
+        bad_urls=default_bad_urls.concat(bad_urls);//extend(['twitter.com','linkedin.com']);
+        var h3=document.querySelectorAll("crowd-form h3");
+
+        my_query={name:h3[0].innerText.trim().replace(/^[^:]*:\s*/,""),country:h3[1].innerText.trim().replace(/^[^:]*:\s*/,"")
+                  ,fields:{},done:{},
+		  try_count:{"query":0},
+		  submitted:false};
 	console.log("my_query="+JSON.stringify(my_query));
-        var search_str=my_query.name;
+        var search_str=my_query.name+" "+my_query.country;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
     }
 
 })();

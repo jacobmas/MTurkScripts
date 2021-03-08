@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         FritzHammer
+// @name         Medical Networks Tech
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  New script
@@ -18,47 +18,41 @@
 // @grant GM_openInTab
 // @grant GM_getResourceText
 // @grant GM_addStyle
+// @grant GM_cookie
+// @grant GM.cookie
 // @connect google.com
 // @connect bing.com
 // @connect yellowpages.com
 // @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Email/MailTester.js
+// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=[".facebook.com"];
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A24JORM0PZYVEL",false);
+    var bad_urls=['.healthgrades.com','.vitals.com','.medicarelist.com','.healthcare4ppl.com','.yelp.com','.zocdoc.com',
+                 '.npidb.com','/npino.com','.ehealthscores.com','/npiprofile.com','/healthprovidersdata.com','.usnews.com','.doximity.com',
+                 '.linkedin.com','.sharecare.com','.caredash.com','.healthcare6.com','.topnpi.com','.webmd.com','.md.com','.yellowpages.com',
+                 '.corporationwiki.com','.medicinenet.com'];
+    /* TODO should be requester #, last field should be if it's crowd or not */
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A96C36HXWDNPB",false);
     var MTP=MTurkScript.prototype;
-       function is_bad_name(b_algo,b_name,p_caption,i,type) {
-        try {
-            var reg=/[-\s\'\"’]+/g,b_replace_reg=/\s+[\-\|–]{1}.*$/g;
-            var lower_b=b_name.toLowerCase().replace(reg,""),lower_my=my_query.name.replace(/\s(-|@|&|and)\s.*$/).toLowerCase().replace(reg,"");
-       //       if(type==="linkedin" && /(^|[^A-Za-z])Inc($|[^A-Za-z\.])/i.test(b_name.replace(/\-\|.*$/,"").trim())) return true;
-
-
-            if(lower_b.indexOf(lower_my)!==-1 || lower_my.indexOf(lower_b)!==-1) return false;
-            b_name=b_name.replace(b_replace_reg,"");
-            let bob_name=my_query.name.replace("’","\'");
-            if(!/linkedin/.test(type)) console.log("b_name="+b_name+", bob_name="+bob_name);
-            if(type==="linkedin" &&
-               b_algo.innerText.toLowerCase().indexOf(MTP.shorten_company_name(bob_name).toLowerCase())!==-1) return false;
-            if((b_name && bob_name && MTP.matches_names(b_name,bob_name)) ||
-               b_name.toLowerCase().indexOf(bob_name.toLowerCase())!==-1 ||
-               bob_name.toLowerCase().indexOf(b_name.toLowerCase())!==-1) return false;
-        }
-        catch(error) { console.log("Error="+error); }
-
-        return true;
+    function is_bad_name(b_name)
+    {
+        return false;
     }
 
     function query_response(response,resolve,reject,type) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-        console.log("in query_response\n"+response.finalUrl);
+        console.log("in query_response\n"+response.finalUrl+", type="+type);
         var search, b_algo, i=0, inner_a;
         var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
         var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
@@ -69,13 +63,19 @@
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
-            if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context));
-                if(parsed_context.url && !MTurkScript.prototype.is_bad_url(parsed_context.url, bad_urls,-1)) {
-                    resolve(parsed_context.url);
-                    return;
-                }
+	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
+
+            if(type==='query'&& my_query.try_count[type]===0 && parsed_context.thing!==undefined&&parsed_context.thing.Clinic!==undefined) {
+                my_query.fields['Q2Url']=parsed_context.thing.Clinic;
+                query_search(my_query.short_name+" "+parsed_context.thing.Clinic+" ", resolve, reject, query_response,"clinic_query");
+                return;
             }
+            else if(type==='query' && my_query.try_count[type]===0 &&parsed_context.SubTitle==='Rheumatologist') {
+                my_query.fields['Q2Url']=parsed_context.Title;
+                query_search(my_query.short_name+" "+parsed_context.Title+" ", resolve, reject, query_response,"clinic_query");
+                return;
+            }
+                console.log("parsed_context="+JSON.stringify(parsed_context)); } 
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
             for(i=0; i < b_algo.length; i++) {
@@ -85,16 +85,20 @@
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !is_bad_name(b_name,p_caption,i) && (b1_success=true)) break;
+                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1) && !MTurkScript.prototype.is_bad_name(b_name,my_query.short_name,p_caption,i)
+		   && (b1_success=true)) break;
             }
-            if(b1_success && (resolve(b_url)||true)) return;
+            if(b1_success && (resolve({url:b_url,name:b_name,caption:p_caption})||true)) return;
         }
         catch(error) {
             reject(error);
             return;
         }
-        reject("Nothing found");
+	do_next_query(resolve,reject,type);
         return;
+    }
+    function do_next_query(resolve,reject,type) {
+        reject("Nothing found");
     }
 
     /* Search on bing for search_str, parse bing response with callback */
@@ -111,7 +115,7 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.fields.entity_url=result;
+        my_query.fields.Q1Url=result.url;
         submit_if_done();
     }
 
@@ -147,20 +151,24 @@
     function init_Query()
     {
         console.log("in init_query");
-        bad_urls=bad_urls.concat(default_bad_urls);
-        var i;
-        //var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
-        //var dont=document.getElementsByClassName("dont-break-out");
-        my_query={name:document.querySelector("#companyname").innerText.trim(),fields:{},done:{},submitted:false};
+        var p=document.querySelectorAll("form p");
+        var colon_re=/^[^:]*:\s*/;
+        my_query={name:p[0].innerText.trim().replace(colon_re,''),
+                  specialty:p[1].innerText.trim().replace(colon_re,''),
+                  
+                  fields:{Q1Url:'',Q2Url:'',Q3Url:''},done:{},
+		  try_count:{"query":0},
+		  submitted:false};
+        my_query.short_name=my_query.name.replace(/,.*$/,"");
 	console.log("my_query="+JSON.stringify(my_query));
-        var search_str=my_query.name;
+        var search_str=my_query.short_name+" "+my_query.specialty+" ";
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
-            query_search(search_str, resolve, reject, query_response,"query");
+            query_search(my_query.short_name+" "+my_query.specialty+" ", resolve, reject, query_response,"query");
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
     }
 
 })();

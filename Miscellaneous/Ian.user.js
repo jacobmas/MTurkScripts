@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         FritzHammer
+// @name         Ian
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  New script
+// @description  Scrape School data for Ian
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -18,47 +18,39 @@
 // @grant GM_openInTab
 // @grant GM_getResourceText
 // @grant GM_addStyle
+// @grant GM_cookie
+// @grant GM.cookie
 // @connect google.com
 // @connect bing.com
 // @connect yellowpages.com
 // @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/358b7db57b67fb958eac7774d52c725a8f1f498a/School/School.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Email/MailTester.js
+// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=[".facebook.com"];
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A24JORM0PZYVEL",false);
+    var bad_urls=[];
+    /* TODO should be requester #, last field should be if it's crowd or not */
+    var MTurk=new MTurkScript(40000,750+(Math.random()*1000),[],begin_script,"A2TC2ICQMURQN0",true);
     var MTP=MTurkScript.prototype;
-       function is_bad_name(b_algo,b_name,p_caption,i,type) {
-        try {
-            var reg=/[-\s\'\"’]+/g,b_replace_reg=/\s+[\-\|–]{1}.*$/g;
-            var lower_b=b_name.toLowerCase().replace(reg,""),lower_my=my_query.name.replace(/\s(-|@|&|and)\s.*$/).toLowerCase().replace(reg,"");
-       //       if(type==="linkedin" && /(^|[^A-Za-z])Inc($|[^A-Za-z\.])/i.test(b_name.replace(/\-\|.*$/,"").trim())) return true;
-
-
-            if(lower_b.indexOf(lower_my)!==-1 || lower_my.indexOf(lower_b)!==-1) return false;
-            b_name=b_name.replace(b_replace_reg,"");
-            let bob_name=my_query.name.replace("’","\'");
-            if(!/linkedin/.test(type)) console.log("b_name="+b_name+", bob_name="+bob_name);
-            if(type==="linkedin" &&
-               b_algo.innerText.toLowerCase().indexOf(MTP.shorten_company_name(bob_name).toLowerCase())!==-1) return false;
-            if((b_name && bob_name && MTP.matches_names(b_name,bob_name)) ||
-               b_name.toLowerCase().indexOf(bob_name.toLowerCase())!==-1 ||
-               bob_name.toLowerCase().indexOf(b_name.toLowerCase())!==-1) return false;
-        }
-        catch(error) { console.log("Error="+error); }
-
-        return true;
+    function is_bad_name(b_name)
+    {
+        return false;
     }
 
     function query_response(response,resolve,reject,type) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-        console.log("in query_response\n"+response.finalUrl);
+        console.log("in query_response\n"+response.finalUrl+", type="+type);
         var search, b_algo, i=0, inner_a;
         var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
         var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
@@ -69,13 +61,8 @@
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
-            if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context));
-                if(parsed_context.url && !MTurkScript.prototype.is_bad_url(parsed_context.url, bad_urls,-1)) {
-                    resolve(parsed_context.url);
-                    return;
-                }
-            }
+	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
+                console.log("parsed_context="+JSON.stringify(parsed_context)); } 
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
             for(i=0; i < b_algo.length; i++) {
@@ -85,7 +72,8 @@
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !is_bad_name(b_name,p_caption,i) && (b1_success=true)) break;
+                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
+		   && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
         }
@@ -93,8 +81,11 @@
             reject(error);
             return;
         }
-        reject("Nothing found");
+	do_next_query(resolve,reject,type);
         return;
+    }
+    function do_next_query(resolve,reject,type) {
+        reject("Nothing found");
     }
 
     /* Search on bing for search_str, parse bing response with callback */
@@ -111,8 +102,6 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.fields.entity_url=result;
-        submit_if_done();
     }
 
     function begin_script(timeout,total_time,callback) {
@@ -144,23 +133,83 @@
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
 
+    function get_value(contact) {
+        var ret=0;
+        if(contact.email) ret+=10;
+        if(!/Elementary/.test(contact.title)) ret+=1;
+        return ret;
+    }
+
+    function cmp_contacts(a,b) {
+        return get_value(b)-get_value(a);
+    }
+
+
+    function failed_search_func_ian(result) {
+        console.log("result="+result);
+    }
     function init_Query()
     {
         console.log("in init_query");
-        bad_urls=bad_urls.concat(default_bad_urls);
         var i;
-        //var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
-        //var dont=document.getElementsByClassName("dont-break-out");
-        my_query={name:document.querySelector("#companyname").innerText.trim(),fields:{},done:{},submitted:false};
-	console.log("my_query="+JSON.stringify(my_query));
-        var search_str=my_query.name;
-        const queryPromise = new Promise((resolve, reject) => {
-            console.log("Beginning URL search");
-            query_search(search_str, resolve, reject, query_response,"query");
+        var namestuff=document.querySelector("form a").innerText;
+
+        var state_len=0;
+        var best_state='',city,name,state;
+        var temp_regex,x,match;
+        var s;
+        console.log("namestuff="+namestuff);
+        for(x in state_map) {
+            temp_regex=new RegExp(x+"$");
+            if((match=namestuff.match(temp_regex))&&match[0].length>state_len) {
+                best_state=match[0];
+                state_len=best_state.length;
+            }
+        }
+        namestuff=namestuff.replace(best_state,"");
+        state=best_state;
+        console.log("namestuff="+namestuff);
+        name=namestuff.match(/^.* School/);
+        if(!name) { name=namestuff.match(/^.+ Academy/); }
+                if(!name) { name=namestuff.match(/^.+Institute/); }
+
+        if(!name) {
+            console.log("Bad name");
+            GM_setValue("returnHit",true);
+            return;
+        }
+        namestuff=namestuff.replace(name[0],"");
+        city=namestuff.trim();
+        console.log("name="+name[0]+", city="+city+", state="+state);
+         my_query={name:name[0],
+
+                  fields:{},
+                  done:{},
+		  try_count:{"query":0,"bbb":0}, staff_list:[],
+		  submitted:false};
+        var promise=new Promise((resolve,reject) => {
+        s=new School({name:name[0],city:city,state:state,type:"school",
+                              title_str:["Principal","PRINCIPAL","Headmaster","Head of School"],
+                              debug:true,failed_search_func:failed_search_func_ian,
+                             title_regex:[/Principal|Headmaster|Head of School/i]},resolve,reject);
         });
-        queryPromise.then(query_promise_then)
-            .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+        promise.then(function() {
+            console.log("phone="+s.phone);
+            s.contact_list.sort(cmp_contacts);
+            console.log(s.contact_list);
+            if(s.contact_list.length>0&&s.contact_list[0].email) {
+                my_query.fields["Principal Name"]=s.contact_list[0].name;
+                my_query.fields["Principal Email"]=my_query.fields["School Email"]=s.contact_list[0].email;
+                my_query.fields["Principal Number"]=s.contact_list[0].phone?s.contact_list[0].phone:s.phone;
+                submit_if_done();
+
+            }
+            else {
+                GM_setValue("returnHit",true);
+            }
+            
+        });
+        
     }
 
 })();

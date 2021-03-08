@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         FritzHammer
+// @name         Muskatel
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  New script
+// @description  Get corps
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -18,47 +18,38 @@
 // @grant GM_openInTab
 // @grant GM_getResourceText
 // @grant GM_addStyle
+// @grant GM_cookie
+// @grant GM.cookie
 // @connect google.com
 // @connect bing.com
 // @connect yellowpages.com
 // @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Email/MailTester.js
+// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=[".facebook.com"];
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A24JORM0PZYVEL",false);
+    var bad_urls=["yelp.ca"];
+    /* TODO should be requester #, last field should be if it's crowd or not */
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A1WLOTC91BTM8W",true);
     var MTP=MTurkScript.prototype;
-       function is_bad_name(b_algo,b_name,p_caption,i,type) {
-        try {
-            var reg=/[-\s\'\"’]+/g,b_replace_reg=/\s+[\-\|–]{1}.*$/g;
-            var lower_b=b_name.toLowerCase().replace(reg,""),lower_my=my_query.name.replace(/\s(-|@|&|and)\s.*$/).toLowerCase().replace(reg,"");
-       //       if(type==="linkedin" && /(^|[^A-Za-z])Inc($|[^A-Za-z\.])/i.test(b_name.replace(/\-\|.*$/,"").trim())) return true;
-
-
-            if(lower_b.indexOf(lower_my)!==-1 || lower_my.indexOf(lower_b)!==-1) return false;
-            b_name=b_name.replace(b_replace_reg,"");
-            let bob_name=my_query.name.replace("’","\'");
-            if(!/linkedin/.test(type)) console.log("b_name="+b_name+", bob_name="+bob_name);
-            if(type==="linkedin" &&
-               b_algo.innerText.toLowerCase().indexOf(MTP.shorten_company_name(bob_name).toLowerCase())!==-1) return false;
-            if((b_name && bob_name && MTP.matches_names(b_name,bob_name)) ||
-               b_name.toLowerCase().indexOf(bob_name.toLowerCase())!==-1 ||
-               bob_name.toLowerCase().indexOf(b_name.toLowerCase())!==-1) return false;
-        }
-        catch(error) { console.log("Error="+error); }
-
-        return true;
+    function is_bad_name(b_name)
+    {
+        return false;
     }
 
     function query_response(response,resolve,reject,type) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-        console.log("in query_response\n"+response.finalUrl);
+        console.log("in query_response\n"+response.finalUrl+", type="+type);
         var search, b_algo, i=0, inner_a;
         var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
         var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
@@ -69,13 +60,38 @@
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
-            if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context));
-                if(parsed_context.url && !MTurkScript.prototype.is_bad_url(parsed_context.url, bad_urls,-1)) {
-                    resolve(parsed_context.url);
+
+            if(/address/.test(type) && doc.querySelector(".b_address")) {
+                resolve(doc.querySelector(".b_address").innerText);
+                return;
+            }
+            else if(/address/.test(type)) {
+                var x;
+                if((x=doc.querySelector(".b_ans .rwrl"))) {
+                    if(x.querySelector("#qna_imgtt_img")) {
+                        x.querySelector("#qna_imgtt_img").remove();
+                    }
+                    let p=x.innerText.replace(my_query.name,"").trim();
+                    console.log("p="+p);
+                    let temp_add=new Address(p);
+                    if(temp_add.postcode && temp_add.state && temp_add.city && temp_add.address1) {
+                        resolve(p);
+                        return;
+                    }
+                }
+                if((x=doc.querySelector(".iconDataList .bm_details_overlay"))) {
+                    resolve(x.innerText.trim());
                     return;
                 }
             }
+	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
+                console.log("parsed_context="+JSON.stringify(parsed_context));
+            console.log(parsed_context);
+            if(/query/.test(type) && parsed_context.url) {
+                resolve(parsed_context.url);
+                return;
+            }
+        }
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
             for(i=0; i < b_algo.length; i++) {
@@ -85,7 +101,8 @@
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !is_bad_name(b_name,p_caption,i) && (b1_success=true)) break;
+                if(/query/.test(type) && !MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
+		   && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
         }
@@ -93,8 +110,16 @@
             reject(error);
             return;
         }
-        reject("Nothing found");
+	do_next_query(resolve,reject,type);
         return;
+    }
+    function do_next_query(resolve,reject,type) {
+        if(/address/.test(type) && my_query.try_count[type]===0) {
+            my_query.try_count[type]++;
+            query_search(my_query.name, resolve, reject, query_response,"address");
+            return;
+        }
+        reject("Nothing found");
     }
 
     /* Search on bing for search_str, parse bing response with callback */
@@ -111,7 +136,9 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.fields.entity_url=result;
+        my_query.fields.companyName=my_query.name;
+        my_query.fields.OfficialURL=result;
+        my_query.done.query=true;
         submit_if_done();
     }
 
@@ -127,6 +154,18 @@
             return;
         }
         else { console.log("Failed to begin script"); }
+    }
+
+    function address_promise_then(result) {
+        var my_add=new Address(result);
+        console.log(my_add);
+        my_query.fields.address1=my_add.address1;
+        if(my_add.address2) my_query.fields.address2=my_add.address2;
+        my_query.fields.city=my_add.city;
+        my_query.fields.state=my_add.state;
+        my_query.fields.zip=my_add.postcode;
+        my_query.done.address=true;
+        submit_if_done();
     }
 
     function add_to_sheet() {
@@ -147,11 +186,11 @@
     function init_Query()
     {
         console.log("in init_query");
-        bad_urls=bad_urls.concat(default_bad_urls);
         var i;
-        //var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
-        //var dont=document.getElementsByClassName("dont-break-out");
-        my_query={name:document.querySelector("#companyname").innerText.trim(),fields:{},done:{},submitted:false};
+        var name=document.querySelector("form div p").innerText.replace(/^[^:]*:\s*/,"");
+        my_query={name:name,fields:{},done:{"query":false,"address":false},
+		  try_count:{"query":0,"address":0},
+		  submitted:false};
 	console.log("my_query="+JSON.stringify(my_query));
         var search_str=my_query.name;
         const queryPromise = new Promise((resolve, reject) => {
@@ -160,7 +199,16 @@
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
+
+        search_str=my_query.name+" address";
+        const addressPromise = new Promise((resolve, reject) => {
+            console.log("Beginning URL search");
+            query_search(search_str, resolve, reject, query_response,"address");
+        });
+        addressPromise.then(address_promise_then)
+            .catch(function(val) {
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
     }
 
 })();

@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         FritzHammer
+// @name         Sid Upadhyay
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  New script
@@ -18,47 +18,44 @@
 // @grant GM_openInTab
 // @grant GM_getResourceText
 // @grant GM_addStyle
+// @grant GM_cookie
+// @grant GM.cookie
 // @connect google.com
 // @connect bing.com
 // @connect yellowpages.com
 // @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Email/MailTester.js
+// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=[".facebook.com"];
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A24JORM0PZYVEL",false);
+    var bad_urls=[];
+    /* TODO should be requester #, last field should be if it's crowd or not */
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A1PON2BEGLAXMM",true);
     var MTP=MTurkScript.prototype;
-       function is_bad_name(b_algo,b_name,p_caption,i,type) {
-        try {
-            var reg=/[-\s\'\"’]+/g,b_replace_reg=/\s+[\-\|–]{1}.*$/g;
-            var lower_b=b_name.toLowerCase().replace(reg,""),lower_my=my_query.name.replace(/\s(-|@|&|and)\s.*$/).toLowerCase().replace(reg,"");
-       //       if(type==="linkedin" && /(^|[^A-Za-z])Inc($|[^A-Za-z\.])/i.test(b_name.replace(/\-\|.*$/,"").trim())) return true;
-
-
-            if(lower_b.indexOf(lower_my)!==-1 || lower_my.indexOf(lower_b)!==-1) return false;
-            b_name=b_name.replace(b_replace_reg,"");
-            let bob_name=my_query.name.replace("’","\'");
-            if(!/linkedin/.test(type)) console.log("b_name="+b_name+", bob_name="+bob_name);
-            if(type==="linkedin" &&
-               b_algo.innerText.toLowerCase().indexOf(MTP.shorten_company_name(bob_name).toLowerCase())!==-1) return false;
-            if((b_name && bob_name && MTP.matches_names(b_name,bob_name)) ||
-               b_name.toLowerCase().indexOf(bob_name.toLowerCase())!==-1 ||
-               bob_name.toLowerCase().indexOf(b_name.toLowerCase())!==-1) return false;
+    function is_bad_name(b_name,orig_name)
+    {
+        var bob=new RegExp(orig_name.replace(/\s.*$/,""),"i");
+        console.log("bob="+bob);
+        if(!bob.test(b_name)) {
+            console.log("Failed this one");
+            return true;
         }
-        catch(error) { console.log("Error="+error); }
-
-        return true;
+        return false;
     }
 
     function query_response(response,resolve,reject,type) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-        console.log("in query_response\n"+response.finalUrl);
+        console.log("in query_response\n"+response.finalUrl+", type="+type);
         var search, b_algo, i=0, inner_a;
         var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
         var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
@@ -69,23 +66,25 @@
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
-            if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
+	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
                 console.log("parsed_context="+JSON.stringify(parsed_context));
-                if(parsed_context.url && !MTurkScript.prototype.is_bad_url(parsed_context.url, bad_urls,-1)) {
-                    resolve(parsed_context.url);
-                    return;
-                }
+            if(parsed_context.Facebook) {
+                resolve(parsed_context.Facebook);
+                return;
             }
+
+        }
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length; i++) {
+            for(i=0; i < b_algo.length&&i<2; i++) {
                 b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !is_bad_name(b_name,p_caption,i) && (b1_success=true)) break;
+                if(/facebook\.com/.test(b_url) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i) && !is_bad_name(b_name,my_query.name,p_caption,i)
+		   && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
         }
@@ -93,8 +92,16 @@
             reject(error);
             return;
         }
-        reject("Nothing found");
+	do_next_query(resolve,reject,type);
         return;
+    }
+    function do_next_query(resolve,reject,type) {
+        if(my_query.try_count[type]===0) {
+            my_query.try_count[type]++;
+             query_search(my_query.name+" "+my_query.state+" site:facebook.com", resolve, reject, query_response,"query");
+            return;
+        }
+        reject("Nothing found");
     }
 
     /* Search on bing for search_str, parse bing response with callback */
@@ -111,8 +118,13 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.fields.entity_url=result;
-        submit_if_done();
+        result=result.replace(/(https?:\/\/[^\/]*\/)pages\/([^\/]*)\/([\d]*).*$/,"$1$2-$3");
+        if(!MTP.is_bad_fb(result)) {
+            my_query.fields.facebookpageurl=result.replace(/(https?:\/\/[^\/]*\/[^\/]*).*$/,"$1");
+            submit_if_done();
+        }
+        else reject("Failed bad FB");
+
     }
 
     function begin_script(timeout,total_time,callback) {
@@ -147,20 +159,24 @@
     function init_Query()
     {
         console.log("in init_query");
-        bad_urls=bad_urls.concat(default_bad_urls);
         var i;
-        //var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
-        //var dont=document.getElementsByClassName("dont-break-out");
-        my_query={name:document.querySelector("#companyname").innerText.trim(),fields:{},done:{},submitted:false};
+        var strong=document.querySelectorAll("strong");
+        var split=strong[1].innerText.trim().split(/, /);
+
+        my_query={name:strong[0].innerText.trim(),city:split[0].trim(),state:split[1].trim(),fields:{},done:{},
+		  try_count:{"query":0},
+		  submitted:false};
+        my_query.city=my_query.city.replace("unknown","");
+        my_query.state = my_query.state.replace("unknown","");
 	console.log("my_query="+JSON.stringify(my_query));
-        var search_str=my_query.name;
+        var search_str=my_query.name+" "+my_query.city+" "+my_query.state+" site:facebook.com";
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
     }
 
 })();

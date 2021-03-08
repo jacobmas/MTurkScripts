@@ -25,7 +25,7 @@
 // @connect yellowpages.com
 // @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/fcb809afe3137d2b080bf43ab6050cecb0b2421b/js/MTurkScript.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
@@ -84,6 +84,12 @@
         return;
     }
     function do_next_query(resolve,reject,type) {
+        if(type==='query' && my_query.try_count[type]===0) {
+            my_query.try_count[type]++;
+            my_query.name=MTP.shorten_company_name(my_query.name);
+            query_search(my_query.name, resolve, reject, query_response,"query");
+            return;
+        }
         reject("Nothing found");
     }
 
@@ -131,14 +137,15 @@
         var checkplace=document.querySelector("#correct");
         console.log("checkplace=");
         console.log(checkplace);
+        console.log(checkplace.getAttribute("aria-disabled"));
         console.log(checkplace.children);
         for(var x of checkplace.childNodes) { console.log(x.innerHTML); }
-        if(document.getElementById("newurl").disabled) {
+        if(!checkplace.getAttribute("aria-disabled")) {
             console.log("checkplace not disabled");
             var domain=MTP.get_domain_only(result);
             if(result.toLowerCase()===domain.toLowerCase()) {
             }
-            GM_setValue("returnHit",true);
+            GM_setValue("returnHit"+MTurk.assignment_id,true);
             return;
         }
         else {
@@ -179,9 +186,7 @@
     {
         console.log("in init_query");
         var i;
-        for(i in unsafeWindow) {
-            console.log("i="+i);
-        }
+      
         bad_urls=default_bad_urls;//extend(['twitter.com','linkedin.com']);
         var google_click=document.querySelector("form div a");
         //google_click.click();
