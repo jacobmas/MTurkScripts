@@ -85,3 +85,14 @@ var Nicknames={
     "vincent":["vince"],
     "william":["will","bill","billy"]
 };
+/** Required MTurkScript.js */
+function matches_person_names(desired_name,found_name) {
+	var parsed_desired=MTurkScript.prototype.parse_name(desired_name);
+	var parsed_found=MTurkScript.prototype.parse_name(found_name);
+
+	if(parsed_desired.lname.toLowerCase()!=parsed_found.lname.toLowerCase()) return false;
+	if(parsed_desired.fname.toLowerCase()===parsed_found.fname.toLowerCase()) return true;
+	if(Nicknames[parsed_desired.fname.toLowerCase()]!=undefined && Nicknames[parsed_desired.fname.toLowerCase()].includes(parsed_found.fname.toLowerCase())) return true;
+	return false;
+
+}
