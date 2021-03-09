@@ -2,6 +2,7 @@
 
 var Nicknames={
     "alexander":["alex"],
+	"alex":["alejandro"],
     "andrew":["drew","andy"],
     "angela":["angie"],
     "andy":["andrew","drew"],
@@ -29,7 +30,9 @@ var Nicknames={
     "eugene":["gene"],
     "frederick":["fred","rick"],
     "gene":["eugene"],
+	"hank":["henry"],
     "harold":["harry"],
+	"henry":["hank"],
     "jacob":["jake"],
     "jake":["jacob"],
     "james":["jim"],
@@ -57,6 +60,7 @@ var Nicknames={
     "phillip":["phil"],
     "rebecca":["becca","becky"],
     "richard":["rich","rick","dick"],
+	"rick":["richard","dick","rich"],
     "rob":["bob","robert","bobby"],
     "robert":["bob","rob","bobby"],
     "ronald":["ron"],
