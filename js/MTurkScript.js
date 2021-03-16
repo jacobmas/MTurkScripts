@@ -44,7 +44,11 @@ var default_bad_urls=[".alibaba.com",".amazonaws.com",".business.site",".crunchb
 		      "instagram.com",".medium.com",".mturkcontent.com",".mylife.com",".opencorporates.com","opendi.us","peekyou.com",
 		      "plus.google.com",".spokeo.com",".thefreedictionary.com",".trystuff.com",
 		      "twitter.com",
-		      ".urbandictionary.com",".vimeo.com","youtube.com"];
+		      ".urbandictionary.com",".vimeo.com","youtube.com",
+			  '.healthgrades.com','.vitals.com','.medicarelist.com','.healthcare4ppl.com','.yelp.com','.zocdoc.com',
+                 '.npidb.com','/npino.com','.ehealthscores.com','/npiprofile.com','/healthprovidersdata.com','.usnews.com','.doximity.com',
+                 '.linkedin.com','.sharecare.com','.caredash.com','.healthcare6.com','.topnpi.com','.webmd.com','.md.com','.yellowpages.com','researchgate.net',
+                 '.corporationwiki.com','.medicinenet.com','.wellness.com','mturkcontent.com','/issuu.com','washingtonpost.com','.hrt.org','findatopdoc.com','.wiley.com'];
 
 /* Regular expressions for emails, phones, faxes */
 var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%\*]{1,40}(\.[^<>\/()\[\]\\.,;:：\s\*@"\?]{1,40}){0,5}))@((([a-zA-Z\-0-9]{1,30}\.){1,8}[a-zA-Z]{2,20}))/g;
@@ -500,7 +504,9 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
     b_entitySubTitle=b_context.getElementsByClassName("b_entitySubTitle");
     if(b_entityTitle && (temp_span=b_entityTitle.querySelector("span")) && temp_span.title) result.Title=temp_span.title;
 	else if(b_entityTitle) result.Title=b_entityTitle.innerText;
-    if(b_entitySubTitle.length>0) result.SubTitle=b_entitySubTitle[0].innerText;
+    if(b_entitySubTitle.length>0) {
+		
+		result.SubTitle=b_entitySubTitle[0].parentNode.innerText;
     if((b_vList=b_context.getElementsByClassName("b_vList")).length>0) {
         inner_li=b_vList[0].getElementsByTagName("li");
         for(i=0; i<inner_li.length; i++) {
