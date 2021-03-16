@@ -504,9 +504,9 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
     b_entitySubTitle=b_context.getElementsByClassName("b_entitySubTitle");
     if(b_entityTitle && (temp_span=b_entityTitle.querySelector("span")) && temp_span.title) result.Title=temp_span.title;
 	else if(b_entityTitle) result.Title=b_entityTitle.innerText;
-    if(b_entitySubTitle.length>0) {
-		
+    if(b_entitySubTitle.length>0) {	
 		result.SubTitle=b_entitySubTitle[0].parentNode.innerText;
+	}
     if((b_vList=b_context.getElementsByClassName("b_vList")).length>0) {
         inner_li=b_vList[0].getElementsByTagName("li");
         for(i=0; i<inner_li.length; i++) {
