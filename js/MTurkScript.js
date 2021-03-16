@@ -631,7 +631,7 @@ MTurkScript.prototype.parse_entityTP=function(b_context) {
     b_entitySubTitle=b_entityTP.querySelector(".b_entitySubTitle");
     b_subModule=b_entityTP.querySelectorAll(".b_subModule");
     if(b_entityTitle) ret.name=b_entityTitle.innerText;
-    if(b_entitySubTitle) ret.type=b_entitySubTitle.innerText;
+    if(b_entitySubTitle) ret.type=b_entitySubTitle.parentNode.innerText;
     
     infoCard=b_entityTP.querySelectorAll(".infoCardIcons a");
     for(x of infoCard) {
