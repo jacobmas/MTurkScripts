@@ -505,7 +505,7 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
     if(b_entityTitle && (temp_span=b_entityTitle.querySelector("span")) && temp_span.title) result.Title=temp_span.title;
 	else if(b_entityTitle) result.Title=b_entityTitle.innerText;
     if(b_entitySubTitle.length>0) {	
-		result.SubTitle=b_entitySubTitle[0].parentNode.innerText;
+		result.SubTitle=b_entitySubTitle[0].parentNode.querySelector(".b_entityTitle")?b_entitySubTitle[0].innerText:b_entitySubTitle[0].parentNode.innerText;
 	}
     if((b_vList=b_context.getElementsByClassName("b_vList")).length>0) {
         inner_li=b_vList[0].getElementsByTagName("li");
@@ -631,7 +631,7 @@ MTurkScript.prototype.parse_entityTP=function(b_context) {
     b_entitySubTitle=b_entityTP.querySelector(".b_entitySubTitle");
     b_subModule=b_entityTP.querySelectorAll(".b_subModule");
     if(b_entityTitle) ret.name=b_entityTitle.innerText;
-    if(b_entitySubTitle) ret.type=b_entitySubTitle.parentNode.innerText;
+    if(b_entitySubTitle) ret.type=b_entitySubTitle.parentNode.querySelector(".b_entityTitle")?b_entitySubTitle.innerText:b_entitySubTitle.parentNode.innerText;
     
     infoCard=b_entityTP.querySelectorAll(".infoCardIcons a");
     for(x of infoCard) {
