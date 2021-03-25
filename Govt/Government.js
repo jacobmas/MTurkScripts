@@ -1714,7 +1714,7 @@ Gov.init_Gov=function(doc,url,resolve,reject,query) {
     if(refresh && (promise=MTP.create_promise(refresh,Gov.init_Gov,resolve,reject,query)||1)) return;
     var dom=url.replace(/^https?:\/\//,"").replace(/^www\./,"");
     
-    Gov.init_nlp();
+    //Gov.init_nlp();
     //console.log("doc.head.innerHTML="+doc.head.innerHTML);
     // console.log("doc.body.innerHTML="+doc.body.innerHTML);
     if(!query.id_only) { console.log("url="+url); console.time("Gov"); }
