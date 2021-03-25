@@ -1700,7 +1700,7 @@ Gov.init_nlp=function() {
 	    'sgt.':'Honorific'
 	});
     }
-   // nlp.extend(myPlugin);
+    nlp.extend(myPlugin);
 };
 /** Gov.init_Gov will initialize government search being given a url (string) and a query (object)
  *
