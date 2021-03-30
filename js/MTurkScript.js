@@ -421,7 +421,10 @@ MTurkScript.prototype.parse_name=function(to_parse) {
 	
     }
     ret.fname=split_parse[0];
-    if(last>=2 && split_parse[1].length>=1) ret.mname=split_parse[1].substring(0,1);
+    if(last>=2 && split_parse[1].length>=1) {
+		ret.mname=split_parse[1];
+		ret.minit=split_parse[1].substring(0,1);
+	}
     else ret.mname="";
     return ret;
 };
