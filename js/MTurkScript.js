@@ -431,7 +431,7 @@ MTurkScript.prototype.parse_name=function(to_parse) {
 
 MTurkScript.prototype.shorten_company_name=function(name) {
     var first_suffix_str="(Pty Ltd(\\.)?)|Limited|LLC(\\.?)|KG|LLP";
-    var first_regex=new RegExp("\\s*"+first_suffix_str+"$","ig");
+    var first_regex=new RegExp("\\s+"+first_suffix_str+"$","ig");
     name=MTurkScript.prototype.removeDiacritics(name);
     name=name.replace(first_regex,"");
     name=name.replace(/ - .*$/,"").trim().replace(/\s*plc$/i,"");
