@@ -199,11 +199,9 @@ MailTester.prototype.do_next_email_query=function(self) {
         self.curr_mailtester_num++;
         search_str="\""+curr_email+"\"";
 	// Don't do mailtester queries if we've found one already 
-        if(!self.done_with_mailtester && (self.email_list.length===0 || self.email_list[0].quality<6)) {
-	    self.do_mailtester_query(curr_email,self); }
-	
+    
         // Leaving out search initially???
-	else if(self.resolve_early&&self.email_list.length>0 && self.email_list[0].quality>=6&&false) {
+	else if(self.resolve_early&&self.email_list.length>0 && self.email_list[0].quality>=6) {
 	    console.log("Resolving early");
 	    self.resolve(self.email_list);
 	    return;
