@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         MODIFIImpressum
+// @name         Zeptive
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Find and parse German impressum
+// @description  Scrape School data for Ian
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -29,6 +29,7 @@
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/School/School.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Email/MailTester.js
 // @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
@@ -39,7 +40,7 @@
     var my_query = {};
     var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A1MT0G0JFCSPG8",true);
+    var MTurk=new MTurkScript(40000,750+(Math.random()*1000),[],begin_script,"A56TPLQUC3IDV",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
@@ -61,7 +62,7 @@
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context)); } 
+                console.log("parsed_context="+JSON.stringify(parsed_context)); }
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
             for(i=0; i < b_algo.length; i++) {
@@ -105,7 +106,7 @@
 
     function begin_script(timeout,total_time,callback) {
         if(timeout===undefined) timeout=200;
-        if(total_time===undefined) total_time=0; 
+        if(total_time===undefined) total_time=0;
         if(callback===undefined) callback=init_Query;
         if(MTurk!==undefined) { callback(); }
         else if(total_time<2000) {
@@ -125,28 +126,6 @@
         }
     }
 
-    function parse_impressum(doc,url,resolve,reject) {
-        console.log("url="+url);
-
-        var phone=doc.body.innerHTML.match(/(?:Tel(?:\.)?|Telefon):\s*([\d\-\/\s\(\)\+]*)/);
-        if(!phone) phone=doc.body.innerText.match(/(?:Tel(?:\.)?|Telefon):\s*([\d\-\/\s\(\)\+]*)/);
-        var owners=doc.body.innerHTML.match(/(?:Geschäftsführer|vertreten durch)(?::)?\s+([^\<\>]*)/);
-        if(!owners) owners=doc.body.innerHTML.match(/Gesellschafter:\s+([^\<\>]*)/);
-        if(!owners) owners=doc.body.innerHTML.match(/Inhaber(?:in)?:\s+([^\<\>]*)/);
-        if(phone) {
-            my_query.fields.phone=phone[1].trim();
-        }
-        if(owners) {
-            console.log("owners="+JSON.stringify(owners));
-            var owner_list=owners[1].split(/\s*(?:(?:\s+und)|,)\s+/);
-            var i;
-            for(i=0;i<owner_list.length&&i<4;i++) {
-                my_query.fields["contactName"+(i+1)]=owner_list[i];
-            }
-        }
-        resolve("");
-    }
-
     function submit_if_done() {
         var is_done=true,x;
         add_to_sheet();
@@ -154,18 +133,142 @@
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
 
+    function get_value(contact) {
+        var ret=0;
+        var name_nlp=nlp(contact.name).people().json();
+        if(name_nlp.length>0) ret+=2;
+        if(contact.email) ret+=10;
+        if(/School|Home|(^Thanks )/.test(contact.name)) ret=0;
+        if(/^(Dean|Principal)$/.test(contact.title)) ret+=5;
+        if(/Principal|Dean/.test(contact.title)) ret+=2;
+        if(/High School|Secondary/.test(my_query.name) && /HS|High School|Secondary/.test(contact.title)) ret+=2;
+        if(/Middle School/.test(my_query.name) && /MS|Middle School/.test(contact.title)) ret+=2;
+        if(/Elementary School/.test(my_query.name) && /ES|Elementary School/.test(contact.title)) ret+=2;
+
+        return ret;
+    }
+
+    function cmp_contacts(a,b) {
+        return get_value(b)-get_value(a);
+    }
+
+    function sort_for_reduce(a,b) {
+        if(a.name< b.name) {
+            return -1;
+        }
+        else if(a.name>b.name) {
+            return 1;
+        }
+        else if(a.email && !b.email) return -1;
+        else if(b.email && !a.email) return 1;
+        else return 0;
+    }
+
+    function reduce_contact_list(contacts) {
+        contacts=contacts.sort(sort_for_reduce);
+        var i;
+        for(i=contacts.length-1;i>0;i--) {
+            if(contacts[i].name===contacts[i-1].name) {
+                contacts.splice(i,1);
+            }
+        }
+    }
+
+    function failed_search_func_ian(result) {
+        console.log("result="+result);
+         GM_setValue("returnHit",true);
+    }
+
+    var asst_re=/Assistant|Asst|Vice/i;
+
+    function filter_assistant_principal(contact) {
+        return asst_re.test(contact.title);
+    }
+    function filter_principal(contact) {
+        return !asst_re.test(contact.title);
+    }
+
+
+
     function init_Query()
     {
         console.log("in init_query");
         var i;
-        var a =document.querySelector("crowd-form a");
-        my_query={name,fields:{},done:{},
-		  try_count:{"query":0},
+        var namestuff=decodeURI(document.querySelector("form a").href.replace("https://www.google.com/search?q=",""));
+
+
+        var state_len=0;
+        var best_state='',city,name,state;
+        var temp_regex,x,match;
+        var s;
+        let namebob=namestuff.split('+');
+        console.log("namebob="+namebob);
+
+        name=namebob[0];
+        city=namebob[1];
+        state=namebob[2];
+         my_query={name:name,
+
+                  fields:{},
+                  done:{},
+		  try_count:{"query":0,"bbb":0}, staff_list:[],
 		  submitted:false};
-	console.log("my_query="+JSON.stringify(my_query));
-        var promise=MTP.create_promise(a.href,parse_impressum,submit_if_done,function() {
-            GM_setValue("returnHit",true); }
-            );
+        var promise=new Promise((resolve,reject) => {
+        s=new School({name:name+" school website",city:city,state:state,type:"school",
+                              title_str:["Principal","PRINCIPAL","Headmaster","Head of School","Director"],dept_regex:[/Administration/],
+                              debug:true,failed_search_func:failed_search_func_ian,
+                             title_regex:[/Principal|Headmaster|Head of School|Program Administrator|(^Director$)|(^Executive Director)/i]},resolve,reject);
+        });
+        promise.then(function() {
+            console.log("phone="+s.phone);
+            reduce_contact_list(s.contact_list);
+            var i,temp_name;
+            for(i=0;i<s.contact_list.length;i++) {
+                temp_name=MTP.parse_name(s.contact_list[i].name);
+                s.contact_list[i].first=temp_name.fname;
+                s.contact_list[i].last=temp_name.lname;
+            }
+            s.contact_list.sort(cmp_contacts);
+            console.log(s.contact_list);
+            var principals=s.contact_list.filter(filter_principal);
+            var asst_principal=s.contact_list.filter(filter_assistant_principal);
+            console.log("principals="+JSON.stringify(principals));
+            console.log("assistant principals="+JSON.stringify(asst_principal));
+
+            my_query.fields['schoolUrl']=s.url;
+            var good=false;
+            if(principals.length>0 && principals[0].email) {
+                good=true;
+                my_query.fields.emailPrincipal=principals[0].email.trim();
+                my_query.fields.firstNamePrincipal=principals[0].first;
+                my_query.fields.lastNamePrincipal=principals[0].last;
+                my_query.fields.contactTitlePrincipal=principals[0].title.trim();
+            }
+            for(i=0;i<3 && i < asst_principal.length;i++) {
+                my_query.fields["emailAp"+(i+1)]=asst_principal[i].email?asst_principal[i].email.trim():"";
+                my_query.fields["firstNameAp"+(i+1)]=asst_principal[i].first;
+                my_query.fields["lastNameAp"+(i+1)]=asst_principal[i].last;
+                my_query.fields["contactTitleAp"+(i+1)]=asst_principal[i].title.trim();
+                add_to_sheet();
+
+            }
+            if(good) {
+                submit_if_done();
+
+            }
+            else {
+                GM_setValue("returnHit",true);
+            }
+
+        }).catch(function(response) {
+          my_query.fields.schoolUrl="https://deadsite.com";
+            my_query.fields.emailPrincipal="dead@dead.com";
+            document.querySelector("#checkmark").hidden=false;
+            my_query.fields.firstNamePrincipal=my_query.fields.lastNamePrincipal=my_query.fields.contactTitlePrincipal="None";
+            submit_if_done();
+
+        });
+
     }
 
 })();

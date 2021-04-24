@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         MODIFIImpressum
+// @name         Jeff
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Find and parse German impressum
+// @description  TODO: work on creating self-contained company email and data finder
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -39,7 +39,7 @@
     var my_query = {};
     var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A1MT0G0JFCSPG8",true);
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A34DBBXYNSR6PT",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
@@ -64,14 +64,14 @@
                 console.log("parsed_context="+JSON.stringify(parsed_context)); } 
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length; i++) {
+            for(i=0; i < b_algo.length&&i<2; i++) {
                 b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
+                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
 		   && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
@@ -103,6 +103,36 @@
     function query_promise_then(result) {
     }
 
+    function zoominfo_promise_then(result) {
+        var promise=MTP.create_promise(result,parse_zoominfo,parse_zoominfo_then,function() { my_query.done.zoominfo=true;
+                                                                                             submit_if_done(); });
+    }
+
+    function parse_zoominfo(doc,url,resolve,reject) {
+        var content=doc.querySelector(".company-content");
+        var details=doc.querySelectorAll(".person-details");
+        var person_list=[];
+        var curr={};
+//        console.log(content.innerHTML);
+        var x;
+        var name,title;
+        for(x of details) {
+            name=x.querySelector(".person-name");
+            title=x.querySelector(".job-title");
+            if(name && title) {
+                person_list.push({name:name.innerText,title:title.innerText});
+            }
+//            console.log(x.innerHTML);
+        }
+        console.log(person_list);
+    }
+
+    function parse_zoominfo_then() {
+    }
+
+    function dnb_promise_then(result) {
+    }
+
     function begin_script(timeout,total_time,callback) {
         if(timeout===undefined) timeout=200;
         if(total_time===undefined) total_time=0; 
@@ -125,28 +155,6 @@
         }
     }
 
-    function parse_impressum(doc,url,resolve,reject) {
-        console.log("url="+url);
-
-        var phone=doc.body.innerHTML.match(/(?:Tel(?:\.)?|Telefon):\s*([\d\-\/\s\(\)\+]*)/);
-        if(!phone) phone=doc.body.innerText.match(/(?:Tel(?:\.)?|Telefon):\s*([\d\-\/\s\(\)\+]*)/);
-        var owners=doc.body.innerHTML.match(/(?:Geschäftsführer|vertreten durch)(?::)?\s+([^\<\>]*)/);
-        if(!owners) owners=doc.body.innerHTML.match(/Gesellschafter:\s+([^\<\>]*)/);
-        if(!owners) owners=doc.body.innerHTML.match(/Inhaber(?:in)?:\s+([^\<\>]*)/);
-        if(phone) {
-            my_query.fields.phone=phone[1].trim();
-        }
-        if(owners) {
-            console.log("owners="+JSON.stringify(owners));
-            var owner_list=owners[1].split(/\s*(?:(?:\s+und)|,)\s+/);
-            var i;
-            for(i=0;i<owner_list.length&&i<4;i++) {
-                my_query.fields["contactName"+(i+1)]=owner_list[i];
-            }
-        }
-        resolve("");
-    }
-
     function submit_if_done() {
         var is_done=true,x;
         add_to_sheet();
@@ -158,14 +166,33 @@
     {
         console.log("in init_query");
         var i;
-        var a =document.querySelector("crowd-form a");
-        my_query={name,fields:{},done:{},
+        var name=document.querySelectorAll("crowd-form p")[1].innerText.trim()
+        my_query={name:name,fields:{},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
 	console.log("my_query="+JSON.stringify(my_query));
-        var promise=MTP.create_promise(a.href,parse_impressum,submit_if_done,function() {
-            GM_setValue("returnHit",true); }
-            );
+        var search_str=MTP.shorten_company_name(my_query.name)+" site:zoominfo.com";
+        const queryPromise = new Promise((resolve, reject) => {
+            console.log("Beginning URL search");
+            query_search(search_str, resolve, reject, query_response,"query");
+        });
+        queryPromise.then(zoominfo_promise_then)
+            .catch(function(val) {
+            console.log("Failed at this queryPromise " + val);
+            my_query.done.zoominfo=true;
+        });
+
+        search_str=MTP.shorten_company_name(my_query.name)+" canada president";
+        const dnbPromise = new Promise((resolve, reject) => {
+            console.log("Beginning URL search");
+            query_search(search_str, resolve, reject, query_response,"president");
+        });
+        dnbPromise.then(dnb_promise_then)
+            .catch(function(val) {
+            console.log("Failed at this queryPromise " + val);
+            my_query.done.dnb=true;
+
+        });
     }
 
 })();

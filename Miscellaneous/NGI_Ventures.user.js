@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         MODIFIImpressum
+// @name         NGI_Ventures
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Find and parse German impressum
+// @description  New script
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -39,7 +39,7 @@
     var my_query = {};
     var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A1MT0G0JFCSPG8",true);
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A2N4ND3UOD151G",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
@@ -124,27 +124,61 @@
                (!MTurk.is_crowd && (field=document.getElementById(x)))) field.value=my_query.fields[x];
         }
     }
+    function parse_funeral_home(doc,url,resolve,reject) {
+        var temp;
 
-    function parse_impressum(doc,url,resolve,reject) {
-        console.log("url="+url);
-
-        var phone=doc.body.innerHTML.match(/(?:Tel(?:\.)?|Telefon):\s*([\d\-\/\s\(\)\+]*)/);
-        if(!phone) phone=doc.body.innerText.match(/(?:Tel(?:\.)?|Telefon):\s*([\d\-\/\s\(\)\+]*)/);
-        var owners=doc.body.innerHTML.match(/(?:Geschäftsführer|vertreten durch)(?::)?\s+([^\<\>]*)/);
-        if(!owners) owners=doc.body.innerHTML.match(/Gesellschafter:\s+([^\<\>]*)/);
-        if(!owners) owners=doc.body.innerHTML.match(/Inhaber(?:in)?:\s+([^\<\>]*)/);
-        if(phone) {
-            my_query.fields.phone=phone[1].trim();
+        var url_list=["consolidatedfuneralservices.com","frazerconsultants.com","batesvilletechnology.com","frontrunner360.com",
+                     ".frontrunnerpro.com",".funeralone.com",".funeralnet.com",".funeraltech.com","\/\/funeralresults.com",".remembertributes.info",
+                     ".funeralhomewebsite.com",".articdesigns.com",'.batesville.com','funeralinnovations.com'];
+        var curr_url;
+         if(/www\.dignitymemorial\.com/.test(url)) {
+           resolve('https://www.dignitymemorial.com');
+            return;
         }
-        if(owners) {
-            console.log("owners="+JSON.stringify(owners));
-            var owner_list=owners[1].split(/\s*(?:(?:\s+und)|,)\s+/);
-            var i;
-            for(i=0;i<owner_list.length&&i<4;i++) {
-                my_query.fields["contactName"+(i+1)]=owner_list[i];
+        for(curr_url of url_list) {
+          //  console.log(curr_url);
+            if((temp=doc.querySelector("a[href*='"+curr_url+"']"))) {
+                resolve(temp.href);
+                return;
             }
         }
-        resolve("");
+        var links=doc.links;
+        if(doc.links.length===1 && /enable-javascript\.com/.test(links[0].href)) {
+            resolve("https://deadsite.com");
+            return;
+        }
+        var footer=doc.querySelectorAll("footer a");
+        if(!footer) footer=doc.querySelectorAll("#footer a");
+        if(footer.length>0) {
+            console.log("footer="+footer);
+            var j;
+            let domain=MTP.get_domain_only(url,true);
+            for(j=footer.length-1; j>=0; j--) {
+
+                let last_link=MTP.fix_remote_url(footer[j].href,url);
+                console.log("Last_link="+last_link);
+                if(last_link&&last_link.length>0&&!MTP.is_bad_url(last_link,bad_urls,-1)&&/http/.test(last_link) && last_link.indexOf(domain)===-1) {
+                    resolve(last_link);
+                    return;
+                }
+            }
+        }
+
+        var a;
+        if(doc.title.length===0||/.hugedomains.com/.test(url)) {
+            resolve("https://deadsite.com");
+            return;
+        }
+        for(a of links) {
+            console.log("url="+a.href);
+        }
+        //resolve(url);
+        //return;
+          reject("");
+    }
+    function parse_funeral_home_then(result) {
+        my_query.fields.technologyProviderUrl=result;
+        submit_if_done();
     }
 
     function submit_if_done() {
@@ -154,18 +188,25 @@
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
 
+
+
     function init_Query()
     {
-        console.log("in init_query");
+        bad_urls=default_bad_urls;
+        console.log("in init_query"+JSON.stringify(bad_urls));
         var i;
-        var a =document.querySelector("crowd-form a");
-        my_query={name,fields:{},done:{},
+       var a=document.querySelectorAll("form a");
+        var url=a[1].innerText;
+        if(!/http/.test(url)) url='http://'+url;
+        console.log("url="+url);
+        my_query={url:url,fields:{},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
-	console.log("my_query="+JSON.stringify(my_query));
-        var promise=MTP.create_promise(a.href,parse_impressum,submit_if_done,function() {
-            GM_setValue("returnHit",true); }
-            );
+        var promise=MTP.create_promise(url,parse_funeral_home,parse_funeral_home_then,function(response) {
+            console.log("Failed at url="+url);
+            my_query.fields.technologyProviderUrl="https://deadsite.com";
+            submit_if_done();
+        });
     }
 
 })();

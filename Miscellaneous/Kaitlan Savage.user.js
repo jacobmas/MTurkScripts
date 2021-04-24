@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         MODIFIImpressum
+// @name         Kaitlan Savage
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Find and parse German impressum
+// @description  land sales
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -39,7 +39,7 @@
     var my_query = {};
     var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A1MT0G0JFCSPG8",true);
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A1TYL2GOT0Q7ZO",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
@@ -125,28 +125,6 @@
         }
     }
 
-    function parse_impressum(doc,url,resolve,reject) {
-        console.log("url="+url);
-
-        var phone=doc.body.innerHTML.match(/(?:Tel(?:\.)?|Telefon):\s*([\d\-\/\s\(\)\+]*)/);
-        if(!phone) phone=doc.body.innerText.match(/(?:Tel(?:\.)?|Telefon):\s*([\d\-\/\s\(\)\+]*)/);
-        var owners=doc.body.innerHTML.match(/(?:Geschäftsführer|vertreten durch)(?::)?\s+([^\<\>]*)/);
-        if(!owners) owners=doc.body.innerHTML.match(/Gesellschafter:\s+([^\<\>]*)/);
-        if(!owners) owners=doc.body.innerHTML.match(/Inhaber(?:in)?:\s+([^\<\>]*)/);
-        if(phone) {
-            my_query.fields.phone=phone[1].trim();
-        }
-        if(owners) {
-            console.log("owners="+JSON.stringify(owners));
-            var owner_list=owners[1].split(/\s*(?:(?:\s+und)|,)\s+/);
-            var i;
-            for(i=0;i<owner_list.length&&i<4;i++) {
-                my_query.fields["contactName"+(i+1)]=owner_list[i];
-            }
-        }
-        resolve("");
-    }
-
     function submit_if_done() {
         var is_done=true,x;
         add_to_sheet();
@@ -154,18 +132,50 @@
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
 
+    function parse_landsofamerica(doc,url,resolve,reject) {
+        var scripts=doc.scripts;
+        var x,parsed;
+        var h1=doc.querySelector("h1").innerText;
+        var price=doc.querySelector("._5fb33").innerText.replace(/\s*\-.*$/,"");
+        my_query.fields.acres=h1.replace(/ Acres.*$/i,"");
+        my_query.fields.price=price;
+        var re=/window\.serverState\s*\=\s*\"(\{.*\})\";$/,match;
+        for(x of scripts) {
+            if(match=x.innerHTML.match(re)) {
+                console.log(match[1]);
+                match[1]=match[1].replace(/(\\)+/g,"");
+              //  match[1]=match[1].replace(/\\\"/g,"\"");
+                console.log(match[1].substr(5380));
+                //console.log(match[1]);
+                parsed=JSON.parse(match[1]);
+                break;
+            }
+            //if(x.innerHTML.match(/window\.serverState/)) console.log(x.innerHTML);
+        }
+
+        resolve();
+    }
+
     function init_Query()
     {
         console.log("in init_query");
-        var i;
-        var a =document.querySelector("crowd-form a");
-        my_query={name,fields:{},done:{},
+        var i,promise;
+       var a=document.querySelector("crowd-form a");
+        my_query={url:a.href,fields:{},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
 	console.log("my_query="+JSON.stringify(my_query));
-        var promise=MTP.create_promise(a.href,parse_impressum,submit_if_done,function() {
-            GM_setValue("returnHit",true); }
-            );
+
+        if(/landsofamerica\.com/.test(my_query.url)) {
+            promise=MTP.create_promise(my_query.url,parse_landsofamerica,submit_if_done,function() {
+                GM_setValue("returnHit","true");
+                            });
+        }
+        else {
+            console.log("Not recognized");
+            GM_setValue("returnHit","true");
+        }
+       
     }
 
 })();
