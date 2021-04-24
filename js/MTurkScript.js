@@ -1047,6 +1047,14 @@ MTurkScript.prototype.parse_FB_home=function(doc,url,resolve,reject)
     resolve(result);
 };
 
+MTurkScript.prototype.find_FB_about_url=function(url) {
+        if(/\/pages\//.test(url)) {
+            url=url.replace(/\/pages\/([^\/]*)\/([^\/]*).*$/,"/$1-$2");
+        }
+         url=url.replace(/(^https?:\/\/[^\/]*facebook\.com)\/([^\/]*).*$/,"https://www.facebook.com/pg/$2/about");
+        return url;
+    };
+
 /* Parse FB_search parses a search for PAGES on Facebook */
 MTurkScript.prototype.parse_FB_search_page=function(doc,url,resolve,reject)
 {
@@ -1683,7 +1691,7 @@ MTurkScript.prototype.find_copyright_elem=function(elem,lst) {
     var my_match;
     if((match=elem.innerText.match(re))||(match=elem.innerText.match(re2))) {
         my_match=match[1].trim().replace(/((19[\d]{2})|(20[\d]{2}))$/,"").trim();
-        my_match=my_match.replace(/\s*All Rights Reserved$/,"");
+        my_match=my_match.replace(/\s*All Rights Reserved$/,"").replace(/®/g,"");
         if(my_match.length>0) lst.push(my_match);
     }
 };

@@ -39,7 +39,7 @@
     var my_query = {};
     var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"[TODO]",false);
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"[TODO]",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
@@ -149,7 +149,7 @@
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
     }
 
 })();
