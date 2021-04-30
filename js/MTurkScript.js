@@ -491,7 +491,7 @@ MTurkScript.prototype.query_search=function(search_str, resolve,reject, callback
 */
 MTurkScript.prototype.parse_b_context=function(b_context) {
     var b_vList,i,bm_details_overlay,b_entityTitle,b_entitySubTitle,b_subModule_h2,j;
-    var b_hList=b_context.getElementsByClassName("b_hList"),inner_a,details,inner_li,split_exp;
+    var b_hList=b_context.getElementsByClassName("b_hList"),inner_a,details,inner_li,split_exp,b_lower;
     var field_regex=/^([^:]+):\s*(.*)$/,field_match,disambig;
 	var result={};
     var term_map={"Website":"url","Official site":"url","Company":"company"};
@@ -516,6 +516,12 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
             if(field_match=inner_li[i].innerText.match(field_regex)) result[field_map(field_match[1].trim())]=field_match[2];
         }
     }
+	b_lower=b_context.querySelectorAll(".b_lower");
+        for(i=0; i<b_lower.length; i++) {
+            if(field_match=b_lower[i].innerText.match(field_regex)) result[field_map(field_match[1].trim())]=field_match[2];
+        }
+    }
+	
 	if(b_context.querySelector("#saplacesvg") && (place=b_context.querySelector("#saplacesvg").parentNode)) result['Address']=place.innerText.trim();
 	if(b_context.querySelector("#sacallsvg") && (phone=b_context.querySelector("#sacallsvg").parentNode)) result['Phone']=phone.innerText.trim();
 	MTurkScript.prototype.parse_b_infocardFactRows(b_context,result);
