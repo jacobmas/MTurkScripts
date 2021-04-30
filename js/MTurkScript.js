@@ -517,10 +517,10 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
         }
     }
 	b_lower=b_context.querySelectorAll(".b_lower");
-        for(i=0; i<b_lower.length; i++) {
-            if(field_match=b_lower[i].innerText.match(field_regex)) result[field_map(field_match[1].trim())]=field_match[2];
-        }
-    }
+	for(i=0; i<b_lower.length; i++) {
+		if(field_match=b_lower[i].innerText.match(field_regex)) result[field_map(field_match[1].trim())]=field_match[2];
+	}
+
 	
 	if(b_context.querySelector("#saplacesvg") && (place=b_context.querySelector("#saplacesvg").parentNode)) result['Address']=place.innerText.trim();
 	if(b_context.querySelector("#sacallsvg") && (phone=b_context.querySelector("#sacallsvg").parentNode)) result['Phone']=phone.innerText.trim();
