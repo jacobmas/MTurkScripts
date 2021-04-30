@@ -516,7 +516,7 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
             if(field_match=inner_li[i].innerText.match(field_regex)) result[field_map(field_match[1].trim())]=field_match[2];
         }
     }
-	b_lower=b_context.querySelectorAll(".b_lower");
+	b_lower=b_context.querySelectorAll(".b_snippet_expansion");
 	for(i=0; i<b_lower.length; i++) {
 		if(field_match=b_lower[i].innerText.match(field_regex)) result[field_map(field_match[1].trim())]=field_match[2];
 	}
