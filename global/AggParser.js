@@ -417,8 +417,26 @@ AggParser.parse_yellowpages=function(doc,url,resolve,reject) {
 /* parse_youtube_inner is a helper function for the parse_youtube function */
 AggParser.parse_youtube_inner=function(text) {
     var parsed,ret={},runs,match,x,content,contents,i,tabs,label,links,url;
+    var subscribers,match1,match2;
     try { parsed=JSON.parse(text); }
     catch(error) { console.log("error parsing="+error+", text="+text); return; }
+    for(x in parsed) {
+     //   console.log("x="+x);
+
+        if(/subscriber/.test(JSON.stringify(parsed[x]))) console.log("found subscriber");
+    }
+//    console.log("header=",parsed.header);
+
+    subscribers=parsed.header.c4TabbedHeaderRenderer.subscriberCountText.simpleText.replace(/\s.*$/,"").trim().replace(/^[^\d]*/,"");
+ //   console.log("subscribers=",subscribers);
+    match1=subscribers.match(/([\d\.]+)([a-zA-Z]*)/);
+  //  console.log(match1);
+    if(match1) {
+        let temp1=parseFloat(match1[1]);
+        if(match1[2]==='K') temp1*=1000;
+        if(match1[2]==='M') temp1*=1000000;
+        ret.subscribers=temp1;
+    }
     tabs=parsed.contents.twoColumnBrowseResultsRenderer.tabs;
     for(i=0; i < tabs.length; i++) if(tabs[i].tabRenderer && tabs[i].tabRenderer.title==="About" && (content=tabs[i].tabRenderer.content)) break;
     if(!content) return ret;
@@ -431,9 +449,10 @@ AggParser.parse_youtube_inner=function(text) {
     for(i=0; i < links.length; i++) {
         url=decodeURIComponent(links[i].navigationEndpoint.urlEndpoint.url.replace(/^.*(&|\?)q\=/,"")).replace(/(&|\?).*$/,"");
         console.log("url["+i+"]="+url);
-        if(/instagram\.com/.test(url)) ret.insta=url; 
-        else if(/facebook\.com/.test(url)) ret.fb=url.replace(/\/$/,"").replace(/facebook\.com\//,"facebook.com/pg/")+"/about"; 
+        if(/instagram\.com/.test(url)) ret.insta=url;
+        else if(/facebook\.com/.test(url)) ret.fb=url.replace(/\/$/,"").replace(/facebook\.com\//,"facebook.com/pg/")+"/about";
         else if(/twitter\.com/.test(url)) ret.twitter=url;
+        else if(/plus\.google\.com/.test(url)) ret.googleplus=url;
         else if(!/plus\.google\.com|((youtube|gofundme|patreon)\.com)/.test(url) && i===0) ret.url=url;
     }
     if(contents.description && contents.description.simpleText && (ret.description=contents.description.simpleText.replace(/\\n/g,"\n"))) {
