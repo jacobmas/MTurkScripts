@@ -445,12 +445,14 @@ AggParser.parse_youtube_inner=function(text) {
 };
 /* parse_youtube Parses the 'about' page of a youtube channel */
 AggParser.parse_youtube=function(doc,url,resolve,reject) {
-    var scripts=doc.scripts,i,script_regex_begin=/^\s*window\[\"ytInitialData\"\] \=\s*/,text;
+    var scripts=doc.scripts,i,script_regex_begin=/^\s*var ytInitialData \=\s*/,text;
     var script_regex_end=/\s*window\[\"ytInitialPlayerResponse\".*$/,ret={success:false},x,promise_list=[];
     var email_match,match;
     for(i=0; i < scripts.length; i++) {
+        console.log("scripts[i]=",scripts[i].innerHTML);
         if(script_regex_begin.test(scripts[i].innerHTML)) {
             text=scripts[i].innerHTML.replace(script_regex_begin,"");
+
             if(text.indexOf(";")!==-1) text=text.substr(0,text.indexOf("};")+1);
             resolve(AggParser.parse_youtube_inner(text));
             return;
