@@ -63,7 +63,13 @@
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
                 console.log("parsed_context="+JSON.stringify(parsed_context)); } 
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
-                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
+				
+                console.log("parsed_lgb="+JSON.stringify(parsed_lgb));
+                if(parsed_lgb.url && !MTP.is_bad_url(parsed_lgb.url,bad_urls)) {
+                    resolve(parsed_lgb.url);
+                    return;
+                    }
+            }
             for(i=0; i < b_algo.length; i++) {
                 b_name=b_algo[i].querySelector("h2 a").textContent;
                 b_url=b_algo[i].querySelector("h2 a").href;
