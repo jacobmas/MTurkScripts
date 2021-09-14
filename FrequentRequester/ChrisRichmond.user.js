@@ -192,7 +192,7 @@
 
             else {
                 console.log("Insufficient info found, returning");
-                GM_setValue("returnHit"+MTurk.assignment_id,true);
+                GM_setValue("returnHit",true);
                 return;
             }
         }
