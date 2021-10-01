@@ -543,7 +543,7 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
 			result.longitude=details.centerLongitude;
 		}
 		catch(error) {
-			console.log("Error parsing JSON=",error);
+			//console.log("Error parsing JSON=",error);
 		}
     }
     b_subModule_h2=b_context.querySelectorAll(".b_subModule h2");
