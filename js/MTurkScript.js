@@ -536,9 +536,15 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
     }
     
     if((bm_details_overlay=b_context.getElementsByClassName("bm_details_overlay")).length>0) {
-        details=JSON.parse(bm_details_overlay[0].dataset.detailsoverlay);
-        result.latitude=details.centerLatitude;
-        result.longitude=details.centerLongitude;
+		try {
+			
+			details=JSON.parse(bm_details_overlay[0].dataset.detailsoverlay);
+			result.latitude=details.centerLatitude;
+			result.longitude=details.centerLongitude;
+		}
+		catch(error) {
+			console.log("Error parsing JSON=",error);
+		}
     }
     b_subModule_h2=b_context.querySelectorAll(".b_subModule h2");
     for(i=0;i<b_subModule_h2.length; i++) {
