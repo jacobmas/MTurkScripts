@@ -489,6 +489,54 @@ MTurkScript.prototype.query_search=function(search_str, resolve,reject, callback
                       });
 };
 
+MTurkScript.prototype.convertTime12to24 = (time12h) => {
+        const [time, modifier] = time12h.split(' ');
+
+        let [hours, minutes] = time.split(':');
+
+        if (hours === '12') {
+            hours = '00';
+        }
+
+        if (modifier === 'PM') {
+            hours = parseInt(hours, 10) + 12;
+        }
+
+        return `${hours}:${minutes}`;
+    }
+
+MTurkScript.prototype.parse_hours_table=function(table) {
+	var row,col;
+	var hours_dict={};
+	for(row of table.tBodies[0].rows) {
+		console.log("row=",row);
+		if(row.cells.length>=2) {
+			var split_times=row.cells[1].innerText.trim().split(/ - /);
+			console.log("split_times=",split_times);
+			if(split_times.length>=2) {
+				split_times[0]=split_times[0].replace("Noon","12:00 PM").replace("Midnight","12:00 AM").replace(/^(\d+) /,"$1:00 ").replace(/^(\d:)/,"0$1");
+				split_times[1]=split_times[1].replace("Noon","12:00 PM").replace("Midnight","12:00 AM").replace(/^(\d+) /,"$1:00 ").replace(/^(\d:)/,"0$1");
+
+				var open24=MTurkScript.prototype.convertTime12to24(split_times[0]), close24=MTurkScript.prototype.convertTime12to24(split_times[1]);
+
+				var curr_dict={"open":split_times[0],"close":split_times[1],"open24":open24,"close24":close24,"closed":false};
+
+				hours_dict[row.cells[0].innerText.trim()]=curr_dict;
+			}
+			else if(/Closed/i.test(row.cells[1].innerText)) {
+				hours_dict[row.cells[0].innerText.trim()]={"closed":true};
+			}
+			else {
+				console.error("Error parsing hours dict, found ", row.cells[1].innerText, " as time");
+			}
+
+
+		}
+	}
+	return hours_dict;
+}
+
+
 /* parse_b_context parses the b_context on Bing search
    puts the b_vList fields (e.g. Address, Phone,Website) into the results under the
    name given on Bing,  puts b_entityTitle in Name
@@ -504,7 +552,11 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
     var geochain=b_context.querySelectorAll(".geochainSegment");
     var parsed_entity,temp_span;
     var url,place,phone;
-	
+	var hours_table;
+	if((hours_table=b_context.querySelector(".opHours table"))) {
+		result.hours=MTurkScript.prototype.parse_hours_table(hours_table);
+	}
+		
     if(b_context.querySelector("#permanentlyClosedIcon")) result.closed=true;
     disambig=b_context.querySelectorAll(".disambig-outline .b_slyGridItem");
     b_entityTitle=b_context.querySelector(".b_entityTitle");
@@ -535,6 +587,7 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
 	result.url=url.href;
     }
     
+	
     if((bm_details_overlay=b_context.getElementsByClassName("bm_details_overlay")).length>0) {
 		try {
 			
@@ -721,6 +774,11 @@ MTurkScript.prototype.parse_b_factrow=function(factrow) {
 MTurkScript.prototype.parse_lgb_info=function(lgb_info) {
     var result={"phone":"","name":"",url:"",address:""},bm_details_overlay,b_factrow,i,b_entityTitle,inner_a;
     b_entityTitle=lgb_info.getElementsByClassName("b_entityTitle");
+	
+	var hours_table;
+	if((hours_table=lgb_info.querySelector(".opHours table"))) {
+		result.hours=MTurkScript.prototype.parse_hours_table(hours_table);
+	}
     bm_details_overlay=lgb_info.getElementsByClassName("bm_details_overlay");
     if(bm_details_overlay.length>0) result.address=bm_details_overlay[0].innerText;
     b_factrow=lgb_info.getElementsByClassName("b_factrow");
