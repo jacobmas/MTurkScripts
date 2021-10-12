@@ -680,7 +680,7 @@ MTurkScript.prototype.scrape_bing_experience=function(b_submodule) {
     for(y of li) {
         curr_job={};
         z=y.childNodes;
-        if(z&&z.length>=3) {                
+        if(z&&z.length>=3&&z[0].textContent && z[2].textContent) {                
             curr_job.title=z[0].textContent.trim();
             split1=z[2].textContent.trim().split(" · ");
 	    Object.assign(curr_job,{company:split1[0],time:split1.length>1?split1[1]:""});
