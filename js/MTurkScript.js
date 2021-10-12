@@ -509,10 +509,8 @@ MTurkScript.prototype.parse_hours_table=function(table) {
 	var row,col;
 	var hours_dict={};
 	for(row of table.tBodies[0].rows) {
-		console.log("row=",row);
 		if(row.cells.length>=2) {
 			var split_times=row.cells[1].innerText.trim().split(/ - /);
-			console.log("split_times=",split_times);
 			if(split_times.length>=2) {
 				split_times[0]=split_times[0].replace("Noon","12:00 PM").replace(/Midnight/i,"12:00 AM").replace(/^(\d+) /,"$1:00 ").replace(/^(\d:)/,"0$1");
 				split_times[1]=split_times[1].replace("Noon","12:00 PM").replace(/Midnight/i,"12:00 AM").replace(/^(\d+) /,"$1:00 ").replace(/^(\d:)/,"0$1");
