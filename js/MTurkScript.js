@@ -1397,6 +1397,21 @@ MTurkScript.prototype.fix_addy_script_only=function(script) {
         }
 };
 
+MTurkScript.prototype.fix_addy_cloak_only=function(script) {
+	 console.log("In fix_addy_cloak, script="+script.innerHTML);
+        var addy=script.innerHTML.match(/var addy_text[a-z0-9]*\s*\=\s*([^;]*);/);//b84182bd78905ee0b1f7937c76319bd2 = 'info' + '@' + 'werkzeugkiste-ol' + '.' + 'de'/),split=script.innerHTML.split("\n");
+        if(!addy) return;
+        console.log("addy=",addy);
+        let email=addy[1].replace(/[\'\+\s]/g,"");
+        console.log("fixed_email=",fixed_email);
+        if(email.match(email_re)) {
+            if(script.parentNode) script.parentNode.innerHTML=email;
+            else script.innerHTML=email;
+            //            console.log("script.parentNode="+script.parentNode);
+        }
+};
+
+
 MTurkScript.prototype.fix_escramble=function(doc,script) {
     var regex1=/b(?:\+)?=\'([^\']*)\'/g,match,regex2=/\'([^\']*)\'/,i;
     var ret="",match2;
@@ -1471,6 +1486,7 @@ MTurkScript.prototype.fix_emails_in_scripts=function(doc,url,the_script) {
     w_match=the_script.innerHTML.match(/var\s*w\s*\=\s*\'([^\']+)\'/);
     x_match=the_script.innerHTML.match(/var\s*x\s*\=\s*\'([^\']+)\'/);
     if(/var addy[\d]+/.test(the_script.innerHTML)) MTurkScript.prototype.fix_addy_script_only(the_script);
+	if(/var addy_text/.test(script.innerHTML)) MTurkScript.prototype.fix_addy_cloak_only(script);
     else if(/function escramble/.test(the_script.innerHTML)) MTurkScript.prototype.fix_escramble(doc,the_script);
     else if(the_script.innerHTML.indexOf("// Email obfuscator script 2.1 by Tim Williams")!==-1) MTurkScript.prototype.fix_timwilliams(doc,the_script);
     else if(match&&(decoded=decodeURIComponent(match[1]))&&(match2=decoded.match(email_re))) {
