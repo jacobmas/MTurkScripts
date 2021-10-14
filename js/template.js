@@ -126,10 +126,16 @@
     }
 
     function submit_if_done() {
-        var is_done=true,x;
+        var is_done=true,x,is_done_dones=x;
         add_to_sheet();
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
+        is_done_dones=is_done;
+        for(x in my_query.fields) if(!my_query.fields[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
+        else if(is_done_dones) {
+            console.log("Failed to find all fields");
+            GM_setValue("returnHit",true);
+        }
     }
 
     function init_Query()
