@@ -128,6 +128,13 @@
                 return;
             }
         }
+        console.log("links.length=",links.length);
+        if(links.length===0) {
+            my_query.fields.company_name=my_query.fields.representative=my_query.fields.phone="n/a";
+            my_query.fields.email="na@na.com";
+            resolve("");
+            return;
+        }
          //promise=MTP.create_promise(url,parse_impressum,resolve,reject);
         reject("Failed to find an Impressum at "+url);
     }
@@ -152,13 +159,15 @@
         .replace(/\n{2,}/g,"\n");
         console.log(doc.body.innerText);
 
+        var reg_prefix=doc.body.innerText.match(/Registergericht:(.*)/);
         var rep=doc.body.innerText.match(/(?:Gesch.ftsf.hrer)(?:in)?:?\s*(.*[A-Za-z]{1}.*)/);
 
-        if(!rep) rep=doc.body.innerText.match(/(?:Geschäftsführer|Gesch.ftsf.hrung|Gesellschafter|Vertreten durch):?\s*(.*[A-Za-z]{1}.*)/);
+        if(!rep) rep=doc.body.innerText.match(/(?:Geschäftsführer|Gesch.ftsf.hrung|Gesellschafter|Vertreten durch|Vertretungsberechtigte? (?:Personen)?):?\s*(.*[A-Za-z]{1}.*)/);
                 if(!rep) rep=doc.body.innerText.match(/(?:Inhaber|Inh\.)[^:\n]*:\s*(.*)/);
 
         if(!rep) rep=doc.body.innerText.match(/(?:Inhaber|Inh\.):?\s*(.*)/);
-        var phone=doc.body.innerText.match(/(?:Telefon|Tel\.?|Fon|Fone|Tel.*:|T:)\s*:?\s*([\+\(\)\-\/0-9\s\.–]{5,})/);
+        var phone=doc.body.innerText.match(/(?:Telefon|Tel\.?|Fon|Fone|Tel.*:|T:|Handy:)\s*:?\s*([\+\(\)\-\/0-9\s\.–]{5,})/);
+        if(!phone) phone=doc.body.innerText.match(/(\d{4,}\-[\d]+)/);
 
         var add_stuff=doc.body.innerText.match(/Impressum(\n*)(.*GmbH.*)\n(?:\s*\n){0,2}(?:(?:\s*Inh\.|\s*Inhaber|\s*Handwerksmeister|\s*Herr\s).*\n)?(.*)\n(\s*(?:D\s*[\-–]\s*)?[\d]{5})\s*(.*)//i);
 
@@ -168,20 +177,22 @@
         add_stuff=doc.body.innerText.match(/(.*)\n(?:\s*\n|.*[:@].*\n){0,3}(?:(?:\s*Inh\.|\s*Inhaber|.*Gesch.ftsf.hrer|\s*Handwerksmeister|\s*Herr\s).*\n)?(.*)\n(\s*(?:D-)?[\d]{5})\s*(.*)/);
         Gov.scrape_lone_emails(doc,url);
         var reg=null;
-                if(!reg) reg=doc.body.innerText.match(/((?:HRA|HRB)\s(?:Nr\.\s)?\d{2,}(\s*\d*)*)/);
+                if(!reg) reg=doc.body.innerText.match(/((?:[^\s]*\s)?(?:HRA|HRB):?\s(?:Nr\.\s)?\d{2,}(\s*\d*)*(?:\sAmstgericht (?:.*))?)/);
 
         if(!reg) reg=doc.body.innerText.match(/(?:Registernummer|Handelsregister|HRB Nummer|Steuer Nr\.?|Eingetragen ins Vereinsregister)(?::)?\s*(.{2,}\d{2,}\.{0,})/);
-                if(!reg) reg=doc.body.innerText.match(/Amtsgericht (.*)/);
+         let temp_reg=doc.body.innerText.match(/Amtsgericht(?:es)? (.*)/);
 
-//        if(!reg) reg=doc.body.innerText.match(/((?:HRA|HRB)\s(?:Nr\.\s)?\d{2,})/);
+//        if(!reg) reg=doc.body.innerText.match(/((?:HRA|HRB):?\s(?:Nr\.\s)?\d{2,})/);
         if(!reg) reg=doc.body.innerText.match(/((?:Steuer-?nummer|Steu­er­num­mer|USt-ID|UstID-Nr.|Umsatzsteuer-ID.*\n?DE|Umsatzsteuer.*§27a.*\n?DE):?.*\d.*)/i);
         if(rep) {
-            console.log(rep);
+            console.log("rep=",rep);
             my_query.fields.representative=rep[1];
         }
         if(add_stuff) {
-            my_query.fields.company_name=add_stuff[1].trim().replace(/Impressum/,"").trim();
-            my_query.fields.street=add_stuff[2].trim();
+            let temp=add_stuff[1].trim().replace(/Impressum/,"").trim();
+            console.log("nlp(temp).people().json()=",nlp(temp).people().json());
+            if(nlp(temp).people().json().length>0 && !my_query.fields.representative) my_query.fields.representative=temp;
+            //my_query.fields.street=add_stuff[2].trim();
             my_query.fields.zip=add_stuff[3].trim();
             my_query.fields.city=add_stuff[4].replace(/([a-z])([A-Z].*)$/,"$1");
             console.log(add_stuff);
@@ -197,14 +208,20 @@
             my_query.fields.email=Gov.email_list[0].email;
         }
         if(reg) {
-            my_query.fields.reg=reg[0].replace(/\n/g," ");
+            my_query.fields.reg="";
+            if(reg_prefix) { my_query.fields.reg=reg_prefix[0].replace(/\n/g," ")+" "; }
+            if(temp_reg) { my_query.fields.reg=temp_reg[0].replace(/\n/g," ")+" "; }
+            my_query.fields.reg=my_query.fields.reg+reg[0].replace(/\n/g," ");
+            my_query.fields.reg=my_query.fields.reg.trim();
             console.log("reg="+reg);
-            document.querySelectorAll("[name='company_name']")[1].value=my_query.fields.reg;
+            //document.querySelectorAll("[name='company_name']")[1].value=my_query.fields.reg;
         }
-        if(!my_query.fields.representative && my_query.fields.company_name) {
+        my_query.fields.representative=my_query.fields.representative.replace(/Dipl\.? Ing\.?/,"").
+        replace(/([a-z]{2})[A-Z].*$/,"$1").trim();
+       /*if(!my_query.fields.representative && my_query.fields.company_name) {
             my_query.fields.representative=my_query.fields.company_name;
             my_query.fields.company_name=my_query.name;
-        }
+        }*/
 
 
         resolve("");
@@ -212,6 +229,9 @@
 
     function add_to_sheet() {
         var x,field;
+        console.log("my_query.fields=",my_query.fields);
+
+        if(my_query.fields.reg) my_query.fields.company_name=my_query.fields.reg; // current bug
         for(x in my_query.fields) {
             if((MTurk.is_crowd && (field=document.getElementsByName(x)[0])) ||
                (!MTurk.is_crowd && (field=document.getElementById(x)))) field.value=my_query.fields[x];
@@ -219,10 +239,16 @@
     }
 
     function submit_if_done() {
-        var is_done=true,x;
+        var is_done=true,x,is_done_dones=x;
         add_to_sheet();
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
+        is_done_dones=is_done;
+        for(x in my_query.fields) if(!my_query.fields[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
+        else if(is_done_dones) {
+            console.log("Failed to find all fields");
+            GM_setValue("returnHit",true);
+        }
     }
 
 
@@ -238,7 +264,7 @@
         var dont=document.getElementsByClassName("dont-break-out");
         my_query={name:wT.rows[1].cells[1].innerText.trim().replace(/^Entry:.*\n/,"").replace(/[\(\)]/g,"").trim(),
                   url:wT.rows[1].cells[0].querySelector("a").href.replace(/https/,"http"),
-                  fields:{},done:{},
+                  fields:{company_name:"n/a",representative:"",phone:"",email:""},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
 	console.log("my_query="+JSON.stringify(my_query));
