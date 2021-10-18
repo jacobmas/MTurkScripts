@@ -1486,7 +1486,7 @@ MTurkScript.prototype.fix_emails_in_scripts=function(doc,url,the_script) {
     w_match=the_script.innerHTML.match(/var\s*w\s*\=\s*\'([^\']+)\'/);
     x_match=the_script.innerHTML.match(/var\s*x\s*\=\s*\'([^\']+)\'/);
     if(/var addy[\d]+/.test(the_script.innerHTML)) MTurkScript.prototype.fix_addy_script_only(the_script);
-	if(/var addy_text/.test(script.innerHTML)) MTurkScript.prototype.fix_addy_cloak_only(script);
+	if(/var addy_text/.test(the_script.innerHTML)) MTurkScript.prototype.fix_addy_cloak_only(the_script);
     else if(/function escramble/.test(the_script.innerHTML)) MTurkScript.prototype.fix_escramble(doc,the_script);
     else if(the_script.innerHTML.indexOf("// Email obfuscator script 2.1 by Tim Williams")!==-1) MTurkScript.prototype.fix_timwilliams(doc,the_script);
     else if(match&&(decoded=decodeURIComponent(match[1]))&&(match2=decoded.match(email_re))) {
