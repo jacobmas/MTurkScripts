@@ -554,6 +554,8 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
 	if((hours_table=b_context.querySelector(".opHours table"))) {
 		result.hours=MTurkScript.prototype.parse_hours_table(hours_table);
 	}
+	
+	if((url=b_context.querySelector("a[href*='//www.imdb.com/']"))) result.imdb=url.href;
 		
     if(b_context.querySelector("#permanentlyClosedIcon")) result.closed=true;
     disambig=b_context.querySelectorAll(".disambig-outline .b_slyGridItem");
