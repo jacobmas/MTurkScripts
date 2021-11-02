@@ -1405,7 +1405,6 @@ MTurkScript.prototype.fix_addy_cloak_only=function(script) {
         if(!addy) return;
         console.log("addy=",addy);
         let email=addy[1].replace(/[\'\+\s]/g,"");
-        console.log("fixed_email=",fixed_email);
         if(email.match(email_re)) {
             if(script.parentNode) script.parentNode.innerHTML=email;
             else script.innerHTML=email;
