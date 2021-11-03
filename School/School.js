@@ -432,7 +432,7 @@ School.prototype.parse_finalsite=function(doc,url,resolve,reject,self) {
     promise_list.push(new Promise((resolve1,reject1) =>
                                   { self.parse_finalsite_fsPageLayout(doc,url,resolve1,reject1,self); }).then(MTP.my_then_func).catch(MTP.my_catch_func));
     var my_a=doc.querySelector(".fsLastPageLink"),last,curr_href;
-    if(my_a) {
+    if(my_a&&(doc.querySelector(".fsDirEntry")||doc.querySelector(".fsConstituentItem"))) {
         my_a.href=url+my_a.href.replace(/^[^\?]*/,"");
         last=parseInt(my_a.dataset.page);
         for(i=2;i<=last;i++) {
@@ -783,7 +783,7 @@ School.prototype.parse_schoolblockperson=function(response,resolve,reject,self,u
 School.prototype.parse_apptegy=function(doc,url,resolve,reject,self) {
 	self.staff_dir=url;
     console.log("in School.prototype.parse_apptegy at url="+url);
-    doc.querySelectorAll(".contact-info").forEach(function(elem) { self.parse_apptegy_field(elem,self,url); });
+    doc.querySelectorAll(".contact-info,.staff-info").forEach(function(elem) { self.parse_apptegy_field(elem,self,url); });
     resolve(self);
 };
 /* Helper to parse an individual person for Schools.parse_apptegy */
