@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Medical Networks Tech
+// @name         Seth Carnahan
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  New script
+// @description  SEC Signatures
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -37,12 +37,9 @@
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=['.healthgrades.com','.vitals.com','.medicarelist.com','.healthcare4ppl.com','.yelp.com','.zocdoc.com',
-                 '.npidb.com','/npino.com','.ehealthscores.com','/npiprofile.com','/healthprovidersdata.com','.usnews.com','.doximity.com',
-                 '.linkedin.com','.sharecare.com','.caredash.com','.healthcare6.com','.topnpi.com','.webmd.com','.md.com','.yellowpages.com',
-                 '.corporationwiki.com','.medicinenet.com'];
+    var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A368JNAWVCNUOW",false);
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"AKF30SW8LE0CH",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
@@ -64,35 +61,20 @@
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-            if(type==="query2" && parsed_context.Title) {
-                my_query.fields['Q2Url']=parsed_context.Title.replace(/✕.*$/,"");
-                resolve("");
-                return;
-            }
-            if(type==='query'&& my_query.try_count[type]===0 && parsed_context.thing!==undefined&&parsed_context.thing.Clinic!==undefined) {
-                my_query.fields['Q2Url']=parsed_context.thing.Clinic;
-                query_search(my_query.short_name+" "+parsed_context.thing.Clinic+" ", resolve, reject, query_response,"clinic_query");
-                return;
-            }
-            else if(type==='query' && my_query.try_count[type]===0 &&parsed_context.SubTitle==='Rheumatologist') {
-                my_query.fields['Q2Url']=parsed_context.Title;
-                query_search(my_query.short_name+" "+parsed_context.Title+" ", resolve, reject, query_response,"clinic_query");
-                return;
-            }
                 console.log("parsed_context="+JSON.stringify(parsed_context)); } 
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length&&i<4; i++) {
-                b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
-                b_url=b_algo[i].getElementsByTagName("a")[0].href;
-                b_caption=b_algo[i].getElementsByClassName("b_caption");
+            for(i=0; i < b_algo.length; i++) {
+                b_name=b_algo[i].querySelector("h2 a").textContent;
+                b_url=b_algo[i].querySelector("h2 a").href;
+               b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(type==="query" && !MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1) && !MTurkScript.prototype.is_bad_name(b_name,my_query.short_name,p_caption,i)
+                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
 		   && (b1_success=true)) break;
             }
-            if(b1_success && (resolve({url:b_url,name:b_name,caption:p_caption})||true)) return;
+            if(b1_success && (resolve(b_url)||true)) return;
         }
         catch(error) {
             reject(error);
@@ -119,21 +101,7 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.fields.Q1Url=result.url;
-        my_query.done.query=true;
-       // https://www.medicalofficesofmanhattan.com
-         const queryPromise2 = new Promise((resolve, reject) => {
-            console.log("Beginning URL search");
-              query_search(result.url.replace(/(https?:\/\/[^\/]*).*$/,"$1"), resolve, reject, query_response,"query2");
-        });
-        queryPromise2.then(query_promise_then2)
-            .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
-      
     }
-     function query_promise_then2(result) {
-         submit_if_done();
-     }
 
     function begin_script(timeout,total_time,callback) {
         if(timeout===undefined) timeout=200;
@@ -164,27 +132,102 @@
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
     }
 
+    function parse_SEC_init(doc,url, resolve, reject) {
+        var a;
+        var promise;
+        var links=doc.querySelectorAll(".tableFile a");
+        var rows = doc.querySelectorAll(".tableFile tr");
+        var row;
+        console.log("in parse_SEC_init, url="+url);
+        for(row of rows) {
+            a=row.querySelector("a");
+            if(!a) continue;
+            a.href=MTP.fix_remote_url(a.href, url);
+            let desc=row.querySelectorAll("td")[1].innerText.trim();
+            let row_type=row.querySelectorAll("td")[3].innerText.trim();
+            console.log("a="+a.href);
+            if(/\.htm$/.test(a.href)&&/^10/.test(row_type)) {
+                my_query.url_10k=a.href;
+                promise=MTP.create_promise(my_query.url_10k,parse_10k, resolve,reject);
+                return;
+            }
+            else if(/\.txt$/.test(a.href)&& /Complete submission/i.test(desc)) {
+                my_query.url_10k_txt=a.href;
+                promise=MTP.create_promise(my_query.url_10k_txt,parse_10k_txt, resolve,reject);
+                return;
+            }
+        }
+        reject("failed to find link");
+
+    }
+
+    function parse_10k(doc,url,resolve,reject) {
+        console.log("In parse_10k, url=",url);
+     /*   var font=doc.querySelectorAll("font,td");
+        var f;
+        for(f of font) {
+            let parsed=Gov.parse_data_func(f.innerText);
+            //console.log("parsed=",parsed);
+            if(parsed.name&&parsed.title&&Gov.is_good_person(parsed)) {
+                console.log("parsed=",parsed);
+                my_query.exec_list.push(parsed);
+            }
+        }
+        resolve("");*/
+
+         var sig=doc.body.innerText.match(/SIGNATURES[^]*/);
+
+        console.log(sig);
+        var split_sig=sig[0].split(/\n/);
+        var x;
+        for(x of split_sig) console.log(x);
+    }
+
+    function parse_10k_txt(doc,url,resolve,reject) {
+                console.log("In parse_10k_txt, url=",url);
+        var sig=doc.body.innerText.match(/SIGNATURES[^]*/);
+
+        console.log(sig);
+        var split_sig=sig[0].split(/\n/);
+        var x;
+        for(x of split_sig) console.log(x);
+    }
+
+
+
+    function parse_SEC_then(result) {
+        var i;
+        for(i=0;i<my_query.exec_list.length&&i<25;i++) {
+            my_query.fields["name"+(i+1)]=my_query.exec_list[i].name;
+            my_query.fields["title"+(i+1)]=my_query.exec_list[i].title;
+        }
+
+        submit_if_done();
+    }
+
     function init_Query()
     {
         console.log("in init_query");
-        var p=document.querySelectorAll("form p");
-        var colon_re=/^[^:]*:\s*/;
-        my_query={name:p[0].innerText.trim().replace(colon_re,''),
-                  specialty:p[1].innerText.trim().replace(colon_re,''),
-                  
-                  fields:{Q1Url:'',Q2Url:'',Q3Url:''},done:{},
+        var i;
+        var url=document.querySelector("crowd-form a").href;
+        Gov.query={title_regex_lst:['Controller','Director',/President/,/Officer/,/Chief/]};
+        my_query={url:url,fields:{},done:{},exec_list:[],
 		  try_count:{"query":0},
 		  submitted:false};
-        my_query.short_name=my_query.name.replace(/,.*$/,"");
 	console.log("my_query="+JSON.stringify(my_query));
-        var search_str=my_query.short_name+" "+my_query.specialty+" ";
+        //console.log(MTP.create_promise);
+        var promise=MTP.create_promise(my_query.url, parse_SEC_init, parse_SEC_then, function(message) {
+            console.log(message);
+            GM_setValue("returnHit",true); }
+            );
+        /*var search_str;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
-            query_search(my_query.short_name+" "+my_query.specialty+" ", resolve, reject, query_response,"query");
+            query_search(search_str, resolve, reject, query_response,"query");
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });*/
     }
 
 })();

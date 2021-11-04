@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Medical Networks Tech
+// @name         BrianHessionLinkedInTime
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  New script
@@ -37,13 +37,11 @@
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=['.healthgrades.com','.vitals.com','.medicarelist.com','.healthcare4ppl.com','.yelp.com','.zocdoc.com',
-                 '.npidb.com','/npino.com','.ehealthscores.com','/npiprofile.com','/healthprovidersdata.com','.usnews.com','.doximity.com',
-                 '.linkedin.com','.sharecare.com','.caredash.com','.healthcare6.com','.topnpi.com','.webmd.com','.md.com','.yellowpages.com',
-                 '.corporationwiki.com','.medicinenet.com'];
+    var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A368JNAWVCNUOW",false);
+    var MTurk=new MTurkScript(20000,1050+(Math.random()*1000),[],begin_script,"A3JYN1EC66FOSU",true);
     var MTP=MTurkScript.prototype;
+    var month_list={"Jan":"01","Feb":"02","Mar":"03","Apr":"04","May":"05","Jun":"06","Jul":"07","Aug":"08","Sep":"09","Oct":"10","Nov":"11","Dec":"12"};
     function is_bad_name(b_name)
     {
         return false;
@@ -64,35 +62,34 @@
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-            if(type==="query2" && parsed_context.Title) {
-                my_query.fields['Q2Url']=parsed_context.Title.replace(/✕.*$/,"");
-                resolve("");
-                return;
+                console.log("parsed_context="+JSON.stringify(parsed_context));
+
+            if(parsed_context.person&&parsed_context.person.experience&&parsed_context.person.experience.length>0) {
+                if(MTP.matches_names(my_query.short_company,parsed_context.person.experience[0].company)) {
+                    let my_time=parsed_context.person.experience[0].time;
+                    let split_time=my_time.split(" - ");
+                    if(split_time.length===2){
+                        if(/Present/i.test(split_time[1])) {
+                            document.querySelector("#present").click();
+                        }
+                        else {
+                            let split_second=split_time[1].split(" ");
+                            document.querySelector("#endMonth").value=month_list[split_second[0]];
+                            document.querySelector("#endYear").value=split_second[1];
+
+                        }
+                         let split_first=split_time[0].split(" ");
+                    document.querySelector("#startMonth").value=month_list[split_first[0]];
+                    document.querySelector("#startYear").value=split_first[1];
+                        resolve("");
+                    }
+
+
+                }
             }
-            if(type==='query'&& my_query.try_count[type]===0 && parsed_context.thing!==undefined&&parsed_context.thing.Clinic!==undefined) {
-                my_query.fields['Q2Url']=parsed_context.thing.Clinic;
-                query_search(my_query.short_name+" "+parsed_context.thing.Clinic+" ", resolve, reject, query_response,"clinic_query");
-                return;
-            }
-            else if(type==='query' && my_query.try_count[type]===0 &&parsed_context.SubTitle==='Rheumatologist') {
-                my_query.fields['Q2Url']=parsed_context.Title;
-                query_search(my_query.short_name+" "+parsed_context.Title+" ", resolve, reject, query_response,"clinic_query");
-                return;
-            }
-                console.log("parsed_context="+JSON.stringify(parsed_context)); } 
-            if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
-                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length&&i<4; i++) {
-                b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
-                b_url=b_algo[i].getElementsByTagName("a")[0].href;
-                b_caption=b_algo[i].getElementsByClassName("b_caption");
-                p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
-                    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
-                console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(type==="query" && !MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1) && !MTurkScript.prototype.is_bad_name(b_name,my_query.short_name,p_caption,i)
-		   && (b1_success=true)) break;
-            }
-            if(b1_success && (resolve({url:b_url,name:b_name,caption:p_caption})||true)) return;
+
+        }
+            if(b1_success && (resolve(b_url)||true)) return;
         }
         catch(error) {
             reject(error);
@@ -119,21 +116,8 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.fields.Q1Url=result.url;
-        my_query.done.query=true;
-       // https://www.medicalofficesofmanhattan.com
-         const queryPromise2 = new Promise((resolve, reject) => {
-            console.log("Beginning URL search");
-              query_search(result.url.replace(/(https?:\/\/[^\/]*).*$/,"$1"), resolve, reject, query_response,"query2");
-        });
-        queryPromise2.then(query_promise_then2)
-            .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
-      
+        submit_if_done();
     }
-     function query_promise_then2(result) {
-         submit_if_done();
-     }
 
     function begin_script(timeout,total_time,callback) {
         if(timeout===undefined) timeout=200;
@@ -167,20 +151,17 @@
     function init_Query()
     {
         console.log("in init_query");
-        var p=document.querySelectorAll("form p");
-        var colon_re=/^[^:]*:\s*/;
-        my_query={name:p[0].innerText.trim().replace(colon_re,''),
-                  specialty:p[1].innerText.trim().replace(colon_re,''),
-                  
-                  fields:{Q1Url:'',Q2Url:'',Q3Url:''},done:{},
+        var i;
+       var url=document.querySelector("crowd-form a").href;
+        var company=document.querySelectorAll("crowd-form div p")[1].innerText.trim().replace(/^[^:]*:\s*/,"");
+        my_query={name:"",company:company, short_company:MTP.shorten_company_name(company), url:url,fields:{},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
-        my_query.short_name=my_query.name.replace(/,.*$/,"");
 	console.log("my_query="+JSON.stringify(my_query));
-        var search_str=my_query.short_name+" "+my_query.specialty+" ";
+        var search_str=my_query.url;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
-            query_search(my_query.short_name+" "+my_query.specialty+" ", resolve, reject, query_response,"query");
+            query_search(search_str, resolve, reject, query_response,"query");
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
