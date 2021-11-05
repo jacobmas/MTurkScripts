@@ -120,7 +120,7 @@ Gov.scrape_none=function(doc,url,resolve,reject) {
     Promise.all(promise_list).then(function(response) {
 		var y;
 		for(y of Gov.contact_list) {
-			y.email=y.email.replace(/(@.*(\.com|\.org))[A-Z]+.*$/,"$1");
+			y.email=y.email?y.email.replace(/(@.*(\.com|\.org))[A-Z]+.*$/,"$1"):"";
 		}
 	console.log("Finished scrape_none promises "+response);
 	resolve("MOOOOOOOOOOOO "+response); })
@@ -538,7 +538,7 @@ Gov.fix_emails=function(div,is_civic) {
 	    else elem.innerHTML=match[1]+"@"+match[2]; }
 	else if(/var addy/.test(elem.innerHTML)) {
 	    var text=elem.innerHTML.match("var addy([^]+)"),addy_textmatch,temp_regex=/\'([^\']*)\'/g,str="",i;
-	    if(!text) return;
+	    if(!text&&text.length<2) return;
 	    text=text[1].replace(/document\.write[^]+/,"").replace(/&#([\d]+);/g,function(match,p1) { return String.fromCharCode(parseInt(p1)); });
 	    if((addy_textmatch=text.match(/var addy_text[\d]+\s*\=\s*\'([^\']+)\';/))) {
 		str=str+addy_textmatch[1]+"\n";
