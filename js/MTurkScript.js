@@ -1402,8 +1402,8 @@ MTurkScript.prototype.fix_addy_script_only=function(script) {
 MTurkScript.prototype.fix_addy_cloak_only=function(script) {
 	 console.log("In fix_addy_cloak, script="+script.innerHTML);
         var addy=script.innerHTML.match(/var addy_text[a-z0-9]*\s*\=\s*([^;]*);/);//b84182bd78905ee0b1f7937c76319bd2 = 'info' + '@' + 'werkzeugkiste-ol' + '.' + 'de'/),split=script.innerHTML.split("\n");
-        if(!addy) return;
-        console.log("addy=",addy);
+        if(!addy&&!addy[1]) return;
+        console.log("addy=",addy)
         let email=addy[1].replace(/[\'\+\s]/g,"");
         if(email.match(email_re)) {
             if(script.parentNode) script.parentNode.innerHTML=email;

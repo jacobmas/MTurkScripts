@@ -66,7 +66,7 @@ Gov.scrape_lone_emails=function(doc,url) {
     for(x=0;x<style.length;x++) { style[x].innerHTML=""; }
     var links=doc.links,email_matches,phone_matches;
     var temp_url,curr_url;
-    doc.body.innerHTML=doc.body.innerHTML.replace(/\s*([\[\(]{1})\s*at\s*([\)\]]{1})\s*/g,"@")
+    doc.body.innerHTML=doc.body.innerHTML.replace(/\s*([\[\(]{1})\s*(at|∂)\s*([\)\]]{1})\s*/g,"@")
         .replace(/\s*([\[\(]{1})\s*dot\s*([\)\]]{1})\s*/g,".");
     MTP.fix_emails(doc,url);
     if((email_matches=doc.body.innerHTML.match(email_re))) {
