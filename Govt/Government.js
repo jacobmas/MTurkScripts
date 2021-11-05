@@ -412,7 +412,7 @@ Gov.parse_contact_elems=function(doc,url,resolve,reject,name) {
 			if((ret=Gov.parse_data_func(text)) && Gov.is_good_person(ret) && ++add_count) Gov.contact_list.push(Object.assign(ret,{department:ret.department!==undefined?ret.department:name,url:url}));
 			else if(text.length>600) inner_p.innerHTML="";
 		}
-		catch(error) { console.log("Error in Gov.parse_data_func in parse_contact_elems, error=",error); }
+		catch(error) { console.error("Error in Gov.parse_data_func in parse_contact_elems, error=",error); }
 	
     });
     console.log("parse_contact_divs, length="+div.length);
