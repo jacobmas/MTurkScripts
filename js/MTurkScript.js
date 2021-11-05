@@ -52,7 +52,7 @@ var default_bad_urls=[".alibaba.com",".amazonaws.com",".business.site",".crunchb
                  '.npidb.com','/npino.com','.ehealthscores.com','/npiprofile.com','/healthprovidersdata.com','.usnews.com','.doximity.com',
                  '.linkedin.com','.sharecare.com','.caredash.com','.healthcare6.com','.topnpi.com','.webmd.com','.md.com','.yellowpages.com',".whitepages.com",
                  '.corporationwiki.com','.medicinenet.com','orthopedic.io','.mylife.com','eyedoctor.io','.wellness.com','nuwber.com','.findatopdoc.com',
-                 '.healthlynked.com','.spokeo.com','/obituaries/'];
+                 '.healthlynked.com','.spokeo.com','/obituaries/','.tripadvisor.com'];
 
 /* Regular expressions for emails, phones, faxes */
 var email_re = /(([^<>()\[\]\\.,;:\s@"：+=\/\?%\*]{1,40}(\.[^<>\/()\[\]\\.,;:：\s\*@"\?]{1,40}){0,5}))@((([a-zA-Z\-0-9]{1,30}\.){1,8}[a-zA-Z]{2,20}))/g;
