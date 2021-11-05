@@ -56,7 +56,7 @@
         try
         {
             search=doc.getElementById("b_content");
-            b_algo=search.querySelectorAll("#b_results > .b_algo");
+			b_algo=doc.querySelectorAll("#b_results > .b_algo");
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
