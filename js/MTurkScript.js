@@ -1796,7 +1796,7 @@ MTurkScript.prototype.find_company_name_on_website=function(doc,url) {
 	if(match && my_query && my_query.fields) my_query.fields.Q4Url= match[0].trim();
 	 var site_name=doc.querySelector("meta[property='og:site_name']");
 	if(site_name) { console.log("Found site name=",site_name.content);
-				   possible_name_list.push({name:site_name.content,priority:0});
+				   possible_name_list.push({name:site_name.content.replace(/Website of\s*/i,""),priority:0});
 					}
 	var logo=doc.querySelectorAll("img[id*='logo' i],img[src*='logo.' i],img[data-src*='logo.' i");
 	var x,penalty_re=/Document|Blog/i,temp_cost=0;
