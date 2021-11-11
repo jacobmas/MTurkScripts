@@ -1806,7 +1806,7 @@ MTurkScript.prototype.find_company_name_on_website=function(doc,url) {
 	console.log("logo=",logo);
 	for(x of logo) {
 		console.log("x=",x);
-		if(x.alt) x.alt=x.alt.replace(/\slogo$/i,"");
+		if(x.alt) x.alt=x.alt.replace(/\slogo$/i,"").replace(/Website of\s*/i,"");
 		if(x.alt && /^[A-Z]/.test(x.alt) && !/Logo|(^\s*Home\s*)/i.test(x.alt)) {
 			console.log("Found logo alt=",x.alt);
 			temp_cost=penalty_re.test(x.alt)?10:0;
@@ -1817,7 +1817,7 @@ MTurkScript.prototype.find_company_name_on_website=function(doc,url) {
 	if(logo.length===0) logo=doc.querySelectorAll("img[id*='logo' i],img[src*='logo' i],img[data-src*='logo' i");
 	for(x of logo) {
 		console.log("x=",x);
-		if(x.alt) x.alt=x.alt.replace(/\slogo$/i,"");
+		if(x.alt) x.alt=x.alt.replace(/\slogo$/i,"").replace(/Website of\s*/i,"");;
 		if(x.alt && /^[A-Z]/.test(x.alt) && !/Logo|(^\s*Home\s*)/i.test(x.alt)) {
 			console.log("Found logo alt=",x.alt);
 							temp_cost=penalty_re.test(x.alt)?10:0;
