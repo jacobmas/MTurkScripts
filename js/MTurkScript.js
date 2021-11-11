@@ -1780,9 +1780,70 @@ MTurkScript.prototype.find_copyright_elem=function(elem,lst) {
     var my_match;
     if((match=elem.innerText.match(re))||(match=elem.innerText.match(re2))) {
         my_match=match[1].trim().replace(/((19[\d]{2})|(20[\d]{2}))$/,"").trim();
-        my_match=my_match.replace(/\s*All Rights Reserved$/,"").replace(/®/g,"");
-        if(my_match.length>0) lst.push(my_match);
+        my_match=my_match.replace(/\s*All Rights Reserved$/,"").replace(/®/g,"")
+		.replace(/\s*via.*$/,"");
+        if(my_match.length>0&&!/Document/i.test(my_match)) lst.push(my_match);
     }
+};
+
+/* Find the company name from the website, returns sorted list of objects with 
+name, priority (lower is better) */
+MTurkScript.prototype.find_company_name_on_website=function(doc,url) {
+	var possible_name_list=[];
+	var match=doc.body.innerText.match(/(Assistant|Associate)?(\s*Clinical)?\s*?Professor(\sof(\s[A-Z\&][a-z]*)+)?/);
+	console.log("match=",match);
+	//console.log(doc.body.innerText.match(/Professor.*/,""));
+	if(match && my_query && my_query.fields) my_query.fields.Q4Url= match[0].trim();
+	 var site_name=doc.querySelector("meta[property='og:site_name']");
+	if(site_name) { console.log("Found site name=",site_name.content);
+				   possible_name_list.push({name:site_name.content,priority:0});
+					}
+	var logo=doc.querySelectorAll("img[id*='logo' i],img[src*='logo.' i],img[data-src*='logo.' i");
+	var x,penalty_re=/Document|Blog/i,temp_cost=0;
+	//var img=doc.querySelectorAll("img");
+	//for(x of img) { console.log("img=",x,", outerHTML=",x.outerHTML); }
+//        console.log("doc.querySelectorAll(img)=",doc.querySelectorAll("img"));
+	console.log("logo=",logo);
+	for(x of logo) {
+		console.log("x=",x);
+		if(x.alt) x.alt=x.alt.replace(/\slogo$/i,"");
+		if(x.alt && /^[A-Z]/.test(x.alt) && !/Logo|(^\s*Home\s*)/i.test(x.alt)) {
+			console.log("Found logo alt=",x.alt);
+			temp_cost=penalty_re.test(x.alt)?10:0;
+			possible_name_list.push({name:x.alt,priority:3+temp_cost});
+		  
+		}
+	}
+	if(logo.length===0) logo=doc.querySelectorAll("img[id*='logo' i],img[src*='logo' i],img[data-src*='logo' i");
+	for(x of logo) {
+		console.log("x=",x);
+		if(x.alt) x.alt=x.alt.replace(/\slogo$/i,"");
+		if(x.alt && /^[A-Z]/.test(x.alt) && !/Logo|(^\s*Home\s*)/i.test(x.alt)) {
+			console.log("Found logo alt=",x.alt);
+							temp_cost=penalty_re.test(x.alt)?10:0;
+
+			possible_name_list.push({name:x.alt,priority:6+temp_cost});
+
+		}
+	}
+   
+	var copyright_list=MTP.company_from_copyright(doc,url);
+	console.log("copyright_list=",copyright_list);
+	for(x of copyright_list) {
+		if(copyright_list.length>0&&!/Copyright|document/i.test(copyright_list[0])) {
+			possible_name_list.push({name:x.replace(/\s{2,}.*$/,""),priority:10});
+			// return copyright_list[0].replace(/\s{2,}.*$/,"");
+
+		}
+	}
+	possible_name_list.sort(function(el1, el2) { return el1.priority-el2.priority; });
+
+	console.log("possible_name_list=",possible_name_list);
+	//if(possible_name_list.length>0) return possible_name_list[0].name;
+
+
+	return possible_name_list;
+
 };
 
 
