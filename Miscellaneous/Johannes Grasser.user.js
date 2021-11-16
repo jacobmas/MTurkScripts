@@ -155,7 +155,7 @@
             let p=x.querySelector("p");
               if(p && p.innerText.match(/Website/)) {
                 var a=x.querySelector("a").href;
-                my_query.fields.website=a;
+                if(!my_query.fields.website) my_query.fields.website=a;
 
                }
             if(p && p.innerText.match(/Employees/)) {
@@ -215,14 +215,18 @@
         console.log("in init_query");
         var i;
         var name=document.querySelector("crowd-form strong").innerText.trim();
+        var state=name.match(/\(state: (.*)\)/,"$1");
+        if(state) state=state[1];
+        else state="";
+        name=name.replace(/\(state: (.*)\)/,"");
         var p = document.querySelectorAll("crowd-form p")[2].innerText;
         var address=p.replace(/.* The companies address is:\s*/,"");
-        my_query={name:name,address:address,fields:{"website":"","employee count":""},done:{"query":false,"zoominfo":false},
+        my_query={name:name,address:address,fields:{"website":""},done:{"query":false,"zoominfo":true},
 		  try_count:{"query":0,"zoominfo":0},
 		  submitted:false};
         my_query.name=my_query.name.replace(/^.* DBA /,"");
 	console.log("my_query="+JSON.stringify(my_query));
-        var search_str=my_query.name;
+        var search_str=my_query.name+" "+my_query.state;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");
@@ -230,13 +234,13 @@
         queryPromise.then(query_promise_then)
             .catch(function(val) {
             console.log("Failed at this queryPromise " + val); my_query.done.query=true; submit_if_done(); });
-        const zoominfoPromise = new Promise((resolve, reject) => {
+/*        const zoominfoPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str+" +\" and has\" \"employees\" site:zoominfo.com", resolve, reject, query_response,"zoominfo");
         });
         zoominfoPromise.then(zoominfo_promise_then)
             .catch(function(val) {
-            console.log("Failed at this zoominfoPromise " + val); GM_setValue("returnHit",true); });
+            console.log("Failed at this zoominfoPromise " + val); my_query.done.zoominfo=true; submit_if_done(); }); */
     }
 
 })();

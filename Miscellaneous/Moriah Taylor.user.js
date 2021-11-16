@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         BrianHessionLinkedInTime
+// @name         Moriah Taylor
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  New script
@@ -39,9 +39,8 @@
     var my_query = {};
     var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A3JYN1EC66FOSU",true);
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A2LE2QXDRD6OGZ",true);
     var MTP=MTurkScript.prototype;
-    var month_list={"Jan":"01","Feb":"02","Mar":"03","Apr":"04","May":"05","Jun":"06","Jul":"07","Aug":"08","Sep":"09","Oct":"10","Nov":"11","Dec":"12"};
     function is_bad_name(b_name)
     {
         return false;
@@ -54,77 +53,28 @@
         var search, b_algo, i=0, inner_a;
         var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
         var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
-        var person_name;
         try
         {
             search=doc.getElementById("b_content");
-            b_algo=search.getElementsByClassName("b_algo");
+            b_algo=search.querySelectorAll("#b_results > .b_algo");
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
-            if(b_algo[i].length===0) {
-                reject("");
-                return;
-            }
-              else {
-                  b_name=b_algo[i].querySelector("h2 a").textContent;
-                  b_url=b_algo[i].querySelector("h2 a").href;
-                  b_caption=b_algo[i].getElementsByClassName("b_caption");
-                  p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
-                      p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
-                  person_name=b_name.replace(/\s\-\s.*$/,"").trim();
-              }
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context));
-
-            if(parsed_context.person&&parsed_context.person.experience&&parsed_context.person.experience.length>0 && my_query.url===parsed_context.person.linkedin_url) {
-                if(MTP.matches_names(my_query.short_company,parsed_context.person.experience[0].company)) {
-                    let my_time=parsed_context.person.experience[0].time;
-                    let split_time=my_time.split(" - ");
-                    if(split_time.length===2){
-                        if(/Present/i.test(split_time[1])) {
-                            document.querySelector("#present").click();
-                        }
-                        else {
-                            let split_second=split_time[1].split(" ");
-                            document.querySelector("#endMonth").value=month_list[split_second[0]];
-                            document.querySelector("#endYear").value=split_second[1];
-
-                        }
-                         let split_first=split_time[0].split(" ");
-                    document.querySelector("#startMonth").value=month_list[split_first[0]];
-                    document.querySelector("#startYear").value=split_first[1];
-                        resolve("");
-                    }
-
-
-                }
+                console.log("parsed_context="+JSON.stringify(parsed_context)); } 
+            if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
+                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
+            for(i=0; i < b_algo.length; i++) {
+                b_name=b_algo[i].querySelector("h2 a").textContent;
+                b_url=b_algo[i].querySelector("h2 a").href;
+               b_caption=b_algo[i].getElementsByClassName("b_caption");
+                p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
+                    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
+                console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
+                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
+		   && (b1_success=true)) break;
             }
-            else if(parsed_context.people &&parsed_context.people.length>0 && my_query.try_count[type]<1) {
-                my_query.try_count[type]++;
-                let person;
-                let company_regex=new RegExp(my_query.company);
-                for(person of parsed_context.people) {
-                    if(MTP.matches_names(person_name,person.name)||company_regex.test(person.title) || parsed_context.people.length===1) {
-                        console.log("Trying person",person);
-                        GM_xmlhttpRequest({method: 'GET', url: person.url,
-                           onload: function(response) {query_response(response, resolve, reject,type); },
-                           onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
-                          });
-                                        return;
-
-                    }
-                }
-
-            }
-            else if(b_url===my_query.url&&my_query.try_count[type]===0) {
-                my_query.try_count[type]++;
-                query_search(person_name+" "+my_query.company,resolve,reject,query_response,"query");
-                return;
-            }
-
-        }
-          //  if(b1_success && (resolve(b_url)||true)) return;
+            if(b1_success && (resolve(b_url)||true)) return;
         }
         catch(error) {
             reject(error);
@@ -151,6 +101,7 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
+        my_query.fields.ceo_url=result;
         submit_if_done();
     }
 
@@ -177,23 +128,34 @@
     }
 
     function submit_if_done() {
-        var is_done=true,x;
+        var is_done=true,x,is_done_dones=x;
         add_to_sheet();
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
+        is_done_dones=is_done;
+        for(x in my_query.fields) if(!my_query.fields[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
+        else if(is_done_dones) {
+            console.log("Failed to find all fields");
+            GM_setValue("returnHit",true);
+        }
     }
 
+    function get_data(term) {
+        return term.replace(/^[^:]*:\s*/,"").trim();
+    }
     function init_Query()
     {
         console.log("in init_query");
         var i;
-       var url=document.querySelector("crowd-form a").href;
-        var company=document.querySelectorAll("crowd-form div p")[1].innerText.trim().replace(/^[^:]*:\s*/,"");
-        my_query={name:"",company:company, short_company:MTP.shorten_company_name(company), url:url,fields:{},done:{},
+        var p=document.querySelectorAll("crowd-form p");
+
+        my_query={name,first:get_data(p[0].innerText),middle:get_data(p[1].innerText.trim()),last:get_data(p[2].innerText.trim()),
+                  company:get_data(p[3].innerText.trim()),fields:{},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
+        my_query.name=my_query.first+" "+my_query.middle+(my_query.middle.length>0?" ":"")+my_query.last;
 	console.log("my_query="+JSON.stringify(my_query));
-        var search_str="+"+my_query.url;
+        var search_str=my_query.name+" "+my_query.company+" site:linkedin.com/in";
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");
