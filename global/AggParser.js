@@ -192,6 +192,40 @@ AggParser.parse_dandb=function(doc,url,resolve,reject,quality) {
     resolve(result);
 };
 
+
+AggParser.parse_dnb=function(doc,url,resolve,reject) {
+	var result={url:url,employee_list:[]};
+	var span=doc.querySelector("[name='employees_all_site'] span");
+	var address,phone,website,name,temp,title;
+	var span_list=['address','phone','name'],x;
+	if(!span) span=doc.querySelector("[name='employees_this_site'] span");
+	if((address=doc.querySelector("[name='company_address'] span"))) {
+		result.address=new Address(address.innerText.replace(/United States\s*$/,"").trim());
+	}
+	for(x of span_list) {
+		if((temp=doc.querySelector(`[name='company_${x}'] span`))) {
+			result[x]=temp.innerText.trim();
+		}
+	}
+	if((temp=doc.querySelector(`[name='revenue_in_us_dollar'] span`))) {
+		result.revenue=temp.innerText.trim();
+	}
+
+	var people=doc.querySelectorAll("[itemtype='https://schema.org/Person']");
+	for(x of people) {
+		name=x.querySelector("[itemprop='name']");
+		title=x.querySelector("[itemprop='jobTitle']");
+		result.employee_list.push({name:name?name.innerText.trim():"",title:title?title.innerText.trim():""});
+
+	}
+
+	if(span) result.employees=span.innerText.trim();
+		
+		
+	resolve(result);
+
+};
+
 AggParser.parse_whitepages=function(doc,url,resolve,reject) {
     var h2=doc.querySelector(".module-title h2");
     var street=doc.querySelector(".address-primary");
