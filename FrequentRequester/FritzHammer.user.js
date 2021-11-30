@@ -73,7 +73,7 @@
                 console.log("parsed_context="+JSON.stringify(parsed_context)); } 
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length; i++) {
+            for(i=0; i < b_algo.length&&i<2; i++) {
                 b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
@@ -154,7 +154,7 @@
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit"+MTurk.assignment_id,true); });
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
     }
 
 })();
