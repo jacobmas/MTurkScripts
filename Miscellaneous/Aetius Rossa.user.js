@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         LocalSearch
+// @name         Aetius Rossa
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  New script
+// @description  Parse bing maps
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -39,11 +39,42 @@
     var my_query = {};
     var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"AP9UNGT6E7NQP",true);
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A2B6LCT6JZZREC",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
         return false;
+    }
+
+    function parse_maps(response,resolve,reject) {
+            var doc = new DOMParser()
+        .parseFromString(response.responseText, "text/html");
+        console.log("in parse_maps\n"+response.finalUrl);
+        //console.log("doc=",doc);
+        //console.log("doc=",doc.body.innerHTML);
+        try {
+                    var entity=doc.querySelector(".overlay-taskpane").dataset.entity;
+
+            var parsed=JSON.parse(entity);
+            var name=decodeURIComponent(response.finalUrl.replace(/^.*\?q\=/,"").replace(/&.*$/,""));
+            console.log("parsed=",parsed);
+            let curr_lat=parseFloat(parsed.routablePoint.latitude),curr_lon=parseFloat(parsed.routablePoint.longitude);
+            let curr_dist=Math.sqrt((curr_lat-my_query.lat)*(curr_lat-my_query.lat)+(curr_lon-my_query.lon)*(curr_lon-my_query.lon));
+            my_query.items.push({name:name,curr_lat:curr_lat,curr_dist:curr_dist});
+        }
+        catch(error) { }
+        resolve("");
+    }
+
+    function create_promise(url) {
+         url=url.replace(/\/maps/,"/maps/overlaybfpr").replace(/\&ss\=/,"&filters=local_").replace(/\&cp.*$/,"").replace(/ypid\./,"ypid%3A\"")+"\"";
+        console.log("new url=",url);
+        return new Promise((resolve,reject) => {
+              GM_xmlhttpRequest({method: 'GET', url: url,
+                           onload: function(response) { parse_maps(response, resolve, reject); },
+                           onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
+                          });
+        });
     }
 
     function query_response(response,resolve,reject,type) {
@@ -51,7 +82,6 @@
         .parseFromString(response.responseText, "text/html");
         console.log("in query_response\n"+response.finalUrl+", type="+type);
         var search, b_algo, i=0, inner_a;
-        var temp;
         var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
         var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
         try
@@ -59,76 +89,44 @@
             search=doc.getElementById("b_content");
             b_algo=search.querySelectorAll("#b_results > .b_algo");
             lgb_info=doc.getElementById("lgb_info");
-            var days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
             b_context=doc.getElementById("b_context");
-            console.log("b_algo.length="+b_algo.length);
-	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context));
-            if(!parsed_context.hours && (temp=b_context.querySelector(".opHours .e_green.b_positive"))) {
-                let y;
-                let hours_item={};
-                for(y of days) {
-                    hours_item[y]={"open24":"00:00","close24":"23:59"};
-                }
-                parsed_context.hours=hours_item;
+            var bizlist2=doc.querySelectorAll(".mt_bizList .bm_details_overlay");
+            var bizlist=doc.querySelectorAll(".mt_biz_link");
+            //console.log(bizlist2);
+            var min_dist=100000000,curr_min_dist;
+            var curr_best="";
+            var promise_list=[];
+            if(bizlist.length>0) {
+                for(i=0;i<bizlist.length;i++) {
+                    bizlist[i].href=MTP.fix_remote_url(bizlist[i].href,response.finalUrl);
+                                        console.log("bizlist[i].href=",bizlist[i].href);
 
-            }
-            if(parsed_context.hours && parsed_context.Phone) {
-                my_query.fields.phone=parsed_context.Phone.replace(/[^\d]+/g,"");
-                my_query.fields.phone=my_query.fields.phone.substr(0,3)+"-"+my_query.fields.phone.substr(3,3)+"-"+my_query.fields.phone.substr(6);
-                let x;
-                for(x in parsed_context.hours) {
-                    let day=parsed_context.hours[x];
-                    if(!day.closed) {
-                        my_query.fields["hours_"+x.toLowerCase()+"_start"]=day["open24"];
-                        my_query.fields["hours_"+x.toLowerCase()+"_end"]=day["close24"];
-
-                    }
+                    promise_list.push(create_promise(bizlist[i].href));
                 }
-                resolve("");
+                Promise.all(promise_list).then(function() { resolve(""); })
+                .catch(function(response) { console.log("Failed "+response); GM_setValue("returnHit",true); });
                 return;
             }
 
-        }
-           if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
-                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb));
-               if(!parsed_lgb.hours && (temp=lgb_info.querySelector(".opHours .e_green.b_positive"))) {
-                let y;
-                let hours_item={};
-                for(y of days) {
-                    hours_item[y]={"open24":"00:00","close24":"23:59"};
+            /*    //console.log(bizlist2[i].outerHTML);
+                let overlayTemp=bizlist2[i].dataset.detailsoverlay;
+                //console.log(overlayTemp);
+                let overlay=JSON.parse(overlayTemp);
+                let curr_lat=parseFloat(overlay.centerLatitude),curr_lon=parseFloat(overlay.centerLongitude);
+                let curr_dist=Math.sqrt((curr_lat-my_query.lat)*(curr_lat-my_query.lat)+(curr_lon-my_query.lon)*(curr_lon-my_query.lon));
+                console.log("* "+bizlist2[i].innerText.trim()+", curr_dist="+curr_dist);
+
+                if(curr_dist < min_dist) {
+                    curr_best=bizlist2[i].innerText.trim();
+                    console.log("\tbest is "+curr_best+" , "+curr_dist);
+                    min_dist=curr_dist;
                 }
-                parsed_lgb.hours=hours_item;
 
-            }
-
-           if(parsed_lgb.hours && parsed_lgb.phone) {
-                my_query.fields.phone=parsed_lgb.phone.replace(/[^\d]+/g,"");
-                my_query.fields.phone=my_query.fields.phone.substr(0,3)+"-"+my_query.fields.phone.substr(3,3)+"-"+my_query.fields.phone.substr(6);
-                let x;
-                for(x in parsed_lgb.hours) {
-                    let day=parsed_lgb.hours[x];
-                    if(!day.closed) {
-                        my_query.fields["hours_"+x.toLowerCase()+"_start"]=day["open24"];
-                        my_query.fields["hours_"+x.toLowerCase()+"_end"]=day["close24"];
-
-                    }
-                }
-                resolve("");
+                  }
+            if(bizlist.length>=1&&curr_best&&min_dist<.000005) {
+                resolve(curr_best);
                 return;
-            }
-           }
-          /*  for(i=0; i < b_algo.length; i++) {
-                b_name=b_algo[i].querySelector("h2 a").textContent;
-                b_url=b_algo[i].querySelector("h2 a").href;
-               b_caption=b_algo[i].getElementsByClassName("b_caption");
-                p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
-                    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
-                console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
-		   && (b1_success=true)) break;
-            }
-            if(b1_success && (resolve(b_url)||true)) return; */
+            }*/
         }
         catch(error) {
             reject(error);
@@ -155,7 +153,22 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        submit_if_done();
+        console.log("my_query.items=",my_query.items);
+        var min_dist=1000000, name="";
+        var i;
+        for(i=0;i<my_query.items.length;i++) {
+            if(my_query.items[i].curr_dist<min_dist) {
+                min_dist=my_query.items[i].curr_dist;
+                name=my_query.items[i].name;
+            }
+        }
+        if(min_dist<.005) {
+            my_query.fields.companyName=name;
+            submit_if_done();
+        }
+        else {
+            GM_setValue("returnHit",true);
+        }
     }
 
     function begin_script(timeout,total_time,callback) {
@@ -197,16 +210,14 @@
     {
         console.log("in init_query");
         var i;
-        document.querySelector("#poi_is_open").click();
-        var target=document.querySelectorAll("classification-target strong");
-        console.log("target[0].nextSibling=",target[0].nextSibling);
-        var name=target[0].nextSibling.textContent.trim(), address=target[1].nextSibling.textContent.trim();
-        var dont=document.getElementsByClassName("dont-break-out");
-        my_query={name:name,address:address, fields:{},done:{},
-		  try_count:{"query":0},
+      var query=decodeURIComponent(document.querySelector("crowd-form a").href.replace(/.*?q\=/,""));
+        var split=query.split(",");
+
+        my_query={name:"",query:query,lat:parseFloat(split[0]),lon:parseFloat(split[1]),fields:{},done:{},
+		  try_count:{"query":0},items:[],
 		  submitted:false};
 	console.log("my_query="+JSON.stringify(my_query));
-        var search_str=my_query.name+" "+my_query.address;
+        var search_str=query;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");

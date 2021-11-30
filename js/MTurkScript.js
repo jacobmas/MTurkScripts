@@ -1846,6 +1846,24 @@ MTurkScript.prototype.find_company_name_on_website=function(doc,url) {
 
 };
 
+/** 
+ * Find company logo url 
+ */
+MTurkScript.prototype.find_logo=function(doc,url) {
+	var logo_list=doc.querySelectorAll("img[id*='logo' i],img[src*='logo' i],img[data-src*='logo' i],img[class*='logo' i],img[alt*='logo' i],.logo img,[id*='logo'] img");
+	var logo=null;
+	var curr;
+	for(curr of logo_list) {
+		console.log("curr=",curr);
+		if(/^data:/.test(curr.src)&&curr.dataset&&
+			curr.dataset.src) curr.src=curr.dataset.src;
+		if(curr.src&&!/^data:/.test(curr.src)) {
+			logo=curr;
+			break;
+		}
+	}
+	return logo;
+};	
 
 var MTP=MTurkScript.prototype;
 
