@@ -1166,7 +1166,7 @@ MTurkScript.prototype.is_bad_fb=function(b_url,b_name) {
 };
 
 MTurkScript.prototype.is_bad_instagram=function(b_url,bname) {
-    if(/instagram\.com\/(p|explore)\//.test(b_url)) return true;
+    if(/instagram\.com\/(p|explore|tv)\//.test(b_url)) return true;
     return false;
 };
 
@@ -1793,7 +1793,6 @@ MTurkScript.prototype.find_company_name_on_website=function(doc,url) {
 	var match=doc.body.innerText.match(/(Assistant|Associate)?(\s*Clinical)?\s*?Professor(\sof(\s[A-Z\&][a-z]*)+)?/);
 	console.log("match=",match);
 	//console.log(doc.body.innerText.match(/Professor.*/,""));
-	if(match && my_query && my_query.fields) my_query.fields.Q4Url= match[0].trim();
 	 var site_name=doc.querySelector("meta[property='og:site_name']");
 	if(site_name) { console.log("Found site name=",site_name.content);
 				   possible_name_list.push({name:site_name.content.replace(/Website of\s*/i,""),priority:0});
