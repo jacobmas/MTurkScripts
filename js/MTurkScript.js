@@ -1791,7 +1791,7 @@ name, priority (lower is better) */
 MTurkScript.prototype.find_company_name_on_website=function(doc,url) {
 	var possible_name_list=[];
 	var match=doc.body.innerText.match(/(Assistant|Associate)?(\s*Clinical)?\s*?Professor(\sof(\s[A-Z\&][a-z]*)+)?/);
-	console.log("match=",match);
+	//console.log("match=",match);
 	//console.log(doc.body.innerText.match(/Professor.*/,""));
 	 var site_name=doc.querySelector("meta[property='og:site_name']");
 	if(site_name) { console.log("Found site name=",site_name.content);
@@ -1802,12 +1802,12 @@ MTurkScript.prototype.find_company_name_on_website=function(doc,url) {
 	//var img=doc.querySelectorAll("img");
 	//for(x of img) { console.log("img=",x,", outerHTML=",x.outerHTML); }
 //        console.log("doc.querySelectorAll(img)=",doc.querySelectorAll("img"));
-	console.log("logo=",logo);
+//	console.log("logo=",logo);
 	for(x of logo) {
-		console.log("x=",x);
+	//	console.log("x=",x);
 		if(x.alt) x.alt=x.alt.replace(/\slogo$/i,"").replace(/Website of\s*/i,"");
 		if(x.alt && /^[A-Z]/.test(x.alt) && !/Logo|(^\s*Home\s*)/i.test(x.alt)) {
-			console.log("Found logo alt=",x.alt);
+			//console.log("Found logo alt=",x.alt);
 			temp_cost=penalty_re.test(x.alt)?10:0;
 			possible_name_list.push({name:x.alt,priority:3+temp_cost});
 		  
@@ -1815,10 +1815,10 @@ MTurkScript.prototype.find_company_name_on_website=function(doc,url) {
 	}
 	if(logo.length===0) logo=doc.querySelectorAll("img[id*='logo' i],img[src*='logo' i],img[data-src*='logo' i");
 	for(x of logo) {
-		console.log("x=",x);
+		//console.log("x=",x);
 		if(x.alt) x.alt=x.alt.replace(/\slogo$/i,"").replace(/Website of\s*/i,"");;
 		if(x.alt && /^[A-Z]/.test(x.alt) && !/Logo|(^\s*Home\s*)/i.test(x.alt)) {
-			console.log("Found logo alt=",x.alt);
+			//console.log("Found logo alt=",x.alt);
 							temp_cost=penalty_re.test(x.alt)?10:0;
 
 			possible_name_list.push({name:x.alt,priority:6+temp_cost});
