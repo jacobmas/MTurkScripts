@@ -512,8 +512,8 @@ MTurkScript.prototype.parse_hours_table=function(table) {
 		if(row.cells.length>=2) {
 			var split_times=row.cells[1].innerText.trim().split(/ - /);
 			if(split_times.length>=2) {
-				split_times[0]=split_times[0].replace("Noon","12:00 PM").replace(/Midnight/i,"12:00 AM").replace(/^(\d+) /,"$1:00 ").replace(/^(\d:)/,"0$1");
-				split_times[1]=split_times[1].replace("Noon","12:00 PM").replace(/Midnight/i,"12:00 AM").replace(/^(\d+) /,"$1:00 ").replace(/^(\d:)/,"0$1");
+				split_times[0]=split_times[0].replace(/Noon/i,"12:00 PM").replace(/Midnight/i,"12:00 AM").replace(/^(\d+) /,"$1:00 ").replace(/^(\d:)/,"0$1");
+				split_times[1]=split_times[1].replace(/Noon/i,"12:00 PM").replace(/Midnight/i,"12:00 AM").replace(/^(\d+) /,"$1:00 ").replace(/^(\d:)/,"0$1");
 
 				var open24=MTurkScript.prototype.convertTime12to24(split_times[0]), close24=MTurkScript.prototype.convertTime12to24(split_times[1]);
 
