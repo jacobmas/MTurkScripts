@@ -43,11 +43,20 @@
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name, name, p_caption, i)
     {
-        if(!MTurkScript.prototype.is_bad_name(b_name, name, p_caption, i)) return false;
+        if(!MTurkScript.prototype.is_bad_name(b_name.replace(/[\"\(].*$/,"").trim(), name, p_caption, i)) return false;
+        if(!MTurkScript.prototype.is_bad_name(b_name.replace(/[\"\(].*$/,"").replace(/\s\-\s/,": ").trim(), name, p_caption, i)) return false;
+
         console.log("p_caption=",p_caption,", name=",name);
         console.log(p_caption.toLowerCase().indexOf(name.toLowerCase()));
-        if(p_caption.toLowerCase().indexOf(name.toLowerCase())!==-1) return false;
+        if(p_caption.toLowerCase().indexOf(name.toLowerCase())===0) return false;
         return true;
+    }
+
+    function parse_movie(the_div) {
+        var result={};
+        let title;
+        if((title=the_div.querySelector(".b_entityTitle"))) result.title=title.innerText.trim();
+        return result;
     }
 
     function query_response(response,resolve,reject,type) {
@@ -63,12 +72,43 @@
             b_algo=search.getElementsByClassName("b_algo");
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
+            let temp="";
+
+            let movie=b_context.querySelector("[data-feedbk-ids='Movie']");
+            let tv;
+            if(movie) {
+               let result=parse_movie(movie);
+                console.log("result=",result);
+            }
+
+            if(b_context && ((temp=b_context.querySelector("a[href*='//www.imdb.com/title']")))
+
+               && /imdb\.com/.test(temp.href)) {
+                console.log("temp.href=",temp.href);
+               //resolve(temp.href);
+               //return;
+
+            }
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context)); } 
+                console.log("parsed_context="+JSON.stringify(parsed_context));
+            if(parsed_context.imdb && (!my_query.year || !parsed_context['Release date'] ||
+                                       (parsed_context['Release date'] && new RegExp(my_query.year).test(parsed_context['Release date'])))) {
+                resolve(parsed_context.imdb);
+                return;
+            }
+            else if(parsed_context.people && parsed_context.people[0].url && my_query.try_count[type]===0) {
+                my_query.try_count[type]++;
+                GM_xmlhttpRequest({method: 'GET', url:  parsed_context.people[0].url,
+                           onload: function(response) { query_response(response, resolve, reject,type); },
+                           onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
+                          });
+                return;
+            }
+        }
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length && i < 2; i++) {
+            for(i=0; i < b_algo.length && i < 1; i++) {
                 b_name=b_algo[i].querySelector("h2 a").textContent;
                 b_url=b_algo[i].querySelector("h2 a").href;
                b_caption=b_algo[i].getElementsByClassName("b_caption");
@@ -78,7 +118,7 @@
                 if(b_url.match(/https:\/\/www\.imdb\.com\/title\/[^\/]+\/?/) &&
                    (matches_year(b_name)||matches_year(p_caption)) &&
 
-                   !is_bad_name(b_name,my_query.name,p_caption,i)
+                   !is_bad_name(b_name,my_query.short_name,p_caption,i)
 		   && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
@@ -91,6 +131,11 @@
         return;
     }
     function do_next_query(resolve,reject,type) {
+        if(my_query.try_count[type]===0) {
+            my_query.try_count[type]++;
+             query_search(my_query.short_name +" "+(my_query.year?my_query.year:"")+" site:imdb.com/title", resolve, reject, query_response,"query");
+            return;
+        }
         reject("Nothing found");
     }
 
@@ -120,7 +165,7 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.fields.imdb_id=result.match(/https:\/\/www\.imdb\.com\/title\/([^\/]+)/)[1];
+        my_query.fields.imdb_id=result.match(/https?:\/\/www\.imdb\.com\/title\/([^\/]+)/)[1];
         submit_if_done();
     }
 
@@ -159,20 +204,47 @@
         var i;
         var div=document.querySelector("crowd-form div div div");
         var node;
-        var name=div.childNodes[2].textContent.trim();
-        var addl=div.childNodes[4].textContent.trim();
-        var year="";
+        var name=document.querySelector("crowd-form a").innerText.trim().replace(/â€“/,"-").trim();
+        var short_name=name.replace(/\s*-\s.*$/,"").trim();
+        var x;
+        for(x of div.childNodes) {
+            //console.log("x=",x,", textContent=",x.textContent);
+        }
+        var addl=div.childNodes[6].textContent.trim();
+        var year="",cast="",cast_list=[];
         try {
             year=addl.match(/Year:\s*(\d+)/)[1];
+
         }
         catch(error) { }
-        console.log(name);
+        try {
+            cast=addl.match(/Cast:\s*(.*)$/)[1];
+            cast_list=cast.split(/,\s*/);
+        }
+        catch(error) { }
+        console.log("name=",name);
 
-        my_query={name:name,year:parseInt(year), fields:{},done:{},
+        my_query={name:name,short_name:short_name,year:parseInt(year),cast_list:cast_list, fields:{},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
+
+        if(/^NOT N /.test(my_query.name)) {
+            my_query.fields.imdb_id="EMPTY";
+            setTimeout(submit_if_done,1200);
+            return;
+        }
+
 	console.log("my_query="+JSON.stringify(my_query));
-        var search_str=my_query.name +" "+my_query.year+" site:imdb.com/title";
+        var search_str=my_query.name +" ";
+        if(cast_list.length>0) {
+            let x;
+            for(x of cast_list) search_str+=x+" ";
+        }
+        else {
+            search_str+=(my_query.year?my_query.year:"")
+        }
+
+        search_str=search_str+" site:imdb.com/title";
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");
