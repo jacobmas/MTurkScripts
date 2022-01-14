@@ -270,7 +270,16 @@
 	console.log("my_query="+JSON.stringify(my_query));
 
         var promise=MTP.create_promise(my_query.url,find_impressum,submit_if_done,function(val) {
-            console.log("Failed at this Promise " + val); GM_setValue("returnHit",true); });
+            console.log("Failed at this Promise " + val);
+            if(!/Impressum/i.test(val)) {
+        my_query.fields.company_name=my_query.fields.representative=my_query.fields.phone="n/a";
+            my_query.fields.email="na@na.com";
+                submit_if_done();
+            }
+            else {
+                GM_setValue("returnHit",true);
+            }
+        });
   /*      var search_str;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
