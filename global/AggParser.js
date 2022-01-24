@@ -177,24 +177,10 @@ AggParser.parse_chamber=function(doc,url,resolve,reject,quality) {
     resolve(result);
 }
 
-AggParser.parse_dandb=function(doc,url,resolve,reject,quality) {
-    console.log("in parse_dandb, url="+url);
-    var tel=doc.querySelector(".tel");
-    var result={success:true,site:"dandb",quality:quality},i,span;
-    if(tel) result.phone=tel.innerText.trim();
-    var bus_lst=doc.querySelectorAll(".business li");
-    for(i=0;i<bus_lst.length;i++) {
-        if(/Contacts/.test(bus_lst[i].innerText) && (span=bus_lst[i].querySelector("span"))) {
-            result.name=span.innerText.trim();
-            result.title="Owner"; }
-    }
-    console.log("parse_dandb, result="+JSON.stringify(result));
-    resolve(result);
-};
-
-
 AggParser.parse_dnb=function(doc,url,resolve,reject) {
-	var result={url:url,employee_list:[]};
+	var result={url:url,employee_list:[],industry_links:[]};
+	var temp_name=doc.querySelector("[name='company_name'] span");
+	if(temp_name) result.name=temp_name.innerText.trim();
 	var span=doc.querySelector("[name='employees_all_site'] span");
 	var address,phone,website,name,temp,title;
 	var span_list=['address','phone','name'],x;
@@ -210,6 +196,14 @@ AggParser.parse_dnb=function(doc,url,resolve,reject) {
 	if((temp=doc.querySelector(`[name='revenue_in_us_dollar'] span`))) {
 		result.revenue=temp.innerText.trim();
 	}
+	if((temp=doc.querySelector("[name='company_website'] a"))) {
+		result.website=temp.href;
+	}
+	var ind_links=doc.querySelectorAll('[name="industry_links"] > span > span');
+	for(x of ind_links) {
+		result.industry_links.push(x.innerText.trim());
+	}
+
 
 	var people=doc.querySelectorAll("[itemtype='https://schema.org/Person']");
 	for(x of people) {
@@ -220,11 +214,15 @@ AggParser.parse_dnb=function(doc,url,resolve,reject) {
 	}
 
 	if(span) result.employees=span.innerText.trim();
-		
-		
+
+
 	resolve(result);
 
 };
+
+
+`
+
 
 AggParser.parse_whitepages=function(doc,url,resolve,reject) {
     var h2=doc.querySelector(".module-title h2");
