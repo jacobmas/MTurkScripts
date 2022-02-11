@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Moriah Taylor
+// @name        Nicolas Fremont
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  New script
+// @description  credit card charges
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -37,9 +37,10 @@
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=[];
+    var bad_urls=[".whatsthatcharge.com","/aquoicorrespondleprelevement.com","/businessnamegenerator.com",".comparethemarket.com",
+                 "//rethority.com",".hireaiva.com/",".wikipedia.org","/craft.co",".webs.co.com/",".call-center-tech.com"];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A2LE2QXDRD6OGZ",true);
+    var MTurk=new MTurkScript(20000,750+(Math.random()*750),[],begin_script,"A3HUJ9QH2ASIYU",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
@@ -62,21 +63,28 @@
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
                 console.log("parsed_context="+JSON.stringify(parsed_context));
-            if(parsed_context.hours) {
-            }
-
+            if(parsed_context.url && !MTP.is_bad_url(parsed_context.url,bad_urls,-1)) { resolve(parsed_context.url); return; }
         }
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
-                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length&&i<1; i++) {
+                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb));
+                        if(parsed_lgb.url && !MTP.is_bad_url(parsed_lgb.url,bad_urls,-1)) { resolve(parsed_lgb.url); return; }
+
+            }
+            for(i=0; i < b_algo.length&&i<2; i++) {
                 b_name=b_algo[i].querySelector("h2 a").textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
+                b_url=b_url.replace(/\/home/,"");
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : (b_algo[i].querySelector("p")? b_algo[i].querySelector("p").innerText.trim():"");
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if( new RegExp(my_query.CreditUnionName.replace(/\'/,"")).test(b_name) && ( new RegExp(my_query.City).test(b_name)|| new RegExp(my_query.City).test(p_caption))
+                if(/eintaxid\.com/.test(b_url)&&!my_query.new_name) {
+                    my_query.new_name=p_caption.replace(/ is a corp.*$/,"");
+                }
 
+
+                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls,4,2) && (!MTurkScript.prototype.is_bad_name(b_name,MTP.shorten_company_name(my_query.name),p_caption,i)||
+                                                                              new RegExp(MTP.shorten_company_name(my_query.name),"i").test(p_caption))
 		   && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
@@ -89,6 +97,16 @@
         return;
     }
     function do_next_query(resolve,reject,type) {
+        if(my_query.try_count[type]===0) {
+            my_query.try_count[type]++;
+            query_search(my_query.name, resolve, reject, query_response,"query");
+            return;
+        }
+        else if(my_query.new_name&&my_query.try_count[type]<=1) {
+            my_query.try_count[type]++;
+            query_search(my_query.new_name, resolve, reject, query_response,"query");
+            return;
+        }
         reject("Nothing found");
     }
 
@@ -106,20 +124,8 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.url=result;
-        var promise=MTP.create_promise(my_query.url,parse_credit,submit_if_done,function() { GM_setValue("returnHit",true); });
-    }
-
-    function parse_credit(doc,url,resolve,reject) {
-
-        var row=doc.querySelectorAll(".hoursRow");
-        var x,y,z;
-
-        for(x of row) {
-            let l=x.querySelector(".hoursL"),r=x.querySelectorAll(".hoursR span");
-
-        MTurkScript.prototype.convertTime12to24
-
+        my_query.fields.website=result.replace(/(https?:\/\/[^\/]*).*$/,"$1");
+        submit_if_done();
     }
 
     function begin_script(timeout,total_time,callback) {
@@ -159,32 +165,20 @@
 
     function init_Query()
     {
+        bad_urls=bad_urls.concat(default_bad_urls);
         console.log("in init_query");
         var i;
-
-        var p=document.querySelectorAll("crowd-form div div div p");
-        var x;
-        my_query={name,fields:{},done:{},
+       var name=document.querySelector("crowd-form strong").innerText.trim()
+       .replace(/\s[\d]+$/,"").replace(/^ABC\*/,"").replace(/^ALLPAY \*/,"").
+       replace(/^CB\s/,"").trim().
+       replace(/^[\d]*\s\-/,"").trim().replace(/(^|\s)WWW(\s|$)/," ").
+       replace(/.*?([A-Z0-9\.]+\.(DE|UK|COM|SG|FR))(?:$|[^A-Z]+).*/,"$1").
+       trim();
+       my_query={name:name,fields:{},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
-        for(x of p) {
-            let temp=x.innerText.match(/([^:]*):\s*(.*)$/);
-            if(temp&&!/(To|From):/.test(temp[1])) my_query[temp[1].replace(/PhysicalAddress/,"")]=temp[2];
-        }
-        if(/Lobby/.test(my_query.HoursOfOperation)&&/Drive/.test(my_query.HoursOfOperation)) {
-          //  setTimeout(function() { GM_setValue("returnHit",true) }, 1250);
-            //return;
-        }
-
 	console.log("my_query="+JSON.stringify(my_query));
-        let my_list=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-        for(x of my_list) {
-            my_query.fields[x+"_From"]="";
-            my_query.fields[x+"_To"]="";
-        }
-
-
-        var search_str=my_query.CreditUnionName+" "+my_query.Line1+" "+my_query.City+" "+my_query.StateCode+" "+my_query.PostalCode+" site:creditunionsonline.com";
+        var search_str=my_query.name+" company";
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");

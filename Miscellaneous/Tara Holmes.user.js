@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Moriah Taylor
+// @name         Tara Holmes
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  New script
+// @description  Find Font
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -31,6 +31,7 @@
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Email/MailTester.js
 // @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
+// @require https://raw.githubusercontent.com/gildas-lormeau/zip.js/master/dist/zip-no-worker-inflate.min.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
@@ -38,9 +39,19 @@
     'use strict';
     var my_query = {};
     var bad_urls=[];
+
+    function randomString(length, chars) {
+        if(!chars) chars='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        var result = '';
+        for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+        return result;
+    }
+
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A2LE2QXDRD6OGZ",true);
+    var MTurk=new MTurkScript(60000,750+(Math.random()*1000),[],begin_script,"A29MYGVJ14P5XJ",false);
     var MTP=MTurkScript.prototype;
+    if(/mturkcontent\.com/.test(window.location.href)) {
+        init_Query(); }
     function is_bad_name(b_name)
     {
         return false;
@@ -61,22 +72,17 @@
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context));
-            if(parsed_context.hours) {
-            }
-
-        }
+                console.log("parsed_context="+JSON.stringify(parsed_context)); } 
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length&&i<1; i++) {
+            for(i=0; i < b_algo.length; i++) {
                 b_name=b_algo[i].querySelector("h2 a").textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : (b_algo[i].querySelector("p")? b_algo[i].querySelector("p").innerText.trim():"");
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if( new RegExp(my_query.CreditUnionName.replace(/\'/,"")).test(b_name) && ( new RegExp(my_query.City).test(b_name)|| new RegExp(my_query.City).test(p_caption))
-
+                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
 		   && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
@@ -106,20 +112,24 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.url=result;
-        var promise=MTP.create_promise(my_query.url,parse_credit,submit_if_done,function() { GM_setValue("returnHit",true); });
+        my_query.download_url=result.replace(/\/blob\//,"/raw/");
+
+        GM_xmlhttpRequest({method: 'GET', url: my_query.download_url,responseType:"blob",
+                           onload: function(response) { parse_response(response); },
+                           onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
+                          });
     }
+    function parse_response(response) {
+        console.log("response=",response);
+        var fileInputElement=document.querySelector("#uploadFontFile");
 
-    function parse_credit(doc,url,resolve,reject) {
+        var file = new File([response.response], response.finalUrl.replace(/^.*\/([^\/]*)$/,"$1"));
 
-        var row=doc.querySelectorAll(".hoursRow");
-        var x,y,z;
+        let container = new DataTransfer();
 
-        for(x of row) {
-            let l=x.querySelector(".hoursL"),r=x.querySelectorAll(".hoursR span");
-
-        MTurkScript.prototype.convertTime12to24
-
+        container.items.add(file);
+        fileInputElement.files = container.files;
+        submit_if_done();
     }
 
     function begin_script(timeout,total_time,callback) {
@@ -151,7 +161,7 @@
         is_done_dones=is_done;
         for(x in my_query.fields) if(!my_query.fields[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
-        else if(is_done_dones) {
+        else if(is_done_dones && !my_query.submitted) {
             console.log("Failed to find all fields");
             GM_setValue("returnHit",true);
         }
@@ -161,30 +171,20 @@
     {
         console.log("in init_query");
         var i;
-
-        var p=document.querySelectorAll("crowd-form div div div p");
-        var x;
-        my_query={name,fields:{},done:{},
+        var submit=document.querySelector("#mturk_form [type='submit']");
+        var newsubmit=document.createElement("input");
+        newsubmit.type="button";
+        newsubmit.value="New Submit";
+        document.querySelector("#captchaValue").value=randomString(4);
+        newsubmit.addEventListener("click",function(e) { document.querySelector("[name='uploadForm']").submit(); });
+        submit.parentNode.insertBefore(newsubmit,submit.nextSibling);
+       submit.disabled=true;
+        submit.hidden=true;
+        my_query={name:document.querySelector("#font-name").innerText.trim(),fields:{},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
-        for(x of p) {
-            let temp=x.innerText.match(/([^:]*):\s*(.*)$/);
-            if(temp&&!/(To|From):/.test(temp[1])) my_query[temp[1].replace(/PhysicalAddress/,"")]=temp[2];
-        }
-        if(/Lobby/.test(my_query.HoursOfOperation)&&/Drive/.test(my_query.HoursOfOperation)) {
-          //  setTimeout(function() { GM_setValue("returnHit",true) }, 1250);
-            //return;
-        }
-
 	console.log("my_query="+JSON.stringify(my_query));
-        let my_list=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-        for(x of my_list) {
-            my_query.fields[x+"_From"]="";
-            my_query.fields[x+"_To"]="";
-        }
-
-
-        var search_str=my_query.CreditUnionName+" "+my_query.Line1+" "+my_query.City+" "+my_query.StateCode+" "+my_query.PostalCode+" site:creditunionsonline.com";
+        var search_str="+\""+my_query.name+ "\"";
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");

@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Moriah Taylor
+// @name         Ed Border
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  New script
+// @description  IMDB urls for shows
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -39,11 +39,24 @@
     var my_query = {};
     var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A2LE2QXDRD6OGZ",true);
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A1I5RIGPFUW2RM",true);
     var MTP=MTurkScript.prototype;
-    function is_bad_name(b_name)
+    function is_bad_name(b_name, name, p_caption, i)
     {
-        return false;
+        if(!MTurkScript.prototype.is_bad_name(b_name.replace(/[\"\(].*$/,"").trim(), name, p_caption, i)) return false;
+        if(!MTurkScript.prototype.is_bad_name(b_name.replace(/[\"\(].*$/,"").replace(/\s\-\s/,": ").trim(), name, p_caption, i)) return false;
+
+        console.log("p_caption=",p_caption,", name=",name);
+        console.log(p_caption.toLowerCase().indexOf(name.toLowerCase()));
+        if(p_caption.toLowerCase().indexOf(name.toLowerCase())===0) return false;
+        return true;
+    }
+
+    function parse_movie(the_div) {
+        var result={};
+        let title;
+        if((title=the_div.querySelector(".b_entityTitle"))) result.title=title.innerText.trim();
+        return result;
     }
 
     function query_response(response,resolve,reject,type) {
@@ -56,27 +69,56 @@
         try
         {
             search=doc.getElementById("b_content");
-			b_algo=doc.querySelectorAll("#b_results > .b_algo");
+            b_algo=search.getElementsByClassName("b_algo");
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
+            let temp="";
+
+            let movie=b_context.querySelector("[data-feedbk-ids='Movie']");
+            let tv;
+            if(movie) {
+               let result=parse_movie(movie);
+                console.log("result=",result);
+            }
+
+            if(b_context && ((temp=b_context.querySelector("a[href*='//www.imdb.com/title']")))
+
+               && /imdb\.com/.test(temp.href)) {
+                console.log("temp.href=",temp.href);
+               //resolve(temp.href);
+               //return;
+
+            }
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
                 console.log("parsed_context="+JSON.stringify(parsed_context));
-            if(parsed_context.hours) {
+            if(parsed_context.imdb && (!my_query.year || !parsed_context['Release date'] ||
+                                       (parsed_context['Release date'] && new RegExp(my_query.year).test(parsed_context['Release date'])))) {
+                resolve(parsed_context.imdb);
+                return;
             }
-
+            else if(parsed_context.people && parsed_context.people[0].url && my_query.try_count[type]===0) {
+                my_query.try_count[type]++;
+                GM_xmlhttpRequest({method: 'GET', url:  parsed_context.people[0].url,
+                           onload: function(response) { query_response(response, resolve, reject,type); },
+                           onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
+                          });
+                return;
+            }
         }
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length&&i<1; i++) {
+            for(i=0; i < b_algo.length && i < 1; i++) {
                 b_name=b_algo[i].querySelector("h2 a").textContent;
-                b_url=b_algo[i].getElementsByTagName("a")[0].href;
-                b_caption=b_algo[i].getElementsByClassName("b_caption");
+                b_url=b_algo[i].querySelector("h2 a").href;
+               b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
-                    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : (b_algo[i].querySelector("p")? b_algo[i].querySelector("p").innerText.trim():"");
+                    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if( new RegExp(my_query.CreditUnionName.replace(/\'/,"")).test(b_name) && ( new RegExp(my_query.City).test(b_name)|| new RegExp(my_query.City).test(p_caption))
+                if(b_url.match(/https:\/\/www\.imdb\.com\/title\/[^\/]+\/?/) &&
+                   (matches_year(b_name)||matches_year(p_caption)) &&
 
+                   !is_bad_name(b_name,my_query.short_name,p_caption,i)
 		   && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
@@ -89,8 +131,25 @@
         return;
     }
     function do_next_query(resolve,reject,type) {
+        if(my_query.try_count[type]===0) {
+            my_query.try_count[type]++;
+             query_search(my_query.short_name +" "+(my_query.year?my_query.year:"")+" site:imdb.com/title", resolve, reject, query_response,"query");
+            return;
+        }
         reject("Nothing found");
     }
+
+    function matches_year(b_caption) {
+        var i;
+        if(my_query.year==="") return true;
+        for(i=-10; i<=10; i++) {
+            let r=new RegExp("\("+(my_query.year+i)+"\)");
+            //console.log("r=",r);
+            if(b_caption.match(r)) return true;
+        }
+        return false;
+    }
+
 
     /* Search on bing for search_str, parse bing response with callback */
     function query_search(search_str, resolve,reject, callback,type,filters) {
@@ -106,20 +165,8 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.url=result;
-        var promise=MTP.create_promise(my_query.url,parse_credit,submit_if_done,function() { GM_setValue("returnHit",true); });
-    }
-
-    function parse_credit(doc,url,resolve,reject) {
-
-        var row=doc.querySelectorAll(".hoursRow");
-        var x,y,z;
-
-        for(x of row) {
-            let l=x.querySelector(".hoursL"),r=x.querySelectorAll(".hoursR span");
-
-        MTurkScript.prototype.convertTime12to24
-
+        my_query.fields.imdb_id=result.match(/https?:\/\/www\.imdb\.com\/title\/([^\/]+)/)[1];
+        submit_if_done();
     }
 
     function begin_script(timeout,total_time,callback) {
@@ -145,46 +192,59 @@
     }
 
     function submit_if_done() {
-        var is_done=true,x,is_done_dones=x;
+        var is_done=true,x;
         add_to_sheet();
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
-        is_done_dones=is_done;
-        for(x in my_query.fields) if(!my_query.fields[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
-        else if(is_done_dones) {
-            console.log("Failed to find all fields");
-            GM_setValue("returnHit",true);
-        }
     }
 
     function init_Query()
     {
         console.log("in init_query");
         var i;
-
-        var p=document.querySelectorAll("crowd-form div div div p");
+        var div=document.querySelector("crowd-form div div div");
+        var node;
+        var name=document.querySelector("crowd-form a").innerText.trim().replace(/â€“/,"-").trim();
+        var short_name=name.replace(/\s*-\s.*$/,"").trim();
         var x;
-        my_query={name,fields:{},done:{},
+        for(x of div.childNodes) {
+            //console.log("x=",x,", textContent=",x.textContent);
+        }
+        var addl=div.childNodes[6].textContent.trim();
+        var year="",cast="",cast_list=[];
+        try {
+            year=addl.match(/Year:\s*(\d+)/)[1];
+
+        }
+        catch(error) { }
+        try {
+            cast=addl.match(/Cast:\s*(.*)$/)[1];
+            cast_list=cast.split(/,\s*/);
+        }
+        catch(error) { }
+        console.log("name=",name);
+
+        my_query={name:name,short_name:short_name,year:parseInt(year),cast_list:cast_list, fields:{},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
-        for(x of p) {
-            let temp=x.innerText.match(/([^:]*):\s*(.*)$/);
-            if(temp&&!/(To|From):/.test(temp[1])) my_query[temp[1].replace(/PhysicalAddress/,"")]=temp[2];
-        }
-        if(/Lobby/.test(my_query.HoursOfOperation)&&/Drive/.test(my_query.HoursOfOperation)) {
-          //  setTimeout(function() { GM_setValue("returnHit",true) }, 1250);
-            //return;
+
+        if(/^NOT N /.test(my_query.name)) {
+            my_query.fields.imdb_id="EMPTY";
+            setTimeout(submit_if_done,1200);
+            return;
         }
 
 	console.log("my_query="+JSON.stringify(my_query));
-        let my_list=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-        for(x of my_list) {
-            my_query.fields[x+"_From"]="";
-            my_query.fields[x+"_To"]="";
+        var search_str=my_query.name +" ";
+        if(cast_list.length>0) {
+            let x;
+            for(x of cast_list) search_str+=x+" ";
+        }
+        else {
+            search_str+=(my_query.year?my_query.year:"")
         }
 
-
-        var search_str=my_query.CreditUnionName+" "+my_query.Line1+" "+my_query.City+" "+my_query.StateCode+" "+my_query.PostalCode+" site:creditunionsonline.com";
+        search_str=search_str+" site:imdb.com/title";
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");

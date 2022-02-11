@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Moriah Taylor
+// @name         JohnLinkedInCEO
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  New script
@@ -39,7 +39,7 @@
     var my_query = {};
     var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A2LE2QXDRD6OGZ",true);
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A222VMJFR69I7O",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
@@ -61,23 +61,26 @@
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context));
-            if(parsed_context.hours) {
-            }
-
-        }
+                console.log("parsed_context="+JSON.stringify(parsed_context)); } 
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length&&i<1; i++) {
+            for(i=0; i < b_algo.length&&i<3; i++) {
                 b_name=b_algo[i].querySelector("h2 a").textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
+                  var split=b_name.split(/ \- /);
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : (b_algo[i].querySelector("p")? b_algo[i].querySelector("p").innerText.trim():"");
-                console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if( new RegExp(my_query.CreditUnionName.replace(/\'/,"")).test(b_name) && ( new RegExp(my_query.City).test(b_name)|| new RegExp(my_query.City).test(p_caption))
+                console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption+", split=",split);
+                if(type==="query" && (b_url.replace(/\/$/,"")===my_query.url.replace(/\/$/,"")||true)) {
+                    resolve({name:b_name.replace(/\s\|\s.*$/,"")});
+                    return;
+                }
+                 if(type==="query2" && split.length>=2&&/Founder|CEO|President|Owner/i.test(split[1])) {
 
-		   && (b1_success=true)) break;
+                    resolve({name:split[0].trim(),title:split[1].trim(),url:b_url});
+                    return;
+                }
             }
             if(b1_success && (resolve(b_url)||true)) return;
         }
@@ -106,21 +109,26 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.url=result;
-        var promise=MTP.create_promise(my_query.url,parse_credit,submit_if_done,function() { GM_setValue("returnHit",true); });
-    }
-
-    function parse_credit(doc,url,resolve,reject) {
-
-        var row=doc.querySelectorAll(".hoursRow");
-        var x,y,z;
-
-        for(x of row) {
-            let l=x.querySelector(".hoursL"),r=x.querySelectorAll(".hoursR span");
-
-        MTurkScript.prototype.convertTime12to24
+        my_query.name=result.name;
+        let search_str=my_query.name+" (CEO OR President OR Owner) site:linkedin.com";
+           const queryPromise = new Promise((resolve, reject) => {
+            console.log("Beginning URL search");
+            query_search(search_str, resolve, reject, query_response,"query2");
+        });
+        queryPromise.then(query2_promise_then)
+            .catch(function(val) {
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
 
     }
+      function query2_promise_then(result) {
+          my_query.parsed_name=MTP.parse_name(result.name);
+          console.log("result=",result," parsed_name=",my_query.parsed_name);
+          my_query.fields.contactFirstName=my_query.parsed_name.fname;
+          my_query.fields.contactLastName=my_query.parsed_name.lname;
+          my_query.fields.contactTitle=result.title;
+          my_query.fields.contactLinkedin=result.url;
+          submit_if_done();
+      }
 
     function begin_script(timeout,total_time,callback) {
         if(timeout===undefined) timeout=200;
@@ -161,30 +169,12 @@
     {
         console.log("in init_query");
         var i;
-
-        var p=document.querySelectorAll("crowd-form div div div p");
-        var x;
-        my_query={name,fields:{},done:{},
+        var url=document.querySelector("crowd-form a").href;
+        my_query={url:url,fields:{},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
-        for(x of p) {
-            let temp=x.innerText.match(/([^:]*):\s*(.*)$/);
-            if(temp&&!/(To|From):/.test(temp[1])) my_query[temp[1].replace(/PhysicalAddress/,"")]=temp[2];
-        }
-        if(/Lobby/.test(my_query.HoursOfOperation)&&/Drive/.test(my_query.HoursOfOperation)) {
-          //  setTimeout(function() { GM_setValue("returnHit",true) }, 1250);
-            //return;
-        }
-
 	console.log("my_query="+JSON.stringify(my_query));
-        let my_list=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-        for(x of my_list) {
-            my_query.fields[x+"_From"]="";
-            my_query.fields[x+"_To"]="";
-        }
-
-
-        var search_str=my_query.CreditUnionName+" "+my_query.Line1+" "+my_query.City+" "+my_query.StateCode+" "+my_query.PostalCode+" site:creditunionsonline.com";
+        var search_str=my_query.url;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");

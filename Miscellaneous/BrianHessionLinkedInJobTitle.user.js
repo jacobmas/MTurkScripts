@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Moriah Taylor
+// @name         BrianHessionLinkedInJobTitle
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  New script
@@ -39,8 +39,9 @@
     var my_query = {};
     var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A2LE2QXDRD6OGZ",true);
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A3JYN1EC66FOSU",true);
     var MTP=MTurkScript.prototype;
+    var month_list={"Jan":"01","Feb":"02","Mar":"03","Apr":"04","May":"05","Jun":"06","Jul":"07","Aug":"08","Sep":"09","Oct":"10","Nov":"11","Dec":"12"};
     function is_bad_name(b_name)
     {
         return false;
@@ -53,33 +54,68 @@
         var search, b_algo, i=0, inner_a;
         var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
         var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
+        var person_name;
         try
         {
             search=doc.getElementById("b_content");
-			b_algo=doc.querySelectorAll("#b_results > .b_algo");
+            b_algo=search.getElementsByClassName("b_algo");
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
-            console.log("b_algo.length="+b_algo.length);
+            if(b_algo.length===0) {
+                
+                
+            }
+              else {
+                  b_name=b_algo[i].querySelector("h2 a").textContent;
+                  b_url=b_algo[i].querySelector("h2 a").href;
+                  b_caption=b_algo[i].getElementsByClassName("b_caption");
+                  p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
+                      p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
+                  person_name=b_name.replace(/\s\-\s.*$/,"").trim();
+              }
+           
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
                 console.log("parsed_context="+JSON.stringify(parsed_context));
-            if(parsed_context.hours) {
+            console.log("parsed_context.person&&parsed_context.person.experience&&parsed_context.person.experience.length>0=",parsed_context.person&&parsed_context.person.experience&&parsed_context.person.experience.length>0);
+            if(parsed_context.person&&parsed_context.person.experience&&parsed_context.person.experience.length>0 && my_query.url.replace(/.*linkedin\.com/,"")===parsed_context.person.linkedin_url.replace(/.*linkedin\.com/,"")) {
+                console.log("Found person");
+                if(MTP.matches_names(my_query.short_company,parsed_context.person.experience[0].company) || new RegExp(my_query.short_company).test(parsed_context.person.experience[0].company)) {
+                    if(parsed_context.person.experience[0].title) {
+                        my_query.fields.jobtitle=parsed_context.person.experience[0].title;
+                        resolve("");
+                        return;
+
+                    }
+                    
+
+
+                }
+            }
+            else if(parsed_context.people &&parsed_context.people.length>0 && my_query.try_count[type]<2) {
+                my_query.try_count[type]++;
+                let person;
+                let company_regex=new RegExp(my_query.company);
+                for(person of parsed_context.people) {
+                    if(MTP.matches_names(person_name,person.name)||company_regex.test(person.title) || parsed_context.people.length===1) {
+                        console.log("Trying person",person);
+                        GM_xmlhttpRequest({method: 'GET', url: person.url,
+                           onload: function(response) {query_response(response, resolve, reject,type); },
+                           onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
+                          });
+                                        return;
+
+                    }
+                }
+
+            }
+            else if(b_url===my_query.url&&my_query.try_count[type]===0) {
+                my_query.try_count[type]++;
+                query_search(person_name+" "+my_query.company,resolve,reject,query_response,"query");
+                return;
             }
 
         }
-            if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
-                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length&&i<1; i++) {
-                b_name=b_algo[i].querySelector("h2 a").textContent;
-                b_url=b_algo[i].getElementsByTagName("a")[0].href;
-                b_caption=b_algo[i].getElementsByClassName("b_caption");
-                p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
-                    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : (b_algo[i].querySelector("p")? b_algo[i].querySelector("p").innerText.trim():"");
-                console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if( new RegExp(my_query.CreditUnionName.replace(/\'/,"")).test(b_name) && ( new RegExp(my_query.City).test(b_name)|| new RegExp(my_query.City).test(p_caption))
-
-		   && (b1_success=true)) break;
-            }
-            if(b1_success && (resolve(b_url)||true)) return;
+          //  if(b1_success && (resolve(b_url)||true)) return;
         }
         catch(error) {
             reject(error);
@@ -89,6 +125,11 @@
         return;
     }
     function do_next_query(resolve,reject,type) {
+        if(my_query.try_count[type]===0) {
+            my_query.try_count[type]++;
+            query_search(my_query.url, resolve, reject, query_response,"query");
+            return;
+        }
         reject("Nothing found");
     }
 
@@ -106,25 +147,12 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.url=result;
-        var promise=MTP.create_promise(my_query.url,parse_credit,submit_if_done,function() { GM_setValue("returnHit",true); });
-    }
-
-    function parse_credit(doc,url,resolve,reject) {
-
-        var row=doc.querySelectorAll(".hoursRow");
-        var x,y,z;
-
-        for(x of row) {
-            let l=x.querySelector(".hoursL"),r=x.querySelectorAll(".hoursR span");
-
-        MTurkScript.prototype.convertTime12to24
-
+        submit_if_done();
     }
 
     function begin_script(timeout,total_time,callback) {
         if(timeout===undefined) timeout=200;
-        if(total_time===undefined) total_time=0; 
+        if(total_time===undefined) total_time=0;
         if(callback===undefined) callback=init_Query;
         if(MTurk!==undefined) { callback(); }
         else if(total_time<2000) {
@@ -145,46 +173,23 @@
     }
 
     function submit_if_done() {
-        var is_done=true,x,is_done_dones=x;
+        var is_done=true,x;
         add_to_sheet();
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
-        is_done_dones=is_done;
-        for(x in my_query.fields) if(!my_query.fields[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
-        else if(is_done_dones) {
-            console.log("Failed to find all fields");
-            GM_setValue("returnHit",true);
-        }
     }
 
     function init_Query()
     {
         console.log("in init_query");
         var i;
-
-        var p=document.querySelectorAll("crowd-form div div div p");
-        var x;
-        my_query={name,fields:{},done:{},
+       var url=document.querySelector("form div div a").href;
+        var company=document.querySelectorAll("crowd-form div p")[1].innerText.trim().replace(/^[^:]*:\s*/,"");
+        my_query={name:"",company:company, short_company:MTP.shorten_company_name(company), url:url,fields:{},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
-        for(x of p) {
-            let temp=x.innerText.match(/([^:]*):\s*(.*)$/);
-            if(temp&&!/(To|From):/.test(temp[1])) my_query[temp[1].replace(/PhysicalAddress/,"")]=temp[2];
-        }
-        if(/Lobby/.test(my_query.HoursOfOperation)&&/Drive/.test(my_query.HoursOfOperation)) {
-          //  setTimeout(function() { GM_setValue("returnHit",true) }, 1250);
-            //return;
-        }
-
 	console.log("my_query="+JSON.stringify(my_query));
-        let my_list=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-        for(x of my_list) {
-            my_query.fields[x+"_From"]="";
-            my_query.fields[x+"_To"]="";
-        }
-
-
-        var search_str=my_query.CreditUnionName+" "+my_query.Line1+" "+my_query.City+" "+my_query.StateCode+" "+my_query.PostalCode+" site:creditunionsonline.com";
+        var search_str="+"+my_query.url;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");

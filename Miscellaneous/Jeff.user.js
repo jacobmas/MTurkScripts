@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Jeff
+// @name         JeffContactEmail
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  TODO: work on creating self-contained company email and data finder
+// @description  Contact E-mail company
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -56,22 +56,27 @@
         try
         {
             search=doc.getElementById("b_content");
-            b_algo=search.getElementsByClassName("b_algo");
+			b_algo=doc.querySelectorAll("#b_results > .b_algo");
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context)); } 
+                console.log("parsed_context="+JSON.stringify(parsed_context));
+            if(parsed_context.url&&!MTP.is_bad_url(parsed_context.url,bad_urls,-1)) {
+                resolve(parsed_context.url);
+                return;
+            }
+        }
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length&&i<2; i++) {
-                b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
+            for(i=0; i < b_algo.length&&i<1; i++) {
+                b_name=b_algo[i].querySelector("h2 a").textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
-                    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
+                    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : (b_algo[i].querySelector("p")? b_algo[i].querySelector("p").innerText.trim():"");
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
+                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls,4,2) && !MTurkScript.prototype.is_bad_name(b_name,MTP.shorten_company_name(my_query.name),p_caption,i)
 		   && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
@@ -101,38 +106,54 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
+        my_query.url=result;
+
+        var query={dept_regex_lst:[/Staff/,/Team/i,/People/i],title_regex_lst:[/Owner/,/Manager/,/Director/,/CEO/,/President/]};
+        var promise=MTP.create_promise(my_query.url,Gov.init_Gov,gov_promise_then,function() {
+       GM_setValue("returnHit",true);  },query);
     }
 
-    function zoominfo_promise_then(result) {
-        var promise=MTP.create_promise(result,parse_zoominfo,parse_zoominfo_then,function() { my_query.done.zoominfo=true;
-                                                                                             submit_if_done(); });
-    }
+        function get_quality(curr) {
+        var ret=0;
+        if(curr.name) ret+=1;
 
-    function parse_zoominfo(doc,url,resolve,reject) {
-        var content=doc.querySelector(".company-content");
-        var details=doc.querySelectorAll(".person-details");
-        var person_list=[];
-        var curr={};
-//        console.log(content.innerHTML);
-        var x;
-        var name,title;
-        for(x of details) {
-            name=x.querySelector(".person-name");
-            title=x.querySelector(".job-title");
-            if(name && title) {
-                person_list.push({name:name.innerText,title:title.innerText});
-            }
-//            console.log(x.innerHTML);
+        console.log("nlp="+nlp(curr.name).people().json().length);
+        if(nlp(curr.name).people().json().length>0) ret+=2;
+        if(curr.name.length>=1 && curr.name.substr(0,1).toUpperCase()===curr.name.substr(0,1)) ret+=5;
+        if(curr.title) ret+=1;
+        if(curr.title && /Manager|Director/.test(curr.title)) ret+=3;
+
+        if(curr.title && /Owner|CEO|President/.test(curr.title)) ret+=6;
+        if(curr.title && /Investment Advisor|M&A Advisor/.test(curr.title)) ret+=15;
+        if(curr.email) ret+=3;
+        if(curr.phone) ret+=1;
+        if(!curr.name||(curr.name&&/Funeral|((^| )(Home|Our)( |$))/i.test(curr.name))||(/\s+Box/.test(curr.title))) ret=0;
+        if(/^LLC( |$)/.test(curr.title)) ret=0;
+        if(/\s(Rd\.|Dr\.|St\.)/.test(curr.name)) ret=0;
+        if(!curr.email || !/@/.test(curr.email)) ret=0;
+        return ret;
+    }
+    function comparequal(a,b) { return b.quality-a.quality; }
+
+
+    function gov_promise_then() {
+        console.log("email_list=",Gov.email_list);
+        var new_contact_list=Gov.contact_list.map(item => { item.quality=get_quality(item); return item; });
+        console.log("new_contact_list=",new_contact_list);
+        new_contact_list.sort(comparequal);
+
+        if(new_contact_list.length>0&&new_contact_list[0].quality>0) {
+            console.log(new_contact_list);
+            let parsed=MTP.parse_name(new_contact_list[0].name);
+            my_query.fields.contactName=new_contact_list[0].name;
+            my_query.fields.contactTitle=new_contact_list[0].title;
+
+            my_query.fields.email=new_contact_list[0].email.replace(/(@.*(\.com|\.org))[A-Z]+.*$/,"$1");
+            submit_if_done();
+            return;
         }
-        console.log(person_list);
+        GM_setValue("returnHit",true);
     }
-
-    function parse_zoominfo_then() {
-    }
-
-    function dnb_promise_then(result) {
-    }
-
     function begin_script(timeout,total_time,callback) {
         if(timeout===undefined) timeout=200;
         if(total_time===undefined) total_time=0; 
@@ -156,43 +177,35 @@
     }
 
     function submit_if_done() {
-        var is_done=true,x;
+        var is_done=true,x,is_done_dones=x;
         add_to_sheet();
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
+        is_done_dones=is_done;
+        for(x in my_query.fields) if(!my_query.fields[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
+        else if(is_done_dones) {
+            console.log("Failed to find all fields");
+            GM_setValue("returnHit",true);
+        }
     }
 
     function init_Query()
     {
+        bad_urls=default_bad_urls;
         console.log("in init_query");
-        var i;
-        var name=document.querySelectorAll("crowd-form p")[1].innerText.trim()
-        my_query={name:name,fields:{},done:{},
+       var p=document.querySelectorAll("crowd-form div p");
+        my_query={name:p[1].innerText.trim(),fields:{},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
 	console.log("my_query="+JSON.stringify(my_query));
-        var search_str=MTP.shorten_company_name(my_query.name)+" site:zoominfo.com";
+        var search_str=my_query.name;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");
         });
-        queryPromise.then(zoominfo_promise_then)
+        queryPromise.then(query_promise_then)
             .catch(function(val) {
-            console.log("Failed at this queryPromise " + val);
-            my_query.done.zoominfo=true;
-        });
-
-        search_str=MTP.shorten_company_name(my_query.name)+" canada president";
-        const dnbPromise = new Promise((resolve, reject) => {
-            console.log("Beginning URL search");
-            query_search(search_str, resolve, reject, query_response,"president");
-        });
-        dnbPromise.then(dnb_promise_then)
-            .catch(function(val) {
-            console.log("Failed at this queryPromise " + val);
-            my_query.done.dnb=true;
-
-        });
+            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
     }
 
 })();

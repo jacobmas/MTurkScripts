@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Moriah Taylor
+// @name        Tyler Muffly
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  New script
+// @description  Parse CMS
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -39,7 +39,7 @@
     var my_query = {};
     var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A2LE2QXDRD6OGZ",true);
+    var MTurk=new MTurkScript(60000,750,[],begin_script,"ATIU3RWW92HRE",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
@@ -61,22 +61,29 @@
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context));
-            if(parsed_context.hours) {
+                console.log("parsed_context="+JSON.stringify(parsed_context)); 
+				
+				if(parsed_context.url&&!MTP.is_bad_url(parsed_context.url,bad_urls,-1)) {
+                resolve(parsed_context.url);
+                return;
             }
-
-        }
+				} 
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
-                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length&&i<1; i++) {
+                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); 
+					if(parsed_lgb.url&&!MTP.is_bad_url(parsed_lgb.url,bad_urls,-1)) {
+                resolve(parsed_lgb.url);
+                return;
+            }
+					
+					}
+            for(i=0; i < b_algo.length; i++) {
                 b_name=b_algo[i].querySelector("h2 a").textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : (b_algo[i].querySelector("p")? b_algo[i].querySelector("p").innerText.trim():"");
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if( new RegExp(my_query.CreditUnionName.replace(/\'/,"")).test(b_name) && ( new RegExp(my_query.City).test(b_name)|| new RegExp(my_query.City).test(p_caption))
-
+                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
 		   && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
@@ -106,20 +113,6 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.url=result;
-        var promise=MTP.create_promise(my_query.url,parse_credit,submit_if_done,function() { GM_setValue("returnHit",true); });
-    }
-
-    function parse_credit(doc,url,resolve,reject) {
-
-        var row=doc.querySelectorAll(".hoursRow");
-        var x,y,z;
-
-        for(x of row) {
-            let l=x.querySelector(".hoursL"),r=x.querySelectorAll(".hoursR span");
-
-        MTurkScript.prototype.convertTime12to24
-
     }
 
     function begin_script(timeout,total_time,callback) {
@@ -151,47 +144,52 @@
         is_done_dones=is_done;
         for(x in my_query.fields) if(!my_query.fields[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
-        else if(is_done_dones) {
+        else if(is_done_dones && !my_query.submitted) {
             console.log("Failed to find all fields");
             GM_setValue("returnHit",true);
         }
     }
 
-    function init_Query()
-    {
-        console.log("in init_query");
-        var i;
-
-        var p=document.querySelectorAll("crowd-form div div div p");
-        var x;
-        my_query={name,fields:{},done:{},
-		  try_count:{"query":0},
-		  submitted:false};
-        for(x of p) {
-            let temp=x.innerText.match(/([^:]*):\s*(.*)$/);
-            if(temp&&!/(To|From):/.test(temp[1])) my_query[temp[1].replace(/PhysicalAddress/,"")]=temp[2];
+    function parse_json(response) {
+        console.log("response=",response);
+        console.log(response.response.results);
+        if(response.response.results.length>0) {
+            let entity=response.response.results[0];
+            console.log("entity=",entity);
+            my_query.fields.physician_name=entity.entity_name.replace(/^([^,]+),\s*(.*)$/,"$2 $1");
+            my_query.fields.address=entity['entity_address_line_1']+" "+entity['entity_address_line_2']+", "+entity['entity_city']+", " +entity.entity_state+" "+entity.entity_zipcode;
+            my_query.fields.physician_profile_id=entity.entity_id;
+            submit_if_done();
         }
-        if(/Lobby/.test(my_query.HoursOfOperation)&&/Drive/.test(my_query.HoursOfOperation)) {
-          //  setTimeout(function() { GM_setValue("returnHit",true) }, 1250);
-            //return;
+        else {
+            my_query.fields.physician_name=my_query.fields.address=my_query.fields.physician_profile_id="NA";
+                        submit_if_done();
+
         }
-
-	console.log("my_query="+JSON.stringify(my_query));
-        let my_list=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-        for(x of my_list) {
-            my_query.fields[x+"_From"]="";
-            my_query.fields[x+"_To"]="";
-        }
-
-
-        var search_str=my_query.CreditUnionName+" "+my_query.Line1+" "+my_query.City+" "+my_query.StateCode+" "+my_query.PostalCode+" site:creditunionsonline.com";
-        const queryPromise = new Promise((resolve, reject) => {
-            console.log("Beginning URL search");
-            query_search(search_str, resolve, reject, query_response,"query");
-        });
-        queryPromise.then(query_promise_then)
-            .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
     }
 
+    function init_Query()
+    {
+		bad_urls=bad_urls.concat(default_bad_urls);
+        console.log("in init_query");
+        var i;
+         var strong=document.querySelectorAll("crowd-form p > strong");
+        my_query={first:strong[1].innerText.replace(/^[^:]*:\s*/,"").trim(),last:strong[2].innerText.replace(/^[^:]*:\s*/,"").trim(),
+                  fields:{},done:{},
+		  try_count:{"query":0},
+		  submitted:false};
+	console.log("my_query="+JSON.stringify(my_query));
+        var url='https://openpaymentsdata.cms.gov/api/1/datastore/query/c218c372-76e4-5603-9981-67c324402722?keys=true&limit=10&offset=0&conditions%5B0%5D%5Bresource%5D=t&conditions%5B0%5D%5B'+
+        'property%5D=entity_type&conditions%5B0%5D%5Bvalue%5D=p&conditions%5B0%5D%5Boperator%5D=%3D&conditions%5B1%5D%5BgroupOperator%5D=or&'+
+            'conditions%5B1%5D%5Bconditions%5D%5B0%5D%5Bresource%5D=t&conditions%5B1%5D%5Bconditions%5D%5B0%5D%5Bproperty%5D=entity_name&'+
+            `conditions%5B1%5D%5Bconditions%5D%5B0%5D%5Bvalue%5D=%25${my_query.first}%25&conditions%5B1%5D%5Bconditions%5D%5B0%5D%5Boperator%5D=like&conditions%5B2%5D%5B`+
+            `groupOperator%5D=or&conditions%5B2%5D%5Bconditions%5D%5B0%5D%5Bresource%5D=t&conditions%5B2%5D%5Bconditions%5D%5B0%5D%5Bproperty%5D=entity_name&`+
+            `conditions%5B2%5D%5Bconditions%5D%5B0%5D%5Bvalue%5D=%25${my_query.last}%25&conditions%5B2%5D%5Bconditions%5D%5B0%5D%5Boperator%5D=like&`+
+            'conditions%5B3%5D%5Bresource%5D=t&conditions%5B3%5D%5Bproperty%5D=entity_specialty&conditions%5B3%5D%5Bvalue%5D=%25Allopathic%20%26%20Osteopathic%20Physicians%7CObstetrics%20%26%20Gynecology%25&conditions%5B3%5D%5Boperator%5D=like&conditions%5B4%5D%5Bresource%5D=t&conditions%5B4%5D%5Bproperty%5D=entity_country_name&conditions%5B4%5D%5Bvalue%5D=UNITED%20STATES&conditions%5B4%5D%5Boperator%5D=%3D&sorts%5B0%5D%5Bproperty%5D=entity_name&sorts%5B0%5D%5Border%5D=asc';
+          GM_xmlhttpRequest({method: 'GET', url:url,responseType:'json',
+                           onload: function(response) { parse_json(response); },
+                           onerror: function(response) { GM_setValue("returnHit",true); },ontimeout: function(response) { GM_setValue("returnHit",true); }
+                          });
+
+    }
 })();
