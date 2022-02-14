@@ -1794,7 +1794,7 @@ MTurkScript.prototype.find_company_name_on_website=function(doc,url) {
 	//console.log("match=",match);
 	//console.log(doc.body.innerText.match(/Professor.*/,""));
 	 var site_name=doc.querySelector("meta[property='og:site_name']");
-	if(site_name) { console.log("Found site name=",site_name.content);
+	if(site_name&&!/^Default$/i.test(site_name)) { console.log("Found site name=",site_name.content);
 				   possible_name_list.push({name:site_name.content.replace(/Website of\s*/i,""),priority:0});
 					}
 	var logo=doc.querySelectorAll("img[id*='logo' i],img[src*='logo.' i],img[data-src*='logo.' i");

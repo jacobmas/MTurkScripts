@@ -61,9 +61,21 @@
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context)); } 
+                console.log("parsed_context="+JSON.stringify(parsed_context)); 
+				
+				if(parsed_context.url&&!MTP.is_bad_url(parsed_context.url,bad_urls,-1)) {
+                resolve(parsed_context.url);
+                return;
+            }
+				} 
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
-                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
+                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); 
+					if(parsed_lgb.url&&!MTP.is_bad_url(parsed_lgb.url,bad_urls,-1)) {
+                resolve(parsed_lgb.url);
+                return;
+            }
+					
+					}
             for(i=0; i < b_algo.length; i++) {
                 b_name=b_algo[i].querySelector("h2 a").textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
@@ -132,7 +144,7 @@
         is_done_dones=is_done;
         for(x in my_query.fields) if(!my_query.fields[x]) is_done=false;
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
-        else if(is_done_dones) {
+        else if(is_done_dones && !my_query.submitted) {
             console.log("Failed to find all fields");
             GM_setValue("returnHit",true);
         }
@@ -140,6 +152,7 @@
 
     function init_Query()
     {
+		bad_urls=bad_urls.concat(default_bad_urls);
         console.log("in init_query");
         var i;
         var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
