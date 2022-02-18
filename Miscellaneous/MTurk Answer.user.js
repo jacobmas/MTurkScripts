@@ -173,21 +173,44 @@
         let i;
         var min=-1;
         var lastTitle="";
+
+        var good_pos=0;
         for(i=0;i<json.query.search.length&&i<2;i++) {
             let hit=json.query.search[i];
             var title= new DOMParser()
         .parseFromString(hit.titlesnippet, "text/html").body.innerText;
             var curr_val=parseInt(hit.title.substring(1));
+            json.query.search[i].fullTitle=title;
             if(min<0) min=curr_val;
             console.log(`title:${title}, snippet:${hit['snippet']}, id: ${hit.title}`);
-            if(i===0 || ( curr_val < min&&MTP.matches_names(title,query))) {
+            console.log(parseInt(json.query.search[i].title.substring(1)));
+//
+            if((i===0||(i===1 &&curr_val<min))&&!/disambiguation|Wikimedia/.test(hit['snippet'])) {
                 entityWiki[pos].value="https://www.wikidata.org/wiki/"+hit.title;
                 min=curr_val;
-
+                good_pos=i;
             }
             lastTitle=title;
 
         }
+        if(json.query.search.length===0) {
+            GM_setValue("returnHit",true);
+            return;
+        }
+        console.log("query.toLowerCase()=",query.toLowerCase(),",  json.query.search[0].fullTitle.toLowerCase()=", json.query.search[0].fullTitle.toLowerCase());
+        if(entityWiki[pos].value&&json.query.search.length>0 && (json.query.search.length<2 || json.query.search[0].fullTitle!=json.query.search[1].fullTitle)
+          && MTP.matches_names(query.toLowerCase(),json.query.search[good_pos].fullTitle.toLowerCase())
+
+          ) {
+            submit_if_done();
+            return;
+        }
+        else {
+            console.log("Ambiguous, returning");
+            GM_setValue("returnHit",true);
+        }
+
+
     }
 
     function parse_wikidata_then() {
@@ -206,30 +229,31 @@
     {
         console.log("in init_query");
         var i;
-        var h3=document.querySelectorAll("crowd-form h3")[1].innerText.replace(/^[^:]*:\s*/,"");
-        console.log("h3=",h3);
+       var h3="";//document.querySelectorAll("crowd-form #raw")[1].innerText.replace(/^[^:]*:\s*/,"");
+        /*console.log("h3=",h3);
       //  var well=document.querySelector("#well");
         //well.click();
         var tokens=document.querySelectorAll(".token");
         var search=document.querySelectorAll("[name='wikisearch']");
         var entitytag=document.querySelectorAll("[id$='-tag']");
-        var entityhidden=document.querySelectorAll("[id$='-hidden']");
-        var entity=document.querySelectorAll("[id^='entity'][name='entity'].form-control");
+        var entityhidden=document.querySelectorAll("[id$='-hidden']");*/
+        var entity=document.querySelectorAll("[name='entity']");
         var entityWiki=document.querySelectorAll("[id$='-wiki'].form-control");
 
-       // console.log("entity=",entityWiki);
+    /*   // console.log("entity=",entityWiki);
 
-        //console.log("entityTag=",entitytag);
+        //console.log("entityTag=",entitytag);*/
         var token_array=[];
         var tag_array=[];
         var answer_array=[];
-        var pos=0;
-        for(i=0;i<12;i++) {
+       var pos=0;
+        for(i=0;i<entity.length;i++) {
+
             tag_array.push("");
             token_array.push("");
-            answer_array.push("");
+            answer_array.push(entity[i].value.trim());
         }
-        let tag_string="";
+      /*  let tag_string="";
         let hidden_string="";
 
         for(i=0;i<tokens.length;i++) {
@@ -261,7 +285,7 @@
 
         console.log("nouns=",nlp(h3).nouns().json());
 
-        console.log("topics=",people," org=",org);
+        console.log("topics=",people," org=",org);&
         for(i=0;i<pos;i++) {
             entitytag[i].value=tag_array[i];
             entityhidden[i].value=answer_array[i];
@@ -271,7 +295,12 @@
         var x;
         for(x of search) {
             x.addEventListener("click",entityChange);
-        }
+
+
+
+        }*/
+
+
 
         my_query={question:h3, answers:answer_array,name,fields:{},done:{},
 		  try_count:{"query":0},
@@ -281,20 +310,40 @@
         }
 	console.log("my_query="+JSON.stringify(my_query));
 
-        for(i=0;i<pos;i++) {
+        for(i=0;i<answer_array.length;i++) {
+            console.log("i=",i);
             my_query.try_count[i]=0;
+            var nlp_nouns=nlp(answer_array[i]).nouns();
+            var nlp_singular=nlp_nouns.toSingular();
+            let nlp_json=nlp(answer_array[i]).nouns().toSingular().json();
+
+            console.log("answer_array[i]=",answer_array[i]," nlp_nouns=",nlp_nouns.json()," nlp_singular=",nlp_singular.json());
+         /*  if(nlp_singular.json().length===1) {
+               answer_array[i]=answer_array[i].replace(new RegExp(nlp_nouns.json()[0].text+"s?","i"),nlp_singular.json()[0].text);
+           }*/
+                       answer_array[i]=answer_array[i].replace(/\'s$/,"");
+
              var search_str=answer_array[i];
+            console.log("bop0, i=",i);
+            answer_array[i]=answer_array[i].replace(/^(a|the)\s/i,"").replace(/US\s/,"United States ").replace(/European$/,"Europe");
+          //  answer_array[i]=answer_array[i].replace(/(America)n/,"$1").replace(/Dutch(\s|$)/,"Netherlands$1");
             let j;
+            if(/New York/.test(answer_array[i])) {
+                GM_setValue("returnHit",true);
+                return;
+            }
   //          if(!/ or /.test(h3)) {
 //for(j of places) { search_str=search_str+" "+j.text; }
 
         search_str=search_str+" site:wikidata.org";
             if(/^[\d\'\",\.]*(\smillion)?,?\s*$/.test(answer_array[i])) {
+                console.log("bop1");
                 entityWiki[i].value=answer_array[i].replace(/,\s*$/,"").trim();
                 my_query.done[i]=true;
                 submit_if_done();
             }
             else {
+                console.log("bop2");
               /*  let queryPromise = new Promise((resolve, reject) => {
                     //console.log("Beginning URL search for "+search_str);
                     query_search(search_str, resolve, reject, query_response,i);
@@ -302,7 +351,7 @@
                 queryPromise.then(query_promise_then)
                     .catch(function(val) {
                     console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });*/
-              let search_item=answer_array[i].replace(/,\s*$/,"").replace(/^The\s/i,"");
+              let search_item=answer_array[i]//.replace(/,\s*$/,"").replace(/^The\s/i,"");
               var url=`https://www.wikidata.org/w/api.php?action=query&list=search&srsearch=${search_item}&srprop=`+
                   "size|wordcount|timestamp|sectiontitle|snippet|title|titlesnippet&utf8=&format=json";
                 console.log("url=",url);
