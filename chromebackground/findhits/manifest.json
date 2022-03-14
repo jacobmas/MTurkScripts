@@ -1,6 +1,6 @@
 {
-  "name": "Getting Started Example",
-  "description": "Build an Extension!",
+  "name": "Find Hits",
+  "description": "Find Good Hits, notify when they come up",
   "version": "1.0",
   "manifest_version": 3,
   "background": {
@@ -11,7 +11,7 @@
 	      "accepts_tls_channel_id": true,
 		  "matches":["https://*.mturk.com/*","https://*.mturkcontent.com/*"]
 		   },
-  "permissions": ["storage", "activeTab", "scripting","alarms"],
+  "permissions": ["storage", "activeTab", "scripting","alarms","notifications"],
  
   "action": {
     "default_popup": "popup.html",
