@@ -1832,13 +1832,14 @@ MTurkScript.prototype.longest_common_substring=function(string1, string2, caps) 
 MTurkScript.prototype.company_from_copyright=function(doc,url,debug) {
 	var div_list=doc.querySelectorAll("div,p");
 	var copyright_list=[];
+	var title=doc.title||"";
 	div_list.forEach(function(elem) {
 		if(elem.querySelector("div,p")) return;
-		MTurkScript.prototype.find_copyright_elem(elem,copyright_list,debug); });
+		MTurkScript.prototype.find_copyright_elem(elem,copyright_list,title,debug); });
 	return copyright_list;
 };
 /* Helper for company_from_copyright */
-MTurkScript.prototype.find_copyright_elem=function(elem,lst,debug) {
+MTurkScript.prototype.find_copyright_elem=function(elem,lst,title,debug) {
 	var re=/^\s*(?:Copyright)?\s*(?:©)\s*(?:Copyright)?\s*(?:[\d\-\.,]{4,})?(?:[\s\|\.·]*)([^\n\t\|\-\.·,]*)/,match;
 	var re2=/^\s*©(?:\s*Copyright)? \s*(?:[\d\-\.,]*)\s*([^\n\t\|\-\.·,]*)/;
 	var re3=/^\s*(?:Copyright)\s*(?:(?:19|20)[\d\-\.\,]*)\s*([^\n\t\|\-\.·,]*)/;
@@ -1852,8 +1853,15 @@ MTurkScript.prototype.find_copyright_elem=function(elem,lst,debug) {
 			.trim();
 		if(debug) console.log("my_match=",my_match);
 
-		if(my_match.length>0&&!/Document/i.test(my_match)) {
+		if(my_match.length>0&&!/Document|Copyright/i.test(my_match)) {
 			lst.push(my_match);
+		}
+		else if(title) {
+			let longest=MTurkScript.prototype.longest_common_substring(elem.innerText,title,true);
+			if(longest.length>=5) { lst.push(longest); }
+			var lower_match=longest.match(/\s[^A-Z]/g);
+			if(debug) console.log("longest=",longest,"lower_match=",lower_match);
+
 		}
 	}
 };
@@ -1899,6 +1907,7 @@ MTurkScript.prototype.find_company_name_on_website=function(doc,url,debug) {
 		if(x.alt && /^[A-Z]/.test(x.alt) && !/Logo|(^\s*Home\s*)/i.test(x.alt)) {
 			if(debug) console.log("Found logo alt try 1=",x.alt);
 			temp_cost=penalty_re.test(x.alt)?10:0;
+			if(x.alt.length>25) temp_cost+=10;
 
 			possible_name_list.push({name:x.alt,priority:3+3*logo_counter+temp_cost});
 logo_counter++;
@@ -1912,6 +1921,7 @@ logo_counter++;
 			if(x.alt && /^[A-Z]/.test(x.alt) && !/(^\s*Home\s*)/i.test(x.alt)) {
 			   if(debug)  console.log("Found logo alt try 2=",x.alt);
 				temp_cost=penalty_re.test(x.alt)?10:0;
+				if(x.alt.length>25) temp_cost+=10;
 
 				possible_name_list.push({name:x.alt,priority:6+3*logo_counter+temp_cost});
 									logo_counter++;
