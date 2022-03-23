@@ -46,7 +46,10 @@ function parse_text(data) {
 	var good_re=/Doctor DB/;
 	console.log("my_match=",my_match);
 	var x;
+	var counter=0;
 	for(x of my_match) {
+		counter+=1;
+		if(counter>10) break;
 		let my_name_match=x.match(my_re_name);
 		
 		let my_id_match=x.match(my_re_setid);
