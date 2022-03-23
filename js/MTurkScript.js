@@ -1765,123 +1765,143 @@ MTurkScript.prototype.company_accepts_cards=function(doc,url) {
 	return false;
 };
 MTurkScript.prototype.longest_common_substring=function(string1, string2, caps) {
-		// Convert strings to arrays to treat unicode symbols length correctly.
-		// For example:
-		// '𐌵'.length === 2
-		// [...'𐌵'].length === 1
-		const s1 = [...string1];
-		const s2 = [...string2];
+	// Convert strings to arrays to treat unicode symbols length correctly.
+	// For example:
+	// '𐌵'.length === 2
+	// [...'𐌵'].length === 1
+	const s1 = [...string1];
+	const s2 = [...string2];
 
-		// Init the matrix of all substring lengths to use Dynamic Programming approach.
-		const substringMatrix = Array(s2.length + 1).fill(null).map(() => {
-			return Array(s1.length + 1).fill(null);
-		});
+	// Init the matrix of all substring lengths to use Dynamic Programming approach.
+	const substringMatrix = Array(s2.length + 1).fill(null).map(() => {
+		return Array(s1.length + 1).fill(null);
+	});
 
-		// Fill the first row and first column with zeros to provide initial values.
-		for (let columnIndex = 0; columnIndex <= s1.length; columnIndex += 1) {
-			substringMatrix[0][columnIndex] = 0;
-		}
+	// Fill the first row and first column with zeros to provide initial values.
+	for (let columnIndex = 0; columnIndex <= s1.length; columnIndex += 1) {
+		substringMatrix[0][columnIndex] = 0;
+	}
 
-		for (let rowIndex = 0; rowIndex <= s2.length; rowIndex += 1) {
-			substringMatrix[rowIndex][0] = 0;
-		}
+	for (let rowIndex = 0; rowIndex <= s2.length; rowIndex += 1) {
+		substringMatrix[rowIndex][0] = 0;
+	}
 
-		// Build the matrix of all substring lengths to use Dynamic Programming approach.
-		let longestSubstringLength = 0;
-		let longestSubstringColumn = 0;
-		let longestSubstringRow = 0;
+	// Build the matrix of all substring lengths to use Dynamic Programming approach.
+	let longestSubstringLength = 0;
+	let longestSubstringColumn = 0;
+	let longestSubstringRow = 0;
 
-		for (let rowIndex = 1; rowIndex <= s2.length; rowIndex += 1) {
-			for (let columnIndex = 1; columnIndex <= s1.length; columnIndex += 1) {
-				if (s1[columnIndex - 1] === s2[rowIndex - 1] &&
+	for (let rowIndex = 1; rowIndex <= s2.length; rowIndex += 1) {
+		for (let columnIndex = 1; columnIndex <= s1.length; columnIndex += 1) {
+			if (s1[columnIndex - 1] === s2[rowIndex - 1] &&
 
-				   (!caps || substringMatrix[rowIndex - 1][columnIndex - 1]>0 || /^[A-Z]/.test(s1[columnIndex-1]))) {
+			   (!caps || substringMatrix[rowIndex - 1][columnIndex - 1]>0 || /^[A-Z]/.test(s1[columnIndex-1]))) {
 
-					substringMatrix[rowIndex][columnIndex] = substringMatrix[rowIndex - 1][columnIndex - 1] + 1;
-				} else {
-					substringMatrix[rowIndex][columnIndex] = 0;
-				}
+				substringMatrix[rowIndex][columnIndex] = substringMatrix[rowIndex - 1][columnIndex - 1] + 1;
+			} else {
+				substringMatrix[rowIndex][columnIndex] = 0;
+			}
 
-				// Try to find the biggest length of all common substring lengths
-				// and to memorize its last character position (indices)
-				if (substringMatrix[rowIndex][columnIndex] > longestSubstringLength) {
-					longestSubstringLength = substringMatrix[rowIndex][columnIndex];
-					longestSubstringColumn = columnIndex;
-					longestSubstringRow = rowIndex;
-				}
+			// Try to find the biggest length of all common substring lengths
+			// and to memorize its last character position (indices)
+			if (substringMatrix[rowIndex][columnIndex] > longestSubstringLength) {
+				longestSubstringLength = substringMatrix[rowIndex][columnIndex];
+				longestSubstringColumn = columnIndex;
+				longestSubstringRow = rowIndex;
 			}
 		}
+	}
 
-		if (longestSubstringLength === 0) {
-			// Longest common substring has not been found.
-			return '';
+	if (longestSubstringLength === 0) {
+		// Longest common substring has not been found.
+		return '';
+	}
+
+	// Detect the longest substring from the matrix.
+	let longestSubstring = '';
+
+	while (substringMatrix[longestSubstringRow][longestSubstringColumn] > 0) {
+		longestSubstring = s1[longestSubstringColumn - 1] + longestSubstring;
+		longestSubstringRow -= 1;
+		longestSubstringColumn -= 1;
+	}
+
+	return longestSubstring;
+};
+
+MTurkScript.prototype.company_from_copyright=function(doc,url,debug) {
+	var div_list=doc.querySelectorAll("div,p");
+	var copyright_list=[];
+	div_list.forEach(function(elem) {
+		if(elem.querySelector("div,p")) return;
+		MTurkScript.prototype.find_copyright_elem(elem,copyright_list,debug); });
+	return copyright_list;
+};
+/* Helper for company_from_copyright */
+MTurkScript.prototype.find_copyright_elem=function(elem,lst,debug) {
+	var re=/^\s*(?:Copyright)?\s*(?:©)\s*(?:Copyright)?\s*(?:[\d\-\.,]{4,})?(?:[\s\|\.·]*)([^\n\t\|\-\.·,]*)/,match;
+	var re2=/^\s*©(?:\s*Copyright)? \s*(?:[\d\-\.,]*)\s*([^\n\t\|\-\.·,]*)/;
+	var re3=/^\s*(?:Copyright)\s*(?:(?:19|20)[\d\-\.\,]*)\s*([^\n\t\|\-\.·,]*)/;
+	var my_match;
+	if((match=elem.innerText.match(re))||(match=elem.innerText.match(re2))||(match=elem.innerText.match(re3))) {
+		if(debug) console.log("match=",match);
+		my_match=match[1].trim().replace(/((19[\d]{2})|(20[\d]{2}))$/,"").trim();
+		my_match=my_match.replace(/((?:19|20)[\d]{2})?\s*All Rights Reserved$/i,"").replace(/®/g,"")
+			.replace(/\s*via.*$/,"").replace(/Powered by.*$/i,"").replace(/\s+•/,"")
+			.replace(/ (Corporation|Inc\.?).*$/," $1")
+			.trim();
+		if(debug) console.log("my_match=",my_match);
+
+		if(my_match.length>0&&!/Document/i.test(my_match)) {
+			lst.push(my_match);
 		}
+	}
+};
 
-		// Detect the longest substring from the matrix.
-		let longestSubstring = '';
-
-		while (substringMatrix[longestSubstringRow][longestSubstringColumn] > 0) {
-			longestSubstring = s1[longestSubstringColumn - 1] + longestSubstring;
-			longestSubstringRow -= 1;
-			longestSubstringColumn -= 1;
-		}
-
-		return longestSubstring;
-	};
-
-	MTurkScript.prototype.company_from_copyright=function(doc,url) {
-		var div_list=doc.querySelectorAll("div,p");
-		var copyright_list=[];
-		div_list.forEach(function(elem) {
-			if(elem.querySelector("div,p")) return;
-			MTurkScript.prototype.find_copyright_elem(elem,copyright_list); });
-		return copyright_list;
-	};
-	/* Helper for company_from_copyright */
-	MTurkScript.prototype.find_copyright_elem=function(elem,lst) {
-		var re=/^\s*(?:Copyright)?\s*(?:©)\s*(?:Copyright)?\s*(?:[\d\-]{4,})?(?:[\s\|\.·]*)([^\n\t\|\-\.·,]*)/,match;
-		var re2=/^\s*©(?: Copyright)? \s*(?:[\d\-]*)\s*([^\n\t\|\-\.·,]*)/;
-		var my_match;
-		if((match=elem.innerText.match(re))||(match=elem.innerText.match(re2))) {
-			my_match=match[1].trim().replace(/((19[\d]{2})|(20[\d]{2}))$/,"").trim();
-			my_match=my_match.replace(/\s*All Rights Reserved$/,"").replace(/®/g,"")
-				.replace(/\s*via.*$/,"");
-			if(my_match.length>0&&!/Document/i.test(my_match)) lst.push(my_match.replace(/Powered by.*$/i,""));
-		}
-	};
-
-	/* Find the company name from the website, returns sorted list of objects with
+/* Find the company name from the website, returns sorted list of objects with
 name, priority (lower is better) */
-	MTurkScript.prototype.find_company_name_on_website=function(doc,url) {
-		var possible_name_list=[];
-		var desc=doc.querySelector("meta[name='description']");
-		if(!desc) desc=doc.querySelector("meta[name='Description']");
-		var title=doc.title;
-		if(desc && title) {
-			console.log("desc.content=",desc.content,"title=",title);
-			let longest=MTurkScript.prototype.longest_common_substring(desc.content,title,true);
-			console.log("longest=",longest);
-			var lower_match=longest.match(/\s[^A-Z]/g);
-		  //  console.log("lower_match=",lower_match);
+MTurkScript.prototype.find_company_name_on_website=function(doc,url,debug) {
+	var possible_name_list=[];
+	var desc=doc.querySelector("meta[name='description']");
+	if(!desc) desc=doc.querySelector("meta[name='Description']");
+	if(desc) {
+		let desc_re=/^((?:[A-Z][a-z\-]+\s)+)\s*is\s+(a|an|your)\s/;
+		let desc_match=desc.content.match(desc_re);
+		if(debug) console.log("desc_match=",desc_match);
+		if(desc_match) {
+			 possible_name_list.push({name:desc_match[1].trim(),priority:10});
 		}
-		//console.log("match=",match);
-		//console.log(doc.body.innerText.match(/Professor.*/,""));
-		var site_name=doc.querySelector("meta[property='og:site_name']");
-		if(site_name&&!/^Default$/i.test(site_name)) { console.log("Found site name=",site_name.content);
-													  possible_name_list.push({name:site_name.content.replace(/Website of\s*/i,"")
-																			   .replace(/\s\|\s.*$/,""),priority:0});
-													 }
-		var logo=doc.querySelectorAll("img[id*='logo' i],img[src*='logo.' i],img[data-src*='logo.' i");
-		var x,penalty_re=/Document|Blog/i,temp_cost=0;
+		if(debug) console.log("desc.content=",desc.content);
+	}
 
-		for(x of logo) {
-			//	console.log("x=",x);
-			if(x.alt) x.alt=x.alt.replace(/\slogo$/i,"").replace(/Website of\s*/i,"");
-			if(x.alt && /^[A-Z]/.test(x.alt) && !/Logo|(^\s*Home\s*)/i.test(x.alt)) {
-			//console.log("Found logo alt=",x.alt);
+	var title=doc.title;
+	if(title&&debug) console.log("title=",title);
+	if(desc && title) {
+		
+		let longest=MTurkScript.prototype.longest_common_substring(desc.content,title,true);
+		if(debug) console.log("longest=",longest);
+		var lower_match=longest.match(/\s[^A-Z]/g);
+	  //  console.log("lower_match=",lower_match);
+	}
+	//console.log("match=",match);
+	//console.log(doc.body.innerText.match(/Professor.*/,""));
+	var site_name=doc.querySelector("meta[property='og:site_name']");
+	if(site_name&&!/^Default$/i.test(site_name)) { console.log("Found site name=",site_name.content);
+												  possible_name_list.push({name:site_name.content.replace(/Website of\s*/i,"")
+																		   .replace(/\s\|\s.*$/,""),priority:0});
+												 }
+	var logo=doc.querySelectorAll("img[id*='logo' i],img[src*='logo.' i],img[data-src*='logo.' i");
+	var x,penalty_re=/Document|Blog/i,temp_cost=0;
+	var logo_counter=0;
+	for(x of logo) {
+		//	console.log("x=",x);
+		if(x.alt) x.alt=x.alt.replace(/\slogo$/i,"").replace(/Website of\s*/i,"");
+		if(x.alt && /^[A-Z]/.test(x.alt) && !/Logo|(^\s*Home\s*)/i.test(x.alt)) {
+			if(debug) console.log("Found logo alt try 1=",x.alt);
 			temp_cost=penalty_re.test(x.alt)?10:0;
-			possible_name_list.push({name:x.alt,priority:3+temp_cost});
 
+			possible_name_list.push({name:x.alt,priority:3+3*logo_counter+temp_cost});
+logo_counter++;
 		}
 	}
 	if(logo.length===0) {
@@ -1890,16 +1910,18 @@ name, priority (lower is better) */
 			//console.log("x=",x);
 			if(x.alt) x.alt=x.alt.replace(/\slogo(\s|$)/i,"$1").replace(/Website of\s*/i,"");;
 			if(x.alt && /^[A-Z]/.test(x.alt) && !/(^\s*Home\s*)/i.test(x.alt)) {
-				//console.log("Found logo alt=",x.alt);
+			   if(debug)  console.log("Found logo alt try 2=",x.alt);
 				temp_cost=penalty_re.test(x.alt)?10:0;
 
-				possible_name_list.push({name:x.alt,priority:6+temp_cost});
+				possible_name_list.push({name:x.alt,priority:6+3*logo_counter+temp_cost});
+									logo_counter++;
+
 
 			}
 		}
 	}
 
-	var copyright_list=MTP.company_from_copyright(doc,url);
+	var copyright_list=MTP.company_from_copyright(doc,url,debug);
 	console.log("copyright_list=",copyright_list);
 	for(x of copyright_list) {
 		if(copyright_list.length>0&&!/Copyright|document/i.test(copyright_list[0])) {
@@ -1908,11 +1930,12 @@ name, priority (lower is better) */
 
 		}
 	}
+	for(x of possible_name_list) {
+		x.name=x.name.replace("&#39;","\'").replace(/™/,"");
+	}
 	possible_name_list.sort(function(el1, el2) { return el1.priority-el2.priority; });
-
 	console.log("possible_name_list=",possible_name_list);
 	//if(possible_name_list.length>0) return possible_name_list[0].name;
-
 
 	return possible_name_list;
 
