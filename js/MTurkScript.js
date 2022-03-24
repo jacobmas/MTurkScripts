@@ -1918,7 +1918,7 @@ logo_counter++;
 		for(x of logo) {
 			//console.log("x=",x);
 			if(x.alt) x.alt=x.alt.replace(/\slogo(\s|$)/i,"$1").replace(/Website of\s*/i,"");;
-			if(x.alt && /^[A-Z]/.test(x.alt) && !/(^\s*Home\s*)/i.test(x.alt)) {
+			if(x.alt && /^[A-Z]/.test(x.alt) && !/^\s*Logo\s*$|(^\s*Home\s*)/i.test(x.alt)) {
 			   if(debug)  console.log("Found logo alt try 2=",x.alt);
 				temp_cost=penalty_re.test(x.alt)?10:0;
 				if(x.alt.length>25) temp_cost+=10;
