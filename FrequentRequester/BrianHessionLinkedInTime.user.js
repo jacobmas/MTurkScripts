@@ -234,7 +234,7 @@
     {
         console.log("in init_query");
         var i;
-       var url=document.querySelector("crowd-form a").href;
+       var url=document.querySelector("crowd-form p a").href;
         var company=document.querySelectorAll("crowd-form div p")[1].innerText.trim().replace(/^[^:]*:\s*/,"");
         let short_url=url.replace(/https?:\/\/.*linkedin\.com/,""),match;
 

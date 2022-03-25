@@ -39,7 +39,7 @@
     var my_query = {};
     var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*500),[],begin_script,"AKYLXZLNR703R",true);
+    var MTurk=new MTurkScript(70000,750+(Math.random()*500),[],begin_script,"AKYLXZLNR703R",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name, name, p_caption,i)
     {
@@ -149,7 +149,7 @@
             if(label && price && !my_query.fields.us_market_value && /Avg/.test(label.innerText)) {
                 my_query.fields.us_market_value=price.innerText.replace(/[^\d]/g,"").trim();
             my_query.fields.source_url=url;
-                        my_query.done.classic=true;
+                my_query.done.classic=true;
 
                 resolve("");
                 return;
@@ -235,6 +235,7 @@
 
     function submit_if_done() {
         var is_done=true,x,is_done_dones=x;
+        console.log("my_query.done=",my_query.done);
         add_to_sheet();
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
         is_done_dones=is_done;
@@ -251,7 +252,7 @@
         bad_urls=[];
         console.log("in init_query");
       var name=document.querySelector("crowd-form div p").innerText.trim().replace(/^[^:]*:\s*/,"");
-        my_query={name:name.replace(/\/.*$/,""),fields:{us_market_value:"",source_url:""},done:{nadaguides:false},
+        my_query={name:name.replace(/\/.*$/,""),fields:{us_market_value:"",source_url:""},done:{nadaguides:false,classic:false},
 		  try_count:{"query":0},
 		  submitted:false};
         let split_name=my_query.name.split(/\s/);
@@ -271,14 +272,14 @@
         queryPromise.then(nadaguides_promise_then)
             .catch(function(val) {
             my_query.done.nadaguides=true; submit_if_done(); });
-/* const classicPromise = new Promise((resolve, reject) => {
+const classicPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(my_query.name+" site:classic.com", resolve, reject, query_response,"classic");
         });
         classicPromise.then(classic_promise_then)
             .catch(function(val) {
             my_query.done.classic=true; submit_if_done(); });
-*/
+
        /*  const hagertyPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(my_query.name+" hagerty.com", resolve, reject, query_response,"hagerty");

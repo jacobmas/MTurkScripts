@@ -50,7 +50,7 @@
     function query_response(response,resolve,reject,type) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-        console.log("in query_response\n"+response.finalUrl+", type="+type);
+        console.log("in query_response\n"+response.finalUrl+", type="+type+" try_count=",my_query.try_count[type]);
         var search, b_algo, i=0, inner_a;
         var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
         var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
@@ -62,59 +62,134 @@
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
             if(b_algo.length===0) {
-                
-                
+
+
             }
-              else {
-                  b_name=b_algo[i].querySelector("h2 a").textContent;
-                  b_url=b_algo[i].querySelector("h2 a").href;
-                  b_caption=b_algo[i].getElementsByClassName("b_caption");
-                  p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
-                      p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
-                  person_name=b_name.replace(/\s\-\s.*$/,"").trim();
-              }
-           
-	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
+            else {
+                b_name=b_algo[i].querySelector("h2 a").textContent;
+                b_url=b_algo[i].querySelector("h2 a").href;
+                b_caption=b_algo[i].getElementsByClassName("b_caption");
+                p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
+                    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
+                person_name=b_name.replace(/\s\-\s.*$/,"").trim();
+            }
+
+            if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
                 console.log("parsed_context="+JSON.stringify(parsed_context));
-            console.log("parsed_context.person&&parsed_context.person.experience&&parsed_context.person.experience.length>0=",parsed_context.person&&parsed_context.person.experience&&parsed_context.person.experience.length>0);
-            if(parsed_context.person&&parsed_context.person.experience&&parsed_context.person.experience.length>0 && my_query.url.replace(/.*linkedin\.com/,"")===parsed_context.person.linkedin_url.replace(/.*linkedin\.com/,"")) {
-                console.log("Found person");
-                if(MTP.matches_names(my_query.short_company,parsed_context.person.experience[0].company) || new RegExp(my_query.short_company).test(parsed_context.person.experience[0].company)) {
-                    if(parsed_context.person.experience[0].title) {
-                        my_query.fields.jobtitle=parsed_context.person.experience[0].title;
-                        resolve("");
-                        return;
+                if(parsed_context.thing&&parsed_context.thing.linkedin_url) parsed_context.person=parsed_context.thing
+                if(parsed_context.person&&parsed_context.person.linkedin_url)
+                console.log("my_url=",my_query.url.replace(/.*linkedin\.com/,""),"their_url=",parsed_context.person.linkedin_url.replace(/.*linkedin\.com/,""));
+                console.log("parsed_context.person&&parsed_context.person.experience&&parsed_context.person.experience.length>0=",parsed_context.person&&parsed_context.person.experience&&parsed_context.person.experience.length>0);
+                if(parsed_context.person&&parsed_context.person.experience&&parsed_context.person.experience.length>0 &&
+                   my_query.url.replace(/.*linkedin\.com/,"").indexOf(parsed_context.person.linkedin_url.replace(/.*linkedin\.com/,""))!==-1)
+                {
+                    console.log("Found person");
+                    if(MTP.matches_names(my_query.short_company,parsed_context.person.experience[0].company) ||
+                       new RegExp(my_query.short_company).test(parsed_context.person.experience[0].company)) {
+                        if(parsed_context.person.experience[0].title) {
+                            my_query.fields.jobtitle=parsed_context.person.experience[0].title;
+                            resolve("");
+                            return;
+
+                        }
+
+
 
                     }
-                    
-
 
                 }
-            }
-            else if(parsed_context.people &&parsed_context.people.length>0 && my_query.try_count[type]<2) {
-                my_query.try_count[type]++;
-                let person;
-                let company_regex=new RegExp(my_query.company);
-                for(person of parsed_context.people) {
-                    if(MTP.matches_names(person_name,person.name)||company_regex.test(person.title) || parsed_context.people.length===1) {
-                        console.log("Trying person",person);
-                        GM_xmlhttpRequest({method: 'GET', url: person.url,
-                           onload: function(response) {query_response(response, resolve, reject,type); },
-                           onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
-                          });
-                                        return;
+                if( parsed_context.person&&
+                        my_query.url.replace(/.*linkedin\.com/,"")===parsed_context.person.linkedin_url.replace(/.*linkedin\.com/,"")) {
+                    console.log("Matches urls");
+                    document.querySelector("#jobtitlenotfound").click();
+                    console.log("clicked");
 
+                    resolve("");
+                    return;
+                }
+                else if(parsed_context.people &&parsed_context.people.length>0 && my_query.try_count[type]<2) {
+                    my_query.try_count[type]++;
+                    let person;
+                    let company_regex=new RegExp(my_query.company,"i");
+                    for(person of parsed_context.people) {
+                        if((MTP.matches_names(person_name,person.name)&&
+                            (/, [A-Z]{2}\s*$/.test(person.title)||company_regex.test(person.title))) || parsed_context.people.length===1) {
+                            console.log("Trying person",person);
+                            GM_xmlhttpRequest({method: 'GET', url: person.url,
+                                               onload: function(response) {query_response(response, resolve, reject,type); },
+                                               onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
+                                              });
+                            return;
+
+                        }
                     }
+
+                }
+                else if(b_url===my_query.url&&my_query.try_count[type]===0) {
+                    my_query.try_count[type]++;
+                    query_search(person_name+" "+my_query.company,resolve,reject,query_response,"query");
+                    return;
                 }
 
             }
-            else if(b_url===my_query.url&&my_query.try_count[type]===0) {
-                my_query.try_count[type]++;
-                query_search(person_name+" "+my_query.company,resolve,reject,query_response,"query");
-                return;
-            }
 
-        }
+
+             for(i=0; i < b_algo.length&&i<3; i++) {
+                b_name=b_algo[i].querySelector("h2 a").textContent;
+                b_url=b_algo[i].getElementsByTagName("a")[0].href;
+                b_caption=b_algo[i].getElementsByClassName("b_caption");
+                p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
+                    p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : (b_algo[i].querySelector("p")? b_algo[i].querySelector("p").innerText.trim():"");
+                console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
+
+               let b_factrow_li=b_algo[i].querySelectorAll(".b_factrow li");
+                 console.log("b_factrow_li=",b_factrow_li);
+                 if(my_query.url.replace(/.*linkedin\.com/,"").indexOf(b_url.replace(/.*linkedin\.com/,""))===-1) continue;
+                 let found_company=false;
+                 let split_company=b_name.split(/\s+-\s+/);
+                 if(split_company.length>=3 && MTP.matches_names(my_query.short_company,split_company[2])) found_company=true;
+                 if(found_company && split_company.length>=3) {
+                     my_query.fields.jobtitle=split_company[1].trim();
+                     resolve("");
+                     return;
+                 }
+                 if(new RegExp(my_query.short_company,"i").test(p_caption)) found_company=true;
+
+                 let temp_li;
+                 let role_title="";
+                 for(temp_li of b_factrow_li) {
+                     console.log("temp_li=",temp_li.innerText);
+                     if(/Works For:/.test(temp_li.innerText) && MTP.matches_names(temp_li.innerText.replace(/Works For:\s*/,""),my_query.short_company)) {
+                         found_company=true;
+                     }
+                     if(/Title:/.test(temp_li.innerText)) {
+                         role_title=temp_li.innerText.replace(/^[^:]*:\s*/,"").replace(/…/,"").replace(/ at [A-Z].*$/,"").
+                         replace(/ and\s*$/,"").trim();
+                     }
+                 }
+                 if(found_company && role_title) {
+                     my_query.fields.jobtitle=role_title;
+                     resolve("");
+                     return;
+                 }
+             }
+            if(parsed_context.people &&parsed_context.people.length>0 && my_query.try_count[type]<3) {
+                    my_query.try_count[type]++;
+                    let person;
+                    let company_regex=new RegExp(my_query.company,"i");
+                    for(person of parsed_context.people) {
+                        if((MTP.matches_names(person_name,person.name)||
+                            (company_regex.test(person.title))) || parsed_context.people.length===1) {
+                            console.log("Trying person",person);
+                            GM_xmlhttpRequest({method: 'GET', url: person.url,
+                                               onload: function(response) {query_response(response, resolve, reject,type); },
+                                               onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
+                                              });
+                            return;
+
+                        }
+                    }
+            }
           //  if(b1_success && (resolve(b_url)||true)) return;
         }
         catch(error) {
@@ -125,7 +200,17 @@
         return;
     }
     function do_next_query(resolve,reject,type) {
+       /* if(my_query.try_count[type]===0) {
+            my_query.try_count[type]++;
+            query_search("+"+my_query.url, resolve, reject, query_response,"query");
+            return;
+        }*/
         if(my_query.try_count[type]===0) {
+            my_query.try_count[type]++;
+            query_search(my_query.url+" "+my_query.short_company, resolve, reject, query_response,"query");
+            return;
+        }
+         if(my_query.try_count[type]===1) {
             my_query.try_count[type]++;
             query_search(my_query.url, resolve, reject, query_response,"query");
             return;
@@ -184,12 +269,14 @@
         console.log("in init_query");
         var i;
        var url=document.querySelector("form div div a").href;
+        url=url.replace(/(https?:\/\/[^\/]*\/in\/[^\/]*).*$/,"$1");
         var company=document.querySelectorAll("crowd-form div p")[1].innerText.trim().replace(/^[^:]*:\s*/,"");
+        company=company.replace(/DELL\/EMC/,"Dell");
         my_query={name:"",company:company, short_company:MTP.shorten_company_name(company), url:url,fields:{},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
 	console.log("my_query="+JSON.stringify(my_query));
-        var search_str="+"+my_query.url;
+        var search_str="+"+my_query.url+" "+my_query.short_company;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");
