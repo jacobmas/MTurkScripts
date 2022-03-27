@@ -105,6 +105,9 @@ function hit_accept(response,my_id_match,count,name_match, output_good) {
 	else {
 		//console.log("response=",response);
 		console.log(`No more hits available ${my_id_match}`);
+		if(!output_good && hits_to_get<10) {
+			hits_to_get++;
+		}
 	}
 /*<div data-react-class="require(&#39;reactComponents/alert/Alert&#39;)[&#39;PureAlert&#39;]" data-react-props="{&quot;type&quot;:&quot;danger&quot;,&quot;header&quot;:&quot;There are no more of these HITs available&quot;,&quot;message&quot;:&quot;Browse &lt;a href=\&quot;/projects\&quot;&gt;all available HITs&lt;/a&gt;.&quot;,&quot;renderMessageAsHTML&quot;:true}"></div>*/
 }
