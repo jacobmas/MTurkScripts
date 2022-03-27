@@ -389,13 +389,14 @@ AggParser.parse_instagram=function(doc,url,resolve,reject) {
                 result=AggParser.parse_insta_script(parsed);
             }
             catch(error) { console.log("Error in parse_insta_script"+error); }
-            result.not_found=false;
+            result.not_found=true;
             resolve(result);
             break;
         }
     }
-    console.log("Blop");
     let err=doc.querySelector(".error-container");
+    console.log("Blop,err=",err);
+
     if(err) console.log("err=",err.innerText);
     if(/The link you followed may be broken/i.test(err.innerText)) {
         my_query.fields.IGcount=0;
