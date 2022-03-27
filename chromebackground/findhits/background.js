@@ -24,7 +24,7 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
       });
 		
 	});
-/*	setTimeout(function() { 
+	setTimeout(function() { 
 		response=fetch('https://worker.mturk.com/').then(
 	function(response) {
 		response.text().then(function(data) {
@@ -32,7 +32,7 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
       });
 		
 	});
-	}, 30000);*/
+	}, 30000);
 	//fetch('https://worker.mturk.com/tasks').then(function(data) {});
 });
 
@@ -40,7 +40,7 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
 function parse_text(data) {
 	let got_hits=false;
 	notified=false;
-	console.log("hits_to_get=",hits_to_get);
+	console.log("hits_to_get=",hits_to_get," time=",Date.now());
 	//hit_set_id&quot;:&quot;3O6LJLEA10KK4AUD417PIESQFEMJV7&quot;,&quot;requester_id&quot;:&quot;A6F2IPUML66ZK&quot;,&quot;requester_name&quot;:&quot;tafka-rnd&quot;,&quot;title&quot;:&quot;
 	let my_re=new RegExp("hit_set_id\\&quot;:\\&quot;[^&]*\\&quot;,\\&quot;"+
 		"requester_id\\&quot;:\\&quot;[^&]*\\&quot;,\\&quot;"+
