@@ -54,7 +54,7 @@
                   '.medicarelist.com', '.medicinenet.com', '.myheritage.com','.mylife.com',
                   '.mturkcontent.com',
                   '.npidb.com', '/npidb.com', '/npidb.org', '/npino.com', '/npiprofile.com',
-                  '/nuwber.com','/opencorporates.com',
+                  '/nuwber.com', '.officialusa.com','/opencorporates.com',
                   '/opennpi.org','orthopedic.io','.peekyou.com',
                   '.peoplefinders.com', 'www.primarycare-doctor.com', 'providers.hrt.org','.psychologytoday.com', '/pubprofile.com',
                   '.researchgate.net','rocketreach.co',
@@ -357,8 +357,7 @@
                     console.log("names=",names);
                     if(names.length>0) { temp_result.name=names[0].name; }
                 }
-                console.log("temp_result=",temp_result," length=",Object.keys(temp_result).length);
-            my_query.office_list.push(temp_result);
+          //  my_query.office_list.push(temp_result);
         }
 
     }

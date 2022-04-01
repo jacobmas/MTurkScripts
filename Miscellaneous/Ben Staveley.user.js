@@ -220,7 +220,11 @@ name, priority (lower is better) */
         for(x of possible_name_list) {
             x.name=x.name.replace("&#39;","\'").replace(/™/,"");
         }
-        possible_name_list.sort(function(el1, el2) { return el1.priority-el2.priority; });
+        possible_name_list.sort(function(el1, el2) { if(el1.name.length===0) {
+            return 1; }
+                                                    if(el2.name.length===0) return -1;
+
+            return el1.priority-el2.priority; });
         console.log("possible_name_list=",possible_name_list);
         //if(possible_name_list.length>0) return possible_name_list[0].name;
 
@@ -388,7 +392,13 @@ AggParser.parse_instagram=function(doc,url,resolve,reject) {
             try {
                 result=AggParser.parse_insta_script(parsed);
             }
-            catch(error) { console.log("Error in parse_insta_script"+error); }
+            catch(error) { console.log("Error in parse_insta_script"+error);
+                         if(/Cannot read properties of undefined/.test(error)) {
+                             result.not_found=false;
+                             resolve(result);
+                             return;
+                            }
+                         }
             result.not_found=true;
             resolve(result);
             break;
@@ -398,7 +408,7 @@ AggParser.parse_instagram=function(doc,url,resolve,reject) {
     console.log("Blop,err=",err);
 
     if(err) console.log("err=",err.innerText);
-    if(/The link you followed may be broken/i.test(err.innerText)) {
+    if(err && /The link you followed may be broken/i.test(err.innerText)) {
         my_query.fields.IGcount=0;
         resolve({success:true});
         return;
@@ -420,7 +430,9 @@ AggParser.parse_instagram=function(doc,url,resolve,reject) {
         if(names.length>0) my_query.name=names[0].name;
         for(a of doc.links) {
             //console.log("a.href=",a.href);
-            if(/instagram\.com/.test(a.href) && !MTP.is_bad_instagram(a.href)&&a.href!=="https://www.instagram.com/"&&!/https?:\/\/instagram\.com\/?$/.test(a.href)) {
+            if(/instagram\.com/.test(a.href) && !MTP.is_bad_instagram(a.href)&&a.href!=="https://www.instagram.com/"&&
+               !/\/reel\//.test(a.href) &&
+               !/https?:\/\/instagram\.com\/?$/.test(a.href)) {
                 my_query.found_on_page=true;
                 resolve(a.href);
                 return;
@@ -445,10 +457,10 @@ AggParser.parse_instagram=function(doc,url,resolve,reject) {
             GM_setValue("returnHit",true);
             return;
         }
-        if(result&&result.followers) {
+        else if(result&&result.followers) {
             my_query.fields.IGcount=result.followers;
         }
-        else if(my_query.found_on_page) {
+        else if(my_query.found_on_page||true) {
             my_query.fields.IGcount=0;
         }
         submit_if_done();
