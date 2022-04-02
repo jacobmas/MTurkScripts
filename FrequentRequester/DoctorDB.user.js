@@ -65,13 +65,12 @@
                   '/voterrecords.com',
                   '.webmd.com', '.wellness.com',
                   '.whitepages.com',
-                  '.wikipedia.org', '.yahoo.com','.yellowpages.com', '.yelp.com', '.zocdoc.com','.zoominfo.com']
+                  '.wikipedia.org', '.yahoo.com','.yellowpages.com', '.yelp.com','.zillow.com', '.zocdoc.com','.zoominfo.com']
     var MTurk=new MTurkScript(30000,1000,[],begin_script,"A1BOHRKGTWLMTJ",true);
     var MTP=MTurkScript.prototype;
     var add_map={"address1":"address1","address2":"address2","city":"city","state":"state","postcode":"zip"};
 
-    function is_bad_name(b_name)
-    {
+    function is_bad_name(b_name) {
         return false;
     }
 
@@ -324,8 +323,9 @@
         var add_map={"address1":"address1","address2":"address2","city":"city","state":"state","postcode":"zip"};
         let add_field;
         var add=doc.querySelector(".location-address");
+        //console.log("add=",add);
         let fax=doc.querySelector("#location-fax");
-        console.log("fax=",fax);
+       // console.log("fax=",fax);
 
         if(name) temp_result.name=name.innerText.trim();
         if(phone) temp_result.phone_number=phone.innerText.replace(/[^\d]+/g,"").replace(/^1/,"").trim();
@@ -334,10 +334,11 @@
             let addString="";
             let child;
             for(child of add.childNodes) {
-                if(child.nodeType !== Node.TEXT_NODE) {
+                if(child.nodeType === Node.TEXT_NODE) {
                     addString=addString+(addString.length>0?",":"")+child.textContent;
                 }
             }
+            //console.log("addString=",addString);
             let temp_add=new Address(addString);
             for(add_field in add_map) {
                 temp_result[add_map[add_field]]=temp_add[add_field];
@@ -357,7 +358,9 @@
                     console.log("names=",names);
                     if(names.length>0) { temp_result.name=names[0].name; }
                 }
-          //  my_query.office_list.push(temp_result);
+            console.log("temp_result=",temp_result);
+            my_query.office_list.push(temp_result);
+            add_to_sheet();
         }
 
     }
