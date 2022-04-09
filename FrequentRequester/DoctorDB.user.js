@@ -36,7 +36,7 @@
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=['/allpeople.com','/arrestfacts.com','.bbb.org',
+    var bad_urls=['/allpeople.com','.angmedicare.com','/arrestfacts.com','.arrounddeal.com','.bbb.org',
                   '.beenverified.com', '.ballotpedia.','.bizapedia.com', '.caredash.com',
                   '.castleconnolly.com','/checkpeople.com',
                   'clustrmaps.com','.dentalplans.com','.dnb.com','.docbios.com',
@@ -57,9 +57,9 @@
                   '/nuwber.com', '.officialusa.com','/opencorporates.com',
                   '/opennpi.org','orthopedic.io','.peekyou.com',
                   '.peoplefinders.com', 'www.primarycare-doctor.com', 'providers.hrt.org','.psychologytoday.com', '/pubprofile.com',
-                  '.researchgate.net','rocketreach.co',
+                  '.realself.com','.researchgate.net','rocketreach.co',
                   '.sharecare.com',
-                  '.spokeo.com', '.topnpi.com','trademarking.in',
+                  '.spokeo.com', '.topionetworks.com','.topnpi.com','trademarking.in',
                   "truepeoplesearch.com", '/trustifo.com',
                   '.usnews.com', '.vitadox.com', '.vitals.com',
                   '/voterrecords.com',
@@ -130,6 +130,11 @@
             reject(error);
             return;
         }
+        if(type==="query" && my_query.try_count[type]>=1 && parsed_lgb && parsed_lgb.url && !MTP.is_bad_url(parsed_lgb.url,bad_urls,-1)) {
+            resolve(parsed_lgb.url);
+            return;
+        }
+
     	do_next_query(resolve,reject,type);
         return;
     }
@@ -183,7 +188,6 @@
         }
         add_to_sheet();
     }
-
     function scrape_itemtype(doc,url,itemtype) {
         var y;
         var prop_map={"name":"name","telephone":"phone_number","faxNumber":"fax_number"};
@@ -243,7 +247,6 @@
         }
         add_to_sheet();
     }
-
     function scrape_ihlocations(doc, url, locations) {
 
         var name,address,phone,fax;
@@ -395,13 +398,23 @@
         var ihlocations=doc.querySelectorAll(".ih-field-locations");
         var phone=doc.querySelector(".phone > a");
         var fax=doc.querySelector(".fax > a");
-        if(phone)    my_query.fields['office1_phone_number']=phone.innerText.trim().replace(/[^\d]+/g,"").replace(/^1/,"");
+        if(phone)  my_query.fields['office1_phone_number']=phone.innerText.trim().replace(/[^\d]+/g,"").replace(/^1/,"");
+        if(!phone) {
+            let temp_phone=doc.querySelector("a[href^='tel']");
+            console.log("phone=",temp_phone);
+            if(temp_phone) {
+                phone=temp_phone.href.trim().replace(/[^\d]+/g,"").replace(/^1/,"");
+                if(!/^0{3,}/.test(phone)&&phone.length>=10) my_query.fields['office1_phone_number']=phone;
+                else phone="";
+            }
+        }
         if(fax) my_query.fields['office1_fax_number']=1+fax.innerText.trim().replace(/[^\d]+/g,"").replace(/^1/,"");;
-        if(!phone && (phone=doc.body.innerText.match(/Phone:\s*\n*\s*([\([(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6})/im)) && !fax &&
+        if((my_query.fields['office1_phone_number']||(phone=doc.body.innerText.match(/Phone:\s*\n*\s*([\([(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6})/im))) && !fax &&
            (fax=doc.body.innerText.match(/Fax:\s*\n*\s*([\([(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6})/im))) {
             console.log("phone=",phone,"fax=",fax);
-            my_query.fields.office1_phone_number=phone[1].trim().replace(/[^\d]+/g,"").replace(/^1/,"");
+            if(!my_query.fields['office1_phone_number'])             my_query.fields.office1_phone_number=phone[1].trim().replace(/[^\d]+/g,"").replace(/^1/,"");
             my_query.fields.office1_fax_number=1+fax[1].trim().replace(/[^\d]+/g,"").replace(/^1/,"");
+            add_to_sheet();
         }
                     console.log("phone=",phone,"fax=",fax);
 
@@ -491,7 +504,8 @@
             .replace("Pediatric Pulmonology","Pulmonary Medicine").replace("Optometry","Optometrist").replace(/.*\sOncology.*$/,"Oncology")
                 .replace(/.*Otolaryngology.*/,"Otolaryngology").replace(/.*General Surgery.*/,"Surgery").replace(/^.*Gynecology.*$/,"Obstetrics & Gynecology").
             replace(/^.*Pulmonary.*$/,"Pulmonology").replace(/^.*(Electrophysiology|Cardiology).*$/,"Cardiology").replace(/^.*General Surgery.*$/,"Surgery")
-        .replace(/.*Psychiatry.*/,"Psychiatry").replace(/^.*Pediatrics.*$/,"Pediatrics").replace(/^.*Allergy.*$/,"Allergy & Immunology");
+        .replace(/.*Psychiatry.*/,"Psychiatry").replace(/^.*Pediatrics.*$/,"Pediatrics").replace(/^.*Allergy.*$/,"Allergy & Immunology")
+        .replace(/^.*Geriatric.*$/,"Geriatric Medicine");
             console.log("SPECIALTY: "+specialty);
                 console.log("specialty=",specialty);
             document.querySelector("[name='specialty1']").value=specialty;
