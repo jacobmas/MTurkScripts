@@ -123,6 +123,7 @@
                 if(type!="healthgrades" && !MTP.is_bad_name(my_query.name,b_name) && new RegExp(my_query.parsed_name.lname,"i").test(b_name) && (!MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1)||
 
                     (type==='webmdquery' && /\.webmd\.com/.test(b_url) && /\/doctor\//.test(b_url) && !/find\-a\-doctor\//.test(b_url))) &&  (b1_success=true)) break;
+                if(type==="query" && i===0  && (!MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1)) &&  (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
         }
@@ -409,12 +410,14 @@
             }
         }
         if(fax) my_query.fields['office1_fax_number']=1+fax.innerText.trim().replace(/[^\d]+/g,"").replace(/^1/,"");;
-        if((my_query.fields['office1_phone_number']||(phone=doc.body.innerText.match(/Phone:\s*\n*\s*([\([(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6})/im))) && !fax &&
+        if((my_query.fields['office1_phone_number']||(phone=doc.body.innerText.match(/(?:Tel|Phone):\s*\n*\s*([\([(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6})/im))) && !fax &&
            (fax=doc.body.innerText.match(/Fax:\s*\n*\s*([\([(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6})/im))) {
             console.log("phone=",phone,"fax=",fax);
             if(!my_query.fields['office1_phone_number'])             my_query.fields.office1_phone_number=phone[1].trim().replace(/[^\d]+/g,"").replace(/^1/,"");
+            else { console.log("my_query.fields['office1_phone_number']=",my_query.fields['office1_phone_number']); }
             my_query.fields.office1_fax_number=1+fax[1].trim().replace(/[^\d]+/g,"").replace(/^1/,"");
             add_to_sheet();
+            //console.log("my_query.fields=",my_query.fields);
         }
                     console.log("phone=",phone,"fax=",fax);
 
@@ -505,7 +508,7 @@
                 .replace(/.*Otolaryngology.*/,"Otolaryngology").replace(/.*General Surgery.*/,"Surgery").replace(/^.*Gynecology.*$/,"Obstetrics & Gynecology").
             replace(/^.*Pulmonary.*$/,"Pulmonology").replace(/^.*(Electrophysiology|Cardiology).*$/,"Cardiology").replace(/^.*General Surgery.*$/,"Surgery")
         .replace(/.*Psychiatry.*/,"Psychiatry").replace(/^.*Pediatrics.*$/,"Pediatrics").replace(/^.*Allergy.*$/,"Allergy & Immunology")
-        .replace(/^.*Geriatric.*$/,"Geriatric Medicine");
+        .replace(/^.*Geriatric.*$/,"Geriatric Medicine").replace(/^.*Obstetrics.*$/,"Obstetrics & Gynecology");
             console.log("SPECIALTY: "+specialty);
                 console.log("specialty=",specialty);
             document.querySelector("[name='specialty1']").value=specialty;
@@ -874,11 +877,11 @@
         }
         //var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         //var dont=document.getElementsByClassName("dont-break-out");
-        my_query={name:name_match&&name_match.length>1&&name_match[1]?name_match[1]:"",specialty:name_match&&name_match.length>=3?name_match[2]:"",title:title,state:state_match?reverse_state_map[state_match[1]]:'',url:"",fields:
+        my_query={name:name_match&&name_match.length>1&&name_match[1]?name_match[1].trim():"",specialty:name_match&&name_match.length>=3?name_match[2]:"",title:title,state:state_match?reverse_state_map[state_match[1]]:'',url:"",fields:
                   {},done:{},submitted:false,try_count:{"query":0},
 
                  office_list:[]}; // solution list is list of offices
-        my_query.name=my_query.name.replace(/\s(NP|MD|APRN)$/,"").trim();
+        my_query.name=my_query.name.replace(/\s(NP|MD|APRN|PA-C|PA)$/,"").trim();
         console.log("temp=",my_query.name.replace(/^([^\s]*\s[^\s]*).*$/,"$1"));
         set_specialty(my_query.specialty);
 
