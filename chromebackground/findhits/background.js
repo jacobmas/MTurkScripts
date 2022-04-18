@@ -56,6 +56,7 @@ function parse_text(data) {
 	console.log("my_match=",my_match);
 	var x;
 	var counter=0;
+	if(!my_match) return "";
 	for(x of my_match) {
 		counter+=1;
 		if(counter>10) break;
