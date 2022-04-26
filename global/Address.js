@@ -630,6 +630,8 @@ Address.sanitize_text_US=function(text) {
     // replace PO DRAWER //
     text=text.replace(/(^|,)(\s*)(?:P\.?O\.?\s*)?(DRAWER|BOX)(\s)/i,"$1$2PO Box$4");
     text=text.replace(ann_regex,",").trim();
+	text=text.replace(/([a-bd-z])([A-Z])/,"$1,$2");
+
     //console.log("Before fix, text="+text);
     var parsed=parseAddress.parseLocation(text);
     var add2_extra=(floor?floor[1]:"");
