@@ -136,22 +136,26 @@ AggParser.parse_hotfrog=function(doc,url,resolve,reject,quality) {
 
 
 AggParser.parse_bizapedia=function(doc,url,resolve,reject) {
-    console.log("in parse_bizapedia, url="+url);
-    var biz=doc.querySelector("[itemtype='https://schema.org/LocalBusiness']");
-    var result={success:true,site:"bizapedia",fields:{}};
-    if((!biz) && (resolve(result)||true)) return;
-    var td=biz.querySelectorAll("td"),i,nextItem,x;
-    for(i=0;i<td.length;i++) {
-        if(/^(Principal|Mailing)/.test(td[i].innerText)) {
-            console.log("### Found principal address");
-            nextItem=td[i].parentNode.querySelectorAll("td")[1];
-            result.address=AggParser.parse_postal_elem(nextItem,4,"bizapedia",url);
-            break;
+        console.log("in parse_bizapedia, url="+url);
+        var biz=doc.querySelector("[itemtype='https://schema.org/LocalBusiness']");
+        var result={success:true,site:"bizapedia",fields:{}};
+        var add=doc.querySelector("[itemprop='address']");
+        if(add) {
+            let streetAdd=add.querySelector("[itemprop='streetaddress']")?add.querySelector("[itemprop='streetaddress']").innerText:"";
+            let city=add.querySelector("[itemprop='addresslocality']")?add.querySelector("[itemprop='addresslocality']").innerText:"";
+            let state=add.querySelector("[itemprop='addressregion']")?add.querySelector("[itemprop='addressregion']").innerText:"";
+            let zip=add.querySelector("[itemprop='postalcode']")?add.querySelector("[itemprop='postalcode']").innerText:"";
+            if(streetAdd&&city&&state&&zip) {
+                            result.address=new Address(streetAdd+","+city+", "+state+" "+zip);
+
+                console.log("result.address=",result.address);
+            }
         }
-    }
     resolve(result);
 
 };
+
+
 AggParser.parse_infofree=function(doc,url,resolve,reject) {
     console.log("In parse_infofree, url="+url);
     var add=doc.querySelector(".content .row div h4");
