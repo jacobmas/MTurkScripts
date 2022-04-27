@@ -3,6 +3,11 @@ let color = '#3aa757';
 var hits_to_get=10;
 var notified=false;
 
+var good_requesters=["A1BOHRKGTWLMTJ"]; // For now just DoctorDB 
+
+// for doctordb?  //https://worker.mturk.com/projects/3MQQ4RVXBBHPUKA68EQ27OEKCA12A7/tasks/accept_random?ref=w_pl_prvw
+// https://worker.mturk.com/requesters/A1BOHRKGTWLMTJ/projects
+
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.set({ color });
   console.log('Default background color set to %cgreen', `color: ${color}`);
@@ -12,11 +17,27 @@ chrome.alarms.create("checkForHits",{when:Date.now(),periodInMinutes:1});
 
 chrome.alarms.onAlarm.addListener(function(alarm) {
 	console.log("MOO");
+	let req;
+	
 	if(alarm.name==="checkForHits") {
 		console.log("checking for hits");
 		
 	}
+	/* Iterate over requesters, look for hits */
+	for(req of good_requesters) {
+		let curr_url=`https://worker.mturk.com/requesters/${req}/projects`;
+		console.log(`curr_url=${curr_url}`);
+		response=fetch(curr_url).then(
+		function(response) {
+			response.text().then(function(data) {
+			let result=parse_text2(data);
+		  });
+		
+	});
+	}
 	
+	
+	/* Check main page */
 	response=fetch('https://worker.mturk.com/').then(
 	function(response) {
 		response.text().then(function(data) {
@@ -24,7 +45,9 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
       });
 		
 	});
-	setTimeout(function() { 
+	
+	
+/*	setTimeout(function() { 
 		response=fetch('https://worker.mturk.com/').then(
 	function(response) {
 		response.text().then(function(data) {
@@ -32,9 +55,56 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
       });
 		
 	});
-	}, 30000);
+	}, 30000);*/
 	//fetch('https://worker.mturk.com/tasks').then(function(data) {});
 });
+
+function parse_text2(data) {
+	let got_hits=false;
+	notified=false;
+	console.log("parse_text2, hits_to_get=",hits_to_get," time=",Date.now());
+	//hit_set_id&quot;:&quot;3O6LJLEA10KK4AUD417PIESQFEMJV7&quot;,&quot;requester_id&quot;:&quot;A6F2IPUML66ZK&quot;,&quot;requester_name&quot;:&quot;tafka-rnd&quot;,&quot;title&quot;:&quot;
+	let my_re=new RegExp("hit_set_id\\&quot;:\\&quot;[^&]*\\&quot;,\\&quot;"+
+		"requester_id\\&quot;:\\&quot;[^&]*\\&quot;,\\&quot;"+
+		"requester_name\\&quot;:\\&quot;[^&]*\\&quot","g");
+//	let my_re=/requester_name\&quot\;\:\&quot\;[^&]*\&quot/g;
+	let my_re_name=/requester_name\&quot\;\:\&quot\;([^&]*)\&quot/;
+	let my_re_setid=/hit_set_id\&quot\;\:\&quot\;([^&]*)\&quot/;
+
+	let my_match=data.match(my_re);
+	
+	//my_match=my_match.map(x => x.replace(my_re_name,"$1"));
+	var good_re=/Doctor DB/;
+	console.log("parse_text2, my_match=",my_match);
+	var x;
+	var counter=0;
+	if(!my_match) return "";
+	for(x of my_match) {
+		counter+=1;
+		if(counter>25) break;
+		var my_name_match=x.match(my_re_name);
+		
+		let my_id_match=x.match(my_re_setid);
+		if(my_name_match && my_id_match) {
+			console.log("parse_text2, my_name_match=",my_name_match[1]," my_id_match=",my_id_match[1]);
+		}
+		if(my_name_match && my_name_match.length>=2 && good_re.test(my_name_match[1])) {
+			
+			
+			console.log("parse_text2, Bloop");
+		//		get_hits(my_id_match[1],hits_to_get>=5?5:hits_to_get, my_name_match[1]);
+				//hits_to_get=0;
+			}
+			
+		}
+	}
+	/*if(!got_hits&&hits_to_get<10) {
+		hits_to_get++;
+	}*/
+		
+	//console.log("data=",data);
+	return "";
+}
 
 
 function parse_text(data) {
@@ -59,7 +129,7 @@ function parse_text(data) {
 	if(!my_match) return "";
 	for(x of my_match) {
 		counter+=1;
-		if(counter>10) break;
+		if(counter>25) break;
 		var my_name_match=x.match(my_re_name);
 		
 		let my_id_match=x.match(my_re_setid);
@@ -69,17 +139,17 @@ function parse_text(data) {
 		if(my_name_match && my_name_match.length>=2 && good_re.test(my_name_match[1])) {
 			
 			if(/Doctor DB/.test(my_name_match[1])) {
-				got_hits=true;
+				//got_hits=true;
 				console.log("Bloop");
 				get_hits(my_id_match[1],hits_to_get>=5?5:hits_to_get, my_name_match[1]);
-				hits_to_get=0;
+				//hits_to_get=0;
 			}
 			
 		}
 	}
-	if(!got_hits&&hits_to_get<10) {
+	/*if(!got_hits&&hits_to_get<10) {
 		hits_to_get++;
-	}
+	}*/
 		
 	//console.log("data=",data);
 	return "";
@@ -90,6 +160,7 @@ function hit_accept(response,my_id_match,count,name_match, output_good) {
 	var no_more_re=/There are no more of these HITs available/;
 	if(!no_more_re.test(response)) {
 		console.log("Found good, ",name_match);
+		hits_to_get--;
 		if(!output_good) {
 			chrome.notifications.create('test', {
 			type: 'basic',
