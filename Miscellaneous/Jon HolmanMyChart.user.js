@@ -37,7 +37,36 @@
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=["birdeye.com"];
+    var bad_urls=['/allpeople.com','.angmedicare.com','/arrestfacts.com','.arrounddeal.com','.bbb.org',
+                  '.beenverified.com', '.ballotpedia.','.bizapedia.com', '.caredash.com',
+                  '.castleconnolly.com','/checkpeople.com',
+                  'clustrmaps.com','.dentalplans.com','.dnb.com','.docbios.com',
+                  '//doctor.com', '.doctor.com', '.doctorhelps.com', '.doximity.com',
+                  '.echovita.com',
+                  '.ehealthscores.com', '.endo-world.com', '.enpnetwork.com','/eyedoctor.io',
+                  '.facebook.com', '.fertilityiq.com', '.findagrave.com','findatopdoc.com', '.gastro.org', '.getluna.com',
+                  'goodreads.com','/govsalaries.com',
+                  '.healthcare4ppl.com', '.healthcare6.com',
+                  '.healthgrades.com', '.healthpage.org', '/healthprovidersdata.com', '.healthsoul.com',
+                  '.healthlynked.com',
+                  '.hipaaspace.com', '.imdb.com','.instantcheckmate.com', 'lawtally.com','.legacy.com',
+                  '/licensefiles.com',
+                  '.linkedin.com', '.mapquest.com', '.md.com', '.medicalcare.com', 'medicaltestlabs.com', '.medicareforall.com','.medicaredforall.com',
+                  '.medicarelist.com', '.medicinenet.com', '.myheritage.com','.mylife.com',
+                  '.mturkcontent.com',
+                  '.npidb.com', '/npidb.com', '/npidb.org', '/npino.com', '/npiprofile.com',
+                  '/nuwber.com', '.officialusa.com','/opencorporates.com',
+                  '/opennpi.org','orthopedic.io','.peekyou.com',
+                  '.peoplefinders.com', 'www.primarycare-doctor.com', 'providers.hrt.org','.psychologytoday.com', '/pubprofile.com',
+                  '.realself.com','.researchgate.net','rocketreach.co',
+                  '.sharecare.com',
+                  '.spokeo.com', '.topionetworks.com','.topnpi.com','trademarking.in',
+                  "truepeoplesearch.com", '/trustifo.com',
+                  '.usnews.com', '.vitadox.com', '.vitals.com',
+                  '/voterrecords.com',
+                  '.webmd.com', '.wellness.com',
+                  '.whitepages.com',
+                  '.wikipedia.org', '.yahoo.com','.yellowpages.com', '.yelp.com','.zillow.com', '.zocdoc.com','.zoominfo.com']
     /* TODO should be requester #, last field should be if it's crowd or not */
     var MTurk=new MTurkScript(50000,750+(Math.random()*1000),[],begin_script,"AHJ6Q0B967QOK",true);
     var MTP=MTurkScript.prototype;
@@ -83,7 +112,7 @@
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : (b_algo[i].querySelector("p")? b_algo[i].querySelector("p").innerText.trim():"");
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls,4,2) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
+                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
 		   && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
@@ -123,7 +152,7 @@
     }
     var next_md_re=/\.nextmd\.com/;
     var other_re_str="\\.eclinicalweb.com|www\\.myadventisthealthportal\\.org|\\.athenahealth\\.com|\\.followmyhealth\\.com|"+
-        "\\.healow\\.com|\\.gobreeze.com|\\.ecwcloud\\.com|\\.myezyaccess\\.com|\\.myadsc\\.com|\\.iqhealth\\.com";
+        "\\.healow\\.com|\\.gobreeze.com|\\.ecwcloud\\.com|\\.myezyaccess\\.com|\\.myadsc\\.com|\\.iqhealth\\.com|\\.ims-ehr\\.com";
     var other_re=new RegExp(other_re_str);
     console.log("other_re=",other_re);
     function parse_for_mychart(doc,url,resolve,reject) {

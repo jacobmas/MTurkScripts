@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Jon Holman
+// @name         Jon HolmanManySpecialties
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  small or medium/large medical
@@ -95,20 +95,20 @@ var bad_urls=['.beenverified.com', '.bizapedia.com', '.caredash.com', '//doctor.
             b_context=doc.getElementById("b_context");
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
-                console.log("parsed_context="+JSON.stringify(parsed_context)); 
-				
-				if(parsed_context.url&&!MTP.is_bad_url(parsed_context.url,bad_urls,-1)) {
+                console.log("parsed_context="+JSON.stringify(parsed_context));
+
+				if(type==="query" && parsed_context.url&&!MTP.is_bad_url(parsed_context.url,bad_urls,-1)) {
                 resolve(parsed_context.url);
                 return;
             }
-				} 
+				}
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
-                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); 
-					if(parsed_lgb.url&&!MTP.is_bad_url(parsed_lgb.url,bad_urls,-1)) {
+                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb));
+					if(type==="query" && parsed_lgb.url&&!MTP.is_bad_url(parsed_lgb.url,bad_urls,-1)) {
                 resolve(parsed_lgb.url);
                 return;
             }
-					
+
 					}
             for(i=0; i < b_algo.length&&i<2; i++) {
                 b_name=b_algo[i].querySelector("h2 a").textContent;
@@ -117,7 +117,12 @@ var bad_urls=['.beenverified.com', '.bizapedia.com', '.caredash.com', '//doctor.
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : (b_algo[i].querySelector("p")? b_algo[i].querySelector("p").innerText.trim():"");
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
+                if(type==="query" && !MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
+		   && (b1_success=true)) break;
+
+                 if(type==="healthgrades" && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
+		   && (b1_success=true)) break;
+                if(type==="webmd" && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
 		   && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
@@ -153,26 +158,153 @@ var bad_urls=['.beenverified.com', '.bizapedia.com', '.caredash.com', '//doctor.
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.url=result;
-                console.log("query_promise_then,url=",my_query.url);
+        my_query.url=my_query.begin_url=result;
+                my_query.url=my_query.url.replace(/^(https?:\/\/[^\/]*).*$/,"$1");
+        my_query.url=my_query.url.replace(/^(https?:\/\/)account\./,"$1www.");
 
-        var promise=MTP.create_promise(my_query.url,parse_for_big,parse_for_big_then,function() { GM_setValue("returnHit",true); });
+                console.log("query_promise_then,url=",my_query.url);
+     //   my_query.done.query=true;
+        var promise=MTP.create_promise(my_query.url,parse_for_big,submit_if_done,function() { my_query.done.query=true; submit_if_done(); });
+
+      //  submit_if_done();
+    
     }
+
+     function healthgrades_promise_then(result) {
+        my_query.url=result;
+                console.log("healthgrades_promise_then,url=",my_query.url);
+
+        var promise=MTP.create_promise(my_query.url,parse_healthgrades,submit_if_done,function() { my_query.done.healthgrades=true; submit_if_done(); });
+    }
+
+  
+    function check_specialties_only_rheumatology(specialty_list) {
+        let found_rheumatology=false;
+        let found_bad=false;
+        let x;
+        let okay_list=[/Internal Medicine/,/Nurse Practitioner/i,/Family Medicine/i,/Physician Assistant/i,/Emergency Medicine/i];
+        for(x of specialty_list) {
+            if(/Rheumatology/i.test(x)) found_rheumatology=true;
+            else  {
+                let matched_okay=false;
+                let y;
+                for(y of okay_list) {
+                    if(y.test(x)) matched_okay=true;
+                }
+                if(!matched_okay) found_bad=false;
+            }
+        }
+        console.log("found_rheumatology=",found_rheumatology,"found_bad=",found_bad);
+        if(found_rheumatology && !found_bad) return true;
+        return false;
+    }
+
+    function parse_healthgrades(doc,url,resolve,reject) {
+        var specialties=doc.querySelector("[data-qa-target='office-practice-categories']");
+        var specialty_list=[];
+        if(specialties) {
+            let text=specialties.innerText.replace(/\s*•.*$/,"").split(/,/);
+            specialty_list=text;
+        }
+        else if((specialties=doc.querySelector("[data-qa-target='ProviderDisplaySpeciality']"))) {
+            specialty_list=[specialties.innerText.trim()];
+        }
+        console.log("healthgrades: specialty_list=",specialty_list);
+        let only_rheum=check_specialties_only_rheumatology(specialty_list);
+
+        my_query.done.healthgrades=true;
+        resolve("");
+    }
+
+    function webmd_promise_then(result) {
+        my_query.url=result;
+                console.log("webmd_promise_then,url=",my_query.url);
+
+        var promise=MTP.create_promise(my_query.url,parse_webmd,submit_if_done,function() { my_query.done.webmd=true; submit_if_done(); });
+    }
+
+    function parse_webmd(doc,url,resolve,reject) {
+        var desc=doc.querySelector("[itemprop='description']");
+        var specialties=doc.querySelectorAll(".specialties-list li");
+        var specialty_list=[];
+        if(desc) {
+            let descText=desc.innerText.trim();
+            descText=descText.replace(/^.* specializes in /,"").replace(/ with \d.*$/,"").replace(/ and /g,",");
+            console.log("descText=",descText);
+            if(/is a group practice/.test(descText)) {
+                my_query.fields.classification="Yes";
+                my_query.done.webmd=true;
+
+                resolve("");
+                return;
+            }
+            let descSplit=descText.split(/,/);
+            let x;
+            for(x of descSplit) specialty_list.push(x);
+        }
+        if(specialties&&specialties.length>0) {
+            console.log("found specialties");
+            let x;
+            for(x of specialties) specialty_list.push(x.innerText.trim());
+        }
+        if((specialties=doc.querySelectorAll(".prov-specialty-name")) && specialties.length>0) {
+             console.log("found provider specialties");
+            let x;
+            for(x of specialties) specialty_list.push(x.innerText.trim());
+        }
+        console.log("specialty_list=",specialty_list);
+        if(specialty_list.length>0) {
+            let only_rheum=check_specialties_only_rheumatology(specialty_list);
+            if(only_rheum&&!my_query.fields.classification) {
+               // my_query.fields.classification="Yes";
+            }
+            else if(!only_rheum) {
+             //   my_query.fields.classification="No";
+            }
+        }
+        my_query.done.webmd=true;
+        resolve("");
+
+    }
+
+
     var other_re_str="\\.eclinicalweb.com|\\.nextmd\\.com|www\\.myadventisthealthportal\\.org|\\.athenahealth\\.com|\\.followmyhealth\\.com|"+
         "\\.healow\\.com|\\.gobreeze.com|\\.ecwcloud\\.com|\\.myezyaccess\\.com|\\.myadsc\\.com";
     var other_re=new RegExp(other_re_str);
+    console.log("other_re=",other_re);
+ 
+
+
+
+    function begin_script(timeout,total_time,callback) {
+        if(timeout===undefined) timeout=2000;
+        if(total_time===undefined) total_time=0;
+        if(callback===undefined) callback=init_Query;
+        if(MTurk!==undefined) { callback(); }
+        else if(total_time<2000) {
+            console.log("total_time="+total_time);
+            total_time+=timeout;
+            setTimeout(function() { begin_script(timeout,total_time,callback); },timeout);
+            return;
+        }
+        else { console.log("Failed to begin script"); }
+    }
+
+
     console.log("other_re=",other_re);
     function parse_for_big(doc,url,resolve,reject) {
         console.log("parse_for_finddoctor,url=",url);
         let domain=MTP.get_domain_only(url,true);
         if(/\.(edu|gov)$/.test(domain)||domain==='ohiohealth.com') {
-             my_query.fields.classification="Large";
+             my_query.fields.classification="Yes";
+            my_query.done.query=true;
                 resolve("");
                 return;
         }
         var name=find_company_name_on_website(doc,url);
         if(name && / (System|Network)/.test(name)) {
-            my_query.fields.classification="Large";
+            my_query.fields.classification="Yes";
+            my_query.done.query=true;
                 resolve("");
                 return;
         }
@@ -185,35 +317,38 @@ var bad_urls=['.beenverified.com', '.bizapedia.com', '.caredash.com', '//doctor.
 
         if(doc.links.length===0) {
                         console.log("No links, js-load");
-            if(url.split('/').length>=6) {
-                my_query.fields.classification="Large";
-                submit_if_done();
+            if(my_query.begin_url.split('/').length>=6) {
+                my_query.fields.classification="Yes";
+                my_query.done.query=true;
+                resolve("");
                 return;
             }
+            my_query.done.query=true;
+                resolve("");
+                return;
 
-            reject("");
-            return;
         }
         for(x of doc.links) {
 
             x.href=MTP.fix_remote_url(x.href,url);
-                   // console.log("x.href=",x.href,"x.innerText=",x.innerText);
+             console.log("x.href=",x.href,"x.innerText=",x.innerText);
 
             if(!MTP.is_bad_url(x.href,bad_urls,-1) &&
-               (/Find .*(Care|Doctor|Provider)/i.test(x.innerText)||/find[\/]{0,8}(doctor|provider)/.test(x.href)
-              ||/^Leadership$/.test(x.innerText) ||
-
-               (/.org/.test(url) && /Locations/.test(x.innerText)))
+               (/Find.*(Care|Doctor|Provider)/i.test(x.innerText)||/find[\/]{0,8}(doctor|provider)/.test(x.href))
+              ||/^Leadership$/.test(x.innerText)
               ) {
                 console.log("x.href=",x.href,"x.innerText=",x.innerText);
-                my_query.fields.classification="Large";
+                my_query.fields.classification="Yes";
+                my_query.done.query=true;
                 resolve("");
                 return;
             }
         }
-        
+
         console.log("find doctor not found");
-        my_query.fields.classification="Small";
+        my_query.fields.classification="No";
+
+        my_query.done.query=true;
         resolve("");
     }
 
@@ -280,29 +415,15 @@ var bad_urls=['.beenverified.com', '.bizapedia.com', '.caredash.com', '//doctor.
 
     }
 
-    function begin_script(timeout,total_time,callback) {
-        if(timeout===undefined) timeout=2000;
-        if(total_time===undefined) total_time=0; 
-        if(callback===undefined) callback=init_Query;
-        if(MTurk!==undefined) { callback(); }
-        else if(total_time<2000) {
-            console.log("total_time="+total_time);
-            total_time+=timeout;
-            setTimeout(function() { begin_script(timeout,total_time,callback); },timeout);
-            return;
-        }
-        else { console.log("Failed to begin script"); }
-    }
-
     function add_to_sheet() {
         var x,fields;
         var item=document.querySelector("crowd-classifier").shadowRoot;
         fields=item.querySelectorAll("button.category-button")
         console.log("fields=",fields);
-        if(my_query.fields.classification==="Small") {
+        if(my_query.fields.classification==="Yes") {
             fields[0].click();
         }
-        else if(my_query.fields.classification==="Large") {
+        else if(my_query.fields.classification==="No") {
             fields[1].click();
 
         }
@@ -336,10 +457,27 @@ var bad_urls=['.beenverified.com', '.bizapedia.com', '.caredash.com', '//doctor.
 
         var target=document.querySelectorAll("form div p")[1];
         console.log(target.innerText);
-        my_query={full_name:target.innerText.trim(),fields:{classification:""},done:{},
-		  try_count:{"query":0},
+        my_query={full_name:target.innerText.trim(),fields:{classification:""},done:{query:false,healthgrades:false,webmd:false},
+		  try_count:{"query":0,"healthgrades":0,"webmd":0},
 		  submitted:false};
         my_query.name=my_query.full_name.replace(/\s[\(\d].*$/,"");
+
+
+
+       /* if(/(Oncology|Psychiatric|Pharmacy|Midwifery|Hematology|Cardiology|Pain Management|Pain Therapy|Radiolgy|Radiology|Cardiac)([\/ ]|$)/.test(my_query.name)) {
+            my_query.fields.classification="No";
+            my_query.done.query=my_query.done.healthgrades=my_query.done.webmd=true;
+            submit_if_done();
+            return;
+        }
+
+        if(/(Rheumatology|Arthritis|Rheumatologist)([\/ ]|$)/.test(my_query.name)) {
+            my_query.fields.classification="Yes";
+            my_query.done.query=my_query.done.healthgrades=my_query.done.webmd=true;
+            submit_if_done();
+            return;
+        }*/
+
 	console.log("my_query="+JSON.stringify(my_query));
         var search_str=my_query.full_name;
         const queryPromise = new Promise((resolve, reject) => {
@@ -348,7 +486,21 @@ var bad_urls=['.beenverified.com', '.bizapedia.com', '.caredash.com', '//doctor.
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+            console.log("Failed at this queryPromise " + val); my_query.done.query=true; submit_if_done(); });
+        const healthgradesPromise = new Promise((resolve, reject) => {
+            console.log("Beginning healthgrades search");
+            query_search(search_str+" site:healthgrades.com", resolve, reject, query_response,"healthgrades");
+        });
+        healthgradesPromise.then(healthgrades_promise_then)
+            .catch(function(val) {
+            console.log("Failed at this healthgradesPromise " + val); my_query.done.healthgrades=true;  submit_if_done() });
+        const webmdPromise = new Promise((resolve, reject) => {
+            console.log("Beginning webmd search");
+            query_search(search_str+" site:webmd.com", resolve, reject, query_response,"webmd");
+        });
+        webmdPromise.then(webmd_promise_then)
+            .catch(function(val) {
+            console.log("Failed at this webmdPromise " + val); my_query.done.webmd=true;  submit_if_done() });
     }
 
 })();

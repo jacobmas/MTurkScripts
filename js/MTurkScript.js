@@ -627,6 +627,19 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
 	result.geochain=[];
 	for(j of geochain) result.geochain.push(j.innerText.trim()); }
     MTurkScript.prototype.parse_b_footnote(b_context,result);
+	
+	var facts=b_context.querySelectorAll(".l_ecrd_qfcts_fct");
+	let fact;
+	for(fact of facts) {
+		let fact_key=fact.querySelector(".l_ecrd_txt_ttl");
+		let fact_val=fact.querySelector(".l_ecrd_qfcts_prim");
+		if(fact_key && fact_val) {
+			result[fact_key.innerText.trim()]=fact_val.innerText.trim();
+		}
+
+
+	}
+	
     return result;
 };
 
