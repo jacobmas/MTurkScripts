@@ -782,10 +782,12 @@ Gov.find_col=function(table,type) {
     for(i=0;i<table.rows.length/2.;i++) {
 	for(j=0;j<table.rows[i].cells.length;j++) {
 	    if(table.rows[i].cells[j].innerText.trim().length>250) continue;
-	    if(type==="honorifics" && (result=nlp(table.rows[i].cells[j].innerText).people().json()[0].terms)) {
+		let my_nlp=nlp(table.rows[i].cells[j].innerText).people().json();
+	    if(type==="honorifics" && (my_nlp.length>0 && my_nlp[0].terms.length>0)) {
 		for(k=0;k<result.length;k++) if(result[k].tags!==undefined && result[k].tags.includes("Honorific")&&result[k].tags.includes("Person")) return j; }
 	    else if(type==="commas" && (match=table.rows[i].cells[j].innerText.match(/^([^,]+),(.*)$/))) {
-		for(k=1;k<match.length;k++) if(nlp(match[k]).people().json()[0].terms.length>1) return j; }
+		for(k=1;k<match.length;k++) if(nlp(match[k]).people().json().length>0 && 
+		nlp(match[k]).people().json()[0].terms.length>1) return j; }
 	}
     }
     return -1;
@@ -802,23 +804,26 @@ Gov.fix_table=function(table,type) {
 	Gov.print_row(row,i);
 	while(to_fix>=row.cells.length) row.insertCell();
 	if(type==="honorifics") {
-	    result=nlp(row.cells[to_fix].innerText).people().json()[0].terms;//out('terms');
-	    old_col_str=row.cells[to_fix].innerText;
-	    if(Gov.debug) console.log("result="+JSON.stringify(result));
-	    for(j=0;j<result.length;j++) {
-		if(result[j].tags.includes("Honorific")) {
-		    new_col_str=new_col_str+(new_col_str.length>0?" ":"")+result[j].text;
-		    old_col_str=old_col_str.replace(result[j].text,"").trim();
+		try {
+			result=nlp(row.cells[to_fix].innerText).people().json()[0].terms;//out('terms');
+			old_col_str=row.cells[to_fix].innerText;
+			if(Gov.debug) console.log("result="+JSON.stringify(result));
+			for(j=0;j<result.length;j++) {
+			if(result[j].tags.includes("Honorific")) {
+				new_col_str=new_col_str+(new_col_str.length>0?" ":"")+result[j].text;
+				old_col_str=old_col_str.replace(result[j].text,"").trim();
+			}
+			}
 		}
-	    }
+		catch(e) { console.log("error with nlp = ",e); }
 	}
 	else if(type==="commas") {
-	    old_col_str=(match=row.cells[to_fix].innerText.match(/^[^,]*/))?match[0]:"";
-	    new_col_str=(match=row.cells[to_fix].innerText.match(/^[^,]*,(.*)$/))?match[1]:"";
-	    if(nlp(new_col_str).people().json()[0].terms.length>1) {
-		temp_str=new_col_str;
-		new_col_str=old_col_str;
-		old_col_str=temp_str; }
+		old_col_str=(match=row.cells[to_fix].innerText.match(/^[^,]*/))?match[0]:"";
+		new_col_str=(match=row.cells[to_fix].innerText.match(/^[^,]*,(.*)$/))?match[1]:"";
+		if(nlp(new_col_str).people().json().length> 0 && nlp(new_col_str).people().json()[0].terms.length>1) {
+			temp_str=new_col_str;
+			new_col_str=old_col_str;
+			old_col_str=temp_str; }
 	}
 	row.insertCell(to_fix+1).innerHTML=new_col_str;
 	row.cells[to_fix].innerHTML=old_col_str;
@@ -876,7 +881,8 @@ Gov.fix_bad_title_data_func=function(ret) {
    // console.log("# split_title="+JSON.stringify(split_title)+", test1="+ Gov.title_regex.test(split_title[1].trim()));
     //console.log("# test2="+nlp(split_title[0].trim()).people().out('terms').length);
     if(split_title.length===2 && Gov.title_regex.test(split_title[1].trim()) &&
-       nlp(split_title[0].trim()).people().json()[0].terms.length>0) {
+       nlp(split_title[0].trim()).people().json().length>0 && 
+	   nlp(split_title[0].trim()).people().json()[0].terms.length>0) {
 	ret.name=split_title[0].trim();
 	ret.title=split_title[1].trim();
     }
