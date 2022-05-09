@@ -296,12 +296,15 @@ Gov.is_good_person=function(ret) {
 
 	return false;
     }
-    else if(nlp(ret.name).people().out('terms').length===0 && (ret.email===undefined || email_re.test(ret.email)!==true)) {
+    else if((nlp(ret.name).people().json().length===0 ||
+	nlp(ret.name).people().json()[0].terms.length===0) &&
+	
+	(ret.email===undefined || email_re.test(ret.email)!==true)) {
 	if(Gov.debug) console.log("Found bad name via nlp, no email, email_re.test("+ret.email+")="+(email_re.test(ret.email))+",ret.email===undefined="+(ret.email===undefined));
 	if(email_re.test(ret.email)) return false;
     }
     else {
-	if(Gov.debug) console.log("nlp name="+JSON.stringify((nlp(ret.name).people().out('terms')))); }
+	if(Gov.debug) console.log("nlp name=",nlp(ret.name).people().json()); }
     if(!(ret.email&&email_re.test(ret.email)) && !Gov.matches_title_regex(ret.title)) {
 	return false;
     }
@@ -724,7 +727,8 @@ Gov.guess_title_map_unlabeled=function(table) {
 	    else if(phone_re.test(curr_cell)|| (/^[\d]{3}-[\d]{4}$/).test(curr_cell)) ret.phone=i;
 	    else if(ret.name===undefined && !(ret.title===undefined && Gov.title_regex.test(curr_cell)) && curr_cell.length>0 &&
 		    curr_cell.length<200&&
-		    nlp(curr_cell).people().out('terms').length>0
+		    nlp(curr_cell).people().json().length>0 && 
+			nlp(curr_cell).people().json()[0].terms.length>0
 		   ) ret.name=i;
 	    else if(ret.title===undefined && curr_cell.length>0 && /[A-Za-z]+/.test(curr_cell)) ret.title=i;
 	    //   else console.log("("+i+"), finding nothing: "+row.cells[i].innerHTML);
@@ -778,10 +782,10 @@ Gov.find_col=function(table,type) {
     for(i=0;i<table.rows.length/2.;i++) {
 	for(j=0;j<table.rows[i].cells.length;j++) {
 	    if(table.rows[i].cells[j].innerText.trim().length>250) continue;
-	    if(type==="honorifics" && (result=nlp(table.rows[i].cells[j].innerText).people().out('terms'))) {
+	    if(type==="honorifics" && (result=nlp(table.rows[i].cells[j].innerText).people().json()[0].terms)) {
 		for(k=0;k<result.length;k++) if(result[k].tags!==undefined && result[k].tags.includes("Honorific")&&result[k].tags.includes("Person")) return j; }
 	    else if(type==="commas" && (match=table.rows[i].cells[j].innerText.match(/^([^,]+),(.*)$/))) {
-		for(k=1;k<match.length;k++) if(result=nlp(match[k]).people().out('terms').length>1) return j; }
+		for(k=1;k<match.length;k++) if(nlp(match[k]).people().json()[0].terms.length>1) return j; }
 	}
     }
     return -1;
@@ -798,7 +802,7 @@ Gov.fix_table=function(table,type) {
 	Gov.print_row(row,i);
 	while(to_fix>=row.cells.length) row.insertCell();
 	if(type==="honorifics") {
-	    result=nlp(row.cells[to_fix].innerText).people().out('terms');
+	    result=nlp(row.cells[to_fix].innerText).people().json()[0].terms;//out('terms');
 	    old_col_str=row.cells[to_fix].innerText;
 	    if(Gov.debug) console.log("result="+JSON.stringify(result));
 	    for(j=0;j<result.length;j++) {
@@ -811,7 +815,7 @@ Gov.fix_table=function(table,type) {
 	else if(type==="commas") {
 	    old_col_str=(match=row.cells[to_fix].innerText.match(/^[^,]*/))?match[0]:"";
 	    new_col_str=(match=row.cells[to_fix].innerText.match(/^[^,]*,(.*)$/))?match[1]:"";
-	    if(result=nlp(new_col_str).people().out('terms').length>1) {
+	    if(nlp(new_col_str).people().json()[0].terms.length>1) {
 		temp_str=new_col_str;
 		new_col_str=old_col_str;
 		old_col_str=temp_str; }
@@ -872,7 +876,7 @@ Gov.fix_bad_title_data_func=function(ret) {
    // console.log("# split_title="+JSON.stringify(split_title)+", test1="+ Gov.title_regex.test(split_title[1].trim()));
     //console.log("# test2="+nlp(split_title[0].trim()).people().out('terms').length);
     if(split_title.length===2 && Gov.title_regex.test(split_title[1].trim()) &&
-       nlp(split_title[0].trim()).people().out('terms').length>0) {
+       nlp(split_title[0].trim()).people().json()[0].terms.length>0) {
 	ret.name=split_title[0].trim();
 	ret.title=split_title[1].trim();
     }
