@@ -780,15 +780,16 @@ Gov.find_col=function(table,type) {
     /* Find column containing honorific for persons */
     var i,j,row,cell,result,k,match;
     for(i=0;i<table.rows.length/2.;i++) {
-	for(j=0;j<table.rows[i].cells.length;j++) {
-	    if(table.rows[i].cells[j].innerText.trim().length>250) continue;
-		let my_nlp=nlp(table.rows[i].cells[j].innerText).people().json();
-	    if(type==="honorifics" && (my_nlp.length>0 && my_nlp[0].terms.length>0)) {
-		for(k=0;k<result.length;k++) if(result[k].tags!==undefined && result[k].tags.includes("Honorific")&&result[k].tags.includes("Person")) return j; }
-	    else if(type==="commas" && (match=table.rows[i].cells[j].innerText.match(/^([^,]+),(.*)$/))) {
-		for(k=1;k<match.length;k++) if(nlp(match[k]).people().json().length>0 && 
-		nlp(match[k]).people().json()[0].terms.length>1) return j; }
-	}
+		for(j=0;j<table.rows[i].cells.length;j++) {
+			if(table.rows[i].cells[j].innerText.trim().length>250) continue;
+			let my_nlp=nlp(table.rows[i].cells[j].innerText).people().json();
+			if(type==="honorifics" && (my_nlp.length>0 && my_nlp[0].terms.length>0)) {
+				result=my_nlp[0].terms;
+				for(k=0;k<result.length;k++) if(result[k].tags!==undefined && result[k].tags.includes("Honorific")&&result[k].tags.includes("Person")) return j; }
+				else if(type==="commas" && (match=table.rows[i].cells[j].innerText.match(/^([^,]+),(.*)$/))) {
+				for(k=1;k<match.length;k++) if(nlp(match[k]).people().json().length>0 && 
+				nlp(match[k]).people().json()[0].terms.length>1) return j; }
+		}
     }
     return -1;
 };
