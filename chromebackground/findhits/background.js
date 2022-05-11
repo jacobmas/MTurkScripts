@@ -47,7 +47,18 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
 	});
 	
 	
-/*	setTimeout(function() { 
+	setTimeout(function() { 
+		for(req of good_requesters) {
+			let curr_url=`https://worker.mturk.com/requesters/${req}/projects`;
+			console.log(`curr_url=${curr_url}`);
+			response=fetch(curr_url).then(
+			function(response) {
+				response.text().then(function(data) {
+				let result=parse_text2(data);
+			  });
+			
+		});
+		}
 		response=fetch('https://worker.mturk.com/').then(
 	function(response) {
 		response.text().then(function(data) {
@@ -55,7 +66,7 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
       });
 		
 	});
-	}, 30000);*/
+	}, 30000);
 	//fetch('https://worker.mturk.com/tasks').then(function(data) {});
 });
 
@@ -94,7 +105,7 @@ function parse_text2(data) {
 			console.log("parse_text2, Bloop");
 		//		get_hits(my_id_match[1],hits_to_get>=5?5:hits_to_get, my_name_match[1]);
 				//hits_to_get=0;
-			}
+			
 			
 		}
 	}
@@ -160,7 +171,8 @@ function hit_accept(response,my_id_match,count,name_match, output_good) {
 	var no_more_re=/There are no more of these HITs available/;
 	if(!no_more_re.test(response)) {
 		console.log("Found good, ",name_match);
-		hits_to_get--;
+		hits_to_get-=2;
+		if(hits_to_get<0) hits_to_get=0;
 		if(!output_good) {
 			chrome.notifications.create('test', {
 			type: 'basic',
@@ -171,7 +183,7 @@ function hit_accept(response,my_id_match,count,name_match, output_good) {
 			});
 		}
 		if(count>0) {
-			setTimeout(function() { get_hits(my_id_match, count, true) }, 400);
+			setTimeout(function() { get_hits(my_id_match, count, name_match) }, 400);
 		}
 	}
 	else {
