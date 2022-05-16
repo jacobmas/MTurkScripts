@@ -36,13 +36,13 @@
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=['/allpeople.com','.angmedicare.com','/arrestfacts.com','.arrounddeal.com','.bbb.org',
+    var bad_urls=['/allpeople.com','.angmedicare.com','/arrestfacts.com','.arounddeal.com','.bbb.org',
                   '.beenverified.com', '.ballotpedia.','.bizapedia.com', '.caredash.com',
                   '.castleconnolly.com','/checkpeople.com',
                   'clustrmaps.com','.dentalplans.com','www.dfes.com',
                   '.dnb.com','.docbios.com',
                   '//doctor.com', '.doctor.com', '.doctorhelps.com', '.doximity.com',
-                  '.echovita.com',
+                  '.echovita.com','.ecyberclinics.com',
                   '.ehealthscores.com', '.endo-world.com', '.enpnetwork.com','/eyedoctor.io',
                   '.facebook.com', '.familysearch.org','.fertilityiq.com', '.findagrave.com','findatopdoc.com',
                   '.gastro.org', '.getluna.com',
@@ -59,15 +59,15 @@
                   '/nuwber.com', '.officialusa.com','/opencorporates.com', '/opengovus.com',
                   '/opennpi.org','orthopedic.io','.peekyou.com',
                   '.peoplefinders.com', 'www.primarycare-doctor.com', 'providers.hrt.org','.psychologytoday.com', '/pubprofile.com',
-                  '.realself.com','.researchgate.net','rocketreach.co',
+                  '.realself.com','residentdatabase.com', '.researchgate.net','rocketreach.co',
                   '.sharecare.com',
                   '.spokeo.com', '.topionetworks.com','.topnpi.com','trademarking.in',
                   "truepeoplesearch.com", '/trustifo.com',
-                  '.usnews.com', '.vitadox.com', '.vitals.com',
+                  '.usnews.com', '.vitadox.com', '/vitals.com','.vitals.com',
                   '/voterrecords.com',
                   '.webmd.com', '.wellness.com',
                   '.whitepages.com',
-                  '.wikipedia.org', '.yahoo.com','.yellowpages.com', '.yelp.com','.zillow.com', '.zocdoc.com','.zoominfo.com']
+                  '.wikipedia.org', '.yahoo.com','.yellowpages.com', 'www.yellowpages', '.yelp.com','.zillow.com', '.zocdoc.com','.zoominfo.com']
     var MTurk=new MTurkScript(30000,1000,[],begin_script,"A1BOHRKGTWLMTJ",true);
     var MTP=MTurkScript.prototype;
     var add_map={"address1":"address1","address2":"address2","city":"city","state":"state","postcode":"zip"};
@@ -292,14 +292,19 @@
 
         var name,address,phone,fax;
         var loc;
+       console.log("locations=",locations);
         for(loc of locations) {
             var temp_result={}
-            name=loc.querySelector(".location-name .subheading");
+            name=loc.querySelector(".location-name  a");
+            console.log("name=",name);
             address=loc.querySelector(".address-map-link");
             let phones_lab=loc.querySelectorAll(".address-phone .profileLabel");
             let phones_dat=loc.querySelectorAll(".address-phone .profileData");
-            let y;
-            for(y=0; y<phones_lab.length;i++) {
+            let x,y;
+            console.log("phones_lab=",phones_lab);
+            console.log("phones_dat=",phones_dat);
+
+            for(y=0; y<phones_lab.length;y++) {
                 if(/Phone/.test(phones_lab[y].innerText)) phone=phones_dat[y].innerText.trim();
                 if(/Fax/.test(phones_lab[y].innerText)) fax=phones_dat[y].innerText.trim();
             }
@@ -307,16 +312,16 @@
             //fax=loc.querySelector(".ih-field-fax");
 
             if(address) {
-                let temp_address1=(add.innerText.trim());
+                let temp_address1=(address.innerText.trim());
                 let temp_add=new Address(temp_address1);
 
                 for(x in add_map) {
                     temp_result[add_map[x]]=temp_add[x];
                 }
             }
-            if(name) temp_result.office_name=name.innerText.trim();
-            if(phone) temp_result.phone_number=phone.innerText.trim();
-            if(fax) temp_result.fax_number=fax.innerText.trim();
+            if(name) temp_result.name=name.innerText.trim();
+            if(phone) temp_result.phone_number=phone.trim();
+            if(fax) temp_result.fax_number=fax.trim();
             if(Object.keys(temp_result).length>=5&&temp_result.phone_number && temp_result.fax_number) {
                 temp_result.priority=0;
                 temp_result.source_website=url;
@@ -988,7 +993,7 @@
         links[2].href=links[2].href.replace(/\+Fax$/i,"").replace(/\+NULL/ig,"")
         var my_href=links[2].href.replace(/\+Fax$/i,"").replace(/\+NULL/ig,"").replace(/\%20/g," ").replace(/^.*\?q\=(.*)$/,"$1");
 
-        var split=my_href.split("++");
+        var split=my_href.replace(" & ","+&+").split("++");
         console.log("my_href=",my_href,"split=",split);
                split[0]=split[0].replace(/\+/g," ");
         if(split.length<2) {
@@ -1009,10 +1014,14 @@
         console.log("their_query_str="+their_query_str);
         var name_re=/^((?:[A-Z\-\.,]+\s)+)?\s?(?:(?:MD)(?:\s|$)|(?:DO)(?:\s|$)|(?:FNP)(?:\s|$)|(?:NP)(?:\s|$))?(.*[a-z].*)$/
                 var name_re2=/^((?:[A-Z\-\.,]+\s?)+)/
+                var name_re3=/^((?:[A-Z\-\.,]+\s?)+MD)/
 
       //var end_re=/[A-Z][a-z]+(\s)
         var name_match=their_query_str.match(name_re);
+        console.log("name_match=",name_match);
         if(!name_match) name_match=their_query_str.match(name_re2);
+                //if(!name_match) name_match=their_query_str.match(name_re3);
+
         if(/Student in/i.test(my_href)) {
             name_match[1]=name_match[0];
         }

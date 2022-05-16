@@ -172,7 +172,7 @@
         if(my_query.try_count[type]===0) {
                         my_query.try_count[type]++;
 
-            query_search(my_query.url+" "+my_query.short_company+" site:linkedin.com", resolve, reject, query_response,"query");
+            query_search(my_query.url+" "+my_query.short_company+" linkedin.com", resolve, reject, query_response,"query");
             return;
         }
         else if(my_query.try_count[type]===1) {
@@ -235,10 +235,12 @@
         console.log("in init_query");
         var i;
        var url=document.querySelector("crowd-form p a").href;
+        url=url.replace(/(\.linkedin\.com)\/pub\/([^\/]*)\/([^\/]+)\/([^\/]+)\/([^\/]+)/,"$1/in/$2-$5$4$3").replace(/\?.*$/,"").replace(/\/$/,"").trim();
+        console.log("url=",url);
         var company=document.querySelectorAll("crowd-form div p")[1].innerText.trim().replace(/^[^:]*:\s*/,"");
         let short_url=url.replace(/https?:\/\/.*linkedin\.com/,""),match;
 
-        my_query={name:"",company:company, short_company:MTP.shorten_company_name(company), url:url,fields:{},done:{},
+        my_query={name:"",company:company, short_company:MTP.shorten_company_name(company).replace(/ holdings$/i,""), url:url,fields:{},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
         if((match=short_url.match(/([a-z]+)\-([a-z]+)-([0-9a-f]{7})/))) {
