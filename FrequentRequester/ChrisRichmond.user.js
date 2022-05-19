@@ -27,7 +27,7 @@
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
-// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
+// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 
 // ==/UserScript==
