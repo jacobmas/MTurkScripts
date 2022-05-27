@@ -319,7 +319,7 @@ MTurkScript.prototype.is_bad_email=function(to_check) {
    // console.log("to_check="+to_check);
     to_check=to_check.toLowerCase();
     if(to_check.indexOf("@2x.png")!==-1 || to_check.indexOf("@2x.jpg")!==-1 || to_check.indexOf("@2x.yelp")!==-1) return true;
-    else if(/\.(png|jpg|jpeg|gif)$/.test(to_check)) return true;
+    else if(/\.(webp|png|jpg|jpeg|gif)$/.test(to_check)) return true;
     else if(to_check.indexOf("s3.amazonaws.com")!==-1) return true;
     else if(/(@((godaddy|domain|addresshere|emailaddress|address)\.com|example\.com))|(^example@)/i.test(to_check)) return true;
     else if(/;/.test(to_check)) return true;

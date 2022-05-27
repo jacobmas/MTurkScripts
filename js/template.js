@@ -30,7 +30,7 @@
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Email/MailTester.js
-// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
+// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
