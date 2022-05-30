@@ -431,89 +431,107 @@ AggParser.parse_trip_advisor=function(doc,url,resolve,reject) {
 
 /** TODO: add query conditions, edit if to be less selective, maybe grab more than one */
 AggParser.parse_yellowpages=function(doc,url,resolve,reject) {
-    var mdm=doc.querySelectorAll(".search-results .mdm"),i,result={success:true},cats,new_url;
-    for(i=0;i<mdm.length;i++) {
-        var name=mdm[i].querySelector(".business-name"),addr=mdm[i].querySelector(".adr"),parsed_add,phone;
-        phone=mdm[i].querySelector(".phone");
-        if(addr&&(result.address=addr.innerText) &&
+	var mdm=doc.querySelectorAll(".search-results .mdm"),i,result={success:true},cats,new_url;
+	for(i=0;i<mdm.length;i++) {
+		var name=mdm[i].querySelector(".business-name"),addr=mdm[i].querySelector(".adr"),parsed_add,phone;
+		phone=mdm[i].querySelector(".phone");
+		if(addr&&(result.address=addr.innerText) &&
 	   (result.parsed_add=parseAddress.parseLocation(addr.innerText)) && name && (result.name=name.innerText)) {
-            result.phone=phone?phone.innerText:"";
-            if(cats=mdm[i].querySelector(".categories")) result.categories=cats.innerText;
-            if(new_url=mdm[i].querySelector(".track-visit-website")) result.url=new_url.href;
-            resolve(result);
-            return;
-        }
-    }
-    console.log("No yellowpages results");
-    result.success=false;
-    resolve(result);
-    return;
+			result.phone=phone?phone.innerText:"";
+			if(cats=mdm[i].querySelector(".categories")) result.categories=cats.innerText;
+			if(new_url=mdm[i].querySelector(".track-visit-website")) result.url=new_url.href;
+			resolve(result);
+			return;
+		}
+	}
+	console.log("No yellowpages results");
+	result.success=false;
+	resolve(result);
+	return;
 };
 
 /* parse_youtube_inner is a helper function for the parse_youtube function */
 AggParser.parse_youtube_inner=function(text) {
-    var parsed,ret={},runs,match,x,content,contents,i,tabs,label,links,url;
-    var subscribers,match1,match2;
-    try { parsed=JSON.parse(text); }
-    catch(error) { console.log("error parsing="+error+", text="+text); return; }
-    for(x in parsed) {
-     //   console.log("x="+x);
+	var parsed,ret={},runs,match,x,content,contents,i,tabs,label,links,url;
+	var subscribers,match1,match2;
+	try { parsed=JSON.parse(text); }
+	catch(error) { console.log("error parsing="+error+", text="+text); return; }
+	for(x in parsed) {
+		//   console.log("x="+x);
 
-        if(/subscriber/.test(JSON.stringify(parsed[x]))) console.log("found subscriber");
-    }
-//    console.log("header=",parsed.header);
+		if(/subscriber/.test(JSON.stringify(parsed[x]))) console.log("found subscriber");
+	}
+	console.log("parsed=",parsed);
+ //   console.log("header=",parsed.header);
+	try {
 
-    subscribers=parsed.header.c4TabbedHeaderRenderer.subscriberCountText.simpleText.replace(/\s.*$/,"").trim().replace(/^[^\d]*/,"");
- //   console.log("subscribers=",subscribers);
-    match1=subscribers.match(/([\d\.]+)([a-zA-Z]*)/);
-  //  console.log(match1);
-    if(match1) {
-        let temp1=parseFloat(match1[1]);
-        if(match1[2]==='K') temp1*=1000;
-        if(match1[2]==='M') temp1*=1000000;
-        ret.subscribers=temp1;
-    }
-    tabs=parsed.contents.twoColumnBrowseResultsRenderer.tabs;
-    for(i=0; i < tabs.length; i++) if(tabs[i].tabRenderer && tabs[i].tabRenderer.title==="About" && (content=tabs[i].tabRenderer.content)) break;
-    if(!content) return ret;
-    contents=content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].channelAboutFullMetadataRenderer;
-    if((label=contents.businessEmailLabel)===undefined) ret.email="";
-    if(contents.subscriberCountText && (runs=contents.subscriberCountText.runs) && runs.length>0 &&
-       runs[0].text) ret.total_subscribers=runs[0].text.replace(/,/g,"");
-    if(contents.country && contents.country.simpleText) ret.location=contents.country.simpleText;
-    if((links=contents.primaryLinks)===undefined) links=[];
-    for(i=0; i < links.length; i++) {
-        url=decodeURIComponent(links[i].navigationEndpoint.urlEndpoint.url.replace(/^.*(&|\?)q\=/,"")).replace(/(&|\?).*$/,"");
-        console.log("url["+i+"]="+url);
-        if(/instagram\.com/.test(url)) ret.insta=url;
-        else if(/facebook\.com/.test(url)) ret.fb=url.replace(/\/$/,"").replace(/facebook\.com\//,"facebook.com/pg/")+"/about";
-        else if(/twitter\.com/.test(url)) ret.twitter=url;
-        else if(/plus\.google\.com/.test(url)) ret.googleplus=url;
-        else if(!/plus\.google\.com|((youtube|gofundme|patreon)\.com)/.test(url) && i===0) ret.url=url;
-    }
-    if(contents.description && contents.description.simpleText && (ret.description=contents.description.simpleText.replace(/\\n/g,"\n"))) {
-        if(match=ret.description.match(email_re)) ret.email=match[0];
-        if(!ret.insta && (match=ret.description.match(/https:\/\/(www.)?instagram.com\/[A-Za-z\.0-9_\-\/]+/))) ret.insta=match[0];
-        if(!ret.fb && (match=ret.description.match(/https?:\/\/([a-z]+).facebook.com\/[A-Za-z\.0-9_\-\/]+/))) ret.fb=match[0];
-    }
-    return ret;
+		subscribers=parsed.header.c4TabbedHeaderRenderer.subscriberCountText.simpleText.replace(/\s.*$/,"").trim().replace(/^[^\d]*/,"");
+		//   console.log("subscribers=",subscribers);
+		match1=subscribers.match(/([\d\.]+)([a-zA-Z]*)/);
+		//  console.log(match1);
+		if(match1) {
+			let temp1=parseFloat(match1[1]);
+			if(match1[2]==='K') temp1*=1000;
+			if(match1[2]==='M') temp1*=1000000;
+			ret.subscribers=temp1;
+		}
+	}
+	catch(e) { console.warn("Error parsing subscribers"); }
+   // console.log("contents=",parsed.contents);
+	if(!parsed.contents) {
+		ret.email='none@none.none';
+		return ret;
+	}
+	tabs=parsed.contents.twoColumnBrowseResultsRenderer.tabs;
+	for(i=0; i < tabs.length; i++) if(tabs[i].tabRenderer && tabs[i].tabRenderer.title==="About" && (content=tabs[i].tabRenderer.content)) break;
+	if(!content) return ret;
+	contents=content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].channelAboutFullMetadataRenderer;
+	if((label=contents.businessEmailLabel)===undefined) ret.email="";
+	if(contents.subscriberCountText && (runs=contents.subscriberCountText.runs) && runs.length>0 &&
+	   runs[0].text) ret.total_subscribers=runs[0].text.replace(/,/g,"");
+	if(contents.country && contents.country.simpleText) ret.location=contents.country.simpleText;
+	if((links=contents.primaryLinks)===undefined) links=[];
+	if(contents.title) ret.name=contents.title.simpleText;
+	for(i=0; i < links.length; i++) {
+		url=decodeURIComponent(links[i].navigationEndpoint.urlEndpoint.url.replace(/^.*(&|\?)q\=/,"")).replace(/(&|\?).*$/,"");
+		console.log("url["+i+"]="+url);
+		if(/instagram\.com/.test(url)) ret.insta=url;
+		else if(/facebook\.com/.test(url)) ret.fb=url.replace(/\/$/,"").replace(/facebook\.com\//,"facebook.com/pg/")+"/about";
+		else if(/twitter\.com/.test(url)) ret.twitter=url;
+		else if(/plus\.google\.com/.test(url)) ret.googleplus=url;
+		else if(!AggParser.is_bad_linked_url(url) && i<=1) {
+			ret.url=url;
+			if(/^www/.test(ret.url)) ret.url="https://"+ret.url;
+			if(!/^http/.test(ret.url)) ret.url="https://www."+ret.url;
+		}
+		if(!/http/.test(url) && /@/.test(url)) ret.email=url;
+	}
+	if(contents.description && contents.description.simpleText && (ret.description=contents.description.simpleText.replace(/\\n/g,"\n"))) {
+		if(match=ret.description.match(email_re)) ret.email=match[0];
+		if(!ret.insta && (match=ret.description.match(/https:\/\/(www.)?instagram.com\/[A-Za-z\.0-9_\-\/]+/))) ret.insta=match[0];
+		if(ret.insta && /^www/.test(ret.insta)) ret.insta="https://"+ret.insta;
+		if(!ret.fb && (match=ret.description.match(/https?:\/\/([a-z]+).facebook.com\/[A-Za-z\.0-9_\-\/]+/))) ret.fb=match[0];
+	}
+	return ret;
 };
 /* parse_youtube Parses the 'about' page of a youtube channel */
 AggParser.parse_youtube=function(doc,url,resolve,reject) {
-    var scripts=doc.scripts,i,script_regex_begin=/^\s*var ytInitialData \=\s*/,text;
-    var script_regex_end=/\s*window\[\"ytInitialPlayerResponse\".*$/,ret={success:false},x,promise_list=[];
-    var email_match,match;
-    for(i=0; i < scripts.length; i++) {
-        console.log("scripts[i]=",scripts[i].innerHTML);
-        if(script_regex_begin.test(scripts[i].innerHTML)) {
-            text=scripts[i].innerHTML.replace(script_regex_begin,"");
+	var scripts=doc.scripts,i,script_regex_begin=/^\s*var ytInitialData \=\s*/,text;
+	var script_regex_end=/\s*window\[\"ytInitialPlayerResponse\".*$/,ret={success:false},x,promise_list=[];
+	var email_match,match;
+	for(i=0; i < scripts.length; i++) {
+	   // console.log("scripts[i]=",scripts[i].innerHTML);
+		if(script_regex_begin.test(scripts[i].innerHTML)) {
+			text=scripts[i].innerHTML.replace(script_regex_begin,"");
 
-            if(text.indexOf(";")!==-1) text=text.substr(0,text.indexOf("};")+1);
-            resolve(AggParser.parse_youtube_inner(text));
-            return;
-        }
-    }
-    resolve(ret);
+			if(text.indexOf(";")!==-1) text=text.substr(0,text.indexOf("};")+1);
+			ret=AggParser.parse_youtube_inner(text);
+			console.log("ret=",ret);
+			resolve(ret);
+			return;
+		}
+	}
+	resolve(ret);
 };
 
 

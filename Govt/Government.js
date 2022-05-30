@@ -1098,21 +1098,31 @@ Gov.get_contact_links=function(doc,url,resolve,reject) {
     var i,j,contacthref_regex=/contact/i,out_str="",bad_dept_regex=/Events|Minutes|Agenda/;
     Gov.dept_page="";
     for(i=0; i < doc.links.length; i++) {
-	doc.links[i].href=MTurkScript.prototype.fix_remote_url(doc.links[i].href,url).replace(/^https:/,"http:").replace(/\/$/,"");
-	out_str=doc.links[i].href+", "+doc.links[i].innerText+": ";
-	if(Gov.debug) console.log("links["+i+"]={url:"+doc.links[i].href+",name:"+doc.links[i].innerText.trim());
-	// || contacthref_regex.test(doc.links[i].href)
-	if((Gov.contact_regex.test(doc.links[i].innerText)) &&
-	   !Gov.bad_contact_regex.test(doc.links[i].innerText)&&
-	   !Gov.bad_link_regex.test(doc.links[i].href) && !Gov.includes_link(Gov.contact_links,{url:doc.links[i].href,name:doc.links[i].innerText.trim()}) &&
-	   !Gov.bad_out_link_regex.test(doc.links[i].href) &&
-	   !MTP.is_bad_url(doc.links[i].href,[],-1,Gov.id==="govoffice"?undefined:4)) Gov.contact_links.push({url:doc.links[i].href,name:doc.links[i].innerText.trim()});
-	if(Gov.matches_dept_regex(doc.links[i].innerText.trim()) && !Gov.bad_out_link_regex.test(doc.links[i].href) &&
-	   !Gov.includes_link(Gov.dept_links,{url:doc.links[i].href,name:doc.links[i].innerText.trim()},true) && !Gov.bad_link_regex.test(doc.links[i].href) &&
-	   !bad_dept_regex.test(doc.links[i].innerText)) Gov.dept_links.push({url:doc.links[i].href,name:doc.links[i].innerText.trim()});
-	if(/^Department|Municipal Departments|Departments/.test(doc.links[i].innerText) && Gov.dept_page.length===0 && !Gov.bad_link_regex.test(doc.links[i].href)) Gov.dept_page=doc.links[i].href;
-	
-	//  if(/matched/.test(out_str)) console.log("out_str["+i+"]="+out_str);
+		doc.links[i].href=MTurkScript.prototype.fix_remote_url(doc.links[i].href,url).replace(/^https:/,"http:").replace(/\/$/,"");
+		if(/facebook\.com/.test(doc.links[i].href) && 
+		!MTurkScript.prototype.is_bad_fb(doc.links[i].href) && !Gov.fb_url) {
+		Gov.fb_url = doc.links[i].href; }
+			if(/twitter\.com/.test(doc.links[i].href) && 
+		!MTurkScript.prototype.is_bad_twitter(doc.links[i].href) && !Gov.twitter_url) {
+		Gov.twitter_url = doc.links[i].href; }
+					if(/instagram\.com/.test(doc.links[i].href) && 
+		!MTurkScript.prototype.is_bad_instagram(doc.links[i].href) && !Gov.instagram_url) {
+		Gov.instagram_url = doc.links[i].href; }
+
+		out_str=doc.links[i].href+", "+doc.links[i].innerText+": ";
+		if(Gov.debug) console.log("links["+i+"]={url:"+doc.links[i].href+",name:"+doc.links[i].innerText.trim());
+		// || contacthref_regex.test(doc.links[i].href)
+		if((Gov.contact_regex.test(doc.links[i].innerText)) &&
+		   !Gov.bad_contact_regex.test(doc.links[i].innerText)&&
+		   !Gov.bad_link_regex.test(doc.links[i].href) && !Gov.includes_link(Gov.contact_links,{url:doc.links[i].href,name:doc.links[i].innerText.trim()}) &&
+		   !Gov.bad_out_link_regex.test(doc.links[i].href) &&
+		   !MTP.is_bad_url(doc.links[i].href,[],-1,Gov.id==="govoffice"?undefined:4)) Gov.contact_links.push({url:doc.links[i].href,name:doc.links[i].innerText.trim()});
+		if(Gov.matches_dept_regex(doc.links[i].innerText.trim()) && !Gov.bad_out_link_regex.test(doc.links[i].href) &&
+		   !Gov.includes_link(Gov.dept_links,{url:doc.links[i].href,name:doc.links[i].innerText.trim()},true) && !Gov.bad_link_regex.test(doc.links[i].href) &&
+		   !bad_dept_regex.test(doc.links[i].innerText)) Gov.dept_links.push({url:doc.links[i].href,name:doc.links[i].innerText.trim()});
+		if(/^Department|Municipal Departments|Departments/.test(doc.links[i].innerText) && Gov.dept_page.length===0 && !Gov.bad_link_regex.test(doc.links[i].href)) Gov.dept_page=doc.links[i].href;
+		
+		//  if(/matched/.test(out_str)) console.log("out_str["+i+"]="+out_str);
 
     }
     console.log("Gov.dept_links="+JSON.stringify(Gov.dept_links));
