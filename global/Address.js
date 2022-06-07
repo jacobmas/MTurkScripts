@@ -625,6 +625,7 @@ Address.sanitize_text_US=function(text) {
     var after_dash_regex=/^([^,]*?)\s+-\s+([^,]*)/;
     var after_dash=text.match(after_dash_regex),second_part;
     text=text.replace(after_dash_regex,"$1").trim();
+	text=text.replace(/^[A-Za-z\s]+:\s*/,"").trim();
 	text=text.replace(/(Box \d)([A-Z])/,"$1, $2").trim();
     text=text.replace(fl_regex,"$3").trim();
     text=text.replace(/,\s*(US|United States|United States of America|USA)$/i,"");
