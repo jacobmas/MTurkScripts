@@ -450,6 +450,13 @@ AggParser.parse_yellowpages=function(doc,url,resolve,reject) {
 	return;
 };
 
+ AggParser.is_bad_linked_url = function(url) {
+        if(/plus\.google\.com|paypal\.me|twitch\.tv|((youtube|gofundme|discord|vk|spotify|patreon|tiktok|roblox|snapchat)\.com)/.test(url)) return true;
+        if(/linkin\.bio|\.apple\.com/.test(url)) return true;
+        return false;
+    }
+
+
 /* parse_youtube_inner is a helper function for the parse_youtube function */
 AggParser.parse_youtube_inner=function(text) {
 	var parsed,ret={},runs,match,x,content,contents,i,tabs,label,links,url;

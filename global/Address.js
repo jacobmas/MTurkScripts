@@ -625,6 +625,7 @@ Address.sanitize_text_US=function(text) {
     var after_dash_regex=/^([^,]*?)\s+-\s+([^,]*)/;
     var after_dash=text.match(after_dash_regex),second_part;
     text=text.replace(after_dash_regex,"$1").trim();
+	text=text.replace(/(Box \d)([A-Z])/,"$1, $2").trim();
     text=text.replace(fl_regex,"$3").trim();
     text=text.replace(/,\s*(US|United States|United States of America|USA)$/i,"");
     // replace PO DRAWER //
@@ -747,6 +748,7 @@ Address.cmp=function(add1,add2) {
     if(!(add1 instanceof Address && add2 instanceof Address)) return 0;
     if(add1.priority<add2.priority) return -1;
     else if(add1.priority>add2.priority) return 1;
+	
     else return 0;
 };
 Address.phone_re=/[\+]?[(]?[0-9]{3}[)]?[-\s\.\/]+[0-9]{3}[-\s\.\/]+[0-9]{4,6}(\s*x\s*[\d]{1,3})?/i;

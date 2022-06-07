@@ -18,7 +18,7 @@ chrome.alarms.create("checkForHits",{when:Date.now(),periodInMinutes:1});
 chrome.alarms.onAlarm.addListener(function(alarm) {
 	console.log("MOO");
 	let req;
-	
+	if(hits_to_get<1) hits_to_get++;
 	if(alarm.name==="checkForHits") {
 		console.log("checking for hits");
 		
@@ -66,7 +66,48 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
       });
 		
 	});
+	}, 15000);
+	
+	setTimeout(function() { 
+		for(req of good_requesters) {
+			let curr_url=`https://worker.mturk.com/requesters/${req}/projects`;
+			console.log(`curr_url=${curr_url}`);
+			response=fetch(curr_url).then(
+			function(response) {
+				response.text().then(function(data) {
+				let result=parse_text2(data);
+			  });
+			
+		});
+		}
+		response=fetch('https://worker.mturk.com/').then(
+	function(response) {
+		response.text().then(function(data) {
+        let result=parse_text(data);
+      });
+		
+	});
 	}, 30000);
+	setTimeout(function() { 
+		for(req of good_requesters) {
+			let curr_url=`https://worker.mturk.com/requesters/${req}/projects`;
+			console.log(`curr_url=${curr_url}`);
+			response=fetch(curr_url).then(
+			function(response) {
+				response.text().then(function(data) {
+				let result=parse_text2(data);
+			  });
+			
+		});
+		}
+		response=fetch('https://worker.mturk.com/').then(
+	function(response) {
+		response.text().then(function(data) {
+        let result=parse_text(data);
+      });
+		
+	});
+	}, 45000);
 	//fetch('https://worker.mturk.com/tasks').then(function(data) {});
 });
 
@@ -92,7 +133,7 @@ function parse_text2(data) {
 	if(!my_match) return "";
 	for(x of my_match) {
 		counter+=1;
-		if(counter>25) break;
+		if(counter>50) break;
 		var my_name_match=x.match(my_re_name);
 		
 		let my_id_match=x.match(my_re_setid);
@@ -140,7 +181,7 @@ function parse_text(data) {
 	if(!my_match) return "";
 	for(x of my_match) {
 		counter+=1;
-		if(counter>25) break;
+		if(counter>50) break;
 		var my_name_match=x.match(my_re_name);
 		
 		let my_id_match=x.match(my_re_setid);
@@ -150,17 +191,17 @@ function parse_text(data) {
 		if(my_name_match && my_name_match.length>=2 && good_re.test(my_name_match[1])) {
 			
 			if(/Doctor DB/.test(my_name_match[1])) {
-				//got_hits=true;
+				got_hits=true;
 				console.log("Bloop");
-				get_hits(my_id_match[1],hits_to_get>=5?5:hits_to_get, my_name_match[1]);
+				get_hits(my_id_match[1],hits_to_get>=5?5:hits_to_get, my_name_match[1], false);
 				//hits_to_get=0;
 			}
 			
 		}
 	}
-	/*if(!got_hits&&hits_to_get<10) {
+	if(!got_hits&&hits_to_get<10) {
 		hits_to_get++;
-	}*/
+	}
 		
 	//console.log("data=",data);
 	return "";
@@ -183,7 +224,7 @@ function hit_accept(response,my_id_match,count,name_match, output_good) {
 			});
 		}
 		if(count>0) {
-			setTimeout(function() { get_hits(my_id_match, count, name_match) }, 400);
+			setTimeout(function() { get_hits(my_id_match, count, name_match, true) }, 400);
 		}
 	}
 	else {
@@ -191,6 +232,7 @@ function hit_accept(response,my_id_match,count,name_match, output_good) {
 		console.log(`No more hits available ${my_id_match}`);
 		if(!output_good && hits_to_get<10) {
 			hits_to_get++;
+			console.log("Adding a hit");
 		}
 	}
 /*<div data-react-class="require(&#39;reactComponents/alert/Alert&#39;)[&#39;PureAlert&#39;]" data-react-props="{&quot;type&quot;:&quot;danger&quot;,&quot;header&quot;:&quot;There are no more of these HITs available&quot;,&quot;message&quot;:&quot;Browse &lt;a href=\&quot;/projects\&quot;&gt;all available HITs&lt;/a&gt;.&quot;,&quot;renderMessageAsHTML&quot;:true}"></div>*/
