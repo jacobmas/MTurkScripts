@@ -784,7 +784,7 @@ Address.parse_postal_elem=function(elem,priority,site,url) {
 Address.scrape_address=function(doc,url,resolve,reject,extra) {
     var type=extra.type,depth=extra.depth,links=doc.links,i,promise_list=[];
     Address.debug=extra.debug;
-    var contact_regex=/(Contact|Location|Privacy|Kontakt|About)/i,bad_contact_regex=/^\s*(javascript|mailto):/i,contact2_regex=/contact[^\/]*/i;
+    var contact_regex=/(Contact|Location|Privacy|Kontakt|About|^(Terms))/i,bad_contact_regex=/^\s*(javascript|mailto|tel):/i,contact2_regex=/contact[^\/]*/i;
     // if(/^(404|403|503|\s*Error)/i.test(doc.title) || /\?reqp\=1&reqr\=/.test(url)) my_query.failed_urls+=2;
     //console.log("In scrape_address for type="+type+", url="+url);
     if(depth===0) {
