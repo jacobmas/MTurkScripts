@@ -159,6 +159,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
             }
         }
     }
+	console.log(`MTurkScript, window.location.href={window.location.href}`);
     if ((window.location.href.indexOf("mturkcontent.com") !== -1 ||
          window.location.href.indexOf("amazonaws.com") !== -1) &&
         ((!is_crowd && document.getElementById("submitButton") && !document.getElementById("submitButton").disabled) ||
@@ -169,7 +170,7 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
 						 :document.getElementById("submitButton");
 		let assignmentId=document.querySelector("#assignmentId");
 		if(assignmentId) this.assignment_id=assignmentId.value;
-		else { console.log("No assignmentId found"); }
+		else { console.log("if1, No assignmentId found"); }
 		callback();
     }
     else if((window.location.href.indexOf("mturkcontent.com") !== -1 || window.location.href.indexOf("amazonaws.com") !== -1)
@@ -177,6 +178,8 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
 			console.log("Beginning crowd script");
 			this.begin_crowd_script(200,0,callback,this);
 	}
+	
+	/* The external frame */
     if(window.location.href.indexOf("worker.mturk.com")!==-1) {
 		var match=window.location.href.match(/\?assignment_id\=([A-Z0-9]*)/);
 		this.assignment_id=match?match[1]:"";
@@ -278,13 +281,14 @@ MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,se
     let assignmentId=window.location.href.match(/assignmentId\=([A-Z0-9]*)/);
     if(assignmentId) this.assignment_id=assignmentId[1];
     else { console.log("No assignmentId found"); }
-    if((document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled) || self.is_crowd_ready()) {
-	self.submit_button=document.querySelector("crowd-button");
-	console.log("self.submit_button="+self.submit_button);
-	console.log(self);
-	let assignmentId=document.querySelector("#assignmentId");
-	if(assignmentId) this.assignment_id=assignmentId.value;
-	callback();
+    if((document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled) 
+		|| self.is_crowd_ready()) {
+		self.submit_button=document.querySelector("crowd-button");
+		console.log("self.submit_button="+self.submit_button);
+		console.log(self);
+		let assignmentId=document.querySelector("#assignmentId");
+		if(assignmentId) this.assignment_id=assignmentId.value;
+		callback();
     }
     else if(total_time<2000) {
         console.log("total_time="+total_time);
