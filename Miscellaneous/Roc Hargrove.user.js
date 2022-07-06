@@ -32,7 +32,7 @@
     'use strict';
     var my_query = {};
     var bad_urls=[];
-    var MTurk=new MTurkScript(20000,500,[],begin_script,"A1SK2GV23YJWN9",true);
+    var MTurk=new MTurkScript(20000,1500,[],begin_script,"A1SK2GV23YJWN9",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {

@@ -164,21 +164,24 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
         ((!is_crowd && document.getElementById("submitButton") && !document.getElementById("submitButton").disabled) ||
 	 (is_crowd && this.is_crowd_ready())) &&
 	GM_getValue("req_id","")===this.requester_id) {
-	this.submit_button=is_crowd?(document.querySelector("crowd-button")||
-				     document.querySelector("#footerContainer awsui-button button"))
-				     :document.getElementById("submitButton");
-	let assignmentId=document.querySelector("#assignmentId");
-	if(assignmentId) this.assignment_id=assignmentId.value;
-	else { console.log("No assignmentId found"); }
-	callback();
+		this.submit_button=is_crowd?(document.querySelector("crowd-button")||
+						 document.querySelector("#footerContainer awsui-button button"))
+						 :document.getElementById("submitButton");
+		let assignmentId=document.querySelector("#assignmentId");
+		if(assignmentId) this.assignment_id=assignmentId.value;
+		else { console.log("No assignmentId found"); }
+		callback();
     }
     else if((window.location.href.indexOf("mturkcontent.com") !== -1 || window.location.href.indexOf("amazonaws.com") !== -1)
-	    && is_crowd && GM_getValue("req_id","")===this.requester_id) this.begin_crowd_script(200,0,callback,this);
+	    && is_crowd && GM_getValue("req_id","")===this.requester_id) {
+			console.log("Beginning crowd script");
+			this.begin_crowd_script(200,0,callback,this);
+	}
     if(window.location.href.indexOf("worker.mturk.com")!==-1) {
-	var match=window.location.href.match(/\?assignment_id\=([A-Z0-9]*)/);
-	this.assignment_id=match?match[1]:"";
-	console.log("this.assignment_id="+this.assignment_id);
-	this.setup_worker_mturk();
+		var match=window.location.href.match(/\?assignment_id\=([A-Z0-9]*)/);
+		this.assignment_id=match?match[1]:"";
+		console.log("this.assignment_id="+this.assignment_id);
+		this.setup_worker_mturk();
     }
 	
 };
@@ -247,6 +250,7 @@ MTurkScript.prototype.setup_worker_mturk=function() {
         var cbox=document.querySelector(".checkbox input[type='checkbox']");
         if(cbox && !cbox.checked) cbox.click();
     }
+	this.setup_complete=true;
 };
 MTurkScript.prototype.check_and_submit=function(check_function)	{
     console.log("in check");
@@ -533,8 +537,15 @@ MTurkScript.prototype.parse_hours_table=function(table) {
 	}
 	return hours_dict;
 }
-
-
+MTurkScript.prototype.parse_b_ans=function(b_ans) {
+    /* Parses for answer in b_ans */
+    let ret="";
+    let answer=b_ans.querySelector(".b_focusTextLarge");
+    if(answer) {
+        ret=answer.innerText.trim();
+    }
+    return ret;
+};
 /* parse_b_context parses the b_context on Bing search
    puts the b_vList fields (e.g. Address, Phone,Website) into the results under the
    name given on Bing,  puts b_entityTitle in Name

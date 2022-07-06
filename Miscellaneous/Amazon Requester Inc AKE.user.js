@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         New Script
+// @name         Amazon Requester Inc AKE
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  New script
@@ -39,8 +39,10 @@
     var my_query = {};
     var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"[TODO]",true);
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A3JQ6EAPTCI4W1",false);
     var MTP=MTurkScript.prototype;
+    if(/mturkcontent\.com/.test(window.location.href)) {
+       setTimeout(init_Query,500); }
     function is_bad_name(b_name)
     {
         return false;
@@ -51,16 +53,14 @@
         .parseFromString(response.responseText, "text/html");
         console.log("in query_response\n"+response.finalUrl+", type="+type);
         var search, b_algo, i=0, inner_a;
-        var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption, parsed_b_ans;
-        var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb, b_ans;
+        var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
+        var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
         try
         {
             search=doc.getElementById("b_content");
 			b_algo=doc.querySelectorAll("#b_results > .b_algo");
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
-            b_ans=doc.querySelector(".b_ans.b_top");
-
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
                 console.log("parsed_context="+JSON.stringify(parsed_context)); 
@@ -157,20 +157,13 @@
 		bad_urls=bad_urls.concat(default_bad_urls);
         console.log("in init_query");
         var i;
-        var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
-        var dont=document.getElementsByClassName("dont-break-out");
+       console.log("MOO");
         my_query={name,fields:{},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
 	console.log("my_query="+JSON.stringify(my_query));
         var search_str;
-        const queryPromise = new Promise((resolve, reject) => {
-            console.log("Beginning URL search");
-            query_search(search_str, resolve, reject, query_response,"query");
-        });
-        queryPromise.then(query_promise_then)
-            .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+       document.querySelector("#submitButton").disabled=false;
     }
 
 })();

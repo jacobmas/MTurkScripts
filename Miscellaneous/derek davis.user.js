@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         New Script
+// @name         derek davis
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  New script
+// @description  medical manuals
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -39,7 +39,7 @@
     var my_query = {};
     var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"[TODO]",true);
+    var MTurk=new MTurkScript(20000,1750+(Math.random()*1000),[],begin_script,"A2ZG363JUABIH1",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
@@ -51,44 +51,57 @@
         .parseFromString(response.responseText, "text/html");
         console.log("in query_response\n"+response.finalUrl+", type="+type);
         var search, b_algo, i=0, inner_a;
-        var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption, parsed_b_ans;
-        var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb, b_ans;
+        var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
+        var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
         try
         {
             search=doc.getElementById("b_content");
 			b_algo=doc.querySelectorAll("#b_results > .b_algo");
             lgb_info=doc.getElementById("lgb_info");
             b_context=doc.getElementById("b_context");
-            b_ans=doc.querySelector(".b_ans.b_top");
-
             console.log("b_algo.length="+b_algo.length);
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
                 console.log("parsed_context="+JSON.stringify(parsed_context)); 
 				
-				if(parsed_context.url&&!MTP.is_bad_url(parsed_context.url,bad_urls,-1)) {
-                resolve(parsed_context.url);
-                return;
-            }
+				
 				} 
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); 
-					if(parsed_lgb.url&&!MTP.is_bad_url(parsed_lgb.url,bad_urls,-1)) {
-                resolve(parsed_lgb.url);
-                return;
-            }
+				
 					
 					}
-            for(i=0; i < b_algo.length; i++) {
+            for(i=0; i < b_algo.length&&i<3; i++) {
                 b_name=b_algo[i].querySelector("h2 a").textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : (b_algo[i].querySelector("p")? b_algo[i].querySelector("p").innerText.trim():"");
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
-		   && (b1_success=true)) break;
+                if(type==="manualzz") {
+                    if(/user-manual/.test(b_url) && MTP.matches_names(my_query.model,b_name) && (
+                        b1_success=true)) break;
+                }
+
+                if(type==="query") {
+                    if( ((/tripplite\.com/.test(b_url) && /owners-manual/.test(b_url))
+                         || (/manualslib\.com\/manual/.test(b_url) && MTP.matches_names(my_query.model,b_name) && !/\/brand\//.test(b_url))
+                        )   && (b1_success=true)) break;
+                    if(i===0 && (/download\.aspx/.test(b_url) || /all\-guidesbox\.com/.test(b_url)) && (b1_success=true)) break;
+                    if(i<2 && (/archive\.org/.test(b_url)||/\.pdf/.test(b_url) || (
+                        /manualslib\.com\/manual/.test(b_url) && !/\/brand\//.test(b_url))
+                               ||(/medwrench\.com\/documents\//.test(b_url)) || /scribd\.com/.test(b_url)
+                               ||(/support\.hp\.com/.test(b_url) && MTP.matches_names(my_query.model,b_name) && /\/manuals/.test(b_url))
+
+                              ) && (b1_success=true)) break;
+                    if(i<2 && (/archive\.org/.test(b_url)||/\.pdf/.test(b_url) || (
+                        /manualslib\.com\/manual/.test(b_url) && !/\/brand\//.test(b_url))
+                               ||(/medwrench\.com\/documents\//.test(b_url)) || /scribd\.com/.test(b_url)
+                               ||(/support\.hp\.com/.test(b_url) && MTP.matches_names(my_query.model,b_name) && /\/manuals/.test(b_url))
+
+                              ) && (b1_success=true)) break;
+                }
             }
-            if(b1_success && (resolve(b_url)||true)) return;
+            if(b1_success &&  (resolve(b_url)||true)) return;
         }
         catch(error) {
             reject(error);
@@ -115,6 +128,14 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
+        my_query.done.query=true;
+        my_query.fields.DeviceModelURL=result;
+        submit_if_done();
+    }
+    function manualzz_promise_then(result) {
+        my_query.done.manualzz=true;
+        if(!my_query.fields.DeviceModelURL) my_query.fields.DeviceModelURL=result;
+        submit_if_done();
     }
 
     function begin_script(timeout,total_time,callback) {
@@ -156,21 +177,35 @@
     {
 		bad_urls=bad_urls.concat(default_bad_urls);
         console.log("in init_query");
-        var i;
-        var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
-        var dont=document.getElementsByClassName("dont-break-out");
-        my_query={name,fields:{},done:{},
-		  try_count:{"query":0},
+        var strong=document.querySelectorAll("li strong");
+        my_query={maker:MTP.shorten_company_name(strong[1].innerText.trim()),model:strong[2].innerText.trim(),
+                  fields:{DeviceModelURL:""},
+                  done:{query:false,manualzz:false},
+		  try_count:{"query":0,"manualzz":0},
 		  submitted:false};
+          if(/Generic OEM/i.test(my_query.maker)) {
+              GM_setValue("returnHit",true);
+              return;
+          }
+        my_query.name=my_query.maker+" "+my_query.model;
 	console.log("my_query="+JSON.stringify(my_query));
-        var search_str;
+        var search_str=my_query.name+" +\"manual\"";
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
             query_search(search_str, resolve, reject, query_response,"query");
         });
         queryPromise.then(query_promise_then)
             .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+            console.log("Failed at this queryPromise " + val);  my_query.done.query=true;
+        submit_if_done(); });
+        const manualzzPromise = new Promise((resolve, reject) => {
+            console.log("Beginning URL search");
+            query_search(my_query.name+" site:manualzz.com", resolve, reject, query_response,"manualzz");
+        });
+        manualzzPromise.then(manualzz_promise_then)
+            .catch(function(val) {
+            console.log("Failed at this manualzzPromise " + val); my_query.done.manualzz=true;
+        submit_if_done(); });
     }
 
 })();
