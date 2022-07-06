@@ -159,11 +159,12 @@ function MTurkScript(return_ms,submit_ms,sites,callback,requester_id,is_crowd) {
             }
         }
     }
-	console.log(`MTurkScript, window.location.href={window.location.href}`);
+	console.log("MTurkScript, window.location.href=",window.location.href);
     if ((window.location.href.indexOf("mturkcontent.com") !== -1 ||
          window.location.href.indexOf("amazonaws.com") !== -1) &&
-        ((!is_crowd && document.getElementById("submitButton") && !document.getElementById("submitButton").disabled) ||
-	 (is_crowd && this.is_crowd_ready())) &&
+        ((!is_crowd && document.getElementById("submitButton") && !document.getElementById("submitButton").disabled)) &&
+//		||
+	// (is_crowd && this.is_crowd_ready())) &&
 	GM_getValue("req_id","")===this.requester_id) {
 		this.submit_button=is_crowd?(document.querySelector("crowd-button")||
 						 document.querySelector("#footerContainer awsui-button button"))
