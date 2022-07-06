@@ -254,6 +254,7 @@ MTurkScript.prototype.setup_worker_mturk=function() {
         var cbox=document.querySelector(".checkbox input[type='checkbox']");
         if(cbox && !cbox.checked) cbox.click();
     }
+	GM_setValue("setup_complete",true);
 	this.setup_complete=true;
 };
 MTurkScript.prototype.check_and_submit=function(check_function)	{
@@ -267,6 +268,8 @@ MTurkScript.prototype.check_and_submit=function(check_function)	{
     }
     console.log("Checking and submitting "+this.assignment_id);
     GM_deleteValue("returnHit"+this.assignment_id);
+		GM_setValue("setup_complete",false);
+
     if(GM_getValue("automate")) setTimeout(function() { submit_button.click(); }, this.submit_ms);
 };
 MTurkScript.prototype.swrot13=function(str) {
@@ -282,8 +285,8 @@ MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,se
     let assignmentId=window.location.href.match(/assignmentId\=([A-Z0-9]*)/);
     if(assignmentId) this.assignment_id=assignmentId[1];
     else { console.log("No assignmentId found"); }
-    if((document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled) 
-		|| self.is_crowd_ready()) {
+    if(((document.querySelector("crowd-button") && !document.querySelector("crowd-button").disabled) 
+		|| self.is_crowd_ready()) && GM_getValue("setup_complete")) {
 		self.submit_button=document.querySelector("crowd-button");
 		console.log("self.submit_button="+self.submit_button);
 		console.log(self);
