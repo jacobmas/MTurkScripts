@@ -294,13 +294,16 @@ MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,se
 		if(assignmentId) this.assignment_id=assignmentId.value;
 		callback();
     }
-    else if(total_time<5000) {
+    else if(total_time<2000) {
         console.log("total_time="+total_time);
         total_time+=timeout;
         setTimeout(function() { self.begin_crowd_script(timeout,total_time,callback,self); },timeout);
         return;
     }
-    else console.log("Failed to begin crowd script");
+    else {
+		console.log("Failed to begin crowd script");
+		window.location.reload();
+	}
 };
 MTurkScript.prototype.removeDiacritics=function(str) {
     return str.replace(/[^\u0000-\u007E]/g, function(a) { return diacriticsMap[a] || a; });
