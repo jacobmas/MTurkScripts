@@ -294,7 +294,7 @@ MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,se
 		if(assignmentId) this.assignment_id=assignmentId.value;
 		callback();
     }
-    else if(total_time<2000) {
+    else if(total_time<5000) {
         console.log("total_time="+total_time);
         total_time+=timeout;
         setTimeout(function() { self.begin_crowd_script(timeout,total_time,callback,self); },timeout);
