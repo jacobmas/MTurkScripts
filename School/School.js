@@ -960,7 +960,10 @@ School.prototype.call_parser=function(result) {
         for(i=result.url_lst.length-1;i>=1;i--) {
             console.log("result.url_lst["+i+"]="+result.url_lst[i]+", result.url_lst["+(i-1)+"]="+result.url_lst[i-1]+",=="+
                         (result.url_lst[i]===result.url_lst[i-1]));
-            if(result.url_lst[i].href===result.url_lst[i-1].href) result.url_lst.splice(i,1)
+            if(result.url_lst[i].href===result.url_lst[i-1].href) result.url_lst.splice(i,1);
+			if(result.url_list[i].href.replace(/^https?/,"")===result.url_lst[i-1].href.replace(/^https?/,"")) {
+				result.url_lst.splice(i,1);
+			}
         }
     }
     // console.log("self="+JSON.stringify(self));
