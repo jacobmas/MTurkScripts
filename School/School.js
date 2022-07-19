@@ -672,6 +672,14 @@ School.prototype.parse_edlio=function(doc,url,resolve,reject,self) {
                 //  else if(curr.phone&&curr.phone.length<6 && phone) curr.phone=phone+(/[A-Za-z]/.test(phone)?" ":" x")+curr.phone;
                 self.contact_list.push(curr);
             }
+			else if(curr_elem.email&&curr_elem.email.href && curr_elem.title && /@/.test(curr_elem.title)) {
+                console.log("Matched title");
+
+                curr.email=curr_elem.title;
+                if(!curr.phone && phone) curr.phone=phone;
+                //  else if(curr.phone&&curr.phone.length<6 && phone) curr.phone=phone+(/[A-Za-z]/.test(phone)?" ":" x")+curr.phone;
+                self.contact_list.push(curr);
+            }
             else {
                 if(curr_elem.email) console.log("curr_elem.email.outerHTML="+curr_elem.email.outerHTML);
                 var the_url=MTP.fix_remote_url(staff[i].querySelector("a").href,url);
