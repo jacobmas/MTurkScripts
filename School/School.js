@@ -248,6 +248,9 @@ School.prototype.parse_schoolpointe=function(doc,url,resolve,reject,self) {
                  "origin":self.base,
                  "referer":url};
     self.phone=self.find_phone(doc,url);
+	
+	try 
+	{
 
     //console.log("headers="+JSON.stringify(headers));
     var form=doc.querySelector("form[id='aspnetForm']"),x;
@@ -274,6 +277,12 @@ School.prototype.parse_schoolpointe=function(doc,url,resolve,reject,self) {
                        onerror: function(response) { reject("Fail"); },
                        ontimeout: function(response) { reject("Fail"); }
                       });
+	}
+	catch(e) {
+		console.warn("Failed schoolpointe, ",e);
+		        let temp_promise=MTP.create_promise(self.base,self.parse_none,resolve,reject,self);
+
+	}
 };
 School.prototype.parse_schoolpointe_response=function(doc,url,resolve,reject,self) {
     console.log("in parse_schoolpointe_response, url="+url);
