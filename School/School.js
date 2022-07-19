@@ -961,9 +961,9 @@ School.prototype.call_parser=function(result) {
             console.log("result.url_lst["+i+"]="+result.url_lst[i]+", result.url_lst["+(i-1)+"]="+result.url_lst[i-1]+",=="+
                         (result.url_lst[i]===result.url_lst[i-1]));
             if(result.url_lst[i].href===result.url_lst[i-1].href) result.url_lst.splice(i,1);
-			if(result.url_list[i].href.replace(/^https?/,"")===result.url_lst[i-1].href.replace(/^https?/,"")) {
+/*			if(result.url_list[i].href.replace(/^https?/,"")===result.url_lst[i-1].href.replace(/^https?/,"")) {
 				result.url_lst.splice(i,1);
-			}
+			}*/
         }
     }
     // console.log("self="+JSON.stringify(self));
