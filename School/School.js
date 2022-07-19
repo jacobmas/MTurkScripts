@@ -1071,7 +1071,7 @@ School.prototype.find_dir_bb=function(doc,url,resolve,reject,extra) {
         //  console.log(domain+": links["+i+"].innerText="+links[i].innerText.trim());
         if(MTP.get_domain_only(links[i].href)!==domain) continue;
         //if() contact=links[i].href;
-        if((/Contact Us/.test(links[i].innerText)||curr_type.text_rx.test(links[i].innerText.trim()))
+        if((/Contact Us|Staff Directory/.test(links[i].innerText)||curr_type.text_rx.test(links[i].innerText.trim()))
            && !/\.pdf$/.test(links[i].href)) {
             console.log(domain+": found good  "+links[i].innerText+",url="+links[i].href);
             let found_link=false;
