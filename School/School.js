@@ -672,10 +672,10 @@ School.prototype.parse_edlio=function(doc,url,resolve,reject,self) {
                 //  else if(curr.phone&&curr.phone.length<6 && phone) curr.phone=phone+(/[A-Za-z]/.test(phone)?" ":" x")+curr.phone;
                 self.contact_list.push(curr);
             }
-			else if(curr_elem.email&&curr_elem.email.href && curr_elem.title && /@/.test(curr_elem.title)) {
-                console.log("Matched title");
+			else if(curr_elem.email&&curr_elem.email.href && curr_elem.email.title && /@/.test(curr_elem.email.title)) {
+                console.log("Matched title=",curr_elem.email.title);
 
-                curr.email=curr_elem.title;
+                curr.email=curr_elem.email.title;
                 if(!curr.phone && phone) curr.phone=phone;
                 //  else if(curr.phone&&curr.phone.length<6 && phone) curr.phone=phone+(/[A-Za-z]/.test(phone)?" ":" x")+curr.phone;
                 self.contact_list.push(curr);
