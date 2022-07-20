@@ -1410,8 +1410,34 @@ School.prototype.parse_bb_minibase_results=function(doc,url,resolve,reject,extra
 
 School.prototype.parse_bb_swdirectory=function(doc,url,resolve,reject,self) {
     console.log("parse_bb_swdirectory,url="+url+", resolving immediately for now");
-    resolve("");
+      var items=doc.querySelectorAll(".sw-directory-item");
+      var promise_list=[];
+      var item;
+      for(item of items) {
+          item.href=MTP.fix_remote_url(item.href,url);
+          promise_list.push(MTP.create_promise(item.href,School.prototype.parse_bb_swpage,function() { }, function() { }, self));
+      }
+      Promise.all(promise_list).then(function() { resolve("") }).catch(function() { reject(""); });
+//    resolve("");
 };
+School.prototype.parse_bb_swpage=function(doc,url,resolve,reject,self) {
+	console.log("parse_bb_swpage, url=",url,"doc=",doc);
+	var name=doc.querySelector("#about-teacher-bio h1");
+	var curr_contact={};
+	var staffemail=doc.querySelector("[id^='emailLabel']");
+	var staffphone=doc.querySelector("[id^='phoneLabel']");
+
+	var match;
+	if(name) curr_contact.name=name.innerText.trim();
+	if(staffemail&&(match=staffemail.innerHTML.match(/swrot13\(\'([^\']+)\'/))) {
+			curr_contact.email=MTP.swrot13(match[1]);
+		}
+	if(staffphone) curr_contact.phone=staffphone.innerText;
+	if(curr_contact.name && curr_contact.email) {
+		self.contact_list.push(curr_contact);
+	}
+	resolve("");
+}
 
 /* TODO: needs work other possible locations of staff directory exist */
 School.prototype.find_dir_eschoolview=function(doc,url,resolve,reject,self) {
