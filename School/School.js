@@ -1699,7 +1699,7 @@ School.prototype.loadWestReact=function(doc,old_url,resolve,reject,extra) {
  * searches to see if there are any private emails, then grabs them
  * with another loophole
  */
-School.prototype.parseWestSearch=function(response,resolve,reject,self) {
+    School.prototype.parseWestSearch=function(response,resolve,reject,self) {
     var search=JSON.parse(response.responseText);
     var results=search.d.results,i,url,promise_list=[];
     Object.assign(self,{westResults:results,westPrivateCount:0,westPrivateDone:0});
@@ -1730,7 +1730,14 @@ School.prototype.parseWestSearch=function(response,resolve,reject,self) {
         }
         console.log("Done with private emails");
         resolve(self);
-    });
+    }).catch(function() {
+         for(var i=0;i<self.westResults.length;i++) {
+            let curr=self.westResults[i];
+            self.contact_list.push({email:curr.email?curr.email:"",title:curr.jobTitle?curr.jobTitle:"",
+                                    phone:curr.phone?curr.phone:"",name:curr.firstName && curr.lastName?curr.firstName+" "+curr.lastName:""
+                                    ,url:curr.url?curr.url:self.westBaseUrl});
+        }
+        resolve(self); });
     //console.log("search="+text);
 };
 /**
