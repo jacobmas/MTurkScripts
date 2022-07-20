@@ -601,7 +601,17 @@ School.prototype.parse_gabbart_page=function(doc,url,resolve,reject,self) {
         curr={};
         curr.url=url;
         if((name=items[i].querySelector("h3 a.smallTitle"))) {
-            curr.name=name.innerText.trim().replace(/([^,]*),\s*(.*)$/g,"$2 $1");
+			let name_str="";
+			let c;
+			curr.name=name.innerText.trim().replace(/([^,]*),\s*(.*)$/g,"$2  $1");
+			if(!/\s/.test(curr.name)) {
+				for(c of name.childNodes) {
+					if(c.nodeType===Node.TEXT_NODE) {
+						name_str=name_str+(name_str.length>0?" ":"")+c.textContent;
+					}
+				}
+				curr.name=name_str;
+			}
             //if(fullname&&fullname.fname&&fullname.lname) curr.name=fullname.fname+" "+fullname.lname;
         }
         if(phone) curr.phone=phone;
