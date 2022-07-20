@@ -39,7 +39,9 @@ function School(query,then_func,catch_func) {
     this.apptegy={parser:this.parse_apptegy,suffix:"/staff",find_base:this.find_base_apptegy};
     this.blackboard={parser:this.parse_blackboard,find_directory:this.find_dir_bb,href_rx:/.*/i,
                      text_rx:/(Campus Directory)|(^Directory)|((Staff|Employee) Directory(\s|$|,))|(^Faculty$)|(^Faculty\s*(&|and)\s*Staff$)|(^Staff$)|(^Staff Contacts)|(^[A-Z]+\sDirectory)/i,
-                     find_base:this.find_base_blackboard};
+                     find_base:this.find_base_blackboard,
+					 authorization:"Bearer eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0.SDqE_Kj0BMGSLMBmwYjZetqj73xn3_B5O7R7GRLRlR3t22A4rYWkrJkuD6_ga4LAhYBRJEmONCZeYSea0hoRp_LLND-lzwIC.-LcfuorI-k98p5SEbumQeg.uKtdeHIvYKK9P3dumnPk4by5ghOLyDc_UYLyfdfsLfd0vvAbJly0N8ZU7GH2Z5xN7T3I5Q0Mp-D_H9Qvu0NxzEL7mZgeHzf-_n4fbGd12E4gl30jhLxMyfAQJva-czkijMVBjsjb_AQYExwGOkTDcdFXIZWCZ9PcTceDayiTCzEJr0mnNqZj0rcYt3kzS5x8K6weZoJi7Prukw21WZPZNpBda5uIz72G1hWFzFR779036ElH7QhckYX3GeXQh295ZSRCiGyifs6uYrqAnpH_OA.CLmzWwXW6NfR46jfUEXuuyafZ-iu8sjrF7kGA3w8XIQ"
+					 };
     this.catapultk12={parser:this.parse_catapultk12,find_directory:this.find_dir,href_rx:/\/Staff-Directory/,text_rx:/Directory/i};
     this.cyberschool={parser:this.parse_cyberschool,suffix:/\/District\/Staff/};
     this.echalk={parser:this.parse_echalk,base_suffix:"/directory/school",suffix:"/directory/faculty",find_base:this.find_base_echalk};
