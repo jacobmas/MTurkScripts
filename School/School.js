@@ -439,6 +439,18 @@ School.prototype.parse_catapultk12_finish=function(response,resolve,reject,self,
 School.prototype.parse_finalsite=function(doc,url,resolve,reject,self) {
     console.log("in School.prototype.parse_finalsite at url="+url);
     var items=doc.querySelectorAll(".fsElementPagination a"),promise_list=[],i;
+    var directory=doc.querySelector(".fsDirectory");
+    if(!directory) {
+        console.log("No directory");
+        resolve(self);
+        return;
+    }
+    var dir_el_num=directory.id.replace(/[^\d]*/g,"");
+    var begin_url=url.replace(/(https?:\/\/[^\/]*).*$/,"$1");
+    begin_url=begin_url+"/fs/elements/"+dir_el_num+"?const_page=1&_=111";  // hopefully constant _ is fine?
+    if(items.length>0) {
+        console.log("items[0].href=",items[0].href);
+    }
     self.phone=self.find_phone(doc,url);
     promise_list.push(new Promise((resolve1,reject1) =>
                                   { self.parse_finalsite_fsPageLayout(doc,url,resolve1,reject1,self); }).then(MTP.my_then_func).catch(MTP.my_catch_func));
@@ -447,7 +459,7 @@ School.prototype.parse_finalsite=function(doc,url,resolve,reject,self) {
         my_a.href=url+my_a.href.replace(/^[^\?]*/,"");
         last=parseInt(my_a.dataset.page);
         for(i=2;i<=last;i++) {
-            curr_href=my_a.href.replace(/const_page\=[\d]+/,"const_page="+i);
+            curr_href=begin_url.replace(/const_page\=[\d]+/,"const_page="+i);
             //items[i].href=url+items[i].href.replace(/^[^\?]*/,"");
             console.log("curr_href="+curr_href);
             promise_list.push(MTP.create_promise(curr_href,self.parse_finalsite_fsPageLayout,MTP.my_then_func,MTP.my_catch_func,self));
