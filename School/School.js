@@ -708,6 +708,8 @@ School.prototype.parse_edlio=function(doc,url,resolve,reject,self) {
                 var the_url=MTP.fix_remote_url(staff[i].querySelector("a").href,url);
                 if(the_url.indexOf("&pREC_ID=contact")===-1) the_url=the_url+"&pREC_ID=contact";
                 console.log("the_url["+i+"]="+the_url);
+				self.contact_list.push(curr);
+
                 promise_list.push(MTP.create_promise(the_url,self.parse_appsstaff_contactpage,MTP.my_try_func,MTP.my_catch_func,
                                                      {self:self,curr:curr}));
             }
