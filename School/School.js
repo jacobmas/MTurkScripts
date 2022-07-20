@@ -1036,13 +1036,16 @@ School.prototype.match_in_list=function(ul,url,self) {
 
 };
 School.prototype.find_base_apptegy=function(doc,url,resolve,reject,self) {
+    console.log("find_base_apptegy,url=",url,"doc=",doc);
+    let temp_url=url.replace(/(https?:\/\/[^\/]+).*$/,"$1");
     var i,h4,cols=doc.getElementsByClassName("footer-col"),list,ret;
     for(i=0; i < cols.length; i++) {
+        console.log("i=",i);l
         if((h4=cols[i].getElementsByTagName("h4")).length>0 && /Schools/i.test(h4[0].innerText)
            && (list=cols[i].getElementsByClassName("footer-links")).length>0 &&
            (ret= self.match_in_list(list[0],url,self))) return ret;
     }
-    return url.replace(/(https?:\/\/[^\/]+).*$/,"$1");
+    return url;
 };
 /* Generic find the directory location given some regexes to use */
 School.prototype.find_dir=function(doc,url,resolve,reject,self) {
