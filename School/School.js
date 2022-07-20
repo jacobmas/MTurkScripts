@@ -828,6 +828,13 @@ School.prototype.parse_schoolblockperson=function(response,resolve,reject,self,u
 School.prototype.parse_apptegy=function(doc,url,resolve,reject,self) {
 	self.staff_dir=url;
     console.log("in School.prototype.parse_apptegy at url="+url);
+	if(doc.querySelectorAll(".contact-info,.staff-info").length===0 &&
+	!/^staff/.test(url.replace(/https?:\/\/[^\/]*\//,""))) {
+        console.log("Retrying apptegy");
+        let temp_url=url.replace(/(https?:\/\/[^\/]*).*$/,"$1")+"/staff";
+		let promise=MTP.create_promise(temp_url,School.prototype.parse_apptegy,resolve,reject,self);
+        return;
+	}
     doc.querySelectorAll(".contact-info,.staff-info").forEach(function(elem) { self.parse_apptegy_field(elem,self,url); });
     resolve(self);
 };
@@ -1740,7 +1747,10 @@ School.prototype.init_SchoolSearch=function(doc,url,resolve,reject,self) {
     /* if suffix we can immediately head to the directory parser */
     if(curr_school && curr_school.suffix) {
         console.log("# heading immediately to directory");
-        self.call_parser({url:self.base+curr_school.suffix,self:self}); }
+        self.call_parser({url:self.base+curr_school.suffix,self:self}); 
+	
+		
+		}
     else if(curr_school && curr_school.find_directory) {
         console.log(self.name+": Finding directory");
         promise=MTP.create_promise(self.base,curr_school.find_directory,self.call_parser,MTP.my_catch_func,self);
