@@ -18,7 +18,7 @@ function LinkQual(href,innerText) {
 function School(query,then_func,catch_func) {
     var x;
     this.contact_list=[];
-    this.bad_urls=[".har.com",
+    this.bad_urls=[".har.com",".yelp.ca",
 	".adventistdirectory.org","/alumnius.net",".areavibes.com",".biz/",".buzzfile.com",".chamberofcommerce.com",".city-data.com",".donorschoose.org",".dreambox.com",".edmodo.com",
                    ".educationbug.org",".elementaryschools.org",".estately.com",".facebook.com",".greatschools.org","//high-schools.com",
                    ".hometownlocator.com",".localschooldirectory.com",".maxpreps.com",".mapquest.com",".myatlantaareahome.com",".niche.com",
