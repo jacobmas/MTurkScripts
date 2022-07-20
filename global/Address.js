@@ -629,6 +629,7 @@ Address.sanitize_text_US=function(text) {
 	text=text.replace(/^.*Address:\s*/,"").trim();
 	text=text.replace(/(Box \d)([A-Z])/,"$1, $2").trim();
     text=text.replace(fl_regex,"$3").trim();
+	text=text.replace(/(Calle [A-Za-z]+)\s/,"$1,");
     text=text.replace(/,\s*(US|United States|United States of America|USA)$/i,"");
     // replace PO DRAWER //
     text=text.replace(/(^|,)(\s*)(?:P\.?O\.?\s*)?(DRAWER|BOX)(\s)/i,"$1$2PO Box$4");

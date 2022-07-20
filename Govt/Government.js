@@ -806,7 +806,7 @@ Gov.fix_table=function(table,type) {
 	while(to_fix>=row.cells.length) row.insertCell();
 	if(type==="honorifics") {
 		try {
-			result=nlp(row.cells[to_fix].innerText).people().json()[0].terms;//out('terms');
+			result=nlp(row.cells[to_fix].innerText).people().json();
 			old_col_str=row.cells[to_fix].innerText;
 			if(Gov.debug) console.log("result="+JSON.stringify(result));
 			for(j=0;j<result.length;j++) {
