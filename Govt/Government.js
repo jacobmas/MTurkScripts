@@ -806,14 +806,14 @@ Gov.fix_table=function(table,type) {
 	while(to_fix>=row.cells.length) row.insertCell();
 	if(type==="honorifics") {
 		try {
-			result=nlp(row.cells[to_fix].innerText).people().json();
+			result=nlp(row.cells[to_fix].innerText).people().json()[0].terms;
 			old_col_str=row.cells[to_fix].innerText;
 			if(Gov.debug||true) console.log("result="+JSON.stringify(result));
 			for(j=0;j<result.length;j++) {
-			if(result[j].tags.includes("Honorific")) {
-				new_col_str=new_col_str+(new_col_str.length>0?" ":"")+result[j].text;
-				old_col_str=old_col_str.replace(result[j].text,"").trim();
-			}
+				if(result[j].tags.includes("Honorific")) {
+					new_col_str=new_col_str+(new_col_str.length>0?" ":"")+result[j].text;
+					old_col_str=old_col_str.replace(result[j].text,"").trim();
+				}
 			}
 		}
 		catch(e) { console.log("error with nlp = ",e); }
