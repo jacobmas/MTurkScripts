@@ -1203,30 +1203,75 @@ School.prototype.parse_bb_staffdirectory=function(doc,url,resolve,reject,self) {
         resolve(self); });
 
 };
-/* TODO: deal with area codes, otherwise done */
-School.prototype.parse_bb_staffdirectory_results=function(doc,url,resolve,reject,self) {
-    console.log("parse_bb_staffdirectory_result,url="+url);
-    var cs="",staff,i,curr_contact,footer=doc.querySelector(".gb-footer"),staffemail,match;
-    if(doc.querySelector(".cs-staffdirectorydiv")) cs="cs-";
-    staff=doc.querySelectorAll("."+cs+"staff");
-    //console.log("doc.body.innerHTML="+doc.body.innerHTML);
-    for(i=0;i<staff.length;i++) {
-        curr_contact={name:staff[i].querySelector("."+cs+"staffname").innerText.trim(),
-                      title:staff[i].querySelector("."+cs+"staffjob").dataset.value.trim(),url:url,
-                      phone:staff[i].querySelector("."+cs+"staffphone").innerText.trim().replace(/\n/g,"").replace(/\s{2,}/g," ")
-                     };
-        if(curr_contact.phone.length>0 &&
-           !phone_re.test(curr_contact.phone) && self.area_code.length>0) curr_contact.phone="("+self.area_code+") "+curr_contact.phone;
-        else if(curr_contact.phone.length===0) curr_contact.phone=self.phone;
-        staffemail=staff[i].querySelector(".staffemail script");
-        if(staffemail&&(match=staffemail.innerHTML.match(/swrot13\(\'([^\']+)\'/))) {
-            curr_contact.email=MTP.swrot13(match[1]);
+    School.prototype.parse_bb_staffdirectory_results=function(doc,url,resolve,reject,self) {
+        console.log("parse_bb_staffdirectory_result,url="+url);
+        console.log("self=",self);
+        console.log("doc=",doc);
+        var cs="",staff,i,curr_contact,footer=doc.querySelector(".gb-footer"),staffemail,match;
+        if(doc.querySelector(".cs-staffdirectorydiv")) cs="cs-";
+        staff=doc.querySelectorAll("."+cs+"staff");
+        //console.log("doc.body.innerHTML="+doc.body.innerHTML);
+        for(i=0;i<staff.length;i++) {
+            curr_contact={name:staff[i].querySelector("."+cs+"staffname").innerText.trim(),
+                          title:staff[i].querySelector("."+cs+"staffjob").dataset.value.trim(),url:url,
+                          phone:staff[i].querySelector("."+cs+"staffphone").innerText.trim().replace(/\n/g,"").replace(/\s{2,}/g," ")
+                         };
+            if(curr_contact.phone.length>0 &&
+               !phone_re.test(curr_contact.phone) && self.area_code.length>0) curr_contact.phone="("+self.area_code+") "+curr_contact.phone;
+            else if(curr_contact.phone.length===0) curr_contact.phone=self.phone;
+            staffemail=staff[i].querySelector(".staffemail script");
+            if(staffemail&&(match=staffemail.innerHTML.match(/swrot13\(\'([^\']+)\'/))) {
+                curr_contact.email=MTP.swrot13(match[1]);
+            }
+            //console.log("curr_contact="+JSON.stringify(curr_contact))
+            if(self.matches_title_regex(curr_contact.title)) self.contact_list.push(curr_contact);
         }
-        //console.log("curr_contact="+JSON.stringify(curr_contact))
-        if(self.matches_title_regex(curr_contact.title)) self.contact_list.push(curr_contact);
-    }
-    resolve(self);
-};
+        var pagination_list=doc.querySelector(".ui-pagination-list");
+        if(!pagination_list) {
+
+            resolve(self);
+            return;
+        }
+        var current_page = pagination_list.querySelector(".ui-page-number-current");
+        if(!current_page.nextElementSibling) {
+            resolve(self);
+        }
+        else {
+            console.log("current page has next sibling");
+            console.log("current_page.nextElementSibling=",current_page.nextElementSibling);
+            let begin_url=url.replace(/(https?:\/\/[^\/]*).*$/,"$1")+"/cms/UserControls/ModuleView/ModuleViewRendererWrapper.aspx?";
+            let inner_a = current_page.nextElementSibling.querySelector("a");
+            console.log("inner_a=",inner_a.outerHTML+",inner_a.onclick=",inner_a.onclick);
+
+            let inner_a_re=/PageChange\(([^\)]*)\)/;
+            let inner_a_match = inner_a.outerHTML.match(inner_a_re);
+            if(!inner_a_match) {
+                console.warn("Failed inner_a_match");
+                resolve(self);
+                return;
+            }
+            let params=inner_a_match[1].split(/,\s*/);
+            params = params.map((x) => x.replace(/\'/g,""));
+            console.log("params=",params);
+
+            begin_url=begin_url+"DomainID="+params[0]+"&PageID="+params[1]+"&ModuleInstanceID="+params[14]+"&PageModuleInstanceID="+params[11];
+            begin_url=begin_url+"&Tag="+encodeURIComponent(params[10])+"&PageNumber="+params[13]+"&RenderLoc="+params[2]+"&FromRenderLoc="+params[3]+"&IsMoreExpandedView="+params[5];
+            begin_url=begin_url+"&EnableQuirksMode="+params[4]+"&Filter="+encodeURIComponent(params[9])+"&ViewID="+params[12];
+            console.log("begin_url=",begin_url);
+            var promise=MTP.create_promise(begin_url,School.prototype.parse_bb_staffdirectory_results,resolve,reject,self);
+//            resolve(self);
+            return;
+            //PageChange(0, 101109, 0, 0, 0, false, '', '0', '0','JobTitle:Grade','',125533,'d23c305b-e295-4186-9257-b05a61f233d9', 2,132687,'sw-module-1326870')
+
+            //
+           // https://www.dentonisd.org//cms/UserControls/ModuleView/ModuleViewRendererWrapper.aspx?DomainID=0&PageID=101109&ModuleInstanceID=132687&PageModuleInstanceID=125533&"
+            //Tag=&PageNumber=2&RenderLoc=0&FromRenderLoc=0&IsMoreExpandedView=false&EnableQuirksMode=0&Filter=JobTitle%3AGrade&ScreenWidth=637&ViewID=d23c305b-e295-4186-9257-b05a61f233d9
+        }
+        //var pages=pagination_list.querySelectorAll(".ui-page-number");
+        //var last_page = pages[pages.length-1];
+
+
+    };
 /* Probably best to just grab all the pages for a school since we don't know what we want */
 School.prototype.parse_bb_minibase=function(doc,url,resolve,reject,self) {
     console.log("parse_bb_minibase,url="+url);
