@@ -808,7 +808,7 @@ Gov.fix_table=function(table,type) {
 		try {
 			result=nlp(row.cells[to_fix].innerText).people().json();
 			old_col_str=row.cells[to_fix].innerText;
-			if(Gov.debug) console.log("result="+JSON.stringify(result));
+			if(Gov.debug||true) console.log("result="+JSON.stringify(result));
 			for(j=0;j<result.length;j++) {
 			if(result[j].tags.includes("Honorific")) {
 				new_col_str=new_col_str+(new_col_str.length>0?" ":"")+result[j].text;
