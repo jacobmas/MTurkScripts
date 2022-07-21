@@ -318,6 +318,22 @@ MTurkScript.prototype.DeCryptString = function(s) {
     }
     return r;
 };
+
+MTurkScript.prototype.parseHex=function(string, position) {
+    var result = string.substr(position, 2);
+    return parseInt(result, 16);
+};
+MTurkScript.prototype.decodeCloudFlareHex=function(href, startPos) {
+    var result = "";
+    var key = parseHex(href, startPos);
+    for(var position = startPos + 2; position < href.length; position = position + 2) {
+        var byte = MTurkScript.prototype.parseHex(href, position) ^ key;
+        result = result + String.fromCharCode(byte);
+    }
+    return result;
+};
+
+
 /* DecryptX decrypts certain types of email */
 MTurkScript.prototype.DeCryptX=function(s) { return this.DeCryptString( s ); };
 /* cfDecodeEmail decodes Cloudflare encoded emails */
