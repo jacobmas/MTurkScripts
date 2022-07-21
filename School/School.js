@@ -467,7 +467,7 @@ School.prototype.parse_finalsite=function(doc,url,resolve,reject,self) {
         }
     }
     console.log((promise_list.length>0?"RIGHT":"WRONG")+" TYPE of finalsite, "+promise_list.length);
-    Promise.all(promise_list).then(function() { resolve(self); });
+    Promise.all(promise_list).then(function() { resolve(self); }).catch(function() { resolve(self); });
 };
 School.prototype.parse_finalsite_fsPageLayout=function(doc,url,resolve,reject,self) {
     console.log("in School.prototype.parse_finalsite_fsPageLayout at url="+url);
