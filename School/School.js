@@ -55,7 +55,7 @@ function School(query,then_func,catch_func) {
     this.gabbart={parser:this.parse_gabbart,href_rx:/.*/i,text_rx:/.*Directory/i,find_directory:this.find_dir};
     this.campussuite={parser:this.parse_campussuite,href_rx:/staff-directory|staff-links/i,text_rx:/.*/,find_directory:this.find_dir};
     this.schoolblocks={parser:this.parse_schoolblocks,suffix:"/staff"};
-    this.schoolpointe={parser:this.parse_schoolpointe,suffix:"/staff"};
+    this.schoolpointe={parser:this.parse_schoolpointe,suffix:"/staff",find_base:this.find_base_schoolpointe};
     this.schoolmessenger={parser:this.parse_schoolmessenger,href_rx:/.*/i,text_rx:/^(((Staff )?(Information|Directory))|(Staff$))/i,find_directory:this.find_dir,
                           find_base:this.find_base_schoolmessenger};
     this.page_regex_str="(www\\.|\/\/)(apptegy|catapultk12|cms4schools)\\.com|(www\\.4lpi\\.com)|adventistschoolconnect\\.org|"+
@@ -309,6 +309,12 @@ School.prototype.parse_schoolpointe_response=function(doc,url,resolve,reject,sel
     }
     Promise.all(promise_list).then(function() { resolve(self); });
 };
+
+School.prototype.find_base_schoolpointe=function(doc,url,resolve,reject,self) {
+	return url.replace(/(https?:\/\/[^\/]*).*$/,"$1");
+};
+
+
 School.prototype.parse_schoolpointe_profile=function(doc,url,resolve,reject,self) {
     var curr={url:url},fields=doc.querySelectorAll(".field"),i,label,content,label_text;
     var terms=["name","title","phone","email","department","buildings"];
