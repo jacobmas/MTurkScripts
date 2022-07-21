@@ -1340,7 +1340,7 @@ School.prototype.parse_bb_minibase=function(doc,url,resolve,reject,self) {
         for(i=0;i<flexitem.length;i++) {
             ui_lbl=flexitem[i].querySelector(".ui-lbl-inline");
             ui_dropdown=flexitem[i].querySelector("ul");
-            if(!matched_school && /School/i.test(ui_lbl.innerText) && ui_dropdown && (ui_li=ui_dropdown.querySelectorAll("li"))) {
+            if(!matched_school && ui_lbl && /School/i.test(ui_lbl.innerText) && ui_dropdown && (ui_li=ui_dropdown.querySelectorAll("li"))) {
 
                 field_num=ui_dropdown.id && ui_dropdown.id.match(/[\d]+$/) ? ui_dropdown.id.match(/[\d]+$/)[0] : i.toString();
                 for(j=0;j<ui_li.length;j++) {
