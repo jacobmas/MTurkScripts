@@ -49,7 +49,7 @@ function School(query,then_func,catch_func) {
     this.edlio={parser:this.parse_edlio,suffix:"/apps/staff"};
     this.educationalnetworks={parser:this.parse_educationalnetworks,suffix:"/apps/staff"};
     this.eschoolview={parser:this.parse_eschoolview,find_directory:this.find_dir_eschoolview};
-    this.finalsite={parser:this.parse_finalsite,href_rx:/.*/i,text_rx:/(^Staff$)|Staff Directory*|Teacher Pages|Faculty/i,find_directory:this.find_dir};
+    this.finalsite={parser:this.parse_finalsite,href_rx:/.*/i,text_rx:/(^Staff$)|Staff Directory*|Teacher Pages|Faculty|^Directory/i,find_directory:this.find_dir};
     this.foxbright={parser:this.parse_foxbright,href_rx:/.*/i,text_rx:/Staff Directory*/i,find_directory:this.find_dir};
 
     this.gabbart={parser:this.parse_gabbart,href_rx:/.*/i,text_rx:/.*Directory/i,find_directory:this.find_dir};
