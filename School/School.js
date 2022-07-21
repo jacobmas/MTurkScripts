@@ -18,7 +18,7 @@ function LinkQual(href,innerText) {
 function School(query,then_func,catch_func) {
     var x;
     this.contact_list=[];
-    this.bad_urls=[".har.com",".yelp.ca",".whereorg.com",".movoto.com",
+    this.bad_urls=[".schools-info.com",".har.com",".yelp.ca",".whereorg.com",".movoto.com",
 	".adventistdirectory.org","/alumnius.net",".areavibes.com",".biz/",".buzzfile.com",".chamberofcommerce.com",".city-data.com",".donorschoose.org",".dreambox.com",".edmodo.com",
                    ".educationbug.org",".elementaryschools.org",".estately.com",".facebook.com",".greatschools.org","//high-schools.com",
                    ".hometownlocator.com",".localschooldirectory.com",".maxpreps.com",".mapquest.com",".myatlantaareahome.com",".niche.com",
@@ -953,7 +953,7 @@ School.prototype.parse_bing=function(doc,url,resolve,reject,self) {
             return;
         }
 
-        for(i=1; i < b_algo.length&&i<6; i++) {
+        for(i=1; i < b_algo.length&&i<5; i++) {
             entry_result=self.parse_bing_entry(b_algo,i,self);
             if(entry_result.success && (resolve(entry_result)||true)) return;
             else if(entry_result.closed && (reject(entry_result)||true)) return;
