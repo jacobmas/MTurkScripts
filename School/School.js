@@ -1348,7 +1348,7 @@ School.prototype.parse_bb_minibase=function(doc,url,resolve,reject,self) {
                        (filter=filter+encodeURIComponent(field_num+":C:"+ui_li[j].innerText.trim()+";"))) break;
                 }
             }
-            if(/Title|Position/i.test(ui_lbl.innerText) &&(matched_title=true)) {
+            if(ui_lbl && /Title|Position/i.test(ui_lbl.innerText) &&(matched_title=true)) {
                 let textfield=flexitem[i].querySelector("input[type='text']"),j,field_pos=0,found_text=true;
                 var selfield=flexitem[i].querySelector("ul[id^='sel-sw']"),sel_li,good_text;
                 if(!textfield) {
