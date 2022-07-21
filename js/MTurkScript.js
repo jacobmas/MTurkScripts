@@ -325,7 +325,7 @@ MTurkScript.prototype.parseHex=function(string, position) {
 };
 MTurkScript.prototype.decodeCloudFlareHex=function(href, startPos) {
     var result = "";
-    var key = parseHex(href, startPos);
+    var key = MTurkScript.prototype.parseHex(href, startPos);
     for(var position = startPos + 2; position < href.length; position = position + 2) {
         var byte = MTurkScript.prototype.parseHex(href, position) ^ key;
         result = result + String.fromCharCode(byte);
