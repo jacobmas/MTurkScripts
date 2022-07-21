@@ -846,7 +846,7 @@ School.prototype.parse_apptegy=function(doc,url,resolve,reject,self) {
 };
 /* Helper to parse an individual person for Schools.parse_apptegy */
 School.prototype.parse_apptegy_field=function(elem,self,url) {
-    //  console.log("parse_apptegy_field,elem="+elem.innerText);
+    console.log("parse_apptegy_field,elem="+elem.innerHTML);
     var f_n={"name":"name","title":"title","phone-number":"phone","department":"department","email":"email"};
     var curr_c={url:url},x,curr_f;
     for(x in f_n) if((curr_f=elem.getElementsByClassName(x)).length>0) curr_c[f_n[x]]=curr_f[0].innerText.trim();
