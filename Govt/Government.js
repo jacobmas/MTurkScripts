@@ -512,7 +512,7 @@ Gov.strip_bad_contacts=function() {
 };
 /* Check for a bad contact */
 Gov.is_bad_contact=function(contact,temp_list,temp_push) {
-    var bad_name_regex=/…|\n|((^|[^A-Za-z])(For|Blvd\.|Rd\.|St\.|Contact|Department|Address|Staff|question|information|E(-)?mail)($|[^A-Za-z]))|(^|\s)of(\s|$)/i;
+    var bad_name_regex=/…|\n|((^|[^A-Za-z])(For|Blvd\.|Rd\.|St\.|Contact|Avenue|Department|Address|Staff|question|information|E(-)?mail)($|[^A-Za-z]))|(^|\s)of(\s|$)/i;
 	var bad_title_regex=/(^|\s)please(\s|$)/i;
     if(!contact.name || !contact.title || phone_re.test(contact.name)  || temp_list.includes(temp_push) ||
        contact.name.length>60 || contact.title.length>75 || bad_name_regex.test(contact.name) || Gov.title_regex.test(contact.name) || bad_title_regex.test(contact.title) ||
