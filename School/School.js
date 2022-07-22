@@ -806,28 +806,28 @@ School.prototype.parse_appsstaff_contactpage=function(doc,url,resolve,reject,ext
 };
 /* Helper function to get the name and title of a staff member at ednetworks edlio schools on the appsstaff
  * page or the contact page (same format) */
+    School.prototype.parse_schoolblocks=function(doc,url,resolve,reject,self) {
+        console.log("in School.prototype.parse_schoolblocks at url="+url);
 
-School.prototype.parse_schoolblocks=function(doc,url,resolve,reject,self) {
-    console.log("in School.prototype.parse_schoolblocks at url="+url);
-
-    var people=doc.querySelectorAll(".sb-block-container.modal-trigger"),i,title,promise_list=[];
-    for(i=0;i<people.length;i++) {
-        title=people[i].querySelector(".sb-teacher-card-title");
-        //console.log("title["+i+"]="+title.innerText.trim());
-        if((self.matches_title_regex(title.innerText.trim()))) {
-            //  console.log("Matched!");
-            var promise=new Promise((resolve,reject) => {
-                self.call_schoolblockperson(people[i],url,resolve,reject,self);
-            });
-            promise.then(MTP.my_then_func).catch(MTP.my_catch_func);
-            promise_list.push(promise);
+        var people=doc.querySelectorAll("article.sb-block"),i,title,promise_list=[];
+        for(i=0;i<people.length;i++) {
+            title=people[i].querySelector(".sb-teacher-card-title");
+            //console.log("title["+i+"]="+title.innerText.trim());
+            if(!title || (title && self.matches_title_regex(title.innerText.trim()))) {
+                //  console.log("Matched!");
+                var promise=new Promise((resolve,reject) => {
+                    self.call_schoolblockperson(people[i],url,resolve,reject,self);
+                });
+                promise.then(MTP.my_then_func).catch(MTP.my_catch_func);
+                promise_list.push(promise);
+            }
         }
-    }
-    Promise.all(promise_list).then(function() { resolve(self); }).catch(function() { resolve(self); });
-};
+        Promise.all(promise_list).then(function() { resolve(self); }).catch(function() { resolve(self); });
+    };
+
 School.prototype.call_schoolblockperson=function(people,url,resolve,reject,self) {
     GM_xmlhttpRequest({method: 'GET', url: self.base+"/en-US/_!_API_!_/2/people/"+people.dataset.id,
-                       onload: function(response) { self.parse_schoolblockperson(response, resolve, reject,self,self.base+"/_!_API_!_/2/people/"+people.dataset.id); },
+                       onload: function(response) { self.parse_schoolblockperson(response, resolve, reject,self,self.base+"/en-US/_!_API_!_/2/people/"+people.dataset.id); },
                        onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
                       });
 };
