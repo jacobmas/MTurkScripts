@@ -1257,7 +1257,8 @@ School.prototype.parse_bb_staffdirectory=function(doc,url,resolve,reject,self) {
     Promise.all(promise_list).then(function() {
         console.log("Done all promises of bb_staffdirectory");
 
-        resolve(self); });
+        resolve(self); }).catch(function() {
+		resolve(self); });
 
 };
     School.prototype.parse_bb_staffdirectory_results=function(doc,url,resolve,reject,self) {
