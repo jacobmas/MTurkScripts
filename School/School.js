@@ -1421,8 +1421,11 @@ School.prototype.parse_bb_swdirectory=function(doc,url,resolve,reject,self) {
       var item;
       for(item of items) {
           item.href=MTP.fix_remote_url(item.href,url);
-          promise_list.push(MTP.create_promise(item.href,School.prototype.parse_bb_swpage,function() { }, function() { }, self));
-      }
+		  if(MTurkScript.prototype.get_domain_only(item.href,true)===MTurkScript.prototype.get_domain_only(url)) {
+			  
+			promise_list.push(MTP.create_promise(item.href,School.prototype.parse_bb_swpage,function() { }, function() { }, self));
+		}	
+	  }
       Promise.all(promise_list).then(function() { resolve("") }).catch(function() { reject(""); });
 //    resolve("");
 };
