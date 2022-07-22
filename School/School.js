@@ -141,7 +141,7 @@ School.prototype.search_none=function(doc,url,resolve,reject,extra) {
     var self=extra.self,depth=extra.depth;
     console.log("search_none,url="+url+", depth="+depth);
     var MAX_QUERIES=15;
-    var good_link_str="(^(Admin|District|Central|Personnel|Employee|Staff))|Administration|Contact|Directory|Staff|About|Leadership|Team|Departments|Faculty";
+    var good_link_str="(^(Admin|District|Central|Personnel|Employee|Staff))|Administration|Contact|Directory|Staff|About|Leadership|Team|Departments|Faculty|Principal";
     if(depth>0) good_link_str="(^(Admin|District|Central|Personnel|Employee|Contact|Directory|Staff|About|Leadership|Team|Departments|Faculty))";
     var good_link_re=new RegExp(good_link_str,"i");
     var i,links=doc.links,promise_list=[];
