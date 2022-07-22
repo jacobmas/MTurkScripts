@@ -1721,8 +1721,8 @@ School.prototype.loadWestReact=function(doc,old_url,resolve,reject,extra) {
 			   if(type==="Search") { self.parseWestSearch(response,resolve,reject,self); }
 			   else if(type==="Settings"||true) { resolve(response); }
 		       },
-		       onerror: function(response) { console.log("Fail"); },
-		       ontimeout: function(response) { console.log("Fail"); }
+		       onerror: function(response) { reject(""); },
+		       ontimeout: function(response) { reject(""); }
 		      });
 };
 /**
