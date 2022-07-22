@@ -153,7 +153,7 @@ School.prototype.search_none=function(doc,url,resolve,reject,extra) {
         if(
            links[i].href.indexOf(self.base.replace(/^(https:\/\/[^\/]*).*$/,"$1"))!==-1 &&
 
-           (self.title_str_regex.test(links[i].innerText.trim()) ||
+           (
             good_link_re.test(links[i].innerText.trim())) && links[i].innerText.length<40 && !self.is_bad_link(links[i].href)
            && !self.query_list.includes(links[i].href) && self.query_list.length<MAX_QUERIES
           ) {
