@@ -806,7 +806,7 @@ School.prototype.parse_appsstaff_contactpage=function(doc,url,resolve,reject,ext
 };
 /* Helper function to get the name and title of a staff member at ednetworks edlio schools on the appsstaff
  * page or the contact page (same format) */
-    School.prototype.parse_schoolblocks=function(doc,url,resolve,reject,self) {
+School.prototype.parse_schoolblocks=function(doc,url,resolve,reject,self) {
         console.log("in School.prototype.parse_schoolblocks at url="+url);
 
         var people=doc.querySelectorAll("article.sb-block"),i,title,promise_list=[];
@@ -823,7 +823,7 @@ School.prototype.parse_appsstaff_contactpage=function(doc,url,resolve,reject,ext
             }
         }
         Promise.all(promise_list).then(function() { resolve(self); }).catch(function() { resolve(self); });
-    };
+};
 
 School.prototype.call_schoolblockperson=function(people,url,resolve,reject,self) {
     GM_xmlhttpRequest({method: 'GET', url: self.base+"/en-US/_!_API_!_/2/people/"+people.dataset.id,
