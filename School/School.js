@@ -1514,6 +1514,11 @@ School.prototype.parse_eschoolview=function(doc,url,resolve,reject,self) {
     //if(!footer) footer=doc.querySelector("#footerDiv");
     // if(footer && (match=footer.innerText.match(/Phone:\s*([\(\)-\s\d\/]+)/i))) self.phone=match[1].trim();
     //else self.phone="";
+	if(!name_sel) {
+		console.warn("name_sel not found, calling parse_none");
+		        var promise=MTP.create_promise(self.base,self.parse_none,resolve,reject,self);
+        return;
+	}
     ops=name_sel.options;
     for(i=0;i<scripts.length;i++) {
         if((match=scripts[i].innerHTML.match(script_rx)) && (scriptm=match[1]) && (data[scriptm]=match[2].replace(/^t/,""))) break;
