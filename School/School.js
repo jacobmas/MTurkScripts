@@ -842,7 +842,8 @@ School.prototype.parse_schoolblockperson=function(response,resolve,reject,self,u
         self.contact_list.push(person);
 
     }
-    catch(error) { console.log("Error parsing schoolblocksperson "+error+",",response.responseText); }
+    catch(error) { console.log("Error parsing schoolblocksperson "+error);
+	console.log(response.responseText); }
     resolve("");
 
 };
