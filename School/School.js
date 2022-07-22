@@ -1284,7 +1284,7 @@ School.prototype.parse_bb_staffdirectory=function(doc,url,resolve,reject,self) {
             else if(curr_contact.phone.length===0) curr_contact.phone=self.phone;
             staffemail=staff[i].querySelector(".staffemail script");
             if(staffemail&&(match=staffemail.innerHTML.match(/swrot13\(\'([^\']+)\'/))) {
-                curr_contact.email=MTP.swrot13(match[1]);
+                curr_contact.email=MTP.swrot13(match[1].toLowerCase());
             }
             //console.log("curr_contact="+JSON.stringify(curr_contact))
             if(self.matches_title_regex(curr_contact.title)) self.contact_list.push(curr_contact);
@@ -1460,7 +1460,7 @@ School.prototype.parse_bb_swpage=function(doc,url,resolve,reject,self) {
 	var match;
 	if(name) curr_contact.name=name.innerText.trim();
 	if(staffemail&&(match=staffemail.innerHTML.match(/swrot13\(\'([^\']+)\'/))) {
-			curr_contact.email=MTP.swrot13(match[1]);
+			curr_contact.email=MTP.swrot13(match[1].toLowerCase());
 		}
 	if(staffphone) curr_contact.phone=staffphone.innerText;
 	if(curr_contact.name && curr_contact.email) {
