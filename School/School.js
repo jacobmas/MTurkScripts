@@ -676,62 +676,77 @@ School.prototype.convert_ednetworks_email=function(text) {
     return ret_text.replace(/^mailto:/,"");
 };
 School.prototype.parse_edlio=function(doc,url,resolve,reject,self) {
-    console.log("in School.prototype.parse_edlio at url="+url);
-    var schoolphone,phone;
+        console.log("in School.prototype.parse_edlio at url="+url);
+        var schoolphone,phone;
 
-    //        if((schoolphone=doc.querySelector("a[href^='tel:']"))) phone=schoolphone.innerText.trim();
-    phone=self.find_phone(doc,url);
-    var footer=doc.querySelector("footer"),match,promise_list=[],i,curr={},curr_elem,x;
-    self.phone=self.schoolPhone=phone?phone:"";
-    var my_phone_re=/(?:Phone|Tel|T):\?\s*([(]?[0-9]{3}[)]?[-\\s\\.\\/]+[0-9]{3}[-\\s\\.\\/]+[0-9]{4,6})/;
-    // if(footer && (match=footer.innerText.match(my_phone_re))) self.schoolPhone=match[1];
-    
-    var staff=doc.querySelectorAll(".staff");
-    for(i=0;i<staff.length;i++) {
-        // console.log("("+i+"): "+staff[i].innerHTML);
-        curr={};
-        curr_elem={name:staff[i].querySelector(".name"),title:staff[i].querySelector(".user-position"),
-                   phone:staff[i].querySelector(".user-phone"),email:staff[i].querySelector(".email")};
-        for(x in curr_elem) curr[x]=curr_elem[x]?curr_elem[x].innerText.trim():"";
-        if(/^(x|ext)/.test(curr.phone)) curr.phone=self.schoolPhone+(self.schoolPhone.length>0?" ":"")+curr.phone;
-        curr.url=url;
-        console.log("curr_elem["+i+"]="+JSON.stringify(curr_elem)+", curr["+i+"]="+JSON.stringify(curr));
-        if(self.matches_title_regex(curr.title)) {
-            // check if we already can get email with no further queries
+        //        if((schoolphone=doc.querySelector("a[href^='tel:']"))) phone=schoolphone.innerText.trim();
+        phone=self.find_phone(doc,url);
+        var footer=doc.querySelector("footer"),match,promise_list=[],i,curr={},curr_elem,x;
+        self.phone=self.schoolPhone=phone?phone:"";
+        var my_phone_re=/(?:Phone|Tel|T):\?\s*([(]?[0-9]{3}[)]?[-\\s\\.\\/]+[0-9]{3}[-\\s\\.\\/]+[0-9]{4,6})/;
+        // if(footer && (match=footer.innerText.match(my_phone_re))) self.schoolPhone=match[1];
+        var cf_match;
+        var staff=doc.querySelectorAll(".staff");
+        for(i=0;i<staff.length;i++) {
+            // console.log("("+i+"): "+staff[i].innerHTML);
+            curr={};
+            curr_elem={name:staff[i].querySelector(".name"),title:staff[i].querySelector(".user-position"),
+                       phone:staff[i].querySelector(".user-phone"),email:staff[i].querySelector(".email")};
+            for(x in curr_elem) curr[x]=curr_elem[x]?curr_elem[x].innerText.trim():"";
+            if(/^(x|ext)/.test(curr.phone)) curr.phone=self.schoolPhone+(self.schoolPhone.length>0?" ":"")+curr.phone;
+            curr.url=url;
+            console.log("curr_elem["+i+"]="+JSON.stringify(curr_elem)+", curr["+i+"]="+JSON.stringify(curr));
+            if(self.matches_title_regex(curr.title)) {
+                // check if we already can get email with no further queries
 
-            if(curr_elem.email && curr_elem.email.href && (match=curr_elem.email.href.match(/\?e\=([\d]*)/))) {
-                console.log("Matched e=");
-                curr.email=self.convert_ednetworks_email(match[1]);
-                self.contact_list.push(curr);
+                if(curr_elem.email && curr_elem.email.href && (match=curr_elem.email.href.match(/\?e\=([\d]*)/))) {
+                    console.log("Matched e=");
+                    curr.email=self.convert_ednetworks_email(match[1]);
+                    self.contact_list.push(curr);
+                }
+                else if(curr_elem.email&&curr_elem.email.href && (match=curr_elem.email.href.match(/^mailto:\s*(.*@.*)$/))) {
+                    console.log("Matched mailto");
+
+                    curr.email=match[1];
+                    if(!curr.phone && phone) curr.phone=phone;
+                    //  else if(curr.phone&&curr.phone.length<6 && phone) curr.phone=phone+(/[A-Za-z]/.test(phone)?" ":" x")+curr.phone;
+                    self.contact_list.push(curr);
+                }
+                else if(curr_elem.email&&curr_elem.email.href && curr_elem.email.title && /@/.test(curr_elem.email.title)) {
+                    console.log("Matched title=",curr_elem.email.title);
+
+                    curr.email=curr_elem.email.title;
+                    if(!curr.phone && phone) curr.phone=phone;
+                    //  else if(curr.phone&&curr.phone.length<6 && phone) curr.phone=phone+(/[A-Za-z]/.test(phone)?" ":" x")+curr.phone;
+                    self.contact_list.push(curr);
+                }
+                else if(curr_elem.email && curr_elem.email.href && (cf_match=curr_elem.email.href.match(/cdn-cgi\/l\/email-protection\#(.*)$/))) {
+                    console.log("curr_elem.outerHTML=",curr_elem.email.outerHTML);
+                    console.log("cf_match[1]=",cf_match[1]);
+                    if(/@/.test(curr_elem.email.innerText)) {
+                        curr.email=curr_elem.email.innerText;
+                    }
+                    else {
+                        let temp_email=MTurkScript.prototype.decodeCloudFlareHex(cf_match[1],0);
+                        console.log("temp_email=",temp_email);
+                        curr.email = MTurkScript.prototype.cfDecodeEmail(cf_match[1]);
+                        console.log("curr=",curr);
+                    }
+                    self.contact_list.push(curr);
+
+                }
+                else {
+                    if(curr_elem.email) console.log("curr_elem.email.outerHTML="+curr_elem.email.outerHTML);
+                    var the_url=MTP.fix_remote_url(staff[i].querySelector("a").href,url);
+                    if(the_url.indexOf("&pREC_ID=contact")===-1) the_url=the_url+"&pREC_ID=contact";
+                    console.log("the_url["+i+"]="+the_url);
+                    curr.email="";
+                    self.contact_list.push(curr);
+
+                    promise_list.push(MTP.create_promise(the_url,self.parse_appsstaff_contactpage,MTP.my_try_func,MTP.my_catch_func,
+                                                         {self:self,curr:curr}));
+                }
             }
-            else if(curr_elem.email&&curr_elem.email.href && (match=curr_elem.email.href.match(/^mailto:\s*(.*@.*)$/))) {
-                console.log("Matched mailto");
-
-                curr.email=match[1];
-                if(!curr.phone && phone) curr.phone=phone;
-                //  else if(curr.phone&&curr.phone.length<6 && phone) curr.phone=phone+(/[A-Za-z]/.test(phone)?" ":" x")+curr.phone;
-                self.contact_list.push(curr);
-            }
-			else if(curr_elem.email&&curr_elem.email.href && curr_elem.email.title && /@/.test(curr_elem.email.title)) {
-                console.log("Matched title=",curr_elem.email.title);
-
-                curr.email=curr_elem.email.title;
-                if(!curr.phone && phone) curr.phone=phone;
-                //  else if(curr.phone&&curr.phone.length<6 && phone) curr.phone=phone+(/[A-Za-z]/.test(phone)?" ":" x")+curr.phone;
-                self.contact_list.push(curr);
-            }
-            else {
-                if(curr_elem.email) console.log("curr_elem.email.outerHTML="+curr_elem.email.outerHTML);
-                var the_url=MTP.fix_remote_url(staff[i].querySelector("a").href,url);
-                if(the_url.indexOf("&pREC_ID=contact")===-1) the_url=the_url+"&pREC_ID=contact";
-                console.log("the_url["+i+"]="+the_url);
-				curr.email="";
-				self.contact_list.push(curr);
-
-                promise_list.push(MTP.create_promise(the_url,self.parse_appsstaff_contactpage,MTP.my_try_func,MTP.my_catch_func,
-                                                     {self:self,curr:curr}));
-            }
-        }
     }
     Promise.all(promise_list).then(function() {
         console.log("Done appsstaff");
