@@ -729,7 +729,12 @@ School.prototype.parse_edlio=function(doc,url,resolve,reject,self) {
                     else {
                         let temp_email=MTurkScript.prototype.decodeCloudFlareHex(cf_match[1],0);
                         console.log("temp_email=",temp_email);
-                        curr.email = MTurkScript.prototype.cfDecodeEmail(cf_match[1]);
+                        var el = document.createElement( 'div' );
+                        el.innerHTML=temp_email;
+
+                        let new_email = el.innerText;
+                        console.log("new_email=",new_email);
+                        curr.email = new_email;
                         console.log("curr=",curr);
                     }
                     self.contact_list.push(curr);
