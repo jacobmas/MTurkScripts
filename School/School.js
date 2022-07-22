@@ -871,7 +871,8 @@ School.prototype.parse_apptegy_field=function(elem,self,url) {
         if(curr_c.phone) curr_c.phone=curr_c.phone+" "+ext[0];
         curr_c.name=curr_c.name.replace(/\s*Ext.*/i,"");
     }
-    if(curr_c.title && self.matches_title_regex(curr_c.title)) self.contact_list.push(curr_c);
+	if(!curr_c.title) curr_c.title="";
+	self.contact_list.push(curr_c);
     // else console.log("curr_c.title="+curr_c.title);
 };
 
