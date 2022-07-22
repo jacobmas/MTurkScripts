@@ -1426,7 +1426,7 @@ School.prototype.parse_bb_swdirectory=function(doc,url,resolve,reject,self) {
 			promise_list.push(MTP.create_promise(item.href,School.prototype.parse_bb_swpage,function() { }, function() { }, self));
 		}	
 	  }
-      Promise.all(promise_list).then(function() { resolve("") }).catch(function() { reject(""); });
+      Promise.all(promise_list).then(function() { resolve("") }).catch(function() { resolve(""); });
 //    resolve("");
 };
 School.prototype.parse_bb_swpage=function(doc,url,resolve,reject,self) {
