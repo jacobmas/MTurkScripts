@@ -1039,8 +1039,8 @@ School.prototype.call_parser=function(result) {
         console.log("Done pushing promises");
         Promise.all(promise_list).then(function() {
             console.log("#### done with url_lst promises");
-			if(self.page_type==="blackboard" && self.contact_list.length===0) {
-				console.log("Blackboard failed, trying parse none");
+			if(self.contact_list.length===0) {
+				console.log("Parser failed, trying parse none");
 				promise=MTP.create_promise(self.base,self.parse_none,self.resolve,self.reject,self);
 				return;
 			}
