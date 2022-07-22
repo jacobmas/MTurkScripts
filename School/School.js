@@ -1560,8 +1560,11 @@ School.prototype.parse_eschoolview_response=function(doc,url,resolve, reject,sel
     var main_div=results.parentNode.nextElementSibling;
     //console.log("main_div.innerHTML="+main_div.innerHTML);
     var spans=main_div.children,i;
+	if(spans.length===0) {
+		spans=doc.querySelectorAll("[id*='divBioSection']");
+	}
     for(i=0;i<spans.length;i++) {
-        //console.log("spans["+i+"].innerHTML="+spans[i].innerHTML);
+        console.log("spans["+i+"].innerHTML="+spans[i].innerHTML);
         curr_contact={name:spans[i].querySelector(".scName")?Gov.parse_name_func(spans[i].querySelector(".scName").innerText.trim()):"",
                       title:spans[i].querySelector(".scTitle")?spans[i].querySelector(".scTitle").innerText.trim():"",
                       phone:spans[i].querySelector(".scPhone")&&spans[i].querySelector(".scPhone").innerText.length>0
@@ -1570,7 +1573,7 @@ School.prototype.parse_eschoolview_response=function(doc,url,resolve, reject,sel
 	if(!/@/.test(curr_contact.email)) curr_contact.email="";
         if(curr_contact.title && self.matches_title_regex(curr_contact.title)) self.contact_list.push(curr_contact);
     }
-    if(spans.length===0) { console.log("doc.body.innerHTML="+doc.body.innerHTML); }
+    //if(spans.length===0) { console.log("doc.body.innerHTML="+doc.body.innerHTML); }
     resolve(self);
 };
 
