@@ -826,7 +826,7 @@ School.prototype.parse_schoolblocks=function(doc,url,resolve,reject,self) {
     Promise.all(promise_list).then(function() { resolve(self); });
 };
 School.prototype.call_schoolblockperson=function(people,url,resolve,reject,self) {
-    GM_xmlhttpRequest({method: 'GET', url: self.base+"/_!_API_!_/2/people/"+people.dataset.id,
+    GM_xmlhttpRequest({method: 'GET', url: self.base+"/en-US/_!_API_!_/2/people/"+people.dataset.id,
                        onload: function(response) { self.parse_schoolblockperson(response, resolve, reject,self,self.base+"/_!_API_!_/2/people/"+people.dataset.id); },
                        onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
                       });
