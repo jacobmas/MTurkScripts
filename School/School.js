@@ -1040,7 +1040,7 @@ School.prototype.call_parser=function(result) {
         Promise.all(promise_list).then(function() {
             console.log("#### done with url_lst promises");
 			if(self.contact_list.length===0) {
-				console.log("Parser failed, trying parse none");
+				console.log("Parse failed, trying parse none");
 				promise=MTP.create_promise(self.base,self.parse_none,self.resolve,self.reject,self);
 				return;
 			}
