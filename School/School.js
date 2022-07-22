@@ -506,7 +506,7 @@ School.prototype.parse_finalsite_fsConstituentItem=function(doc,url,resolve,reje
         curr={};
         let full1=items[i].querySelector(".fsFullName a"),full2=items[i].querySelector("h3.fsFullName");
         curr.name=full1?full1.innerText.trim():(full2?full2.innerText.trim():"");
-        if((title=items[i].querySelector(".fsTitles"))) curr.title=title.innerText.replace(colon_re,"").trim();
+        if((title=items[i].querySelector(".fsTitles,.fsJobTitle"))) curr.title=title.innerText.replace(colon_re,"").trim();
         if((phone=items[i].querySelector(".fsPhones a"))) curr.phone=phone.innerText.trim();
         if((emailscript=items[i].querySelector(".fsEmail script")) &&
            (match=emailscript.innerHTML.match(fsemail_re))) curr.email=match[3].split("").reverse().join("")+"@"+match[2].split("").reverse().join("");;
