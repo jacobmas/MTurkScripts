@@ -896,6 +896,9 @@ School.prototype.get_bing_str=function(str) { return 'https://www.bing.com/searc
 School.prototype.parse_bing_then=function(result) {
     var promise,self=result.self;
     result.self.url=result.url;
+	if(/about-us/.test(result.url)) {
+		self.url = self.url.replace(/(https?:\/\/[^\/]*).*$/,"$1");
+	}
     if(self.url_only && (self.resolve("URL Only")||true)) return;
     promise=MTP.create_promise(self.url,self.init_SchoolSearch,self.resolve,self.reject,self);
 };
