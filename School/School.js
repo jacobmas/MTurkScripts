@@ -49,7 +49,7 @@ function School(query,then_func,catch_func) {
     this.edlio={parser:this.parse_edlio,suffix:"/apps/staff"};
     this.educationalnetworks={parser:this.parse_educationalnetworks,suffix:"/apps/staff"};
     this.eschoolview={parser:this.parse_eschoolview,find_directory:this.find_dir_eschoolview};
-    this.finalsite={parser:this.parse_finalsite,href_rx:/.*/i,text_rx:/(^Staff$)|Staff Directory*|Teacher Pages|Faculty|^Directory/i,find_directory:this.find_dir};
+    this.finalsite={parser:this.parse_finalsite,href_rx:/.*/i,text_rx:/(^Staff$)|Staff Directory*|Teacher Pages|Faculty|^Directory|(School Staff)/i,find_directory:this.find_dir};
     this.foxbright={parser:this.parse_foxbright,href_rx:/.*/i,text_rx:/Staff Directory*/i,find_directory:this.find_dir};
 
     this.gabbart={parser:this.parse_gabbart,href_rx:/.*/i,text_rx:/.*Directory/i,find_directory:this.find_dir};
@@ -141,7 +141,7 @@ School.prototype.search_none=function(doc,url,resolve,reject,extra) {
     var self=extra.self,depth=extra.depth;
     console.log("search_none,url="+url+", depth="+depth);
     var MAX_QUERIES=15;
-    var good_link_str="(^(Admin|District|Central|Personnel|Employee|Staff))|Administration|Contact|Directory|Staff|About|Leadership|Team|Departments|Faculty|Principal|(\\d+(th|st|rd) Grade$)";
+    var good_link_str="(^(Admin|District|Central|Personnel|Employee|Staff))|Administration|Contact|Directory|Staff|About|Leadership|Team|Departments|Faculty|Principal|Kindergarten|(\\d+(th|st|rd) Grade$)";
     if(depth>0) good_link_str="(^(Admin|District|Central|Personnel|Employee|Contact|Directory|Staff|About|Leadership|Team|Departments|Faculty))";
     var good_link_re=new RegExp(good_link_str,"i");
     var i,links=doc.links,promise_list=[];
