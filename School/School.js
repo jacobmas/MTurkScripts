@@ -1849,8 +1849,9 @@ School.prototype.init_SchoolSearch=function(doc,url,resolve,reject,self) {
     /* if suffix we can immediately head to the directory parser */
     if(curr_school && curr_school.suffix) {
         console.log("# heading immediately to directory");
-        self.call_parser({url:self.base+curr_school.suffix,self:self}); 
-	
+		setTimeout(function() { 
+			self.call_parser({url:self.base+curr_school.suffix,self:self}); 
+		}, 1000);
 		
 		}
     else if(curr_school && curr_school.find_directory) {
