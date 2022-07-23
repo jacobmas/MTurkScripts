@@ -944,7 +944,8 @@ School.prototype.parse_bing=function(doc,url,resolve,reject,self) {
     var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
     try {
         search=doc.getElementById("b_content");
-        b_algo=search.getElementsByClassName("b_algo");
+		b_algo=doc.querySelectorAll("#b_results > .b_algo");
+
         lgb_info=doc.getElementById("lgb_info");
         b_context=doc.getElementById("b_context");
 		if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
