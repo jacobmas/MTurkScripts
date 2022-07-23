@@ -922,10 +922,11 @@ School.prototype.matches_school_names=function(name1,name2) {
 
 School.prototype.parse_bing_entry=function(b_algo,i,self) {
     var b_name,b_url,b_caption,p_caption;
-    b_name=b_algo[i].getElementsByTagName("a")[0].textContent;
-    b_url=b_algo[i].getElementsByTagName("a")[0].href.replace(/\/Domain\/.*$/,"");
-    b_caption=b_algo[i].getElementsByClassName("b_caption");
-    p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0)?b_caption[0].getElementsByTagName("p")[0].innerText:"";
+	b_name=b_algo[i].querySelector("h2 a").textContent;
+	b_url=b_algo[i].getElementsByTagName("a")[0].href;
+	b_caption=b_algo[i].getElementsByClassName("b_caption");
+	p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
+	p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : (b_algo[i].querySelector("p")? b_algo[i].querySelector("p").innerText.trim():"");
     if(self.query.debug) console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
     if((!MTP.is_bad_url(b_url,self.bad_urls,6,4)||/\/vnews\/display\.v\/SEC\//.test(b_url)) &&
        !self.is_bad_name(b_name,p_caption)) return {success:true,url:b_url,self:self};
