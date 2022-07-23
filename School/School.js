@@ -1243,7 +1243,11 @@ School.prototype.parse_blackboard=function(doc,url,resolve,reject,self) {
     }
     // console.log("parse_blackboard, url="+url);
 };
-/* staffdirectoryresponsivediv (type1) */
+School.prototype.expand_school_name=function(school_name) {
+    return school_name.replace(/\sMS(\s|$)/," Middle School").replace(/\sHS(\s|$)/," High School")
+    .replace(/\sES(\s|$)/," Elementary School");
+};
+
 School.prototype.parse_bb_staffdirectory=function(doc,url,resolve,reject,self) {
     var dir=self.staffdirectory;
     var inner_a=dir.querySelectorAll("a"),i,j;
@@ -1251,13 +1255,33 @@ School.prototype.parse_bb_staffdirectory=function(doc,url,resolve,reject,self) {
     var click_regex=/SearchButtonClick\(\'([^\']*)\',\s*([\d]*),\s*([\d]*),\s*([\d]*),\s*([\d]*)/,match;
     console.log("parse_bb_staffdirectory,url="+url);
     var promise_list=[],new_url,promise,url_begin,url_end;
+    var loc_filter="", curr_loc;
+    var location_list=doc.querySelectorAll("[id^='ddlFilterLocation'] li");
+    for(curr_loc of location_list) {
+        let loc_text=School.prototype.expand_school_name(curr_loc.innerText.trim());//School.prototype.expand_school_name(curr_loc.innerText.trim());\
+        console.log("loc_text=",loc_text);
+        if(loc_text.length===0) continue;
+//        if(loc_text.trim().length()===0) continue;
+        console.log("loc_text=",loc_text);
+        if(MTurkScript.prototype.matches_names(self.name,loc_text)) {
+            console.log("matched on loc_text");
+            loc_filter = curr_loc.innerText.trim();
+            console.log("loc_filter=",loc_filter);
+            break;
+        }
+    }
     for(i=0;i<self.title_str.length;i++) {
         url_begin=self.url+"/site/default.aspx?PageType=2&PageModuleInstanceID="; //&ViewID=
         url_end="&RenderLoc=0&FlexDataID=0&Filter=JobTitle%3A"+encodeURIComponent(self.title_str[i]);
+      /*  if(loc_filter) {
+            url_end=url_end+"%3BSite%3A"+encodeURIComponent(loc_filter);
+        }*/
+
         for(j=0;j<inner_a.length;j++) {
 
             if((match=inner_a[j].outerHTML.match(click_regex))) {
                 new_url=url_begin+match[5]+"&ViewID="+match[1]+url_end;
+                console.log("new_url=",new_url);
                 promise=MTP.create_promise(new_url,self.parse_bb_staffdirectory_results,function(result) { console.log("Done results bbstaffdirectory"); }
                                            ,MTP.my_catch_func,self);
                 break;
