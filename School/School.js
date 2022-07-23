@@ -1845,6 +1845,9 @@ School.prototype.init_SchoolSearch=function(doc,url,resolve,reject,self) {
         console.log("searching for base "+JSON.stringify(self[self.page_type]));
         self.base=curr_school.find_base(doc,url+(curr_school.base_suffix?curr_school.base_suffix:""),resolve,reject,self).replace(/\/$/,""); }
     console.log("self.base="+self.base);
+	if(self.page_type==='edlio') {
+		self.base=self.base.replace(/\/apps\/.*$/,"");
+	}
 
     /* if suffix we can immediately head to the directory parser */
     if(curr_school && curr_school.suffix) {
