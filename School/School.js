@@ -1172,7 +1172,7 @@ School.prototype.find_dir_bb=function(doc,url,resolve,reject,extra) {
         }
 
         if((new_url=self.find_dir_bb_scripts(scripts,url,self))) {
-            if(!/http/.test(new_url)) new_url=self.base.replace(/(https?:\/\/[^\/]).*$/,"$1")+(/^\//.test(new_url)?"":"/")+new_url;
+            if(!/http/.test(new_url)) new_url=self.base.replace(/(https?:\/\/[^\/]*).*$/,"$1")+(/^\//.test(new_url)?"":"/")+new_url;
             console.log(domain+": resolving from scripts "+new_url);
 
             resolve({url:new_url,self:self}); }
