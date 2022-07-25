@@ -27,7 +27,7 @@ function School(query,then_func,catch_func) {
                    "/publicschoolsk12.com",".publicschoolreview.com","privateschoolreview.com",".ratemyteachers.com",".realtor.com",
                    ".schoolbug.org",".schoolfamily.com",".schooldigger.com","//twitter.com",".youtube.com",
                    ".teacherlists.com",".trueschools.com",".trulia.com",".usnews.com","raise.me",
-                   ".wagenersc.com",".wikipedia.org",".wikispaces.com",".wyzant.com",
+                   ".wagenersc.com",".wikipedia.org",".wikispaces.com",".wyzant.com",".winnie.com",
                    ".yellowbook.com",".yellowpages.com",".yelp.com",".zillow.com",".usa.com","cde.ca.gov",".bigteams.com",".britannica.com"];
     this.query=query;
     this.name="";this.city="";this.state="";
