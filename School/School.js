@@ -1516,7 +1516,7 @@ School.prototype.parse_bb_swpage=function(doc,url,resolve,reject,self) {
 		self.contact_list.push(curr_contact);
 	}
 	resolve("");
-}
+};
 
 /* TODO: needs work other possible locations of staff directory exist */
 School.prototype.find_dir_eschoolview=function(doc,url,resolve,reject,self) {
