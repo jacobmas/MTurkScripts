@@ -890,7 +890,8 @@ School.prototype.toString=function() {
 School.prototype.init=function() {
     var promise;
     this.try_count=0;
-    if(this.url===undefined) { promise=MTP.create_promise(this.get_bing_str(this.name+" "+(this.city||"")+" "+
+    if(this.url===undefined) { 
+	promise=MTP.create_promise(this.get_bing_str(this.name+(this.street?" "+this.street:"")+" "+(this.city||"")+" "+
     (reverse_state_map[this.state]||(this.state||""))+" "),
                                                           this.parse_bing,this.parse_bing_then,this.failed_search_func?this.failed_search_func:MTP.my_catch_func,this); }
     else promise=MTP.create_promise(this.url,this.init_SchoolSearch,this.resolve,this.reject,this);
