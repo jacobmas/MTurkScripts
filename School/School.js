@@ -19,6 +19,7 @@ function School(query,then_func,catch_func) {
     var x;
     this.contact_list=[];
     this.bad_urls=[".schools-info.com",".har.com",".yelp.ca",".whereorg.com",".movoto.com",
+	".mturkcontent.com",
 	".adventistdirectory.org","/alumnius.net",".areavibes.com",".biz/",".buzzfile.com",".chamberofcommerce.com",".city-data.com",".donorschoose.org",".dreambox.com",".edmodo.com",
                    ".educationbug.org",".elementaryschools.org",".estately.com",".facebook.com",".greatschools.org","//high-schools.com",
                    ".hometownlocator.com",".localschooldirectory.com",".maxpreps.com",".mapquest.com",".myatlantaareahome.com",".niche.com",
@@ -1505,13 +1506,25 @@ School.prototype.parse_bb_swpage=function(doc,url,resolve,reject,self) {
 	var curr_contact={};
 	var staffemail=doc.querySelector("[id^='emailLabel']");
 	var staffphone=doc.querySelector("[id^='phoneLabel']");
+    var email;
 
 	var match;
 	if(name) curr_contact.name=name.innerText.trim();
+    else if((name=doc.querySelector(".ui-widget h1")) && /\s-\s/.test(name.innerText.trim())) {
+        console.log("Found name=",name);
+        let split=name.innerText.split(/\s-\s/);
+        curr_contact.name=split[0].trim().replace(/(.*),\s*(.*)/,"$2 $1");
+        curr_contact.title=split[1].trim();
+    }
+
 	if(staffemail&&(match=staffemail.innerHTML.match(/swrot13\(\'([^\']+)\'/))) {
 			curr_contact.email=MTP.swrot13(match[1].toLowerCase());
 		}
+    else if((email=doc.querySelector("a[href^='mailto:']")) && /@/.test(email.innerText.trim())) {
+        curr_contact.email=email.innerText.trim();
+    }
 	if(staffphone) curr_contact.phone=staffphone.innerText;
+    console.log("curr_contact=",curr_contact);
 	if(curr_contact.name && curr_contact.email) {
 		self.contact_list.push(curr_contact);
 	}
