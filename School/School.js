@@ -1219,6 +1219,8 @@ School.prototype.parse_blackboard=function(doc,url,resolve,reject,self) {
     var staffdirectory=doc.querySelector(".staffdirectorydiv"),minibase=doc.querySelector(".minibase")
     var swdirectory=doc.querySelector(".sw-directory-item"),promise,footer=doc.querySelector(".gb-footer");
     var domain=MTP.get_domain_only(url),match;
+    var widget_header=doc.querySelector(".ui-widget.pagenavigation .ui-widget-header");
+    var widget_links=doc.querySelectorAll(".ui-widget.pagenavigation a");
     if(!footer && !(footer=doc.querySelector("#gb-footer"))) footer=doc.querySelector("footer");
     //console.log("footer.innerHTML="+footer.innerHTML);
     self.phone=self.find_phone(doc,url);
@@ -1230,10 +1232,25 @@ School.prototype.parse_blackboard=function(doc,url,resolve,reject,self) {
     else if(minibase && (self.minibase=minibase)) self.parse_bb_minibase(doc,url,resolve,reject,self);
     else if(swdirectory) self.parse_bb_swdirectory(doc,url,resolve,reject,self);
     else if(self.bb_depth===0) {
-        console.log(domain+":Could not identify blackboard directory type "+url+",depth="+self.bb_depth);
-        resolve(self);
+        if(widget_header && /About Us|Team|Staff/i.test(widget_header.innerText.trim())) {
+            self.bb_depth++;
+            let l;
+            let promise_list=[];
+            for(l of widget_links) {
+                l.href=MTP.fix_remote_url(l.href,url);
+                promise_list.push(MTurkScript.prototype.create_promise(l.href,self.parse_blackboard,function() { console.log("Done page1"); }, function() { console.log("failed page1"); }, self));
+            }
+            Promise.all(promise_list).then(resolve).catch(resolve);
+            return;
 
-        self.bb_depth++;
+
+        }
+        else {
+            console.log(domain+":Could not identify blackboard directory type "+url+",depth="+self.bb_depth);
+            resolve(self);
+
+            self.bb_depth++;
+        }
 
     }
     else {
