@@ -1929,6 +1929,7 @@ School.prototype.id_page_type=function(doc,url,resolve,reject,self) {
     doc.querySelectorAll("footer").forEach(function(footer) {
         if(footer.dataset.createSiteUrl&&/sites\.google\.com/.test(footer.dataset.createSiteUrl)) sites_google_found=true; });
     if(page_type==="none" && doc.getElementById("sw-footer-copyright")) page_type="blackboard";
+	else if(page_type==="none" && doc.querySelector("[href*='schoolpointe.com']")) page_type="schoolpointe";
     else if(page_type==="none"&& sites_google_found) page_type="sites_google";
 	else if(page_type==="none" && doc.querySelector("link[href*='sharpschool.com']")) page_type="schoolmessenger";
     if(page_type==="none") {
