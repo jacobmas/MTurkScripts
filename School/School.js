@@ -1481,9 +1481,22 @@ School.prototype.parse_bb_minibase_results=function(doc,url,resolve,reject,extra
         if(!curr_contact.title&&curr_contact.department) curr_contact.title=curr_contact.department;
         if(curr_contact.title && self.matches_title_regex(curr_contact.title)) self.contact_list.push(curr_contact);
     }
+    var last_button=doc.querySelector(".ui-paging-lastBtn");
+    if(last_button) {
+        let match=url.match(/PageIndex\=([\d+])/);
+        console.log("match=",match);
+        let new_index=1+parseInt(match[1]);
+
+        let new_url=url.replace(/PageIndex=([\d+])/,"PageIndex="+new_index);
+        console.log("new_url=",new_url);
+        let promise=MTP.create_promise(new_url,self.parse_bb_minibase_results,resolve,reject,{self:self,title_str:title_str});
+        return;
+    }
+
     resolve(self);
     // console.log("flexlist="+flexlist.innerHTML);
 };
+
 
 School.prototype.parse_bb_swdirectory=function(doc,url,resolve,reject,self) {
     console.log("parse_bb_swdirectory,url="+url+", resolving immediately for now");
