@@ -956,7 +956,7 @@ School.prototype.parse_bing=function(doc,url,resolve,reject,self) {
 		}
 		
 		
-        for(i=0; i < b_algo.length&&i<1; i++) {
+        for(i=0; i < b_algo.length&&i<2; i++) {
             entry_result=self.parse_bing_entry(b_algo,i,self);
             if(entry_result.success && (resolve(entry_result)||true)) return;
             else if(entry_result.closed && (reject(entry_result)||true)) return;
@@ -982,7 +982,7 @@ School.prototype.parse_bing=function(doc,url,resolve,reject,self) {
             return;
         }
 
-        for(i=1; i < b_algo.length&&i<5; i++) {
+        for(i=2; i < b_algo.length&&i<5; i++) {
             entry_result=self.parse_bing_entry(b_algo,i,self);
             if(entry_result.success && (resolve(entry_result)||true)) return;
             else if(entry_result.closed && (reject(entry_result)||true)) return;
