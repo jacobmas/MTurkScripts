@@ -54,7 +54,7 @@ function School(query,then_func,catch_func) {
     this.foxbright={parser:this.parse_foxbright,href_rx:/.*/i,text_rx:/Staff Directory*/i,find_directory:this.find_dir};
 
     this.gabbart={parser:this.parse_gabbart,href_rx:/.*/i,text_rx:/.*(Directory|Faculty)/i,find_directory:this.find_dir};
-    this.campussuite={parser:this.parse_campussuite,href_rx:/staff-directory|staff-links/i,text_rx:/.*/,find_directory:this.find_dir};
+    this.campussuite={parser:this.parse_campussuite,href_rx:/staff-directory|staff-links|\/directory\//i,text_rx:/.*/,find_directory:this.find_dir};
     this.schoolblocks={parser:this.parse_schoolblocks,suffix:"/staff"};
     this.schoolpointe={parser:this.parse_schoolpointe,suffix:"/staff",find_base:this.find_base_schoolpointe};
     this.schoolmessenger={parser:this.parse_schoolmessenger,href_rx:/.*/i,text_rx:/(^(((Staff )?(Information|Directory))|(Staff$)))|Staff Directory|Staff List/i,find_directory:this.find_dir,
