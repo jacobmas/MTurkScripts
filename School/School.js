@@ -25,7 +25,9 @@ function School(query,then_func,catch_func) {
                    ".hometownlocator.com",".localschooldirectory.com",".maxpreps.com",".mapquest.com",".myatlantaareahome.com",".niche.com",
                    ".nonprofitfacts.com",".pinterest.com",".prekschools.org",".neighborhoodscout.com",
                    "/publicschoolsk12.com",".publicschoolreview.com","privateschoolreview.com",".ratemyteachers.com",".realtor.com",
-                   ".schoolbug.org",".schoolfamily.com",".schooldigger.com","//twitter.com",".youtube.com",
+                   ".schoolbug.org",".schoolfamily.com",
+				   "/schoolquality.virginia.gov",
+				   ".schooldigger.com","//twitter.com",".youtube.com",
                    ".teacherlists.com",".trueschools.com",".trulia.com",".usnews.com","raise.me",
                    ".wagenersc.com",".wikipedia.org",".wikispaces.com",".wyzant.com",".winnie.com",
                    ".yellowbook.com",".yellowpages.com",".yelp.com",".zillow.com",".usa.com","cde.ca.gov",".bigteams.com",".britannica.com"];
