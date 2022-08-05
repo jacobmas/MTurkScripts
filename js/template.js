@@ -80,7 +80,7 @@
 					}
             for(i=0; i < b_algo.length; i++) {
                 b_name=b_algo[i].querySelector("h2 a").textContent;
-                b_url=b_algo[i].getElementsByTagName("a")[0].href;
+                b_url=b_algo[i].querySelector("h2 a").href;
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : (b_algo[i].querySelector("p")? b_algo[i].querySelector("p").innerText.trim():"");
