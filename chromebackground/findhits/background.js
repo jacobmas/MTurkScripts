@@ -3,7 +3,12 @@ let color = '#3aa757';
 var hits_to_get=10;
 var notified=false;
 
-var good_requesters=["A1BOHRKGTWLMTJ"]; // For now just DoctorDB 
+var good_non_auto=["Brian Hession","mlamba","ChrisRichmond","Researcher2022"];
+
+var good_requesters=["A1BOHRKGTWLMTJ"]; // For now just DoctorDB
+
+/* Dictionary of good hits non-autograbbed */
+var recent_good_hits={}; 
 
 // for doctordb?  //https://worker.mturk.com/projects/3MQQ4RVXBBHPUKA68EQ27OEKCA12A7/tasks/accept_random?ref=w_pl_prvw
 // https://worker.mturk.com/requesters/A1BOHRKGTWLMTJ/projects
@@ -21,8 +26,14 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
 	if(hits_to_get<1) hits_to_get++;
 	if(alarm.name==="checkForHits") {
 		console.log("checking for hits");
-		
+		let iter;
+		for(iter of good_non_auto) {
+			console.log(`storage ${iter}=${chrome.storage.local.get(iter, function(result) { 
+				console.log("result=",result) 
+			})}`)
+		}
 	}
+	else { return; }
 	/* Iterate over requesters, look for hits */
 	for(req of good_requesters) {
 		let curr_url=`https://worker.mturk.com/requesters/${req}/projects`;
@@ -175,9 +186,11 @@ function parse_text(data) {
 	
 	//my_match=my_match.map(x => x.replace(my_re_name,"$1"));
 	var good_re=/Doctor DB/;
+	var good_non_auto_re=/Brian Hession|mlamba|ChrisRichmond/;
 	console.log("my_match=",my_match);
 	var x;
 	var counter=0;
+	var begin_time=Date.now();
 	if(!my_match) return "";
 	for(x of my_match) {
 		counter+=1;
@@ -197,6 +210,16 @@ function parse_text(data) {
 				//hits_to_get=0;
 			}
 			
+		}
+		else if(my_name_match && my_name_match.length>=2 && 
+		good_non_auto.includes(my_name_match[1])
+		)
+		
+		{
+			get_notify_chrome_storage(my_name_match[1]);
+
+
+
 		}
 	}
 	if(!got_hits&&hits_to_get<10) {
@@ -236,6 +259,66 @@ function hit_accept(response,my_id_match,count,name_match, output_good) {
 		}
 	}
 /*<div data-react-class="require(&#39;reactComponents/alert/Alert&#39;)[&#39;PureAlert&#39;]" data-react-props="{&quot;type&quot;:&quot;danger&quot;,&quot;header&quot;:&quot;There are no more of these HITs available&quot;,&quot;message&quot;:&quot;Browse &lt;a href=\&quot;/projects\&quot;&gt;all available HITs&lt;/a&gt;.&quot;,&quot;renderMessageAsHTML&quot;:true}"></div>*/
+}
+
+function get_notify_chrome_storage(name) {
+	console.warn("name=",name)
+	chrome.storage.sync.get([name]).then(function(result) { handle_name(name,result) });
+	
+	/*, function(result) {
+		console.warn("get response, result=",result,"name=",name)
+
+		let begin_time = Date.now();
+		if(result.key) {
+			console.log("result.key=",result.key,"name=",name,
+			"begin_time-result.key=",begin_time-result.key);
+		}
+		if(!result.key || begin_time-result.key>=1000*43200) {
+			// Alert twice a day about new hit sets? 
+			chrome.notifications.create('nongrabbed', {
+				type: 'basic',
+				iconUrl:'images/get_started16.png',
+				title: 'HIT Alert',
+				message: `Hits from ${name} available ${begin_time-result.key}`,
+				priority: 2
+				});
+			let key=name;
+			chrome.storage.local.set({key:begin_time.toString()},function(response) {
+				console.warn("set response, response=",response,"name=",name);
+				chrome.storage.local.get(key,function(result) { 
+					console.log("inner getresult=",result);
+				});
+
+			});
+		}
+	});*/
+}
+
+function handle_name(name, result) {
+	console.warn("handle_name, result=",JSON.stringify(result));
+	let begin_time = Date.now();
+		if(result[name]) {
+			console.log(
+			"begin_time-result["+name+"]=",begin_time-result[name]);
+		}
+		if(!result[name] || begin_time-result[name]>=1000*43200) {
+			// Alert twice a day about new hit sets? 
+			chrome.notifications.create('nongrabbed', {
+				type: 'basic',
+				iconUrl:'images/get_started16.png',
+				title: 'HIT Alert',
+				message: `Hits from ${name} available ${begin_time-result[name]}`,
+				priority: 2
+				});
+			let key=name;
+			var jsonfile = {};
+    	jsonfile[key] = begin_time;
+			chrome.storage.sync.set(jsonfile,function(response) {
+				
+
+			});
+		}
+
 }
 
 
