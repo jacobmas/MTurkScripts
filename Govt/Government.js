@@ -56,6 +56,15 @@ Gov.find_phone=function(doc,url) {
     else if(!phone && (match=doc.body.innerHTML.match(ext_phone_re))) phone=match[1];
     // else if((match=doc.body.innerHTML.match(phone_re))) console.log("phone alone match="+match);
     console.log("Phone="+phone);
+	if(!phone) {
+		let temp_phone=doc.querySelector("a[href^='tel']"); 
+		let nums=phone.href.replace(/[^\d]/g,"");
+		nums=nums.replace(/^1/,"");
+		if(nums.length===10) {
+			phone=nums.substr(0,3)+"-"+nums.substr(3,3)+"-"+nums.substr(6,4);
+
+		}
+	}
     return phone;
 };
 Gov.scrape_lone_emails=function(doc,url) {
