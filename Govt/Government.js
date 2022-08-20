@@ -58,11 +58,13 @@ Gov.find_phone=function(doc,url) {
     console.log("Phone="+phone);
 	if(!phone) {
 		let temp_phone=doc.querySelector("a[href^='tel']"); 
-		let nums=phone.href.replace(/[^\d]/g,"");
-		nums=nums.replace(/^1/,"");
-		if(nums.length===10) {
-			phone=nums.substr(0,3)+"-"+nums.substr(3,3)+"-"+nums.substr(6,4);
+		if(temp_phone) {
+			let nums=temp_phone.href.replace(/[^\d]/g,"");
+			nums=nums.replace(/^1/,"");
+			if(nums.length===10) {
+				phone=nums.substr(0,3)+"-"+nums.substr(3,3)+"-"+nums.substr(6,4);
 
+			}
 		}
 	}
     return phone;
