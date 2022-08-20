@@ -2021,6 +2021,25 @@ MTurkScript.prototype.find_logo=function(doc,url) {
 	return logo;
 };	
 
+
+MTurkScript.prototype.find_social_media=function(doc,url) {
+    var links=doc.links;
+    var x;
+    var result={};
+    for(x of links) {
+        if(/facebook\.com/.test(x.href) && !MTurkScript.prototype.is_bad_fb(x.href)) {
+            result.facebook=x.href; }
+        if(/twitter\.com/.test(x.href) && !MTurkScript.prototype.is_bad_twitter(x.href)) {
+            result.twitter=x.href; }
+        if(/instagram\.com/.test(x.href) && !MTurkScript.prototype.is_bad_instagram(x.href)) {
+            result.instagram=x.href; }
+        if(/tiktok\.com/.test(x.href)) {
+            result.tiktok=x.href; }
+    }
+    return result;
+
+};
+
 var MTP=MTurkScript.prototype;
 
 
