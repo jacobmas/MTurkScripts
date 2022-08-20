@@ -205,6 +205,9 @@ Gov.parse_department=function(doc,url,resolve,reject,dept) {
 /** Gov.load_scripts loads all the tables in a document into a special non-displayed div at the end of the current document  */
 Gov.load_scripts=function(doc,url,resolve,reject,dept_name) {
     if(typeof(dept_name)==="object") { dept_name=""; }
+	let temp_phone;
+	if(!Gov.phone && (temp_phone=Gov.find_phone(doc,url))) Gov.phone=temp_phone;
+
     console.log("load scripts: "+url+", Department="+dept_name);
     var scripts_to_load=[],i,j,scripts=doc.scripts,curr_script,script_list=[];
     var temp_div=document.createElement("div"),head=document.head;
