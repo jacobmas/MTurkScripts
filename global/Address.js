@@ -776,9 +776,15 @@ Address.parse_postal_elem=function(elem,priority,site,url) {
         ret.address1=ret.address1.replace(/,.*$/,"");
     }
     if(ret.address1&&ret.city&&ret.state&&ret.zip) {
-        //text=ret.address1+","+ret.city+", "+ret.state+" "+ret.zip;
+        //let text=ret.address1+","+ret.city+", "+ret.state+" "+ret.zip;
         //console.log("* Adding address in parse_postal_elem for "+site+", text");
-        Address.addressList.push(new Address(ret,priority,url,Address.debug));
+        let temp_add=new Address(text,priority,url,Address.debug);
+        temp_add.address1=ret.address1;
+        temp_add.postcode=ret.zip;
+        temp_add.city=ret.city;
+        temp_add.address2=ret.address2||"";
+        temp_add.state=ret.state;
+        Address.addressList.push(temp_add);
     }
     
 };
