@@ -751,6 +751,12 @@ Address.cmp=function(add1,add2) {
     if(!(add1 instanceof Address && add2 instanceof Address)) return 0;
     if(add1.priority<add2.priority) return -1;
     else if(add1.priority>add2.priority) return 1;
+    else if(/^\d/.test(add1.address1) && !/^\d/.test(add2.address1)) {
+        return -1;
+    }
+    else if(!/^\d/.test(add1.address1) && /^\d/.test(add2.address1)) {
+        return 1;
+    }
 	
     else return 0;
 };
