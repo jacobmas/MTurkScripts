@@ -778,7 +778,7 @@ Address.parse_postal_elem=function(elem,priority,site,url) {
     if(ret.address1&&ret.city&&ret.state&&ret.zip) {
         //let text=ret.address1+","+ret.city+", "+ret.state+" "+ret.zip;
         //console.log("* Adding address in parse_postal_elem for "+site+", text");
-        let temp_add=new Address(text,priority,url,Address.debug);
+        let temp_add=new Address(ret,priority,url,Address.debug);
         temp_add.address1=ret.address1;
         temp_add.postcode=ret.zip;
         temp_add.city=ret.city;
