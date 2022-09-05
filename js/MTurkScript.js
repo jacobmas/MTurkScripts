@@ -2040,6 +2040,46 @@ MTurkScript.prototype.find_social_media=function(doc,url) {
 
 };
 
+/* Returns a score of how well a name matches email, 0 meaning not at all */
+MTurkScript.prototype.score_name_to_email=function(name, email, institution_domains) {
+	const email_domain=email.replace(/^[^@]*@/).trim();
+	const email_begin=email.replace(/@.*$/,"").toLowerCase().trim();
+	const parsed_name = MTurkScript.prototype.parse_name(name);
+	const fname = parsed_name.fname.toLowerCase();
+	const mname=parsed_name.mname.toLowerCase();
+
+	const lname=parsed_name.lname.toLowerCase();
+	// Check institution domain
+	if(institution_domains && !matches_institution(email_domain, institution_domains)) return -1;
+	if(/^(support|info|media|marketing|webmaster)$/.test(email_begin)) return -1;
+
+	const always_good_prefixes = [fname+"\\."+lname,fname.substr(0,1)+lname,fname.substr(0,1)+"\\."+lname,fname.substr(0,1)+"_"+lname,
+								 fname+"_"+lname,lname+"\\."+fname,lname+"_"+fname,lname+"_"+fname.substr(0,1),fname+"\\."+mname.substr(0,1)+"\\."+lname];
+	let prefix;
+	for(prefix of always_good_prefixes) {
+		if(new RegExp("^"+prefix).test(email_begin)) {
+			return 10;
+		}
+	}
+	let single;
+	const single_name_matches=[fname,lname];
+	for(single of single_name_matches) {
+		if(email_begin===single) {
+			return 5;
+		}
+	}
+	let mixed=[fname.substr(0,1)+"[^a-z]*"+lname+"[^a-z]*"];
+	for(single of mixed) {
+		if(new RegExp("^"+mixed).test(email_begin)) {
+			return 4;
+		}
+	}
+
+	return 0;
+
+
+};
+
 var MTP=MTurkScript.prototype;
 
 
