@@ -1211,7 +1211,7 @@ MTurkScript.prototype.parse_FB_posts=function(doc,url,resolve,reject) {
 TODO: have it repair it automatically
 */
 MTurkScript.prototype.is_bad_fb=function(b_url,b_name) {
-    if(/\/(pages|groups|search|events|directory|public)\//.test(b_url)) return true;
+    if(/\/(pages|groups|search|events|directory|public|places)\//.test(b_url)) return true;
     if(/\/sharer\.php/.test(b_url)) return true;
     return false;
 };
