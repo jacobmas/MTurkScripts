@@ -9,6 +9,9 @@
 // @include        http://*.amazonaws.com/*
 // @include        https://*.amazonaws.com/*
 // @include https://worker.mturk.com/*
+// @include https://*.facebook.com/*
+// @include https://*.meta.com/*
+
 // @grant  GM_getValue
 // @grant GM_setValue
 // @grant GM_deleteValue
@@ -25,25 +28,71 @@
 // @connect yellowpages.com
 // @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/2257154ff3edb3740e0827c93800f3a209e15d18/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/07c3db80c8cc4cbe9fe46d34478c2c93a2495bc2/global/AggParser.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Email/MailTester.js
-// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
+// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=["us-funerals.com",".bestflowers.com",".facebook.com",".yahoo.com",'.yellowpages.com'];
+    var bad_urls=["us-funerals.com",".bestflowers.com",".facebook.com",".yahoo.com",'.yellowpages.com','.yelp.com','.yelp.ca','.superpages.com'];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(24000,750+(Math.random()*1000),[],begin_script,"A2M54IAM74TC8X",true);
+    var MTurk=new MTurkScript(60000,750+(Math.random()*1000),[],begin_script,"A2M54IAM74TC8X",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
         return false;
+    }
+    if(/\.(meta|facebook)\.com/.test(window.location.href)) {
+        GM_addValueChangeListener("facebook",function() {
+            console.log("arguments=",arguments);
+            window.location.href=arguments[2].url;
+        });
+
+        setTimeout(parse_FB,2000);
+
+    }
+
+    function parse_FB() {
+        console.log("parse FB");
+        var result={};
+        let name=document.querySelector(".k4urcfbm h2 > span > span");
+        if(name) result.name=name.innerText.trim();
+        result.address=document.querySelector("a[href*='google.com']")?document.querySelector("a[href*='google.com']").innerText.trim():"";
+
+        var good_fields=document.querySelectorAll(".p8bdhjjv .gvxzyvdx.aeinzg81.t7p7dqev.oog5qr5w");
+        var curr_field;
+        for(curr_field of good_fields) {
+            if(/Follow This/i.test(curr_field.innerText)) {
+                        result.followers=curr_field.innerText.trim().replace(/^([\d,]*).*$/,"$1").replace(/,/g,"");
+            }
+            if(phone_re.test(curr_field.innerText)) {
+                result.phone=curr_field.innerText.trim();
+            }
+            if(email_re.test(curr_field.innerText)) {
+                result.email=curr_field.innerText.trim();
+            }
+            let mail=curr_field.querySelector("a[href^='mailto']");
+            if(mail) {
+                result.email=mail.innerText.trim();
+            }
+
+        }
+
+
+
+        var url=document.querySelector(".o8rfisnq span.py34i1dx > a[href*='.php']")?document.querySelector(".o8rfisnq span.py34i1dx > a[href*='.php']"):"";
+        result.url=url?url.href:"";
+        result.url=decodeURIComponent(result.url.replace("https://l.facebook.com/l.php?u=","")).replace(/\?fbclid\=.*$/,"");
+        console.log("result=",result);
+        result.date=Date.now();
+        GM_setValue("facebook_result",result);
+
     }
 
     function query_response(response,resolve,reject,type) {
@@ -72,7 +121,7 @@
                     }
                 }
                 if(parsed_context.Phone) my_query.fields.phone=parsed_context.Phone;
-                if(parsed_context.Title) my_query.fields.fh_name=parsed_context.Title;
+                if(parsed_context.Title) my_query.fields.fh_name=parsed_context.Title.replace(/✕.*$/,"");
                 if(parsed_context.url && !MTP.is_bad_url(parsed_context.url,bad_urls,-1)) {
 
                     my_query.fields.website_url="www."+MTP.get_domain_only(parsed_context.url);
@@ -167,30 +216,35 @@
 
     function fb_promise_then(result) {
         console.log("fb_promise_then,result="+result);
-        result=result.replace(/(https?:\/\/www\.facebook\.com\/[^\/]*)\/.*$/,"$1").    replace(/\/posts\/.*$/,"");
-        var promise;
-        result=result.replace(/https?:\/\/m\.facebook\.com\//,"https://www.facebook.com/").replace(/\/$/,"")+"/about?refid=17";///?ref=page_internal";//+"/about?ref=page_internal";
-        console.log("result="+result);
-
-
-
-
-promise=MTP.create_promise(result,MTP.parse_FB_about,parse_facebook_then,function(response) { console.log("Error parsing Facebook "+response); },"",
-                                   {},{"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"});
-
-    }
-    function parse_FB_home(doc,url,resolve,reject) {
-        console.log("parse_FB_home: url="+url);
-        console.log(doc);
-        //console.log(doc.body.innerHTML);
-        var stuff,x;
-        stuff=doc.querySelectorAll(".cq");
-        for(x of stuff) {
-            console.log(x);
+        if(!/\/people\//.test(result)) {
+            result=result.replace(/(https?:\/\/www\.facebook\.com\/[^\/]*)\/.*$/,"$1").    replace(/\/posts\/.*$/,"");
+            var promise;
+            result=result.replace(/https?:\/\/m\.facebook\.com\//,"https://www.facebook.com/").replace(/\/$/,"");//+"/about?refid=17";///?ref=page_internal";//+"/about?ref=page_internal";
         }
+        console.log("result="+result);
+        my_query.fb_url=result;
 
-        resolve("fb");
+
+        GM_addValueChangeListener("facebook_result",function() {
+            let result=arguments[2];
+            console.log("result=",result);
+            if(result.email && (!my_query.fields.fh_email||!/@/.test(my_query.fields.fh_email))) {
+                console.log("Setting result.email");
+                my_query.fields.fh_email=result.email;
+            }
+            if(result.phone && (!my_query.fields.phone||!/\d/.test(my_query.fields.phone))) {
+                let temp_phone=result.phone.replace(/^(\+?)1/,"").replace(/[^\d]/g,"");
+                console.log("result.phone=",result.phone,"temp_phone=",temp_phone);
+                my_query.fields.phone=temp_phone.substring(0,3)+"-"+temp_phone.substring(3,6)+"-"+temp_phone.substring(6,10);
+            }
+            my_query.done.fb=true;
+            submit_if_done();
+
+        });
+        GM_setValue("facebook",{url:my_query.fb_url,date:Date.now()});
+
     }
+
 
     function get_quality(curr) {
         var ret=0;
@@ -208,6 +262,7 @@ promise=MTP.create_promise(result,MTP.parse_FB_about,parse_facebook_then,functio
         if(!curr.name||(curr.name&&/Funeral|((^| )(Home|Our)( |$))/i.test(curr.name))||(/\s+Box/.test(curr.title))) ret=0;
         if(/^LLC( |$)/.test(curr.title)) ret=0;
         if(/\s(Rd\.|Dr\.|St\.)/.test(curr.name)) ret=0;
+        console.log("curr=",curr,"ret=",ret);
         return ret;
     }
 
@@ -311,13 +366,21 @@ promise=MTP.create_promise(result,MTP.parse_FB_about,parse_facebook_then,functio
            my_query.checkboxes.fh_provider="other";
                 my_query.fields.fh_provider_other="Remember Tributes";
         }
-                if((temp=doc.querySelector("a[href*='.funeralhomewebsite.com']"))) {
+        if((temp=doc.querySelector("a[href*='.funeralhomewebsite.com']"))) {
            my_query.checkboxes.fh_provider="other";
                 my_query.fields.fh_provider_other="funeralhomewebsite.com";
         }
         else if((temp=doc.querySelector("a[href*='\.articdesigns\.com']"))) {
              my_query.checkboxes.fh_provider="other";
                 my_query.fields.fh_provider_other="Artic Designs";
+        }
+                else if((temp=doc.querySelector("a[href*='www\.srscomputing\.com']"))) {
+             my_query.checkboxes.fh_provider="other";
+                my_query.fields.fh_provider_other="SRS Computing";
+        }
+        else if((temp=doc.querySelector("#ftr .no-break")) && /LifeStoryNet/i.test(temp.innerText.trim())) {
+             my_query.checkboxes.fh_provider="other";
+                my_query.fields.fh_provider_other="LIFESTORYNET, LLC";
         }
 
         else {
@@ -396,7 +459,7 @@ promise=MTP.create_promise(result,MTP.parse_FB_about,parse_facebook_then,functio
             let curr={name:name?name.innerText.trim():"",title:title&&title.firstChild?title.firstChild.textContent.trim():"",
                       email:email?email.href.replace(/^\s*mailto:\s*/,""):"",phone:""};
             console.log(curr);
-            if(curr&&curr.title) {
+            if(curr&&curr.title&&curr.name) {
                 my_query.staff_list.push(new Person(curr,"","",get_quality(curr)));
             }
         }
@@ -576,7 +639,7 @@ promise=MTP.create_promise(result,MTP.parse_FB_about,parse_facebook_then,functio
             title=x.querySelector(".emp-job-title");
             email=x.querySelector(".emp-email");
             let curr={name:name?name.innerText.trim():"",title:title?title.innerText.trim():"",email:email?email.href.replace(/^\s*mailto:\s*/,""):"",phone:""};
-            if(curr.name) {
+            if(curr.name&&MTP.parse_name(curr.name).fname && MTP.parse_name(curr.name).lname) {
                 my_query.staff_list.push(new Person(curr,"","",get_quality(curr)));
             }
             
@@ -817,6 +880,13 @@ promise=MTP.create_promise(result,MTP.parse_FB_about,parse_facebook_then,functio
         console.log("my_query.done="+JSON.stringify(my_query.done));
         for(x in my_query.done) if(!my_query.done[x]) is_done_dones=false;
         is_done=is_done_dones;
+        if(is_done_dones)       {
+            if(!my_query.fields.fh_email) { my_query.fields.fh_email="Not Found";  }
+            if(!my_query.checkboxes.fh_provider) {                my_query.checkboxes.fh_provider="other";
+                my_query.fields.fh_provider_other="None";
+                                                 }
+            add_to_sheet();
+        }
 
         if((my_query.fields.fh_email==="Not Found" || !my_query.fields.fh_email) && (!my_query.fields.owner_first_name||!my_query.fields.owner_title)) is_done=false;
         if(!my_query.fields.city_state_zip) is_done=false;
@@ -835,17 +905,31 @@ promise=MTP.create_promise(result,MTP.parse_FB_about,parse_facebook_then,functio
         console.log("in init_query");
         var i;
         var querydata=document.querySelectorAll(".span-add");
-        var re1=/^(.*) in (.*), (.*)$/,match_query;
-        match_query=querydata[1].innerText.trim().match(re1);
+        var re1=/^([^\d]*)? (\d.*)$/,match_query;
+        let temp_text=querydata[1].innerText;
+        temp_text=temp_text.trim().replace(/\s(\d{4})$/," 0$1");
+        match_query=temp_text.match(re1);
+
+
+        console.log("match_query=",match_query);
+        var add=new Address(match_query[2]);
 
         console.log(querydata);
-        my_query={name:match_query[1],city:match_query[2], state:match_query[3],street:querydata[2].innerText.trim(),phone:querydata[4].innerText.trim(),
+        my_query={name:match_query[1],city:add.city, state:add.state,street:add.address1,phone:"",
 
-                  fields:{fh_email:"",phone:querydata[4].innerText.trim(),owner_first_name:'',address:querydata[2].innerText.trim()},checkboxes:{fh_provider:''},
+                  fields:{fh_email:"",phone:"",owner_first_name:'',address:match_query[2], fh_name:match_query[1]},checkboxes:{fh_provider:''},
                   done:{"query":false,"bbb":false,"buzzfile":false,"fb":false},fb_url:"",
 		  try_count:{"query":0,"bbb":0}, staff_list:[],
 		  submitted:false};
 	console.log("my_query="+JSON.stringify(my_query));
+        console.log("add=",add);
+        my_query.fields.address=add.address1;
+        my_query.fields.city=add.city;
+        my_query.fields.state=add.state;
+        my_query.fields.zip=add.postcode;
+        if(add.city && add.state && add.postcode) {
+            my_query.fields.city_state_zip=add.city+", "+add.state+" "+add.postcode;
+        }
         var search_str=my_query.name+" "+my_query.city+" "+my_query.state;
         const queryPromise = new Promise((resolve, reject) => {
             console.log("Beginning URL search");
