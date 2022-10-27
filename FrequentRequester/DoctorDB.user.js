@@ -38,7 +38,7 @@
     var my_query = {};
     var bad_schemas=["SiteNavigationElement","WebSite","WebPage","WPHeader","WPFooter","ImageGallery","Rating","Review",
                     "AggregateRating","VideoObject","ImageObject"];
-    var bad_urls=['.addresses.com','/allpeople.com','.allstate.com','.angmedicare.com','angi.com','/arrestfacts.com','.arounddeal.com',
+    var bad_urls=['.addresses.com','/allpeople.com','.allstate.com','.ancientfaces.com','.angmedicare.com','angi.com','/arrestfacts.com','.arounddeal.com',
                   '.avvo.com','.bbb.org',
                   '.beenverified.com', '.ballotpedia.','.bettergov.org',
 
@@ -135,7 +135,7 @@
             }
 
             }
-            for(i=0; i < b_algo.length&&i<6; i++) {
+            for(i=0; i < b_algo.length&&i<4; i++) {
                 if((type==='webmdquery'||(type==='query' && my_query.try_count[type]>0)) && i>=3) break;
                 b_name=b_algo[i].querySelector("h2 a").textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
@@ -677,7 +677,6 @@
             add_to_sheet();
             //console.log("my_query.fields=",my_query.fields);
         }
-                    console.log("phone=",phone,"fax=",fax);
 
         if(providers) {
                     console.log("providers=",providers);
@@ -791,7 +790,7 @@
         my_query.fields['office1_source_website']=result;
         add_to_sheet();
         var promise=MTP.create_promise(my_query.practice_url,scrape_doctor,address_scrape_then,function(response) {
-            console.log("Failed address"); },{type:"",depth:0});
+            console.log("Failed address ",response); },{type:"",depth:0});
 
     }
 
@@ -809,7 +808,7 @@
         .replace(/^.*Geriatric.*$/,"Geriatric Medicine").replace(/^.*Obstetrics.*$/,"Obstetrics & Gynecology")
         .replace(/^.*Nephrology.*$/,"Nephrology").replace(/^.*Plastic Surgery.*$/,"Plastic and Reconstructive Surgery")
         .replace(/^.*Pediatrics.*$/,"Pediatrics").replace(/^.*General Surgery.*$/,"Surgery").replace(/^.*Occupational Health.*$/,"Occupational Medicine")
-        .replace(/^.*Nurse Practitioner - Family.*$/,"Family Nurse Practitioner");
+        .replace(/^.*Nurse Practitioner.*Family.*$/,"Family Nurse Practitioner");
                 console.log("specialty=",specialty," actual_specialty=",my_query.actual_specialty);
         let opt;
         for(opt of document.querySelector("#specialty1").options) {
@@ -862,7 +861,6 @@
     function query_web_md(doc,url,resolve,reject) {
         console.log("query_web_md,url="+url);
         var specialty;
-
         try {
             specialty=doc.querySelector(".prov-specialty-name").innerText.trim()
             specialty=specialty.replace("Geriatric Medicine","Geriatrics").replace("Pulmonary Disease","Pulmonary Medicine")
@@ -893,7 +891,9 @@
         if(my_query.fields['office1_source_website']!==undefined &&my_query.fields['office1_source_website'].length>0) {
             reject(""); }
 
-        if(loc) { let promise=MTP.create_promise(loc.href,query_md_practice,resolve,reject); }
+        if(loc) {
+            let promise=MTP.create_promise(loc.href,query_md_practice,resolve,reject);
+        }
         else {
             console.log("Rejecting webmd");
             reject("");
@@ -975,7 +975,7 @@
             if(field=document.getElementsByName(x)[0]) field.value=my_query.fields[x];
         }
         if(!my_query.actual_specialty&&my_query.fields.office1_name) {
-            var specialty_map={"Nephrology":/Nephrology/,"Orthopedic Surgery":/Orthopedic/};
+            var specialty_map={"Nephrology":/Nephrology/,"Orthopedic Surgery":/Orthopedic/,"Pain Medicine":/Spine/,"Family Medicine":/Family(\s|$)/};
             console.log("* NO specialty set");
 
             for(x in specialty_map) {
@@ -1016,11 +1016,17 @@
    
     function update_address(address,suffix) {
         var top,x;
-        top=new Address(address.text.replace(/([a-z]{2,})([A-Z])/,"$1,$2").replace(/(\d+)([A-Z][a-z]+)/,"$1,$2"),address.priority);
-        //console.log("address="+JSON.stringify(address));
+         console.log("address=",address);
+        if(typeof(address.text)==="string") {
+
+            top=new Address(address.text.replace(/([a-z]{2,})([A-Z])/,"$1,$2").replace(/(\d+)([A-Z][a-z]+)/,"$1,$2"),address.priority);
+            //        console.log("top="+JSON.stringify(top));
+        }
+        else {
+            top=address;
+        }
         if(top.postcode) top.zip=top.postcode;
-//        console.log("top="+JSON.stringify(top));
-        
+
 
         for(x in top) {
           //  console.log("Adding "+x+"_"+suffix);
@@ -1157,7 +1163,7 @@
         var add=loc.querySelector("address");
         var phone=loc.querySelector("[href^='tel']");
         var fax=loc.querySelector("[href^='fax']");
-        if((fax&&(fax.href.replace(/[^\d]+/g,"").replace(/^1/,"")).length>0)||(!my_query.fields.city)) {
+        if((fax&&(fax.href.replace(/[^\d]+/g,"").replace(/^1/,"")).length>0)) { //
             let y;
             for(y of h3) {
                 if(y && !/^\s*Practice\s*$/.test(y.innerText.trim())) {  my_query.fields.office1_name=y.innerText.trim();
@@ -1495,7 +1501,7 @@
 
         var npi=a2.href.match(/\d+$/)[0];
 
-
+        if(!my_query.fields) {
         my_query={name:name_match&&name_match.length>1&&name_match[1]?name_match[1].trim():"",specialty:name_match&&name_match.length>=3?name_match[2]:"",title:title,
                   state:state_match?reverse_state_map[state_match[1]]:'',url:"",npi:npi,
                   fields:{},
@@ -1504,6 +1510,7 @@
                   submitted:false,try_count:{"query":0},
 
                  office_list:[]}; // solution list is list of offices
+        }
         if(old_specialty) my_query.specialty=old_specialty;
         if(!my_query.specialty && split.length>1) my_query.specialty=split[1];
         my_query.name=my_query.name.replace(/\s(NP|MD|APRN|PA-C|PA)$/,"").trim();
@@ -1518,7 +1525,8 @@
         my_query.name=my_query.name.replace(title_re,"").trim();
         console.log("my_query.parsed_name=",my_query.parsed_name);
           for(x of required_field_names) {
-            my_query.fields["office1_"+x]="";
+
+//            my_query.fields["office1_"+x]="";
         }
 
 	console.log("my_query="+JSON.stringify(my_query));
