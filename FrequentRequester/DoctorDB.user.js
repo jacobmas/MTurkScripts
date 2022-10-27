@@ -24,9 +24,9 @@
 // @connect yellowpages.com
 // @connect *
 // @require https://raw.githubusercontent.com/hassansin/parse-address/master/parse-address.min.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/8f0d5319a278adacbf5d0cbda2a5056b11183922/js/MTurkScript.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
-// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/cacadbd55536aeccfae3d3760e2c302e4c333f9c/global/Address.js
+// @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Email/MailTester.js
 // @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
@@ -36,38 +36,56 @@
 (function() {
     'use strict';
     var my_query = {};
-    var bad_urls=['/allpeople.com','.angmedicare.com','/arrestfacts.com','.arounddeal.com','.bbb.org',
-                  '.beenverified.com', '.ballotpedia.','.bizapedia.com', '.caredash.com',
+    var bad_schemas=["SiteNavigationElement","WebSite","WebPage","WPHeader","WPFooter","ImageGallery","Rating","Review",
+                    "AggregateRating","VideoObject","ImageObject"];
+    var bad_urls=['.addresses.com','/allpeople.com','.allstate.com','.angmedicare.com','angi.com','/arrestfacts.com','.arounddeal.com',
+                  '.avvo.com','.bbb.org',
+                  '.beenverified.com', '.ballotpedia.','.bettergov.org',
+
+                  'birthindex.org',
+                  '.bizapedia.com', '.caredash.com',
                   '.castleconnolly.com','/checkpeople.com',
                   'clustrmaps.com','.dentalplans.com','www.dfes.com',
-                  '.dnb.com','.docbios.com',
+                  '.diabetesiq.com',
+                  '.dnb.com','.docbios.com','/docspot.com','.docspot.com',
                   '//doctor.com', '.doctor.com', '.doctorhelps.com', '.doximity.com',
                   '.echovita.com','.ecyberclinics.com',
                   '.ehealthscores.com', '.endo-world.com', '.enpnetwork.com','/eyedoctor.io',
-                  '.facebook.com', '.familysearch.org','.fertilityiq.com', '.findagrave.com','findatopdoc.com',
+                  '.facebook.com', '.familysearch.org','.federalpay.org','.fertilityiq.com', '.findagrave.com',
+                  'www.findmugshots.com',
+                  'findatopdoc.com',
                   '.gastro.org', '.getluna.com',
                   'goodreads.com','/govsalaries.com',
-                  '.healthcare4ppl.com', '.healthcare6.com',
-                  '.healthgrades.com', '.healthpage.org', '/healthprovidersdata.com', '.healthsoul.com',
-                  '.healthlynked.com',
-                  '.hipaaspace.com', '.imdb.com','.instantcheckmate.com', 'lawtally.com','.legacy.com',
+                  '/healow.com','.healthcare4ppl.com', '.healthcare6.com',
+                  '.healthgrades.com', '.healthline.com','.healthpage.org', '/healthprovidersdata.com', '.healthsoul.com',
+                  '.healthlynked.com','.hipaaspace.com','.hometownlocator.com',
+                  '.imdb.com','.instantcheckmate.com', '.kellysearch.com',
+                  'lawgroup.com','lawtally.com','.legacy.com',
                   '/licensefiles.com',
-                  '.linkedin.com', '.mapquest.com', '.md.com', '.medicalcare.com', '.medicareforall.com','.medicaredforall.com',
-                  '.medicarelist.com', '.medicinenet.com', '.myheritage.com','.mylife.com',
+                  '.linkedin.com', '.localdoc.com','.locatepeople.org',
+                  '.mapquest.com', '.md.com', '.mdnpi.com', '.medicalcare.com','.medicalnewstoday.com', '.medicareforall.com','.medicaredforall.com',
+                  '.medicarelist.com', '.medicinenet.com', '.morganstanley.com',
+                  '.myheritage.com','.mylife.com',
                   '.mturkcontent.com',
+                  '/npi-lookup.org',
                   '.npidb.com', '/npidb.com', '/npidb.org', '/npino.com', '/npiprofile.com',
-                  '/nuwber.com', '.officialusa.com','/opencorporates.com', '/opengovus.com',
+                  '/nuwber.com', '//obits./', '.officialusa.com','/opencorporates.com', '/opengovus.com',
+                  '/opennpi.com',"/openthedata.com",
                   '/opennpi.org','orthopedic.io','.peekyou.com',
                   '.peoplefinders.com', 'www.primarycare-doctor.com', 'providers.hrt.org','.psychologytoday.com', '/pubprofile.com',
+                  '/publicdatadigger.com',
+                  '.ratemyprofessors.com',
                   '.realself.com','residentdatabase.com', '.researchgate.net','rocketreach.co',
                   '.sharecare.com',
-                  '.spokeo.com', '.topionetworks.com','.topnpi.com','trademarking.in',
-                  "truepeoplesearch.com", '/trustifo.com',
+                  '.spokeo.com', 'statefarm.com', '.ted.com','.topionetworks.com','.topnpi.com','trademarking.in',
+                  ".tributearchive.com",
+                  "truepeoplesearch.com", '/trulista.com','/trustifo.com','/unicourt.com',
                   '.usnews.com', '.vitadox.com', '/vitals.com','.vitals.com',
                   '/voterrecords.com',
                   '.webmd.com', '.wellness.com',
                   '.whitepages.com',
-                  '.wikipedia.org', '.yahoo.com','.yellowpages.com', 'www.yellowpages', '.yelp.com','.zillow.com', '.zocdoc.com','.zoominfo.com']
+                  '.wikipedia.org', '.yahoo.com','.yellowpages.com', 'www.yellowpages', '.yelp.com','.yelp.ca',
+                  '.zillow.com', '.zocdoc.com','.zoominfo.com']
     var MTurk=new MTurkScript(30000,1000,[],begin_script,"A1BOHRKGTWLMTJ",true);
     var MTP=MTurkScript.prototype;
     var add_map={"address1":"address1","address2":"address2","city":"city","state":"state","postcode":"zip"};
@@ -79,7 +97,7 @@
     function query_response(response,resolve,reject,type) {
         var doc = new DOMParser()
         .parseFromString(response.responseText, "text/html");
-        console.log("in query_response\n"+response.finalUrl+", type=",type);
+        console.log("in query_response\n"+response.finalUrl+", type="+type);
         var search, b_algo, i=0, inner_a;
         var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
         var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
@@ -93,7 +111,8 @@
 	    if(b_context&&(parsed_context=MTP.parse_b_context(b_context))) {
                 console.log("parsed_context="+JSON.stringify(parsed_context));
 
-            if(parsed_context.url&&!MTP.is_bad_url(parsed_context.url,bad_urls,-1)) {
+            if(type==="query" && parsed_context.url&&!MTP.is_bad_url(parsed_context.url,bad_urls,-1)) {
+                parsed_context.url=parsed_context.url.replace(/https?:\/\/www\.www\./,"https://www.");
                 resolve(parsed_context.url);
                 return;
             }
@@ -109,7 +128,7 @@
         }
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
                     console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length&&i<4; i++) {
+            for(i=0; i < b_algo.length&&i<3; i++) {
                 if(type==='webmdquery' && i>=3) break;
                 b_name=b_algo[i].querySelector("h2 a").textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
@@ -117,15 +136,16 @@
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                if(type==="healthgrades" && /healthgrades\.com/.test(b_url) && !MTP.is_bad_name(my_query.name.replace(/M\.?D\.?/,"").trim(),b_name.replace(/[,\|].*$/,"").replace(/Dr\./,"").replace(/,?\s*MD/,""))
+                if(type==="healthgrades" && /healthgrades\.com/.test(b_url) && !/group-directory\//.test(b_url) && !MTP.is_bad_name(my_query.name.replace(/M\.?D\.?/,"").trim(),b_name.replace(/[,\|].*$/,"").replace(/Dr\./,"").replace(/,?\s*MD/,""))
                    && new RegExp(my_query.parsed_name.lname,"i").test(b_name)) {
                     resolve(b_url);
                     return;
                 }
-                if(type!="healthgrades" && !MTP.is_bad_name(my_query.name,b_name) && new RegExp(my_query.parsed_name.lname,"i").test(b_name) && (!MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1)||
+                if(type==="query" && !MTP.is_bad_name(my_query.name,b_name) &&
+                   new RegExp(my_query.parsed_name.lname,"i").test(b_name) && (!MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1)) && (b1_success=true)) break;
 
-                    (type==='webmdquery' && /\.webmd\.com/.test(b_url) && /\/doctor\//.test(b_url) && !/find\-a\-doctor\//.test(b_url))) &&  (b1_success=true)) break;
-                if(type==="query" && i===0  && (!MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1)) && /doctor|medicine|health/.test(b_name) && (b1_success=true)) break;
+                if(type==='webmdquery' && /\.webmd\.com/.test(b_url) && /\/doctor\//.test(b_url) && !/find\-a\-doctor\//.test(b_url) && (b1_success=true)) break;
+                if(type==="query" && i===0  && (!MTurkScript.prototype.is_bad_url(b_url, bad_urls,-1)) && /medical|health|doctor/.test(b_url) && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
         }
@@ -146,6 +166,13 @@
             my_query.try_count[type]++;
             let search_str=my_query.name+" "+my_query.state;
             query_search(search_str, resolve, reject, query_response,"query");
+            return;
+
+        }
+         if(type==="healthgrades" && my_query.try_count[type]===0) {
+            my_query.try_count[type]++;
+            let search_str=my_query.name+" "+my_query.state+" healthgrades";
+            query_search(search_str, resolve, reject, query_response,"healthgrades");
             return;
 
         }
@@ -181,11 +208,18 @@
             if((city=curr.querySelector("[itemprop='addressLocality']"))) temp_result.city=city.innerText.trim(); else counter++;
             if((state=curr.querySelector("[itemprop='addressRegion']"))) temp_result.state=state.innerText.trim(); else counter++;
             if((zip=curr.querySelector("[itemprop='postalCode']"))) temp_result.zip=zip.innerText.trim(); else counter++;
-            if((phone_icon=curr.querySelector(".icon-phone")) && phone_icon.parentNode&&phone_icon.parentNode.nextElementSibling) temp_result.phone_number=phone_icon.parentNode.nextElementSibling.innerText.trim(); else counter++;
+            if((phone_icon=curr.querySelector(".icon-phone")) && phone_icon.parentNode&&phone_icon.parentNode.nextElementSibling) {
+                temp_result.phone_number=phone_icon.parentNode.nextElementSibling.innerText.trim().replace(/[^\d]+/g,"").replace(/^1/,""); }
+            else counter++;
 
-            if((fax_icon=curr.querySelector(".icon-print")) && fax_icon.parentNode&&fax_icon.parentNode.nextElementSibling) temp_result.fax_number=fax_icon.parentNode.nextElementSibling.innerText.trim(); else counter+=2;
+            if((fax_icon=curr.querySelector(".icon-print")) && fax_icon.parentNode&&fax_icon.parentNode.nextElementSibling)
+            {
+                temp_result.fax_number="1"+fax_icon.parentNode.nextElementSibling.innerText.trim().replace(/[^\d]+/g,"").replace(/^1/,"").trim();
+            }
+            else counter+=2;
 
             temp_result.priority=counter;
+            temp_result.source_website=url;
             console.log("temp_result=",temp_result);
             my_query.office_list.push(temp_result);
         }
@@ -197,7 +231,9 @@
         var add_map={"address1":"address1","address2":"address2","city":"city","state":"state","postcode":"zip"};
         var x,temp,add;
         for(y of itemtype) {
-           // console.log("y=",y,"y.itemtype=",y.getAttribute('itemtype'));
+            if(/addressPostalAddress/.test(y.getAttribute('itemtype'))) {
+               }
+            console.log("y=",y,"y.itemtype=",y.getAttribute('itemtype'));
             if(/MedicalSpecialty/i.test(y.getAttribute('itemtype'))) {
                 let specialty_name=y.querySelector("[itemprop='name']");
                 if(specialty_name) {
@@ -218,22 +254,30 @@
                 let temp_add;
                 if(add.content) {
                     temp_add=new Address(add.content);
-
-                }
-                else {
-                    let temp_name=add.querySelector("[itemprop='name']");
-                    if(temp_name) temp_result['name']=temp_name.innerText.trim();
-                    let temp_address1=(add.querySelector("[itemprop='streetAddress']")?add.querySelector("[itemprop='streetAddress']").innerText:"")+","+
-                       (add.querySelector("[itemprop='addressLocality']")?add.querySelector("[itemprop='addressLocality']").innerText:"")+
-                        ", "+ (add.querySelector("[itemprop='addressRegion']")?add.querySelector("[itemprop='addressRegion']").innerText:"")+" "+
-                        (add.querySelector("[itemprop='postalCode']")?add.querySelector("[itemprop='postalCode']").innerText:"");
-                    temp_add=new Address(temp_address1);
-                }
-                for(x in add_map) {
+                    for(x in add_map) {
                         temp_result[add_map[x]]=temp_add[x];
                     }
 
+                }
+                else {
+                    console.log("In add, add=",add," no content");
+                    let temp_name=add.querySelector("[itemprop='name'],[itemprop='legalName']");
+                    if(temp_name) temp_result['name']=temp_name.innerText.trim();
+                    console.log("add.querySelector(\"[itemprop='streetAddress']\")=",add.querySelector("[itemprop='streetAddress']"));
+                    temp_result.address1=add.querySelector("[itemprop='streetAddress']")?add.querySelector("[itemprop='streetAddress']").innerText:"";
+                    if(!temp_result.address1) temp_result.address1=add.querySelector("[itemprop='streetAddress']")?add.querySelector("[itemprop='streetAddress']").content:"";
+                    temp_result.city=add.querySelector("[itemprop='addressLocality']")?add.querySelector("[itemprop='addressLocality']").innerText:"";
+                    if(!temp_result.city) temp_result.city=add.querySelector("[itemprop='addressLocality']")?add.querySelector("[itemprop='addressLocality']").content:"";
+                    temp_result.state=add.querySelector("[itemprop='addressRegion']")?add.querySelector("[itemprop='addressRegion']").innerText:"";
+                    if(!temp_result.state) temp_result.state=add.querySelector("[itemprop='addressRegion']")?add.querySelector("[itemprop='addressRegion']").content:"";
+
+                    temp_result.postcode=add.querySelector("[itemprop='postalCode']")?add.querySelector("[itemprop='postalCode']").innerText:"";
+                    if(!temp_result.postcode) temp_result.postcode=add.querySelector("[itemprop='postalCode']")?add.querySelector("[itemprop='postalCode']").content:"";
+
+                }
+ 
             }
+            console.log("itemtype, temp_result=",temp_result," length=",Object.keys(temp_result).length);
             if(Object.keys(temp_result).length>=5&&temp_result.phone_number && temp_result.fax_number) {
                 temp_result.priority=0;
                 temp_result.source_website=url;
@@ -305,8 +349,8 @@
             console.log("phones_dat=",phones_dat);
 
             for(y=0; y<phones_lab.length;y++) {
-                if(/Phone/.test(phones_lab[y].innerText)) phone=phones_dat[y].innerText.trim();
-                if(/Fax/.test(phones_lab[y].innerText)) fax=phones_dat[y].innerText.trim();
+                if(/Phone/.test(phones_lab[y].innerText) && phones_dat[y]) phone=phones_dat[y].innerText.replace(/[^\d]+/g,"").replace(/^1/,"").trim();
+                if(/Fax/.test(phones_lab[y].innerText)&& phones_dat[y]) fax="1"+phones_dat[y].innerText.replace(/[^\d]+/g,"").replace(/^1/,"").trim();
             }
             //phone=loc.querySelector(".ih-field-phone");
             //fax=loc.querySelector(".ih-field-fax");
@@ -316,12 +360,12 @@
                 let temp_add=new Address(temp_address1);
 
                 for(x in add_map) {
-                    temp_result[add_map[x]]=temp_add[x];
+                    temp_result[add_map[x]]=temp_add[x].trim();
                 }
             }
             if(name) temp_result.name=name.innerText.trim();
-            if(phone) temp_result.phone_number=phone.trim();
-            if(fax) temp_result.fax_number=fax.trim();
+            if(phone) temp_result.phone_number=phone.replace(/[^\d]+/g,"").replace(/^1/,"").trim();
+            if(fax) temp_result.fax_number="1"+fax.replace(/[^\d]+/g,"").replace(/^1/,"").trim();
             if(Object.keys(temp_result).length>=5&&temp_result.phone_number && temp_result.fax_number) {
                 temp_result.priority=0;
                 temp_result.source_website=url;
@@ -510,36 +554,77 @@
 
     function scrape_doctor(doc,url,resolve,reject,extra) {
      //   console.log("scrape_doctor, doc=",doc.body.innerHTML);
+        let placename;
+      /*  if(/\.providence\.org/.test(url) && !/\/locations\//.test(url)&& (placename=doc.querySelector("a.placename"))) {
+            let promise=MTP.create_promise(placename.href,scrape_doctor,resolve,reject);
+            return;
+        }*/
 
         if(doc.querySelector("img[src*='patientpop.com']")) {
             console.log("*** found patientpop");
             var nap=doc.querySelectorAll("footer .nap");
             let x;
             if(nap.length>0) {
-                console.log("nap=",nap);
                 let counter=1;
-                                console.log("url=",url);
-
                 for(x of nap) { parse_nap(x,counter); counter++;
                                if(counter>2) { break; }
                               }
-                console.log("url=",url);
                 var new_url=url.replace(/(https?:\/\/[^\/]*).*$/,"$1")+"/contactus";
-                console.log("new_url=",new_url);
                 var promise=MTP.create_promise(new_url,parse_patientpoploc,resolve,reject);
                 return;
             }
-
         }
 
         var providers=doc.querySelector("#provider-details-locations");
         var nch=doc.querySelector(".nch-dp-card");
         var itemtype=doc.querySelectorAll("[itemtype*='schema.org']");
+        var x;
+        var i;
+
+        var good_itemtype_list=[];
+        var found_good_itemtype=false;
+
+        for(i=itemtype.length-1; i>=0;i--) {
+            x=itemtype[i];
+            let actualtype=x.getAttribute('itemtype').replace(/https?:\/\/schema\.org\//,"").trim();
+            if(!bad_schemas.includes(actualtype)) {
+                console.log("actualtype=",actualtype);
+
+                found_good_itemtype=true;
+                good_itemtype_list.push(x);
+            }
+
+        }
+        console.log("found_good=",found_good_itemtype);
+
+
         var ihlocations=doc.querySelectorAll(".ih-field-locations");
         var phone=doc.querySelector(".phone > a");
+        var fa_fax = doc.querySelector("i.fa-fax");
+        if(fa_fax) {
+            console.log("**** FOUND fa_fax");
+            let temp_fax;
+            var curr_node=fa_fax;
+            while(curr_node) {
+                if((temp_fax=curr_node.innerText.match(/([\([(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6})/))) {
+                    console.log("temp_fax=",temp_fax);
+                    break;
+                }
+                curr_node=curr_node.parentNode;
+            }
+            if(temp_fax && !my_query.fields['office1_fax_number']) {
+                my_query.fields['office1_fax_number']=1+temp_fax[1].trim().replace(/[^\d]+/g,"").replace(/^1/,"");
+            }
+        }
+
+
         var fax=doc.querySelector(".fax > a");
         var ascension=doc.querySelectorAll(".location #practices_MD .location-info");
         console.log("ascension=",ascension);
+        if(phone && phone.innerText.trim().replace(/[^\d]+/g,"").replace(/^1/,"").length<6 &&
+          doc.querySelectorAll(".phone > a").length>1) {
+            phone= doc.querySelectorAll(".phone > a")[1];
+        }
         if(phone)  my_query.fields['office1_phone_number']=phone.innerText.trim().replace(/[^\d]+/g,"").replace(/^1/,"");
         if(!phone) {
             let temp_phone=doc.querySelector("a[href^='tel']");
@@ -551,8 +636,11 @@
             }
         }
         if(fax) my_query.fields['office1_fax_number']=1+fax.innerText.trim().replace(/[^\d]+/g,"").replace(/^1/,"");;
-        if((my_query.fields['office1_phone_number']||(phone=doc.body.innerText.match(/(?:Tel|Phone):\s*\n*\s*([\([(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6})/im))) && !fax &&
-           (fax=doc.body.innerText.match(/Fax:\s*\n*\s*([\([(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6})/im))) {
+        if((my_query.fields['office1_phone_number']||(phone=doc.body.innerText.match(/(?:Tel|Phone|P|T|Office):?\s*\n*\s*([\([(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6})/im))
+           ||(phone=doc.body.innerText.match(/([\([(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6})\s*\n*\s*(?:Tel|Phone|Office)/im))
+           ) && !fax &&
+           ((fax=doc.body.innerText.match(/(?:F:|Fax):?\s*\n*\s*([\([(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6})/im)) ||
+           (fax=doc.body.innerText.match(/([\([(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6})\s*\n*\s*(?:Fax)/im)))) {
             console.log("phone=",phone,"fax=",fax);
             if(!my_query.fields['office1_phone_number'])             my_query.fields.office1_phone_number=phone[1].trim().replace(/[^\d]+/g,"").replace(/^1/,"");
             else { console.log("my_query.fields['office1_phone_number']=",my_query.fields['office1_phone_number']); }
@@ -562,46 +650,52 @@
         }
                     console.log("phone=",phone,"fax=",fax);
 
-        console.log("providers=",providers);
         if(providers) {
+                    console.log("providers=",providers);
+
             scrape_provider_details(doc,url,providers);
             resolve("");
            return;
         }
         else if(nch) {
+        console.log("nch=",nch);
 
             scrape_nch(doc,url,nch);
             resolve("");
            return;
         }
-        else if(itemtype.length>0) {
-           // console.log("*** itemtype=",itemtype);
-            scrape_itemtype(doc,url,itemtype);
-            resolve("");
-            return;
-        }
+        
         else if(ihlocations.length>0) {
+                    console.log("ihlocations=",ihlocations);
+
             scrape_ihlocations(doc,url,ihlocations);
             resolve("");
             return;
         }
         else if(ascension.length>0) {
+                                console.log("ascension=",ascension);
+
             scrape_ascension(doc,url,ascension);
             resolve("");
             return;
         }
         var spectrum_match;
         if(spectrum_match=url.match(/findadoctor\.spectrumhealth\.org\/physician\/profile\/([\d]+)/)) {
+
             var spectrum_url="https://findadoctor.spectrumhealth.org/api/providers/GetProviders/"+spectrum_match[1];
             console.log("spectrum_url=",spectrum_url);
             let promise=MTP.create_promise(spectrum_url,parse_spectrumhealth,resolve,reject);
             return;
         }
-
+        if(good_itemtype_list.length>0&&found_good_itemtype) {
+            console.log("*** itemtype=",good_itemtype_list);
+            scrape_itemtype(doc,url,good_itemtype_list);
+        }
         console.log("doing address,url=",url);
 
 
         Address.scrape_address(doc,url,resolve,reject,extra);
+
     }
 
     /* Extra has some kinda of type field and a depth field indicating the depth */
@@ -609,6 +703,10 @@
 
         let names=MTurkScript.prototype.find_company_name_on_website(doc,url);
         console.log("*** names=",names);
+        if((!my_query.fields.office1_name||my_query.fields.office1_name.trim().length===0) && names.length>0) {
+            my_query.fields.office1_name=names[0].name;
+            add_to_sheet();
+        }
         var type=extra.type,depth=extra.depth,links=doc.links,i,promise_list=[];
 
 
@@ -669,15 +767,31 @@
             .replace(/^Diabetes$/,"Endocrinology, Diabetes, & Metabolism").replace("General Practice","Internal Medicine")
             .replace("Child & Adolescent Psychiatry","Psychiatry").replace("Pulmonary Critical Care","Pulmonary Medicine").replace("Orthopedic Surgery","Orthopaedic Surgery")
             .replace("Cardiovascular Disease","Cardiovascular").replace(/.*Endocrinology.*$/,"Endocrinology Diabetes & Metabolism")
-            .replace(/^.*Podiatr.*$/,"Podiatrist").replace("Child Neurology","Neurology").replace("Hematology/Oncology","Hematology & Oncology")
+            .replace(/^.*Podiatr.*$/,"Podiatrist").replace("Child Neurology","Neurology").replace(/^.*Oncology$/,"Hematology & Oncology")
             .replace("Pediatric Pulmonology","Pulmonary Medicine").replace("Optometry","Optometrist").replace(/.*\sOncology.*$/,"Oncology")
                 .replace(/.*Otolaryngology.*/,"Otolaryngology").replace(/.*General Surgery.*/,"Surgery").replace(/^.*Gynecology.*$/,"Obstetrics & Gynecology").
             replace(/^.*Pulmonary.*$/,"Pulmonology").replace(/^.*(Electrophysiology|Cardiology).*$/,"Cardiology").replace(/^.*General Surgery.*$/,"Surgery")
         .replace(/.*Psychiatry.*/,"Psychiatry").replace(/^.*Pediatrics.*$/,"Pediatrics").replace(/^.*Allergy.*$/,"Allergy & Immunology")
-        .replace(/^.*Geriatric.*$/,"Geriatric Medicine").replace(/^.*Obstetrics.*$/,"Obstetrics & Gynecology");
-            console.log("SPECIALTY: "+specialty);
-                console.log("specialty=",specialty);
-            document.querySelector("[name='specialty1']").value=specialty;
+        .replace(/^.*Geriatric.*$/,"Geriatric Medicine").replace(/^.*Obstetrics.*$/,"Obstetrics & Gynecology")
+        .replace(/^.*Nephrology.*$/,"Nephrology").replace(/^.*Plastic Surgery.*$/,"Plastic and Reconstructive Surgery")
+        .replace(/^.*Pediatrics.*$/,"Pediatrics").replace(/^.*General Surgery.*$/,"Surgery").replace(/^.*Occupational Health.*$/,"Occupational Medicine")
+        .replace(/^.*Nurse Practitioner - Family.*$/,"Family Nurse Practitioner");
+                console.log("specialty=",specialty," actual_specialty=",my_query.actual_specialty);
+        let opt;
+        for(opt of document.querySelector("#specialty1").options) {
+            if(opt.value===specialty) {
+                console.log("** Matched on ",opt.value);
+                if(!my_query.actual_specialty) {
+                    console.log("Setting specialty=",specialty);
+
+                    my_query.actual_specialty=opt.value;
+                }
+            }
+        }
+        if(my_query.actual_specialty) {
+            console.log("* actually setting specialty=",my_query.actual_specialty);
+            document.querySelector("[name='specialty1']").value=my_query.actual_specialty;
+        }
     }
 
     function webmdquery_promise_then(result) {
@@ -685,7 +799,14 @@
         my_query.practice_url=result;
         result=result.replace(/\-overview$/,'-appointments');
         let promise=MTP.create_promise(result,query_web_md,query_web_md_then,function(result) {
-           find_healthgrades();
+            my_query.done.webmd=true;
+            if(!my_query.fields["office1_fax_number"]||my_query.fields["office1_fax_number"]==="1") {
+                find_healthgrades();
+            }
+            else {
+                my_query.done.healthgrades=true;
+                submit_if_done();
+            }
         });
 
 
@@ -699,6 +820,8 @@
             update_address(Address.addressList[0],'1');
             add_to_sheet();
         }
+        my_query.done.doctor=true;
+        submit_if_done();
     }
 
     function query_web_md(doc,url,resolve,reject) {
@@ -713,19 +836,33 @@
             .replace("Cardiovascular Disease","Cardiology").replace("Endocrinology, Diabetes & Metabolism","Endocrinology Diabetes & Metabolism")
             .replace("Podiatric Medicine","Podiatry").replace("Child Neurology","Neurology").replace("Hematology/Oncology","Hematology & Oncology")
             .replace("Critical Care Medicine","Pulmonology")
-            .replace("Pediatric Pulmonology","Pulmonary Medicine").replace("Optometry","Optometrist").replace(/.*\sOncology.*$/,"Oncology").
+            .replace("Pediatric Pulmonology","Pulmonary Medicine").replace("Optometry","Optometrist").replace(/.*\sOncology.*$/,"Hematology & Oncology").
             replace(/*Otolaryngology*/i,"Otolaryngology").
             replace(/Pain /,"Pain Medicine");
             console.log("SPECIALTY: "+specialty);
-            document.querySelector("[name='specialty1']").value=specialty;
+            var is_available=false,i;
+            for (i = 0; i < document.querySelector("[name='specialty1']").length; ++i){
+                if ( document.querySelector("[name='specialty1']").options[i].value === specialty){
+                    is_available=true;
+                    break;
+                }
+            }
+            if(is_available&&!my_query.specialty) {
+                document.querySelector("[name='specialty1']").value=specialty;
+            }
         }
         catch(err) {
             console.log("specialty name not found"); }
 
         var loc=doc.querySelector(".location-practice-name a");
-        if(my_query.fields['office1_source_website']!==undefined &&my_query.fields['office1_source_website'].length>0) return;
+        if(my_query.fields['office1_source_website']!==undefined &&my_query.fields['office1_source_website'].length>0) {
+            reject(""); }
+
         if(loc) { let promise=MTP.create_promise(loc.href,query_md_practice,resolve,reject); }
-        else reject("");
+        else {
+            console.log("Rejecting webmd");
+            reject("");
+        }
     }
 
     function query_md_practice(doc,url,resolve,reject) {
@@ -741,8 +878,14 @@
         var phone=doc.querySelector(".practicephone").innerText.trim();
         var fax=doc.querySelector("[itemprop='faxNumber']").innerText.trim().replace(/^\s*Fax:\s*/,"");
         my_query.fields['office1_name']=name.innerText.trim();
-        my_query.fields['office1_phone_number']=phone.replace(/[^\d]+/g,"").replace(/^1/,"");;
-        my_query.fields['office1_fax_number']=1+fax.replace(/[^\d]+/g,"").replace(/^1/,"");;
+        if(my_query.office_list.length>0) {
+            console.log("Returning early");
+            resolve("");
+            return;
+        }
+
+        if(phone.replace(/[^\d]+/g,"").replace(/^1/,"").length>0) my_query.fields['office1_phone_number']=phone.replace(/[^\d]+/g,"").replace(/^1/,"");;
+        if(fax.replace(/[^\d]+/g,"").replace(/^1/,"").length>0) my_query.fields['office1_fax_number']=1+fax.replace(/[^\d]+/g,"").replace(/^1/,"");;
         my_query.fields['office1_source_website']=url;
         update_address(add,'1');
         add_to_sheet();
@@ -760,6 +903,8 @@
 
     function query_web_md_then(result) {
         console.log("query_web_md_then,result="+JSON.stringify(result));
+        my_query.done.webmd=my_query.done.healthgrades=true;
+        submit_if_done();
     }
 
     function begin_script(timeout,total_time,callback) {
@@ -794,21 +939,52 @@
             //console.log("my_query.fields["+x+"]="+my_query.fields[x]);
             if(field=document.getElementsByName(x)[0]) field.value=my_query.fields[x];
         }
+        if(!my_query.actual_specialty) {
+            var specialty_map={"Nephrology":/Nephrology/,"Orthopedic Surgery":/Orthopedic/};
+            console.log("* NO specialty set");
+
+            for(x in specialty_map) {
+                if(my_query.fields.office1_name.match(specialty_map[x])) {
+                    set_specialty(x);
+                    break;
+                }
+            }
+        }
     }
 
     function submit_if_done() {
-        var is_done=true,x;
+        var is_done=true,x,is_done_dones=x;
+        var required_field_names=["phone_number","fax_number","city","name"];
+
+
+
+        console.log("submit_if_done, my_query.done=",my_query.done,"my_query.fields=",my_query.fields);
         add_to_sheet();
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
+        is_done_dones=is_done;
+        for(x of required_field_names) {
+            if(!my_query.fields["office1_"+x]) {
+                console.log("Missing office1_"+x);
+                is_done=false;
+            }
+        }
+        if(my_query.fields.office1_fax_number==="1") {
+            console.log("No fax found");
+            is_done=false;
+        }
         if(is_done && !my_query.submitted && (my_query.submitted=true)) MTurk.check_and_submit();
+        else if(is_done_dones && !my_query.submitted) {
+            console.log("Failed to find all fields");
+            GM_setValue("returnHit",true);
+        }
     }
    
     function update_address(address,suffix) {
         var top,x;
-        top=new Address(address.text.replace(/([a-z]{2,})([A-Z])/,"$1,$2").replace(/(\d+)([A-Z][a-z]+)/,"$1,$2"),address);
+        top=new Address(address.text.replace(/([a-z]{2,})([A-Z])/,"$1,$2").replace(/(\d+)([A-Z][a-z]+)/,"$1,$2"),address.priority);
         //console.log("address="+JSON.stringify(address));
         if(top.postcode) top.zip=top.postcode;
-        console.log("top="+JSON.stringify(top));
+//        console.log("top="+JSON.stringify(top));
         
 
         for(x in top) {
@@ -830,7 +1006,7 @@
                 split[i]=split[i].replace(fax_match[0],'');
 
             }
-            if(i===0 && pasted_name && !/[\d]/.test(split[i])) {
+            if(i===0 && pasted_name && !/^.{0,10}[\d]/.test(split[i])) {
                 console.log("Added "+"office"+suffix+"_name to equal "+split[i].trim());
                 my_query.fields["office"+suffix+"_name"]=split[i].trim();
                 continue;
@@ -858,12 +1034,12 @@
         var suffix=match?match[1]:"1";
         if(text.indexOf("\n")===-1 && !my_query.fields[e.target.name]) my_query.fields[e.target.name]=text;
         text=text.replace(/\s\|\s/g,"\n");
-        console.log("text="+text);
+//        console.log("text="+text);
         text=remove_phones(text,suffix,e.target);
         text=text.replace(/[a-z\.0-9]*@[a-z\.0-9]*/,"").trim();
         text=text.replace(/\s*\n\s*/g,",").replace(/,,/g,",").replace(/,\s*$/g,"").trim();
-        console.log("e.target.name="+e.target.name);
-        console.log("text="+text);
+//        console.log("e.target.name="+e.target.name);
+ //       console.log("text="+text);
         var my_add=new Address(text,-50);
         my_add.priority=-50;
         if(my_add.priority<1000) {
@@ -918,6 +1094,8 @@
         queryPromise.then(healthgrades_promise_then)
             .catch(function(val) {
             console.log("Failed at this healthgradesPromise " + val);
+            my_query.done.healthgrades=true;
+            submit_if_done();
 
 
         });
@@ -944,10 +1122,13 @@
         var add=loc.querySelector("address");
         var phone=loc.querySelector("[href^='tel']");
         var fax=loc.querySelector("[href^='fax']");
-        if(fax) {
+        if(fax&&(fax.href.replace(/[^\d]+/g,"").replace(/^1/,"")).length>0) {
             let y;
             for(y of h3) {
-                if(y && !/^\s*Practice\s*$/.test(y.innerText.trim())) {  my_query.fields.office1_name=y.innerText.trim(); break; }
+                if(y && !/^\s*Practice\s*$/.test(y.innerText.trim())) {  my_query.fields.office1_name=y.innerText.trim();
+
+
+                                                                       break; }
                 if(y) y.parentNode.removeChild(y);
             }
             //if(h3) my_query.fields.office1_name=h3.innerText.trim();
@@ -975,23 +1156,218 @@
     }
     function parse_healthgrades_then() {
                     document.querySelector("#radios-1").click();
+        my_query.done.healthgrades=true;
 
-        add_to_sheet();
+
+        submit_if_done();
+    }
+
+
+    function parse_npi_json(response,resolve,reject,url) {
+        console.log("parse_npi_json, response=",response);
+       try {
+           let result=JSON.parse(response.responseText);
+           console.log("result=",result);
+           let name=result.basic.firstName+" "+result.basic.lastName;
+           my_query={name:name,specialty:"",title:"",state:"",url:"",fields:
+                     {},done:{},submitted:false,try_count:{"query":0},
+
+                     office_list:[]}; // solution list is list of offices*/
+           let x;
+           for(x of result.taxonomies) {
+               let temp_specialty=x.desc;
+               if(!my_query.specialty) {
+                   set_specialty(temp_specialty);
+                   break;
+               }
+           }
+           let temp_result={};
+           for(x of result.addresses) {
+
+               if(x.faxNumber&&x.addressPurpose==="LOCATION") {
+                   temp_result.address1=x.addressLine1||"";
+                   temp_result.address2=x.addressLine2||"";
+                   temp_result.address2=x.addressLine2||"";
+                   temp_result.city=x.city||"";
+                   temp_result.state=x.state||"";
+                   temp_result.zip=x.postalCode?x.postalCode.substr(0,5):"";
+                   temp_result.phone_number= x.teleNumber?x.teleNumber.replace(/[^\d]+/g,"").replace(/^1/,""):"";
+                   temp_result.fax_number=x.faxNumber?"1"+x.faxNumber.replace(/[^\d]+/g,"").replace(/^1/,""):"";
+                   temp_result.priority=0;
+                temp_result.source_website=url;
+
+                console.log("temp_result=",temp_result);
+                my_query.office_list.push(temp_result);
+                   add_to_sheet();
+                   break;
+               }
+
+           }
+
+
+
+            resolve({name:name,address:add});
+        }
+        catch(e) {
+            console.warn("Error, exception=",e);
+            resolve({name:"",address:{}});
+        }
+    }
+
+    function parse_npihhs(doc,url,resolve,reject) {
+        let temp_url="https://npiregistry.cms.hhs.gov/RegistryBack/npiDetails";
+        let payload=url.match(/(\d)+$/)[0];
+        var headers={"Content-Type":"application/json;charset=UTF-8"};
+
+        let my_data={"number":payload};
+        console.log("my_data=",my_data);
+        GM_xmlhttpRequest({method: 'POST', url: temp_url,headers:headers,data:JSON.stringify(my_data),
+                           onload: function(response) { parse_npi_json(response, resolve, reject,url); },
+                           onerror: function(response) { reject("Fail"); },ontimeout: function(response) { reject("Fail"); }
+                          });
+
+//        parse_npihhs_new(doc,url,resolve,reject);
+        return;
+        var p=doc.querySelector("p");
+        console.log("parse_npihhs, url=",url);
+        try {
+            var name=doc.querySelector("blockquote p").innerText.trim();
+            my_query={name:name,specialty:"",title:"",state:"",url:"",fields:
+                      {},done:{},submitted:false,try_count:{"query":0},
+
+                      office_list:[]}; // solution list is list of offices*/
+            var table=doc.querySelector("table.table");
+            var row,label,value;
+            var address="",children,doneAddress=false;
+            var phone, fax;
+            var temp_result={};
+            let phone_fax_re=/Phone: ([\d\-]*)\s*\|\s*Fax:\s*([\d\-]*)/;
+            for(row of table.rows) {
+                label=row.cells[0].innerText.trim();
+                if(/Primary Practice/.test(label)) {
+                    value=row.cells[1];
+                    for(children of value.childNodes) {
+                        if(children.nodeType==Node.TEXT_NODE && /^United States$/.test(children.textContent.trim())) {
+                            doneAddress=true; }
+                        if(children.nodeType==Node.TEXT_NODE && children.textContent.trim().length>0 && !doneAddress) {
+                            address=address+(address.length>0?",":"")+children.textContent.trim();
+                        }
+                        if(children.nodeType==Node.TEXT_NODE && /Phone:/.test(children.textContent)) {
+                            let phone_fax_match=children.textContent.match(phone_fax_re);
+                            console.log("phone_fax_match=",phone_fax_match);
+                            if(phone_fax_match) {
+                                if(phone_fax_match.length>=2) temp_result.phone_number=phone_fax_match[1].trim().replace(/[^\d]+/g,"").replace(/^1/,"").trim();
+                                if(phone_fax_match.length>=3 && phone_fax_match[2].length>0) temp_result.fax_number=1+phone_fax_match[2].trim().replace(/[^\d]+/g,"").replace(/^1/,"").trim();
+                            }
+
+                        }
+                    }
+                }
+                if(/Taxonomy/.test(label)) {
+                    var tax_table=row.cells[1].querySelector("table");
+                    let inner_row;
+                    for(inner_row of tax_table.rows) {
+                        if(/^\s*Yes/.test(inner_row.cells[0].innerText)) {
+                            let temp_specialty=inner_row.cells[1].innerText.replace(/^[^\-]*\-\s*/,"");
+                            console.log("temp_specialty npihhs=",temp_specialty);
+                            if(!my_query.specialty) set_specialty(temp_specialty);
+
+                        }
+                    }
+                }
+            }
+            console.log("address=",address);
+            let add_field;
+            var add=new Address(address);
+
+            for(add_field in add_map) {
+                if(add[add_field]) {
+                    temp_result[add_map[add_field]]=add[add_field].trim();
+                }
+            }
+            if(Object.keys(temp_result).length>=5&&temp_result.phone_number && temp_result.fax_number) {
+                temp_result.priority=0;
+                temp_result.source_website=url;
+
+                console.log("temp_result=",temp_result);
+                my_query.office_list.push(temp_result);
+                add_to_sheet();
+
+
+            }
+            update_address(add,"1");
+            add_to_sheet();
+            console.log("add=",add);
+            resolve({name:name,address:add});
+        }
+        catch(e) {
+            resolve({name:"",address:{}});
+        }
+    }
+
+    function parse_npihhs_then(result) {
+        //finish_init_query([name.name,name.name],[add.state,add.state],[]);
+        console.log("result=",result);
+         my_query={name:result.name.replace(/\n.*$/,"").trim(),specialty:"",title:"",state:result.address&&result.address.state?reverse_state_map[result.address.state]:'',url:"",fields:
+                  {},  done:{"doctor":false,"webmd":false,"healthgrades":false},
+
+                   submitted:false,try_count:{"query":0},
+
+                 office_list:[]}; // solution list is list of offices
+        	console.log("my_query="+JSON.stringify(my_query));
+        my_query.parsed_name=MTP.parse_name(my_query.name);
+         var search_str=my_query.name+" "+my_query.specialty+" "+my_query.state+" "+my_query.title;
+        const queryPromise = new Promise((resolve, reject) => {
+            console.log("Beginning URL search");
+            query_search(search_str, resolve, reject, query_response,"query");
+        });
+        queryPromise.then(query_promise_then)
+            .catch(function(val) {
+            console.log("Failed at this queryPromise " + val);
+            my_query.done.doctor=true;
+            submit_if_done();
+
+
+        });
+        const webmdqueryPromise = new Promise((resolve, reject) => {
+            console.log("Beginning URL search");
+            query_search(search_str+" site:webmd.com", resolve, reject, query_response,"webmdquery");
+        });
+        webmdqueryPromise.then(webmdquery_promise_then)
+            .catch(function(val) {
+            my_query.done.webmd=true;
+                       if(!my_query.office1_fax_number || my_query.office1_fax_number==="1") {
+                                           console.log("my_query.office1_fax_number=",my_query.office1_fax_number," finding healthgrades");
+
+                find_healthgrades();
+            }
+            else {
+                my_query.done.healthgrades=true;
+                submit_if_done();
+            }
+
+        });
     }
 
     function init_Query()
     {
         console.log("in init_query rochargrove");
+
         var i,x;
-        var ul=document.querySelector("ul");
-        ul.parentNode.removeChild(ul);
+        var p=document.querySelectorAll("crowd-form div div div p");
+        for(i=0;i<5;i++) {
+            p[i].parentNode.removeChild(p[i]);
+        }
+        var ul=document.querySelectorAll("form ul li");
+        for(i of ul) i.parentNode.removeChild(i);
+//        ul.parentNode.removeChild(ul);
         var a=document.querySelector('a[href^="http://www.google"]');
         if(a) {
             a.href=a.href.replace("Student%20in%20an%20Organized%20Health%20Care%20Education/Training%20Program","");
         }
         var links=document.querySelectorAll("form a");
-        links[2].href=links[2].href.replace(/\+Fax$/i,"").replace(/\+NULL/ig,"")
-        var my_href=links[2].href.replace(/\+Fax$/i,"").replace(/\+NULL/ig,"").replace(/\%20/g," ").replace(/^.*\?q\=(.*)$/,"$1");
+        links[0].href=links[0].href.replace(/\+Fax$/i,"").replace(/\+NULL/ig,"")
+        var my_href=links[0].href.replace(/\+Fax$/i,"").replace(/\+NULL/ig,"").replace(/\%20/g," ").replace(/^.*\?q\=(.*)$/,"$1");
 
         var split=my_href.replace(" & ","+&+").split("++");
         console.log("my_href=",my_href,"split=",split);
@@ -1008,28 +1384,6 @@
             split[1]=split[1].replace(/\+/g," ");
         }
         console.log("my_href="+my_href+",split="+split);
-
-        var their_query_str=split[0].replace("Student in an Organized Health Care Education/Training Program","");//document.querySelectorAll("form div div span")[2].innerText.trim();
-        their_query_str=their_query_str.trim();
-        console.log("their_query_str="+their_query_str);
-        var name_re=/^((?:[A-Z\-\.,]+\s)+)?\s?(?:(?:MD)(?:\s|$)|(?:DO)(?:\s|$)|(?:FNP)(?:\s|$)|(?:NP)(?:\s|$))?(.*[a-z].*)$/
-                var name_re2=/^((?:[A-Z\-\.,]+\s?)+)/
-                var name_re3=/^((?:[A-Z\-\.,]+\s?)+MD)/
-
-      //var end_re=/[A-Z][a-z]+(\s)
-        var name_match=their_query_str.match(name_re);
-        console.log("name_match=",name_match);
-        if(!name_match) name_match=their_query_str.match(name_re2);
-                //if(!name_match) name_match=their_query_str.match(name_re3);
-
-        if(/Student in/i.test(my_href)) {
-            name_match[1]=name_match[0];
-        }
-        var title_re=/\s(MD|DO|FNP|NP)$/i;
-
-        var state_match=split[1].match(/\s*([A-Z]{2})\s*$/);
-        if(split[1].length===0 && split.length>=3 && split[2].trim().length===2 && /^[A-Z]*$/.test(split[2])) state_match=[split[2].trim(),split[2].trim()];
-        console.log("name_match="+JSON.stringify(name_match));
         var phone_list=["office1_phone_number","office2_phone_number"];
         var fax_list=["office1_fax_number","office2_fax_number"];
         document.getElementsByName("office1_address1")[0].addEventListener("paste",do_address_paste);
@@ -1047,28 +1401,94 @@
           for(x of ['office1_source_website','office2_source_website']) {
             document.querySelector("[name='"+x+"']").addEventListener("paste",do_web_paste);
         }
+
+        if(/^[A-Z]{2}$/.test(my_href.replace(/\+/g,"").trim())) {
+            let a=document.querySelector("a[href^='https://npiregistry.cms.hhs.gov']");
+            a.href=a.href.replace(/\/registry/,"");
+
+            let promise=MTP.create_promise(a.href,parse_npihhs,parse_npihhs_then,parse_npihhs_then);
+            return;
+        }
+
+        var their_query_str=split[0].replace("Student in an Organized Health Care Education/Training Program","");//document.querySelectorAll("form div div span")[2].innerText.trim();
+        their_query_str=their_query_str.trim();
+        console.log("their_query_str="+their_query_str);
+        var name_re=/^((?:[A-Z\-\.,]+\s)+)?\s?(?:(?:MD)(?:\s|$)|(?:DO)(?:\s|$)|(?:FNP)(?:\s|$)|(?:NP|CNP)(?:\s|$))?(.*[a-z].*)$/
+                var name_re2=/^((?:[A-Z\-\.,]+\s?)+)/
+                var name_re3=/^((?:[A-Z\-\.,]+\s?)+MD)/
+
+      //var end_re=/[A-Z][a-z]+(\s)
+        var name_match=their_query_str.match(name_re);
+        console.log("name_match=",name_match);
+        if(!name_match) name_match=their_query_str.match(name_re2);
+                //if(!name_match) name_match=their_query_str.match(name_re3);
+
+        if(/Student in/i.test(my_href)) {
+            name_match[1]=name_match[0];
+        }
+        var title_re=/\s(MD|DO|FNP|NP|CNP|ARNP)$/i;
+
+        var state_match=split[1].match(/\s*([A-Z]{2})\s*$/);
+        if(split[1].length===0 && split.length>=3 && split[2].trim().length===2 && /^[A-Z]*$/.test(split[2])) state_match=[split[2].trim(),split[2].trim()];
+        console.log("name_match="+JSON.stringify(name_match));
+
+         let a2=document.querySelector("a[href^='https://npiregistry.cms.hhs.gov']");
+        a2.href=a2.href.replace(/\/registry/,"");
+        console.log("a2.href=",a2.href);
+
+            let promise=MTP.create_promise(a2.href,parse_npihhs,function() {
+                finish_init_query(name_match, state_match,split);
+            }
+                ,function() { GM_setValue("setup_complete",false); GM_setValue("returnHit",true); });
+            return;
+
+        
+     //  var promise=MTP.create_promise(my_query.url,parse_hpd,parse_hpd_then);
+    }
+
+    function finish_init_query(name_match, state_match,split) {
+        var x;
+        var title_re=/\s(MD|DO|FNP|NP|CNP|ARNP)$/i;
+        var required_field_names=["phone_number","fax_number","city","name"];
+
+        
         //var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         //var dont=document.getElementsByClassName("dont-break-out");
-        my_query={name:name_match&&name_match.length>1&&name_match[1]?name_match[1].trim():"",specialty:name_match&&name_match.length>=3?name_match[2]:"",title:title,state:state_match?reverse_state_map[state_match[1]]:'',url:"",fields:
-                  {},done:{},submitted:false,try_count:{"query":0},
+        let old_specialty=my_query.specialty;
+        my_query={name:name_match&&name_match.length>1&&name_match[1]?name_match[1].trim():"",specialty:name_match&&name_match.length>=3?name_match[2]:"",title:title,
+                  state:state_match?reverse_state_map[state_match[1]]:'',url:"",
+                  fields:{},
+                  done:{"doctor":false,"webmd":false,"healthgrades":false},
+
+                  submitted:false,try_count:{"query":0},
 
                  office_list:[]}; // solution list is list of offices
+        if(old_specialty) my_query.specialty=old_specialty;
+        if(!my_query.specialty && split.length>1) my_query.specialty=split[1];
         my_query.name=my_query.name.replace(/\s(NP|MD|APRN|PA-C|PA)$/,"").trim();
         console.log("temp=",my_query.name.replace(/^([^\s]*\s[^\s]*).*$/,"$1"));
         set_specialty(my_query.specialty);
 
-        if(my_query.name==="") {
+   /*     if(my_query.name==="") {
+
+
             document.querySelector("#radios-1").click();
+
             my_query.fields.office1_name="BAD HIT";
             add_to_sheet();
             return;
-        }
+        }*/
+        console.log("MOOO");
         my_query.parsed_name=MTP.parse_name(my_query.name.replace(/^([^\s]*\s[^\s]*).*$/,"$1"));
         var title=name_match.length>1?my_query.name.trim().match(title_re):"";
                 my_query.title=title?title[0].trim():"";
 
         my_query.name=my_query.name.replace(title_re,"").trim();
         console.log("my_query.parsed_name=",my_query.parsed_name);
+          for(x of required_field_names) {
+            my_query.fields["office1_"+x]="";
+        }
+
 	console.log("my_query="+JSON.stringify(my_query));
          var search_str=my_query.name+" "+my_query.specialty+" "+my_query.state+" "+my_query.title;
         const queryPromise = new Promise((resolve, reject) => {
@@ -1078,6 +1498,8 @@
         queryPromise.then(query_promise_then)
             .catch(function(val) {
             console.log("Failed at this queryPromise " + val);
+            my_query.done.doctor=true;
+            submit_if_done();
 
 
         });
@@ -1087,10 +1509,16 @@
         });
         webmdqueryPromise.then(webmdquery_promise_then)
             .catch(function(val) {
-            find_healthgrades(); });
-
-
-     //  var promise=MTP.create_promise(my_query.url,parse_hpd,parse_hpd_then);
+            my_query.done.webmd=true;
+            if(!my_query.office1_fax_number || my_query.office1_fax_number==="1") {
+                console.log("my_query.office1_fax_number=",my_query.office1_fax_number," finding healthgrades");
+                find_healthgrades();
+            }
+            else {
+                my_query.done.healthgrades=true;
+                submit_if_done();
+            }
+        });
     }
 
 })();
