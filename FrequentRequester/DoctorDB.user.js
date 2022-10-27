@@ -45,8 +45,8 @@
                   'birthindex.org',
                   '.bizapedia.com', '.caredash.com',
                   '.castleconnolly.com','/checkpeople.com',
-                  'clustrmaps.com','.dentalplans.com','www.dfes.com',
-                  '.diabetesiq.com',
+                  'clustrmaps.com','companyregistry.com',
+                  '.dentalplans.com','www.dfes.com', '.diabetesiq.com',
                   '.dnb.com','.docbios.com','/docspot.com','.docspot.com',
                   '//doctor.com', '.doctor.com', '.doctorhelps.com', '.doximity.com',
                   '.echovita.com','.ecyberclinics.com',
@@ -59,7 +59,7 @@
                   '/healow.com','.healthcare4ppl.com', '.healthcare6.com',
                   '.healthgrades.com', '.healthline.com','.healthpage.org', '/healthprovidersdata.com', '.healthsoul.com',
                   '.healthlynked.com','.hipaaspace.com','.hometownlocator.com',
-                  '.imdb.com','.instantcheckmate.com', '.kellysearch.com',
+                  '.imdb.com','/inforver.com','.instantcheckmate.com', '.kellysearch.com',
                   'lawgroup.com','lawtally.com','.legacy.com',
                   '/licensefiles.com',
                   '.linkedin.com', '.localdoc.com','.locatepeople.org',
@@ -127,9 +127,16 @@
             }
         }
             if(lgb_info&&(parsed_lgb=MTP.parse_lgb_info(lgb_info))) {
-                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb)); }
-            for(i=0; i < b_algo.length&&i<3; i++) {
-                if(type==='webmdquery' && i>=3) break;
+                    console.log("parsed_lgb="+JSON.stringify(parsed_lgb));
+            if(type==="query" && parsed_lgb.url&&!MTP.is_bad_url(parsed_lgb.url,bad_urls,-1)) {
+                parsed_lgb.url=parsed_lgb.url.replace(/https?:\/\/www\.www\./,"https://www.");
+                resolve(parsed_lgb.url);
+                return;
+            }
+
+            }
+            for(i=0; i < b_algo.length&&i<6; i++) {
+                if((type==='webmdquery'||(type==='query' && my_query.try_count[type]>0)) && i>=3) break;
                 b_name=b_algo[i].querySelector("h2 a").textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
@@ -228,7 +235,6 @@
     function scrape_itemtype(doc,url,itemtype) {
         var y;
         var prop_map={"name":"name","telephone":"phone_number","faxNumber":"fax_number"};
-        var add_map={"address1":"address1","address2":"address2","city":"city","state":"state","postcode":"zip"};
         var x,temp,add;
         for(y of itemtype) {
             if(/addressPostalAddress/.test(y.getAttribute('itemtype'))) {
@@ -420,7 +426,6 @@
         console.log("doc=",doc.body.innerHTML);
         name=doc.querySelector(".main-text");
         phone=doc.querySelector(".location-details .mm-phone-number");
-        var add_map={"address1":"address1","address2":"address2","city":"city","state":"state","postcode":"zip"};
         let add_field;
         var add=doc.querySelector(".location-address");
         //console.log("add=",add);
@@ -502,9 +507,33 @@
         add_to_sheet();
     }
 
+    function parse_johnmuir(doc,url,resolve,reject,response) {
+                let responseJSON=JSON.parse(response.responseText);
+        let office=responseJSON.offices[0];
+        set_specialty(responseJSON.specialties[0].name);
+        var temp_result={"priority":0,
+                     "name":"John Muir Health",
+                     "address1":office.addressLineOne,
+                     "address2":office.addressLineTwo,
+                     "city":office.city,
+                     "state":office.state,
+                     "zip":office.zip,
+                     "phone_number":office.phoneNumber.replace(/[^\d]+/g,"").replace(/^1/,"").trim(),
+                     "fax_number":1+office.faxNumber.replace(/[^\d]+/g,"").replace(/^1/,"").trim(),
+                     "source_website":url
+                    };
+                   my_query.office_list.push(temp_result);
+            add_to_sheet();
+        resolve("");
+
+
+
+
+
+    }
+
     function parse_spectrumhealth(doc,url,resolve,reject,response) {
         console.log("response=",response);
-        var add_map={"address1":"address1","address2":"address2","city":"city","state":"state","postcode":"zip"};
         let add_field;
         let responseJSON=JSON.parse(response.responseText);
         console.log("responseJSON=",responseJSON);
@@ -679,6 +708,11 @@
             resolve("");
             return;
         }
+        else if(/johnmuirhealth\.com/.test(url)) {
+            let johnmuir_url="https://www.johnmuirhealth.com/fad/api/doctor/"+my_query.npi;
+            let promise=MTP.create_promise(johnmuir_url,parse_johnmuir,resolve,reject);
+            return;
+        }
         var spectrum_match;
         if(spectrum_match=url.match(/findadoctor\.spectrumhealth\.org\/physician\/profile\/([\d]+)/)) {
 
@@ -812,6 +846,7 @@
 
     }
     function address_scrape_then(result) {
+
         //console.log("result="+result);
         Address.addressList.sort(function(a,b) { return a.priority-b.priority; });
         //console.log("addressList="+JSON.stringify(Address.addressList));
@@ -939,7 +974,7 @@
             //console.log("my_query.fields["+x+"]="+my_query.fields[x]);
             if(field=document.getElementsByName(x)[0]) field.value=my_query.fields[x];
         }
-        if(!my_query.actual_specialty) {
+        if(!my_query.actual_specialty&&my_query.fields.office1_name) {
             var specialty_map={"Nephrology":/Nephrology/,"Orthopedic Surgery":/Orthopedic/};
             console.log("* NO specialty set");
 
@@ -1122,7 +1157,7 @@
         var add=loc.querySelector("address");
         var phone=loc.querySelector("[href^='tel']");
         var fax=loc.querySelector("[href^='fax']");
-        if(fax&&(fax.href.replace(/[^\d]+/g,"").replace(/^1/,"")).length>0) {
+        if((fax&&(fax.href.replace(/[^\d]+/g,"").replace(/^1/,"")).length>0)||(!my_query.fields.city)) {
             let y;
             for(y of h3) {
                 if(y && !/^\s*Practice\s*$/.test(y.innerText.trim())) {  my_query.fields.office1_name=y.innerText.trim();
@@ -1155,6 +1190,7 @@
         resolve("");
     }
     function parse_healthgrades_then() {
+        if(/healthgrades\.com/.test(my_query.fields.office1_source_website))
                     document.querySelector("#radios-1").click();
         my_query.done.healthgrades=true;
 
@@ -1455,8 +1491,13 @@
         //var wT=document.getElementById("DataCollection").getElementsByTagName("table")[0];
         //var dont=document.getElementsByClassName("dont-break-out");
         let old_specialty=my_query.specialty;
+                 let a2=document.querySelector("a[href^='https://npiregistry.cms.hhs.gov']");
+
+        var npi=a2.href.match(/\d+$/)[0];
+
+
         my_query={name:name_match&&name_match.length>1&&name_match[1]?name_match[1].trim():"",specialty:name_match&&name_match.length>=3?name_match[2]:"",title:title,
-                  state:state_match?reverse_state_map[state_match[1]]:'',url:"",
+                  state:state_match?reverse_state_map[state_match[1]]:'',url:"",npi:npi,
                   fields:{},
                   done:{"doctor":false,"webmd":false,"healthgrades":false},
 
@@ -1469,15 +1510,6 @@
         console.log("temp=",my_query.name.replace(/^([^\s]*\s[^\s]*).*$/,"$1"));
         set_specialty(my_query.specialty);
 
-   /*     if(my_query.name==="") {
-
-
-            document.querySelector("#radios-1").click();
-
-            my_query.fields.office1_name="BAD HIT";
-            add_to_sheet();
-            return;
-        }*/
         console.log("MOOO");
         my_query.parsed_name=MTP.parse_name(my_query.name.replace(/^([^\s]*\s[^\s]*).*$/,"$1"));
         var title=name_match.length>1?my_query.name.trim().match(title_re):"";
