@@ -18,8 +18,8 @@ function Person(curr,nameSource,emailDomain,quality) {
 	else if(name&&typeof(name)==="string") {
 		let fullname=MTP.parse_name(name);
 		Object.assign(this,{first:fullname.fname,middle:fullname.mname,last:fullname.lname}); }
-	this.first=this.first.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing);
-	this.last=this.last.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing);
+	this.first=this.first?this.first.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing):"";
+	this.last=this.last?this.last.replace(/^([A-Z]{1})([A-Z]+)$/,proper_casing):"";
 
 	this.title=title||"";
 	this.nameSource=nameSource||"";

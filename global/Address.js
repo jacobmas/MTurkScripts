@@ -618,39 +618,42 @@ Address.prototype.set_address=function(address1,address2,city,state,postcode,cou
 };
 
 Address.sanitize_text_US=function(text) {
-    text=text.replace(/\n/g,",");
-    var fl_regex=/(?:,\s*)?([\d]+(th|rd|nd|st) Fl(?:(?:oo)?r)?)\s*([,\s])/i,match;
-    var ann_regex=/(?:,\s*)(Annex [^,]*),/i;
-    var floor=text.match(fl_regex),annex=text.match(ann_regex);
-    var after_dash_regex=/^([^,]*?)\s+-\s+([^,]*)/;
-    var after_dash=text.match(after_dash_regex),second_part;
-    text=text.replace(after_dash_regex,"$1").trim();
+	text=text.replace(/\n/g,",");
+	var fl_regex=/(?:,\s*)?([\d]+(th|rd|nd|st) Fl(?:(?:oo)?r)?)\s*([,\s])/i,match;
+	var ann_regex=/(?:,\s*)(Annex [^,]*),/i;
+	var floor=text.match(fl_regex),annex=text.match(ann_regex);
+	var after_dash_regex=/^([^,]*?)\s+-\s+([^,]*)/;
+	var after_dash=text.match(after_dash_regex),second_part;
+	text=text.replace(after_dash_regex,"$1").trim();
 	text=text.replace(/^[A-Za-z\s]+:\s*/,"").trim();
 	text=text.replace(/^.*Address:\s*/,"").trim();
 	text=text.replace(/(Box \d)([A-Z])/,"$1, $2").trim();
-    text=text.replace(fl_regex,"$3").trim();
+	text=text.replace(fl_regex,"$3").trim();
 	text=text.replace(/(Calle [A-Za-z]+)\s/,"$1,");
-    text=text.replace(/,\s*(US|United States|United States of America|USA)$/i,"");
-    // replace PO DRAWER //
-    text=text.replace(/(^|,)(\s*)(?:P\.?O\.?\s*)?(DRAWER|BOX)(\s)/i,"$1$2PO Box$4");
-    text=text.replace(ann_regex,",").trim();
-    text=text.replace(/([a-bd-z0-9])([A-Z][a-z]+)/,"$1,$2");
-    //console.log("Before fix, text="+text);
-    var parsed=parseAddress.parseLocation(text);
-    var add2_extra=(floor?floor[1]:"");
-    if(!(parsed&&parsed.city&&parsed.zip) && /^[A-Za-z]/.test(text)) {
-    //console.log("Replacing A-Z beginning");
-    text=text.replace(/^[^,]*,/,"").trim();
-    }
-    if(!((parsed=parseAddress.parseLocation(text))&&parsed.city&&parsed.zip)
-       && /^[0-9]/.test(text)) {
-        second_part=text.match(/^([^,]*),([^,]*),/);
-        text=text.replace(/^([^,]*),([^,]*),/,"$1,");
-    }
-    add2_extra=add2_extra+(add2_extra.length>0&&second_part?",":"")+(second_part?second_part[2]:"");
-    add2_extra=add2_extra+(add2_extra.length>0&&annex?",":"")+(annex?annex[1]:"");
-    add2_extra=add2_extra+(add2_extra.length>0&&after_dash?",":"")+(after_dash?after_dash[2]:"");
-    return {text:text,add2_extra:add2_extra};
+	text=text.replace(/,\s*(US|United States|United States of America|USA)$/i,"");
+	// replace PO DRAWER //
+	text=text.replace(/(^|,)(\s*)(?:P\.?O\.?\s*)?(DRAWER|BOX)(\s)/i,"$1$2PO Box$4");
+	text=text.replace(ann_regex,",").trim();
+	text=text.replace(/([a-bd-z0-9])([A-Z][a-z]+)/,"$1,$2");
+	//console.log("Before fix, text="+text);
+	var parsed=parseAddress.parseLocation(text);
+	var add2_extra=(floor?floor[1]:"");
+	if(!(parsed&&parsed.city&&parsed.zip) && /^[A-Za-z]/.test(text)) {
+		//console.log("Replacing A-Z beginning");
+		text=text.replace(/^[^,]*,/,"").trim();
+	}
+	if(!((parsed=parseAddress.parseLocation(text))&&parsed.city&&parsed.zip)
+	   && /^[0-9]/.test(text)) {
+		second_part=text.match(/^([^,]*),([^,]*),/);
+		text=text.replace(/^([^,]*),([^,]*),/,"$1,");
+	}
+	add2_extra=add2_extra+(add2_extra.length>0&&second_part?",":"")+(second_part?second_part[2]:"");
+	add2_extra=add2_extra+(add2_extra.length>0&&annex?",":"")+(annex?annex[1]:"");
+	add2_extra=add2_extra+(add2_extra.length>0&&after_dash?",":"")+(after_dash?after_dash[2]:"");
+	
+	text = text.replace(/Suite ([0-9A-Za-z]+)([A-Z])/,"Suite $1, $2");
+	
+	return {text:text,add2_extra:add2_extra};
 };
 
 Address.prototype.parse_address_US=function(text) {
