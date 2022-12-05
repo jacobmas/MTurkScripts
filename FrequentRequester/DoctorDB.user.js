@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DoctorDB
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      1.0
 // @description  New script
 // @author       You
 // @include        http://*.mturkcontent.com/*
@@ -38,13 +38,12 @@
     var my_query = {};
     var bad_schemas=["SiteNavigationElement","WebSite","WebPage","WPHeader","WPFooter","ImageGallery","Rating","Review",
                      "AggregateRating","VideoObject","ImageObject"];
-    var bad_urls=['.addresses.com','/allpeople.com','.allstate.com','.amazon.com','.ancientfaces.com','.angmedicare.com','angi.com','/arrestfacts.com','.arounddeal.com',
+    var bad_urls=['.addresses.com','/allpeople.com','.allstate.com','.amazon.com','.ancestry.com', '.ancientfaces.com','.angmedicare.com','angi.com','/arrestfacts.com','.arounddeal.com',
                   '.avvo.com','.bbb.org',
                   '.beenverified.com', 'ballotpedia.','.bettergov.org',
-
                   'birthindex.org',
                   '.bizapedia.com', '/boxclue.co','.brandyourself.com','.caredash.com',
-                  '.castleconnolly.com','/checkpeople.com',
+                  '.castleconnolly.com','.celebsagewiki.com','/checkpeople.com',
                   'clustrmaps.com','companyregistry.com','.crunchbase.com','/dataveria.com',
                   '.dentalplans.com','www.dfes.com', '.diabetesiq.com','.dignitymemorial.com',
                   '.dnb.com','.docbios.com','/docspot.com','.docspot.com',
@@ -69,13 +68,13 @@
                   '.mturkcontent.com','/muckrack.com','/nicelocal.com',
                   '/npi-lookup.org',
                   '.npidb.com', '/npidb.com', '/npidb.org', '/npino.com', '.npinumberlookup', '/npiprofile.com',
-                  '/nuwber.com', '//obits./', '.officialusa.com','/opencorporates.com', '/opengovus.com',
+                  '/nuwber.com', '//obits./', '.officialusa.com','/olympics.com','/opencorporates.com', '/opengovus.com',
                   '/opennpi.com',"/openthedata.com",
                   '/opennpi.org','orthopedic.io','.peekyou.com',
                   '.peoplefinders.com', 'www.primarycare-doctor.com', '.placedigger.com', 'providers.hrt.org','.psychologytoday.com', '/pubprofile.com',
                   '/publicdatadigger.com',
                   '.ratemyprofessors.com',
-                  '.realself.com','residentdatabase.com', '.researchgate.net','rocketreach.co',
+                  '.realself.com','residentdatabase.com', '.researchgate.net','.reunion.com','rocketreach.co',
                   '.sharecare.com','.signalhire.com',
                   '.spokeo.com', 'statefarm.com', '.ted.com','.topionetworks.com','.topnpi.com','trademarking.in',
                   ".tributearchive.com",
@@ -83,15 +82,15 @@
                   '.usnews.com', '.vitadox.com', '/vitals.com','.vitals.com',
                   '/voterrecords.com',
                   '.webmd.com', '.wellness.com',
-                  '.whitepages.com',
-                  '.wikipedia.org', '.yahoo.com','.yellowpages.com', 'www.yellowpages', '.yelp.com','.yelp.ca',
+                  '.whitepages.com','/wikibious.com',
+                  '.wikipedia.org', '.yahoo.com','.yellowpages.com', 'www.yellowpages', '.yelp.com','.yelp.ca','.youtube.com',
                   '.zillow.com', '.zocdoc.com','.zoominfo.com']
     var MTurk=new MTurkScript(30000,1000,[],begin_script,"A1BOHRKGTWLMTJ",true);
     var MTP=MTurkScript.prototype;
     var add_map={"address1":"address1","address2":"address2","city":"city","state":"state","postcode":"zip"};
 
     function is_bad_name(b_name, p_caption) {
-        if(/Funeral/i.test(p_caption) || /Funeral|Attorney License|Real Estate| Agent|Law Firm| Law| $/i.test(b_name)) return true;
+        if(/Funeral/i.test(p_caption) || /Funeral|Attorney License|Real Estate| Agent|Law Firm| Law$| Advisor/i.test(b_name)) return true;
         if(/ LLP\s*$/.test(b_name)) return true;
 
         return false;
@@ -205,8 +204,7 @@
                           });
     }
     function scrape_provider_details(doc,url,providers) {
-        var loc=providers.querySelectorAll(".location");
-        var curr;
+        var loc=providers.querySelectorAll(".location"), curr, results=[];
         let title,address1,city,state,zip,phone_icon,fax_icon,phone,fax,specialty;
         if((specialty=doc.querySelector("[itemprop='medicalSpecialty']"))) {
             set_specialty(specialty.innerText.trim());
@@ -237,9 +235,9 @@
             temp_result.priority=counter;
             temp_result.source_website=url;
             console.log("temp_result=",temp_result);
-            my_query.office_list.push(temp_result);
+            results.push(temp_result);
         }
-        add_to_sheet();
+        return results;
     }
     function scrape_itemtype(doc,url,itemtype) {
         var y;
@@ -584,6 +582,9 @@
 
         var providers=doc.querySelector("#provider-details-locations");
         var nch=doc.querySelector(".nch-dp-card");
+        var ihlocations=doc.querySelectorAll(".ih-field-locations");
+        var ascension=doc.querySelectorAll(".location #practices_MD .location-info");
+
         var itemtype=doc.querySelectorAll("[itemtype*='schema.org']");
         var x,i;
         var good_itemtype_list=[], found_good_itemtype=false;
@@ -610,10 +611,7 @@
                 good_itemtype_list.push(x);
             }
         }
-        console.log("found_good=",found_good_itemtype);
 
-
-        var ihlocations=doc.querySelectorAll(".ih-field-locations");
         var phone=doc.querySelector(".phone > a");
         var fa_fax = doc.querySelector("i.fa-fax");
         if(fa_fax) {
@@ -632,11 +630,8 @@
             }
         }
         var fax=doc.querySelector(".fax > a");
-        var ascension=doc.querySelectorAll(".location #practices_MD .location-info");
-        console.log("ascension=",ascension);
         if(phone && phone.innerText.trim().replace(/[^\d]+/g,"").replace(/^1/,"").length<6 &&
            doc.querySelectorAll(".phone > a").length>1) phone=doc.querySelectorAll(".phone > a")[1];
-
         if(phone)  my_query.fields['office1_phone_number']=phone.innerText.trim().replace(/[^\d]+/g,"").replace(/^1/,"");
         if(!phone) {
             let temp_phone=doc.querySelector("a[href^='tel']");
@@ -662,7 +657,7 @@
         }
 
         if(providers) {
-            scrape_provider_details(doc,url,providers);
+            my_query.office_list=my_query.office_list.concat(scrape_provider_details(doc,url,providers));
             resolve("");
             return;
         }
@@ -673,7 +668,6 @@
         }
         else if(ihlocations.length>0) {
             console.log("ihlocations=",ihlocations);
-
             scrape_ihlocations(doc,url,ihlocations);
             resolve("");
             return;
@@ -977,7 +971,7 @@
             var specialty_map={ "Allergy & Immunology":/Allergy(\s|$)/,"Dermatology":/Dermatology/,"Family Medicine":/Family(\s|$)/, "Gastroenterology":/Gastroenterology|(GI( |$))|Digestive/,
 
                                "Nephrology":/Nephrology/,"Orthopedic Surgery":/Orthopedic|(Bone|Joint)(\s|$)/,"Pain Medicine":/Spine|Pain(\s|$)/,
-                               "Pediatrics":/Pediatric/,
+                               "Pediatrics":/Pediatric/,"Otolaryngology":/((^|\s)ENT(\s|$))|Otolaryngology/,
                                "Primary Care":/Primary Care/,"Psych/Mental Health":/Mental Health/,
                                "Vascular Surgery":/Vein(\s|$)/,"Women's Health":/Women/,
                                "Urgent Care":/(Urgent|Immediate) Care/, "Urology":/Urology/,

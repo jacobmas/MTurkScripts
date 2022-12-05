@@ -2,7 +2,7 @@
 // @name         Mike Swift
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  LinkedIn
+// @description  New script
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -30,7 +30,7 @@
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/Address.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Email/MailTester.js
-// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
+// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 // ==/UserScript==
 
@@ -45,6 +45,13 @@
     function is_bad_name(b_name)
     {
         return false;
+    }
+
+    function matches_acronym(my_company, their_company) {
+        if(/[^A-Z]+/.test(their_company)) return false;
+        let my_acronym=my_company.replace(/([A-Z])([^\s]*(\s|$))/g,"$1");
+        console.log("my_acronym=",my_acronym," their_company=",their_company);
+        return my_acronym===their_company
     }
 
     function query_response(response,resolve,reject,type) {
@@ -83,12 +90,12 @@
                 my_query.name===parsed_context.person.name.toLowerCase())
               ) {
                                     console.log("hasperson");
-
-                if(MTP.matches_names(my_query.short_company,parsed_context.person.experience[0].company)) {
-                    console.log("Matchcompany");
-                    let my_time=parsed_context.person.experience[0].time;
-                    let split_time=my_time.split(" - ");
-                    if(split_time.length===2){
+                parsed_context.person.experience[0].company=MTP.removeDiacritics(parsed_context.person.experience[0].company);
+                               console.log("Matchcompany");
+                let my_time=parsed_context.person.experience[0].time;
+                let split_time=my_time.split(" - ");
+                if(split_time.length===2){
+                    if(/Present/i.test(split_time[1])) {
                         my_query.fields.companyName=parsed_context.person.experience[0].company;
                         my_query.fields.jobTitle=parsed_context.person.experience[0].title;
                         my_query.fields.startDate=split_time[0];
@@ -96,8 +103,10 @@
                         return;
                     }
 
-
                 }
+
+
+               
             }
             else if(parsed_context.people &&parsed_context.people.length>0 && my_query.try_count[type]<3) {
                 my_query.try_count[type]++;
@@ -118,7 +127,22 @@
             }
             else if(b_url===my_query.url&&my_query.try_count[type]<3) {
                 my_query.try_count[type]++;
-                query_search(person_name+" "+my_query.company,resolve,reject,query_response,"query");
+                console.log("b_name=",b_name);
+                console.log("p_caption=",p_caption);
+                let time_re=/([A-Z][a-z]{2})\s([\d]{4})\s*\-\s*Present/;
+                let temp_match=p_caption.match(time_re);
+                /*if(temp_match) {
+                    document.querySelector("#present").click();
+                     document.querySelector("#startMonth").value=month_list[temp_match[1]]||"NONE";
+                    document.querySelector("#startYear").value=temp_match[2];
+                    resolve("");
+                    return;
+
+                }*/
+
+                let rest_of_query = MTP.matches_names(b_name,my_query.company) ? b_name.replace(/\|.*$/,"") : my_query.company;
+                console.log("rest_of_query=",rest_of_query);
+                query_search(person_name+" "+rest_of_query,resolve,reject,query_response,"query");
                 return;
             }
              for(i=0; i < b_algo.length; i++) {
@@ -130,7 +154,7 @@
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
                 if( my_query.url.replace(/.*linkedin\.com/,"")===b_url.replace(/.*linkedin\.com/,"")&&my_query.try_count[type]<2) {
                     my_query.try_count[type]++;
-                                query_search(b_name+" site:linkedin.com", resolve, reject, query_response,"query");
+                                query_search(b_name.replace(/\|.*$/,"")+" site:linkedin.com", resolve, reject, query_response,"query");
                     return;
 
                 }
@@ -151,7 +175,7 @@
         if(my_query.try_count[type]===0) {
                         my_query.try_count[type]++;
 
-            query_search(my_query.url+" "+my_query.short_company+" site:linkedin.com", resolve, reject, query_response,"query");
+            query_search(my_query.url+" "+my_query.short_company+" linkedin.com", resolve, reject, query_response,"query");
             return;
         }
         else if(my_query.try_count[type]===1) {
@@ -182,9 +206,12 @@
 
     function begin_script(timeout,total_time,callback) {
         if(timeout===undefined) timeout=200;
-        if(total_time===undefined) total_time=0; 
+        if(total_time===undefined) total_time=0;
         if(callback===undefined) callback=init_Query;
-        if(MTurk!==undefined) { callback(); }
+        if(MTurk!==undefined) {
+
+            //console.log("MTurk=",MTurk,"window.location.href=",window.location.href);
+            callback(); }
         else if(total_time<2000) {
             console.log("total_time="+total_time);
             total_time+=timeout;
@@ -214,10 +241,12 @@
         console.log("in init_query");
         var i;
        var url=document.querySelector("crowd-form a").href;
+        url=url.replace(/(\.linkedin\.com)\/pub\/([^\/]*)\/([^\/]+)\/([^\/]+)\/([^\/]+)/,"$1/in/$2-$5$4$3").replace(/\?.*$/,"").replace(/\/$/,"").trim();
+        console.log("url=",url);
         var company=document.querySelectorAll("crowd-form div p")[1].innerText.trim().replace(/^[^:]*:\s*/,"");
         let short_url=url.replace(/https?:\/\/.*linkedin\.com/,""),match;
 
-        my_query={name:"",company:company, short_company:MTP.shorten_company_name(company), url:url,fields:{},done:{},
+        my_query={name:"",company:company, short_company:MTP.shorten_company_name(company).replace(/ holdings$/i,""), url:url,fields:{companyName:"",jobTitle:"",startDate:""},done:{},
 		  try_count:{"query":0},
 		  submitted:false};
         if((match=short_url.match(/([a-z]+)\-([a-z]+)-([0-9a-f]{7})/))) {
