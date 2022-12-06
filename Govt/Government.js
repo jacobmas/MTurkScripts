@@ -573,7 +573,7 @@ Gov.fix_emails=function(div,is_civic) {
 		//console.log("elem.innerText="+elem.outerHTML);
 		if(typeof(elem.href)==="object") return;
 		//            console.log("elem.href="+elem.href);
-		elem.href=elem.href.replace(/(mailto:.*)(\[^\]*\])/,"$1@");
+		elem.href=elem.href.replace(/(mailto:.*)(\[[^\]]*\])/,"$1@");
 		elem.href=elem.href.replace(/^.*\#MAIL:/,"mailto:").replace(/[\(\[]{1}at[\]\)]{1}/,"@").replace(/[\(\[]{1}dot[\]\)]{1}/,".");
 		if(/^\s*mailto:\s*/.test(elem.href) && (++fix_count || true)) {
 			elem.innerHTML=(!(/Contact|Email/i.test(elem.innerText)||elem.innerText.match(email_re))
