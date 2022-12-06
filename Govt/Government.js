@@ -570,14 +570,15 @@ Gov.fix_emails=function(div,is_civic) {
     });
 
     inner_a.forEach(function(elem) {
-	//console.log("elem.innerText="+elem.outerHTML);
-	if(typeof(elem.href)==="object") return;
-	//            console.log("elem.href="+elem.href);
-	elem.href=elem.href.replace(/^.*\#MAIL:/,"mailto:").replace(/[\(\[]{1}at[\]\)]{1}/,"@").replace(/[\(\[]{1}dot[\]\)]{1}/,".");
-	if(/^\s*mailto:\s*/.test(elem.href) && (++fix_count || true)) {
-	    elem.innerHTML=(!(/Contact|Email/i.test(elem.innerText)||elem.innerText.match(email_re))
-			    ?elem.innerHTML+"\t":"")+elem.href.replace(/^\s*mailto:\s*/,"").replace("%20","")+"\t";
-	    elem.href="";
+		//console.log("elem.innerText="+elem.outerHTML);
+		if(typeof(elem.href)==="object") return;
+		//            console.log("elem.href="+elem.href);
+		elem.href=elem.href.replace(/(mailto:.*)(\[^\]*\])/,"$1@");
+		elem.href=elem.href.replace(/^.*\#MAIL:/,"mailto:").replace(/[\(\[]{1}at[\]\)]{1}/,"@").replace(/[\(\[]{1}dot[\]\)]{1}/,".");
+		if(/^\s*mailto:\s*/.test(elem.href) && (++fix_count || true)) {
+			elem.innerHTML=(!(/Contact|Email/i.test(elem.innerText)||elem.innerText.match(email_re))
+					?elem.innerHTML+"\t":"")+elem.href.replace(/^\s*mailto:\s*/,"").replace("%20","")+"\t";
+			elem.href="";
 	}
 	else if((match=elem.href.match(email_re))) {
 	    elem.innerHTML=(!(/Contact|Email/i.test(elem.innerText)||elem.innerText.match(email_re))
@@ -587,6 +588,8 @@ Gov.fix_emails=function(div,is_civic) {
 	   ((match=/\/cdn-cgi\/l\/email-protection\#(.*)$/)&&(email=match[1]))
 	  ) elem.innerHTML=MTurkScript.prototype.cfDecodeEmail(email);
     });
+	var y;
+
     Gov.fix_emails_civic(div);
   
     //console.log("End fix_emails, div.innerText="+div.innerHTML);
