@@ -1634,6 +1634,9 @@ MTurkScript.prototype.fix_emails=function(doc,url) {
 	
     for(i=0; i < links.length; i++) {
         //console.log("("+i+"): "+links[i].href+", "+links[i].innerText);
+		links[i].href=links[i].href.replace(/(mailto:.*)(\[[^\]]*\])/,"$1@");
+		elem.href=elem.href.replace(/^.*\#MAIL:/,"mailto:").replace(/[\(\[]{1}at[\]\)]{1}/,"@").replace(/[\(\[]{1}dot[\]\)]{1}/,".");
+			
 	if((local=links[i].querySelector(".localMail")) && (domain=links[i].querySelector(".domainMail"))) {
 	    links[i].href=links[i].innerText="mailto:"+local.innerText.trim()+"@"+domain.innerText.trim();
 	}
