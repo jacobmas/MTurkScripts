@@ -547,7 +547,7 @@ function utf8_to_str(a) {
  * returns the number of successful replacements
  */
 Gov.fix_emails=function(div,is_civic) {
-    var inner_a=doc.querySelectorAll("a"),cf_email,result,fix_count=0,match,email,scripts=div.querySelectorAll("script");
+    var inner_a=div.querySelectorAll("a"),cf_email,result,fix_count=0,match,email,scripts=div.querySelectorAll("script");
     //console.log("Begin fix_emails, div.innerText="+div.innerHTML);
       if(is_civic||Gov.id==="civicplus") { fix_count=fix_count+Gov.fix_emails_civic(div); }
     scripts.forEach(function(elem) {
