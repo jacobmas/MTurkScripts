@@ -743,7 +743,7 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
 
 
 	}
-	result.url = MTurkScript.prototype.fix_bing_link(result.url);
+	if(result.url) result.url = MTurkScript.prototype.fix_bing_link(result.url);
 	
     return result;
 };
