@@ -913,33 +913,7 @@ AggParser.parse_yelp=function(doc,url,resolve,reject) {
     var yelp_re=/^\s*\<\!\-\-\s*(.*)\s*\-\-\>s*$/;
     var yelp_match,curr_script,parsed;
     AggParser.parse_yelp_noscript(doc,url,result);
-    for(curr_script of doc.scripts) {
-        yelp_match="";
-        if((yelp_match=curr_script.innerHTML.match(yelp_re))&&/footerProps/.test(yelp_match[1])) {
-            try {
-                parsed=JSON.parse(yelp_match[1]);
-                result=AggParser.parse_yelp_inner(parsed);
-                is_parsed=true;
-            } catch(error) {
-                //reject("Error parsing JSON on YELP");
-                return;
-            }
-        }
-        else if(true||!/^\s*\(function/.test(curr_script.innerHTML)) {
-            /*  if(false&&yelp_match) {
-                try {
-                parsed=JSON.parse(yelp_match[1]);
-                if(parsed&&parsed.messages) parsed.messages="";
-                console.log("parsed="+JSON.stringify(parsed));
-                }
-                catch(error) {
-                console.log("not matched, curr_script.innerHTML="+curr_script.innerHTML);
-                }
-                }
-                else                 console.log("not matched, curr_script.innerHTML="+curr_script.innerHTML); */
-        }
-
-    }
+   
     resolve(result);
 };
 

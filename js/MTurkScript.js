@@ -342,7 +342,7 @@ MTurkScript.prototype.begin_crowd_script=function(timeout,total_time,callback,se
 		if(assignmentId) this.assignment_id=assignmentId.value;
 		callback();
     }
-    else if(total_time<2000) {
+    else if(total_time<1200) {
         console.log("total_time="+total_time);
         total_time+=timeout;
         setTimeout(function() { self.begin_crowd_script(timeout,total_time,callback,self); },timeout);
@@ -584,34 +584,52 @@ MTurkScript.prototype.convertTime12to24 = (time12h) => {
         return `${hours}:${minutes}`;
     }
 
-MTurkScript.prototype.parse_hours_table=function(table) {
-	var row,col;
-	var hours_dict={};
-	for(row of table.tBodies[0].rows) {
-		if(row.cells.length>=2) {
-			var split_times=row.cells[1].innerText.trim().split(/ - /);
-			if(split_times.length>=2) {
-				split_times[0]=split_times[0].replace(/Noon/i,"12:00 PM").replace(/Midnight/i,"12:00 AM").replace(/^(\d+) /,"$1:00 ").replace(/^(\d:)/,"0$1");
-				split_times[1]=split_times[1].replace(/Noon/i,"12:00 PM").replace(/Midnight/i,"12:00 AM").replace(/^(\d+) /,"$1:00 ").replace(/^(\d:)/,"0$1");
+    MTurkScript.prototype.parse_hours_table=function(table) {
+        var row,col;
+        console.log("table=",table);
+        var hours_dict={};
+        for(row of table.tBodies[0].rows) {
+            if(row.cells.length>=2) {
+                var split_times=row.cells[1].innerText.trim().split(/ - /);
+                if(split_times.length>=2) {
 
-				var open24=MTurkScript.prototype.convertTime12to24(split_times[0]), close24=MTurkScript.prototype.convertTime12to24(split_times[1]);
+                    split_times[0]=split_times[0].replace(/Noon/i,"12:00 PM").replace(/Midnight/i,"12:00 AM")
+                        .replace(/^(\d+) /,"$1:00 ").replace(/^(\d:)/,"0$1").replace(/(AM|PM).*$/,"$1");
+                    split_times[1]=split_times[1].replace(/Noon/i,"12:00 PM").replace(/Midnight/i,"12:00 AM").replace(/^(\d+) /,"$1:00 ").replace(/^(\d:)/,"0$1")
+                        .replace(/(AM|PM).*$/,"$1");
 
-				var curr_dict={"open":split_times[0],"close":split_times[1],"open24":open24,"close24":close24,"closed":false};
+                    var open24=MTurkScript.prototype.convertTime12to24(split_times[0]), close24=MTurkScript.prototype.convertTime12to24(split_times[1]);
 
-				hours_dict[row.cells[0].innerText.trim()]=curr_dict;
-			}
-			else if(/Closed/i.test(row.cells[1].innerText)) {
-				hours_dict[row.cells[0].innerText.trim()]={"closed":true};
-			}
-			else {
-				console.error("Error parsing hours dict, found ", row.cells[1].innerText, " as time");
-			}
+                    var curr_dict={"open":split_times[0],"close":split_times[1],"open24":open24,"close24":close24,"closed":false};
+
+                    hours_dict[row.cells[0].innerText.trim()]=curr_dict;
+                }
+                else if(/Closed/i.test(row.cells[1].innerText)) {
+                    hours_dict[row.cells[0].innerText.trim()]={"closed":true};
+                }
+                else {
+                    if(/24 hours/i.test(row.cells[1].innerText)) {
+                       let curr_dict={"open":"12:00 AM","close":"12:00 AM","open24":"00:00","close24":"24:00","closed":false};
+
+                        hours_dict[row.cells[0].innerText.trim()]=curr_dict;
+                    }
+                    else {
+                        console.error("Error parsing hours dict, found ", row.cells[1].innerText, " as time"); }
+                }
 
 
-		}
-	}
-	return hours_dict;
-}
+            }
+        }
+        return hours_dict;
+    }
+	
+MTurkScript.prototype.fix_bing_link=function(url) {
+	/* Fix bing links */
+        let bing_match=url.match(/https:\/\/www\.bing\.com\/alink\/link\?url=([^&]*)/);
+        if(bing_match) url=decodeURIComponent(bing_match[1]);
+        return url;
+    };
+	
 MTurkScript.prototype.parse_b_ans=function(b_ans) {
     /* Parses for answer in b_ans */
     let ret="";
@@ -725,6 +743,7 @@ MTurkScript.prototype.parse_b_context=function(b_context) {
 
 
 	}
+	result.url = MTurkScript.prototype.fix_bing_link(result.url);
 	
     return result;
 };
