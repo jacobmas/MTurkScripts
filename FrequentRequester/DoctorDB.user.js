@@ -43,29 +43,29 @@
                   '.beenverified.com', 'ballotpedia.','.bettergov.org',
                   'birthindex.org',
                   '.bizapedia.com', '/boxclue.co','.brandyourself.com','.caredash.com',
-                  '.castleconnolly.com','.celebsagewiki.com','/checkpeople.com',
-                  'clustrmaps.com','companyregistry.com','.crunchbase.com','/dataveria.com',
+                  '.castleconnolly.com','.celebsagewiki.com','/checkpeople.com','.citygridmedia.com',
+                  'clustrmaps.com','companyregistry.com','.corporationwiki.com','.crunchbase.com','/dataveria.com',
                   '.dentalplans.com','www.dfes.com', '.diabetesiq.com','.dignitymemorial.com',
                   '.dnb.com','.docbios.com','/docspot.com','.docspot.com',
                   '//doctor.com', '.doctor.com', '.doctorhelps.com', '.doximity.com',
                   '.echovita.com','.ecyberclinics.com',
                   '.ehealthscores.com', '.endo-world.com', '.enpnetwork.com','/eyedoctor.io',
-                  '.facebook.com', '.familysearch.org','.federalpay.org','.fertilityiq.com', '.findagrave.com',
+                  '.facebook.com', '.familysearch.org','.famousdetails.com','.fandom.com','.federalpay.org','.fertilityiq.com', '.findagrave.com',
                   'www.findmugshots.com',
                   'findatopdoc.com',
-                  '.gastro.org', '.getluna.com',
-                  'goodreads.com','/govsalaries.com',
-                  '/healow.com','.healthcare4ppl.com', '.healthcare6.com',
+                  '.gastro.org', '.geni.com','/genius.com','.getluna.com',
+                  'goodreads.com','/govsalaries.com','.har.com',
+                  '/healow.com','.healthcare4ppl.com', 'healthcare6.com',
                   '.healthgrades.com', '.healthline.com','.healthpage.org', '/healthprovidersdata.com', '.healthsoul.com',
                   '.healthlynked.com','.hipaaspace.com','.hometownlocator.com',
-                  '.imdb.com','/inforver.com','.instantcheckmate.com', '.kellysearch.com','/lawandcrime.com',
+                  '.imdb.com','/inforver.com','.instagram.com','.instantcheckmate.com', '.kellysearch.com','/lawandcrime.com',
                   'lawgroup.com','lawtally.com','.legacy.com',
                   '/licensefiles.com',
                   '.linkedin.com', '.localdoc.com','.locatepeople.org','/marriedwiki.com',
-                  '.mapquest.com', '.md.com', '.mdnpi.com', '.medicalcare.com','.medicalnewstoday.com', '.medicareforall.com','.medicaredforall.com',
-                  '.medicarelist.com', '.medicinenet.com', '.morganstanley.com',
+                  '.mapquest.com', '.md.com', '.mdnpi.com', '.medfusion.com','.medicalcare.com','.medicalnewstoday.com', '.medicareforall.com','.medicaredforall.com',
+                 'mentaltherapy.io', '.medicarelist.com', '.medicinenet.com', '.morganstanley.com',
                   '.myheritage.com','.mylife.com',
-                  '.mturkcontent.com','/muckrack.com','/nicelocal.com',
+                  '.mturkcontent.com','/muckrack.com','.murderpedia.org','/nicelocal.com',
                   '/npi-lookup.org',
                   '.npidb.com', '/npidb.com', '/npidb.org', '/npino.com', '.npinumberlookup', '/npiprofile.com',
                   '/nuwber.com', '//obits./', '.officialusa.com','/olympics.com','/opencorporates.com', '/opengovus.com',
@@ -76,13 +76,13 @@
                   '.ratemyprofessors.com',
                   '.realself.com','residentdatabase.com', '.researchgate.net','.reunion.com','rocketreach.co',
                   '.sharecare.com','.signalhire.com',
-                  '.spokeo.com', 'statefarm.com', '.ted.com','.topionetworks.com','.topnpi.com','trademarking.in',
+                  'spokeo.com', 'statefarm.com', '.ted.com','.topionetworks.com','.topnpi.com','trademarking.in',
                   ".tributearchive.com",
                   "truepeoplesearch.com", '/trulista.com','/trustifo.com','/unicourt.com',
                   '.usnews.com', '.vitadox.com', '/vitals.com','.vitals.com',
                   '/voterrecords.com',
                   '.webmd.com', '.wellness.com',
-                  '.whitepages.com','/wikibious.com',
+                  '.whitepages.com','/wikibious.com','.wiki',
                   '.wikipedia.org', '.yahoo.com','.yellowpages.com', 'www.yellowpages', '.yelp.com','.yelp.ca','.youtube.com',
                   '.zillow.com', '.zocdoc.com','.zoominfo.com']
     var MTurk=new MTurkScript(30000,1000,[],begin_script,"A1BOHRKGTWLMTJ",true);
@@ -109,6 +109,7 @@
         var search, b_algo, i=0, inner_a;
         var b_url="crunchbase.com", b_name, b_factrow,lgb_info, b_caption,p_caption;
         var b1_success=false, b_header_search,b_context,parsed_context,parsed_lgb;
+        var good_url=null;
         try
         {
             search=doc.getElementById("b_content");
@@ -121,8 +122,9 @@
 
                 if(type==="query" && parsed_context.url&&!MTP.is_bad_url(parsed_context.url,bad_urls,-1) && !is_bad_context(parsed_context)) {
                     parsed_context.url=parsed_context.url.replace(/https?:\/\/www\.www\./,"https://www.");
-                    resolve(parsed_context.url);
-                    return;
+                    good_url=parsed_context.url;
+//                    resolve(parsed_context.url);
+  //                  return;
                 }
                 else if(parsed_context.people&&parsed_context.people.length>0 && parsed_context.people[0].url!==undefined && type==="query"&&
                         my_query.try_count[type]===0) {
@@ -138,12 +140,18 @@
                 console.log("parsed_lgb="+JSON.stringify(parsed_lgb));
                 if(type==="query" && parsed_lgb.url&&!MTP.is_bad_url(parsed_lgb.url,bad_urls,-1)) {
                     parsed_lgb.url=parsed_lgb.url.replace(/https?:\/\/www\.www\./,"https://www.");
-                    resolve(parsed_lgb.url);
-                    return;
+                   good_url=parsed_lgb.url;
+                    // resolve(parsed_lgb.url);
+                    //return;
                 }
 
             }
             for(i=0; i < b_algo.length&&i<4; i++) {
+                if(type==="query" && i>=1 && good_url) {
+                    console.log("Resolving on top url "+good_url);
+                    resolve(good_url);
+                    return;
+                }
                 if((type==='webmdquery'||(type==='query' && my_query.try_count[type]>0)) && i>=3) break;
                 b_name=b_algo[i].querySelector("h2 a").textContent;
                 b_url=b_algo[i].getElementsByTagName("a")[0].href;
@@ -575,6 +583,65 @@
         resolve("");
     }
 
+     function parse_dartmouth(doc,url,resolve,reject,response) {
+        console.log("response=",response);
+        let add_field;
+        let responseJSON=JSON.parse(response.responseText);
+        console.log("responseJSON=",responseJSON);
+        var name, phone,fax,addString;
+        var x;
+        var temp_result={};
+
+        let my_response=responseJSON.reply.result.GetProfileResponse.GetProfileResult;
+
+        let offices=my_response.Offices;
+         if(offices && offices.Office) {
+
+             name=offices.Office.OfficeName;
+             phone=offices.Office.Phone;
+             fax=offices.Office.Fax;
+
+             addString=offices.Office.StreetAddress+", "+offices.Office.City+", "+offices.Office.State+" "+offices.Office.Zip;
+
+
+             if(name) temp_result.name=name.trim();
+             if(phone) temp_result.phone_number=phone.replace(/[^\d]+/g,"").replace(/^1/,"").trim();
+             if(fax) temp_result.fax_number=1+fax.replace(/[^\d]+/g,"").replace(/^1/,"").trim();
+
+             let temp_add=new Address(addString);
+             for(add_field in add_map) {
+                 temp_result[add_map[add_field]]=temp_add[add_field];
+             }
+             console.log("my_response.Specialties=",my_response.Specialties);
+             if(my_response.Specialties.Specialty && my_response.Specialties.Specialty.Name) {
+                 set_specialty( my_response.Specialties.Specialty.Name);
+             }
+             else if( my_response.Specialties.Specialty) {
+                 for(x of my_response.Specialties.Specialty) {
+                     set_specialty(x.Name);
+                     break;
+                 }
+             }
+
+
+             if(Object.keys(temp_result).length>=5&&temp_result.phone_number && temp_result.fax_number) {
+                 temp_result.priority=0;
+                 temp_result.source_website=url;
+                 if(!temp_result.name) {
+                     let names=MTurkScript.prototype.find_company_name_on_website(doc,url);
+                     console.log("names=",names);
+                     if(names.length>0) { temp_result.name=names[0].name; }
+                 }
+                 console.log("temp_result=",temp_result);
+                 my_query.office_list.push(temp_result);
+                 add_to_sheet();
+
+
+             }
+         }
+        resolve("");
+    }
+
 
     function scrape_doctor(doc,url,resolve,reject,extra) {
         //   console.log("scrape_doctor, doc=",doc.body.innerHTML);
@@ -589,6 +656,14 @@
         var x,i;
         var good_itemtype_list=[], found_good_itemtype=false;
 
+        if((x=url.match(/.dartmouth-hitchcock.org\/findaprovider\/provider\/(\d+)/))) {
+            let new_url="https://www.dartmouth-hitchcock.org/findaprovider/data/GetProvider/"+x[1];
+                        console.log("Found dartmouth, new_url=,",new_url);
+
+                let promise=MTP.create_promise(new_url,parse_dartmouth,resolve,reject);
+                return;
+        }
+
         if(doc.querySelector("img[src*='patientpop.com']")) {
             console.log("*** found patientpop");
             var nap=doc.querySelectorAll("footer .nap"),counter=1;
@@ -596,8 +671,8 @@
                 for(x of nap) { parse_nap(x,counter); counter++;
                                if(counter>2) { break; }
                               }
-                var new_url=url.replace(/(https?:\/\/[^\/]*).*$/,"$1")+"/contactus";
-                var promise=MTP.create_promise(new_url,parse_patientpoploc,resolve,reject);
+                let new_url=url.replace(/(https?:\/\/[^\/]*).*$/,"$1")+"/contactus";
+                let promise=MTP.create_promise(new_url,parse_patientpoploc,resolve,reject);
                 return;
             }
         }
@@ -605,6 +680,8 @@
         for(i=itemtype.length-1; i>=0;i--) {
             x=itemtype[i];
             let actualtype=x.getAttribute('itemtype').replace(/https?:\/\/schema\.org\//,"").trim();
+                            console.log("* possible actualtype=",actualtype);
+
             if(!bad_schemas.includes(actualtype)) {
                 console.log("actualtype=",actualtype);
                 found_good_itemtype=true;
@@ -757,6 +834,10 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
+        let bing_match=result.match(/https:\/\/www\.bing\.com\/alink\/link\?url=([^&]*)/);
+        if(bing_match) {
+            result=decodeURIComponent(bing_match[1]);
+        }
         console.log("result="+JSON.stringify(result));
         my_query.practice_url=result;
         if(/\.webmd\.com/.test(result)) {

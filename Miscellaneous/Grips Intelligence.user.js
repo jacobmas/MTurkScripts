@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Igor
+// @name         Grips Intelligence
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  New script
+// @description  Product Detail Page
 // @author       You
 // @include        http://*.mturkcontent.com/*
 // @include        https://*.mturkcontent.com/*
@@ -39,7 +39,7 @@
     var my_query = {};
     var bad_urls=[];
     /* TODO should be requester #, last field should be if it's crowd or not */
-    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A35GGZI7J0D89C",true);
+    var MTurk=new MTurkScript(20000,750+(Math.random()*1000),[],begin_script,"A110TV8NJ9L01T",true);
     var MTP=MTurkScript.prototype;
     function is_bad_name(b_name)
     {
@@ -78,16 +78,14 @@
             }
 					
 					}
-            for(i=0; i < b_algo.length&&i<1; i++) {
+            for(i=0; i < b_algo.length; i++) {
                 b_name=b_algo[i].querySelector("h2 a").textContent;
                 b_url=b_algo[i].querySelector("h2 a").href;
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : (b_algo[i].querySelector("p")? b_algo[i].querySelector("p").innerText.trim():"");
                 console.log("("+i+"), b_name="+b_name+", b_url="+b_url+", p_caption="+p_caption);
-                //&&(b_name.toLowerCase().indexOf(my_query.title.toLowerCase())!==-1||
-                   //p_caption.toLowerCase().indexOf(my_query.title.toLowerCase())!==-1)
-                if(!MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i) && /\/in\//.test(b_url)
+                if(!MTurkScript.prototype.is_bad_url(b_url, bad_urls) && !MTurkScript.prototype.is_bad_name(b_name,my_query.name,p_caption,i)
 		   && (b1_success=true)) break;
             }
             if(b1_success && (resolve(b_url)||true)) return;
@@ -117,8 +115,6 @@
 
     /* Following the finding the district stuff */
     function query_promise_then(result) {
-        my_query.fields.LinkedIn_Profile_URL=result;
-        submit_if_done();
     }
 
     function begin_script(timeout,total_time,callback) {
@@ -156,23 +152,39 @@
         }
     }
 
+    function parse_for_products(doc,url,resolve,reject) {
+        var x,curr;
+        var collections="";
+        for(x of doc.links) {
+            curr=MTP.fix_remote_url(x.href,url);
+            if(/\/(deal|shop|products?)\/.*[\-_].*[\-_].*/.test(curr)) {
+                my_query.fields.website=curr;
+                resolve("");
+                return;
+            }
+            if(/\/(shop|collections)\//.test(curr)&&!collections) {
+                collections=curr;
+            }
+        }
+        if(!my_query.found_collections&&collections) {
+            my_query.found_collections=true;
+            MTP.create_promise(collections,parse_for_products,resolve,reject);
+            return;
+        }
+        reject("");
+    }
+
     function init_Query()
     {
 		bad_urls=bad_urls.concat(default_bad_urls);
         console.log("in init_query");
-        var a=document.querySelectorAll("crowd-form a");
-        my_query={name:a[0].innerText.trim()+" "+a[1].innerText.trim(),company:a[2].innerText.trim(),title:a[3].innerText.trim(),fields:{LinkedIn_Profile_URL:""},done:{},
+        var url=document.querySelector("crowd-form a").href;
+        my_query={url:url,name,fields:{website:""},done:{},found_collections:false,
 		  try_count:{"query":0},
 		  submitted:false};
 	console.log("my_query="+JSON.stringify(my_query));
-        var search_str=my_query.name+" "+my_query.company+" "+my_query.title+" site:linkedin.com";
-        const queryPromise = new Promise((resolve, reject) => {
-            console.log("Beginning URL search");
-            query_search(search_str, resolve, reject, query_response,"query");
-        });
-        queryPromise.then(query_promise_then)
-            .catch(function(val) {
-            console.log("Failed at this queryPromise " + val); GM_setValue("returnHit",true); });
+        var search_str;
+        const promise=MTP.create_promise(my_query.url,parse_for_products,submit_if_done,function() { GM_setValue("returnHit",true); });
     }
 
 })();

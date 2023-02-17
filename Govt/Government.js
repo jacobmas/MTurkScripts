@@ -84,7 +84,7 @@ Gov.scrape_lone_emails=function(doc,url) {
     if((email_matches=doc.body.innerHTML.match(email_re))) {
         for(j=0; j < email_matches.length; j++) {
             if(!MTP.is_bad_email(email_matches[j]) && email_matches[j].length>0 &&
-	       !Gov.email_list.includes({email:email_matches[j],url:url})) Gov.email_list.push({email:email_matches[j],url:url});              
+	       !Gov.email_list.includes({email:email_matches[j],url:url})) Gov.email_list.push({email:email_matches[j].replace(/`/,""),url:url});              
         }  
     }
     for(i=0; i < links.length; i++) {   
