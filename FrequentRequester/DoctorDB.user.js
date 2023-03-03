@@ -35,6 +35,92 @@
 
 (function() {
     'use strict';
+
+     var requester_name="Doctor DB";
+
+     MTurkScript.prototype.setup_worker_mturk=function() {
+        var self=this;
+        this.submitted=false;
+        GM_setValue("submitted",false);
+        console.log("In setup_worker_mturk, this.assignment_id="+this.assignment_id);
+        GM_addStyle(".btn-ternary { border: 1px solid #FA7070; background-color: #FA7070; color: #111111; }");
+        var pipeline=document.getElementsByClassName("work-pipeline-action")[0];
+        var project_detail=document.querySelector(".project-detail-bar span.detail-bar-value a");
+        var task_queue=document.querySelector(".task-queue");
+
+        if(project_detail) {
+            var req_id=project_detail.href.match(/requesters\/([^\/]+)/);
+            if(req_id && req_id[1]===this.requester_id) GM_setValue("req_id",req_id[1]);
+            else { console.log("Wrong requester: found "+req_id[1]+", desired "+this.requester_id);
+                  this.right_requester=false;
+                  return; }
+
+            if(GM_getValue("automate")===undefined) GM_setValue("automate",false);
+            var btn_span=document.createElement("span"), btn_automate=document.createElement("button");
+            var btn_primary=document.querySelector(".btn-primary"),btn_secondary=document.querySelector(".btn-secondary");
+            var my_secondary_parent=pipeline.querySelector(".btn-secondary").parentNode;
+            Object.assign(btn_automate,{className:"btn btn-ternary m-r-sm",innerHTML:"Automate"});
+            btn_span.appendChild(btn_automate);
+            pipeline.insertBefore(btn_span, my_secondary_parent);
+            GM_addStyle(this.globalCSS);
+            if(GM_getValue("automate") && ((btn_automate.innerHTML="Stop")||true)) {
+                /* Return automatically if still automating according to return_ms */
+                setTimeout(function() {  if(GM_getValue("automate") && !GM_getValue("submitted")) btn_secondary.click(); }, this.return_ms);
+            }
+            btn_automate.addEventListener("click", function(e) {
+                var auto=GM_getValue("automate");
+                if(!auto) btn_automate.innerHTML="Stop";
+                else btn_automate.innerHTML="Automate";
+                GM_setValue("automate",!auto);
+            });
+            GM_setValue("returnHit",false);
+            GM_addValueChangeListener("returnHit", function() {
+                console.log("this.assignment_id="+this.assignment_id+", arguments="+JSON.stringify(arguments));
+                var assignment_id=arguments[0].replace(/^returnHit/,"");
+                if(arguments[2]!==undefined) {
+                    try { GM_deleteValue(arguments[0]); } catch(error) { }
+                    if(!self.submitted &&
+                       btn_secondary && btn_secondary.innerText==="Return" && (GM_getValue("automate"))) {
+
+                        setTimeout(function() { btn_secondary.click(); }, 0);
+                    }
+                }
+            });
+
+            if(btn_secondary && btn_secondary.innerText==="Skip" && btn_primary && btn_primary.innerText==="Accept") {
+                /* Accept the HIT if automating */
+                if(GM_getValue("automate")) btn_primary.click();
+            }
+            else {
+                /* Wait to return the hit */
+                var cbox=document.querySelector(".checkbox input[type='checkbox']");
+                if(cbox && !cbox.checked) cbox.click();
+            }
+
+
+            GM_setValue("setup_complete",true);
+            this.setup_complete=true;
+        }
+        else if(task_queue) {
+            // .task-queue
+            console.log("Found task_queue");
+            var rows=document.querySelectorAll(".desktop-row"), row;
+            var requester;
+            for(row of rows) {
+                requester=row.querySelector(".requester-column").innerText.trim();
+                console.log("requester=",requester);
+                if(requester===requester_name) {
+                    row.querySelector(".btn").click();
+                    break;
+                }
+            }
+
+        }
+        else {
+            console.warn("Could not find project details or task_queue, checking task_queue");
+            if(GM_getValue("automate")) setTimeout(function() { window.location.href="https://worker.mturk.com/tasks"; }, 500);
+        }
+};
     var my_query = {};
     var bad_schemas=["SiteNavigationElement","WebSite","WebPage","WPHeader","WPFooter","ImageGallery","Rating","Review",
                      "AggregateRating","VideoObject","ImageObject"];
@@ -67,16 +153,17 @@
                   '.myheritage.com','.mylife.com',
                   '.mturkcontent.com','/muckrack.com','.murderpedia.org','/nicelocal.com',
                   '/npi-lookup.org',
-                  '.npidb.com', '/npidb.com', '/npidb.org', '/npino.com', '.npinumberlookup', '/npiprofile.com',
+                  '.npidb.com', '/npidb.com', '/npidb.org', '/npino.com', '.npinumberlookup', '/npiprofile.com','/nurseok.com',
                   '/nuwber.com', '//obits./', '.officialusa.com','/olympics.com','/opencorporates.com', '/opengovus.com',
                   '/opennpi.com',"/openthedata.com",
                   '/opennpi.org','orthopedic.io','.peekyou.com',
-                  '.peoplefinders.com', 'www.primarycare-doctor.com', '.placedigger.com', 'providers.hrt.org','.psychologytoday.com', '/pubprofile.com',
+                  '.peoplefinders.com', 'www.primarycare-doctor.com', '.placedigger.com','/popularbio.com',
+                  'providers.hrt.org','.psychologytoday.com', '/pubprofile.com',
                   '/publicdatadigger.com',
                   '.ratemyprofessors.com',
                   '.realself.com','residentdatabase.com', '.researchgate.net','.reunion.com','rocketreach.co',
                   '.sharecare.com','.signalhire.com',
-                  'spokeo.com', 'statefarm.com', '.ted.com','.topionetworks.com','.topnpi.com','trademarking.in',
+                  'spokeo.com', 'statefarm.com', 'taxbuzz.com', '.ted.com','.topionetworks.com','.topnpi.com','trademarking.in',
                   ".tributearchive.com",
                   "truepeoplesearch.com", '/trulista.com','/trustifo.com','/unicourt.com',
                   '.usnews.com', '.vitadox.com', '/vitals.com','.vitals.com',
@@ -88,6 +175,9 @@
     var MTurk=new MTurkScript(30000,1000,[],begin_script,"A1BOHRKGTWLMTJ",true);
     var MTP=MTurkScript.prototype;
     var add_map={"address1":"address1","address2":"address2","city":"city","state":"state","postcode":"zip"};
+
+
+   
 
     function is_bad_name(b_name, p_caption) {
         if(/Funeral/i.test(p_caption) || /Funeral|Attorney License|Real Estate| Agent|Law Firm| Law$| Advisor/i.test(b_name)) return true;
@@ -596,47 +686,54 @@
 
         let offices=my_response.Offices;
          if(offices && offices.Office) {
-
-             name=offices.Office.OfficeName;
-             phone=offices.Office.Phone;
-             fax=offices.Office.Fax;
-
-             addString=offices.Office.StreetAddress+", "+offices.Office.City+", "+offices.Office.State+" "+offices.Office.Zip;
-
-
-             if(name) temp_result.name=name.trim();
-             if(phone) temp_result.phone_number=phone.replace(/[^\d]+/g,"").replace(/^1/,"").trim();
-             if(fax) temp_result.fax_number=1+fax.replace(/[^\d]+/g,"").replace(/^1/,"").trim();
-
-             let temp_add=new Address(addString);
-             for(add_field in add_map) {
-                 temp_result[add_map[add_field]]=temp_add[add_field];
+             if(offices.Office.OfficeName) {
+                 offices.Office=[offices.Office];
              }
-             console.log("my_response.Specialties=",my_response.Specialties);
-             if(my_response.Specialties.Specialty && my_response.Specialties.Specialty.Name) {
-                 set_specialty( my_response.Specialties.Specialty.Name);
-             }
-             else if( my_response.Specialties.Specialty) {
-                 for(x of my_response.Specialties.Specialty) {
-                     set_specialty(x.Name);
-                     break;
+
+             let to;
+             for(to of offices.Office) {
+
+                 name=to.OfficeName;
+                 phone=to.Phone||my_response.Phone;
+                 fax=to.Fax||my_response.Fax;
+
+                 addString=to.StreetAddress+", "+to.City+", "+to.State+" "+to.Zip;
+
+
+                 if(name) temp_result.name=name.trim();
+                 if(phone) temp_result.phone_number=phone.replace(/[^\d]+/g,"").replace(/^1/,"").trim();
+                 if(fax) temp_result.fax_number=1+fax.replace(/[^\d]+/g,"").replace(/^1/,"").trim();
+
+                 let temp_add=new Address(addString);
+                 for(add_field in add_map) {
+                     temp_result[add_map[add_field]]=temp_add[add_field];
                  }
-             }
-
-
-             if(Object.keys(temp_result).length>=5&&temp_result.phone_number && temp_result.fax_number) {
-                 temp_result.priority=0;
-                 temp_result.source_website=url;
-                 if(!temp_result.name) {
-                     let names=MTurkScript.prototype.find_company_name_on_website(doc,url);
-                     console.log("names=",names);
-                     if(names.length>0) { temp_result.name=names[0].name; }
+                 console.log("my_response.Specialties=",my_response.Specialties);
+                 if(my_response.Specialties.Specialty && my_response.Specialties.Specialty.Name) {
+                     set_specialty( my_response.Specialties.Specialty.Name);
                  }
-                 console.log("temp_result=",temp_result);
-                 my_query.office_list.push(temp_result);
-                 add_to_sheet();
+                 else if( my_response.Specialties.Specialty) {
+                     for(x of my_response.Specialties.Specialty) {
+                         set_specialty(x.Name);
+                         break;
+                     }
+                 }
 
 
+                 if(Object.keys(temp_result).length>=5&&temp_result.phone_number && temp_result.fax_number) {
+                     temp_result.priority=0;
+                     temp_result.source_website=url;
+                     if(!temp_result.name) {
+                         let names=MTurkScript.prototype.find_company_name_on_website(doc,url);
+                         console.log("names=",names);
+                         if(names.length>0) { temp_result.name=names[0].name; }
+                     }
+                     console.log("temp_result=",temp_result);
+                     my_query.office_list.push(temp_result);
+                     add_to_sheet();
+
+
+                 }
              }
          }
         resolve("");
@@ -1037,6 +1134,7 @@
     function add_to_sheet() {
         var x,field;
         //update_address();
+       // console.log("my_query.office_list=",my_query.office_list);
         my_query.office_list.sort(function(a,b) { return a.priority-b.priority; });
         var i;
         for(i=0;i<2&&i<my_query.office_list.length;i++) {
