@@ -101,7 +101,7 @@
             GM_setValue("setup_complete",true);
             this.setup_complete=true;
         }
-        else if(task_queue) {
+    else if(task_queue) {
             // .task-queue
             console.log("Found task_queue");
             var rows=document.querySelectorAll(".desktop-row"), row;
@@ -111,12 +111,13 @@
                 console.log("requester=",requester);
                 if(requester===requester_name) {
                     row.querySelector(".btn").click();
-                    break;
+                    return;
                 }
             }
+            setTimeout(function() { console.log("Reloading ..."); window.location.href="https://worker.mturk.com/tasks"; }, 15000);
 
         }
-        else {
+       else {
             console.warn("Could not find project details or task_queue, checking task_queue");
             if(GM_getValue("automate")) setTimeout(function() { window.location.href="https://worker.mturk.com/tasks"; }, 500);
         }
@@ -124,22 +125,24 @@
     var my_query = {};
     var bad_schemas=["SiteNavigationElement","WebSite","WebPage","WPHeader","WPFooter","ImageGallery","Rating","Review",
                      "AggregateRating","VideoObject","ImageObject"];
-    var bad_urls=['.addresses.com','/allpeople.com','.allstate.com','.amazon.com','.ancestry.com', '.ancientfaces.com','.angmedicare.com','angi.com','/arrestfacts.com','.arounddeal.com',
-                  '.avvo.com','.bbb.org',
+    var bad_urls=['abcnews.go.com','.addresses.com','/allpeople.com','.allstate.com','.amazon.com','.ancestry.com',
+                  '.ancestry.co','.ancientfaces.com','.angmedicare.com','angi.com','/arrestfacts.com','.arounddeal.com',
+                  '.avvo.com','.bbb.org','/story/',
                   '.beenverified.com', 'ballotpedia.','.bettergov.org',
                   'birthindex.org',
-                  '.bizapedia.com', '/boxclue.co','.brandyourself.com','.caredash.com',
-                  '.castleconnolly.com','.celebsagewiki.com','/checkpeople.com','.citygridmedia.com',
+                  '.bizapedia.com', '.blogspot.com', '/boxclue.co','.brandyourself.com','.caredash.com',
+                  '.castleconnolly.com','.cbn.com','.celebsagewiki.com','/checkpeople.com','.citygridmedia.com','.cbsnews.com',
                   'clustrmaps.com','companyregistry.com','.corporationwiki.com','.crunchbase.com','/dataveria.com',
                   '.dentalplans.com','www.dfes.com', '.diabetesiq.com','.dignitymemorial.com',
                   '.dnb.com','.docbios.com','/docspot.com','.docspot.com',
                   '//doctor.com', '.doctor.com', '.doctorhelps.com', '.doximity.com',
                   '.echovita.com','.ecyberclinics.com',
                   '.ehealthscores.com', '.endo-world.com', '.enpnetwork.com','/eyedoctor.io',
+                  '/factsbuddy.com',
                   '.facebook.com', '.familysearch.org','.famousdetails.com','.fandom.com','.federalpay.org','.fertilityiq.com', '.findagrave.com',
                   'www.findmugshots.com',
                   'findatopdoc.com',
-                  '.gastro.org', '.geni.com','/genius.com','.getluna.com',
+                  '.gastro.org', '.geni.com','/genius.com','.getluna.com','.gettyimages.com','.gofundme.com',
                   'goodreads.com','/govsalaries.com','.har.com',
                   '/healow.com','.healthcare4ppl.com', 'healthcare6.com',
                   '.healthgrades.com', '.healthline.com','.healthpage.org', '/healthprovidersdata.com', '.healthsoul.com',
@@ -157,15 +160,15 @@
                   '/nuwber.com', '//obits./', '.officialusa.com','/olympics.com','/opencorporates.com', '/opengovus.com',
                   '/opennpi.com',"/openthedata.com",
                   '/opennpi.org','orthopedic.io','.peekyou.com',
-                  '.peoplefinders.com', 'www.primarycare-doctor.com', '.placedigger.com','/popularbio.com',
+                  '.peoplefinders.com', 'www.primarycare-doctor.com', '.placedigger.com','/popularbio.com','/politics/',
                   'providers.hrt.org','.psychologytoday.com', '/pubprofile.com',
                   '/publicdatadigger.com',
                   '.ratemyprofessors.com',
                   '.realself.com','residentdatabase.com', '.researchgate.net','.reunion.com','rocketreach.co',
-                  '.sharecare.com','.signalhire.com',
+                  '.sharecare.com','.signalhire.com','.slideshare.net',
                   'spokeo.com', 'statefarm.com', 'taxbuzz.com', '.ted.com','.topionetworks.com','.topnpi.com','trademarking.in',
                   ".tributearchive.com",
-                  "truepeoplesearch.com", '/trulista.com','/trustifo.com','/unicourt.com',
+                  "truepeoplesearch.com", '/trulista.com','/trustifo.com','/twitter.com','/unicourt.com',
                   '.usnews.com', '.vitadox.com', '/vitals.com','.vitals.com',
                   '/voterrecords.com',
                   '.webmd.com', '.wellness.com',
@@ -1149,7 +1152,7 @@
         if(!my_query.actual_specialty&&my_query.fields.office1_name) {
             var specialty_map={ "Allergy & Immunology":/Allergy(\s|$)/,"Dermatology":/Dermatology/,"Family Medicine":/Family(\s|$)/, "Gastroenterology":/Gastroenterology|(GI( |$))|Digestive/,
 
-                               "Nephrology":/Nephrology/,"Orthopedic Surgery":/Orthopedic|(Bone|Joint)(\s|$)/,"Pain Medicine":/Spine|Pain(\s|$)/,
+                               "Nephrology":/Nephrology|Renal/,"Orthopedic Surgery":/Orthopedic|(Bone|Joint)(\s|$)/,"Pain Medicine":/Spine|Pain(\s|$)/,
                                "Pediatrics":/Pediatric/,"Otolaryngology":/((^|\s)ENT(\s|$))|Otolaryngology/,
                                "Primary Care":/Primary Care/,"Psych/Mental Health":/Mental Health/,
                                "Vascular Surgery":/Vein(\s|$)/,"Women's Health":/Women/,
@@ -1216,6 +1219,8 @@
     }
     function remove_phones(text,suffix,target) {
         var split=text.split(/\n/);
+
+        //console.log("my_query=",my_query);
 
         var ret="",match,matched_phone=false,i;
         var phone_prefix_map={"01":"07","02":"16"},fax_prefix_map={"01":"08","02":"17"};
@@ -1578,9 +1583,10 @@
         let a2=document.querySelector("a[href^='https://npiregistry.cms.hhs.gov']");
         a2.href=a2.href.replace(/\/registry/,"");
         console.log("a2.href=",a2.href);
+ //finish_init_query(name_match, state_abbrev, split,{temp_result:{specialty:""}});
 
         let promise=MTP.create_promise(a2.href,parse_npihhs,function(result) { finish_init_query(name_match, state_abbrev,split, result); }
-                                       , function() { GM_setValue("setup_complete",false); GM_setValue("returnHit",true); });
+                                       , function() { finish_init_query(name_match, state_abbrev, split,{temp_result:{specialty:""}}); }); // GM_setValue("setup_complete",false); GM_setValue("returnHit",true);
         return;
 
 
