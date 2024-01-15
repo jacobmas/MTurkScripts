@@ -3,7 +3,7 @@ let color = '#3aa757';
 var hits_to_get=10;
 var notified=false;
 
-var good_non_auto=["Brian Hession","mlamba","ChrisRichmond","Researcher2022"];
+var good_non_auto=["Brian Hession","mlamba","ChrisRichmond","Researcher2022","Igor"];
 
 var good_requesters=["A1BOHRKGTWLMTJ"]; // For now just DoctorDB
 
