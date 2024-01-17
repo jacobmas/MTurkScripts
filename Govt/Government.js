@@ -54,7 +54,7 @@ Gov.find_phone=function(doc,url) {
     var ext_phone_re=new RegExp(phone_re_str_begin+phone_re_str_end,"i");
     if((schoolphone=doc.querySelector("a[href^='tel:']")) && phone_re.test(schoolphone.innerText)) phone=schoolphone.innerText.trim();
     else if(!phone && (match=doc.body.innerHTML.match(ext_phone_re))) phone=match[1];
-    // else if((match=doc.body.innerHTML.match(phone_re))) console.log("phone alone match="+match);
+    else if((match=doc.body.innerHTML.match(phone_re))) { console.log("match=",match); phone=match[0]; }
     console.log("Phone="+phone);
 	if(!phone) {
 		let temp_phone=doc.querySelector("a[href^='tel']"); 
