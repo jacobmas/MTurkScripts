@@ -130,19 +130,19 @@
                   '.avvo.com','.bbb.org','/story/',
                   '.beenverified.com', 'ballotpedia.','.bettergov.org',
                   'birthindex.org',
-                  '.bizapedia.com', '.blogspot.com', '/boxclue.co','.brandyourself.com','.caredash.com',
+                  '.bizapedia.com', '.blogspot.com','.bookseriesinorder.com', '/boxclue.co','.brandyourself.com','.caredash.com',
                   '.castleconnolly.com','.cbn.com','.celebsagewiki.com','/checkpeople.com','.citygridmedia.com','.cbsnews.com',
                   'clustrmaps.com','companyregistry.com','.corporationwiki.com','.crunchbase.com','/dataveria.com','.dc.com',
                   '.dentalplans.com','www.dfes.com', '.diabetesiq.com','.dignitymemorial.com',
                   '.dnb.com','.docbios.com','/docspot.com','.docspot.com',
                   '//doctor.com', '.doctor.com', '.doctorhelps.com', '.doximity.com',
-                  '.echovita.com','.ecyberclinics.com',
-                  '.ehealthscores.com','.eliteprospects.com',
+                  '.echovita.com','.ecyberclinics.com','.ehealthscores.com','.eliteprospects.com',
                   '.endo-world.com', '.enpnetwork.com','/everloved.com','/eyedoctor.io',
                   '/factsbuddy.com',
-                  '.facebook.com', '.familysearch.org','.famousbirthdays.com','.famousdetails.com','.fandom.com','.federalpay.org','.fertilityiq.com', '.findagrave.com',
+                  '.facebook.com', '.familysearch.org','.famousbirthdays.com','.famousdetails.com','.fandom.com','.fastpeoplesearch.com',
+                  '.federalpay.org','.fertilityiq.com', '.findagrave.com',
                   'www.findmugshots.com',
-                  'findatopdoc.com',
+                  'findatopdoc.com','.forbes.com',
                   '.gastro.org', '.geni.com','/genius.com','.getluna.com','.gettyimages.com','.gofundme.com',
                   'goodreads.com','/govsalaries.com','.har.com',
                   '/healow.com','.healthcare4ppl.com', 'healthcare6.com',
@@ -168,7 +168,7 @@
                   '.ratemyprofessors.com', '.realself.com','.realtor.com','.redfin.com',
                   'residentdatabase.com', '.researchgate.net','.reunion.com','rocketreach.co','.rollingstone.com',
                   '.sharecare.com','.signalhire.com','.slideshare.net',
-                  'spokeo.com', 'statefarm.com', 'taxbuzz.com', '.ted.com',
+                  'spokeo.com', 'statefarm.com', 'taxbuzz.com', '.ted.com','.theguardian.com',
                   'thecinemaholic.com','.topionetworks.com','.topnpi.com','trademarking.in',
                   ".tributearchive.com",
                   "truepeoplesearch.com", '/trulista.com','/trustifo.com','/twitter.com','/unicourt.com',
@@ -1508,6 +1508,11 @@
             a.href=a.href.replace("Student%20in%20an%20Organized%20Health%20Care%20Education/Training%20Program","");
         }
         var links=document.querySelectorAll("form a");
+        if(links.length===0) {
+            window.setTimeout( function() {
+  window.location.reload(); }, 400);
+            return;
+        }
         links[0].href=links[0].href.replace(/\+Fax$/i,"").replace(/\+NULL/ig,"")
         var my_href=links[0].href.replace(/\+Fax$/i,"").replace(/\+NULL/ig,"").replace(/\%20/g," ").replace(/^.*\?q\=(.*)$/,"$1");
 
