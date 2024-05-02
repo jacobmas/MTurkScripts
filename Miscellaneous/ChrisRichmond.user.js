@@ -27,7 +27,7 @@
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/js/MTurkScript.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/Govt/Government.js
 // @require https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/AggParser.js
-// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.min.js
+// @require https://raw.githubusercontent.com/spencermountain/compromise/master/builds/compromise.js
 // @resource GlobalCSS https://raw.githubusercontent.com/jacobmas/MTurkScripts/master/global/globalcss.css
 
 // ==/UserScript==
@@ -151,7 +151,7 @@
                 my_query.fields.first=nlp_match[1].replace(/^[a-z]{1}/,function(match) { return match.toUpperCase(); }); }
         }
         my_query.fields.first=my_query.fields.first.replace(/^[a-z]{1}/,function(match) { return match.toUpperCase(); });
-         console.log("my_query.person_list="+JSON.stringify(my_query.person_list));
+      //   console.log("my_query.person_list="+JSON.stringify(my_query.person_list));
         if(my_query.person_list.length>0&&my_query.person_list[0].quality>=2) {
 
             let fullname=MTP.parse_name(my_query.person_list[0].name);
@@ -159,7 +159,7 @@
             my_query.fields.email=my_query.person_list[0].email;
         }
         if(my_query.fields.email.length===0 && my_query.contact_url&&my_query.contact_url.length>0) {
-                my_query.fields.email=my_query.contact_url;
+               // my_query.fields.email=my_query.contact_url;
                  add_to_sheet();
              }
         for(x in my_query.fields) {
@@ -180,10 +180,10 @@
         console.log("my_query.done="+JSON.stringify(my_query.done)+"\ndoneQueries="+MTurk.doneQueries+", total="+MTurk.queryList.length);
         for(x in my_query.done) if(!my_query.done[x]) is_done=false;
         if((my_query.fields.email.length>0 && /@/.test(my_query.fields.email) && my_query.fields.first.length>0)) is_done=true;
-
+        //console.log("my_query.done=",my_query.done);
         console.log("is_done="+is_done+", MTurk.queryList.length="+MTurk.queryList.length);
         if(is_done && my_query.fields.email.length===0 && my_query.old_blogspot) {
-            my_query.fields.email="NA";
+           // my_query.fields.email="NA";
             add_to_sheet();
         }
         if(is_done && MTurk.doneQueries>=MTurk.queryList.length&&
