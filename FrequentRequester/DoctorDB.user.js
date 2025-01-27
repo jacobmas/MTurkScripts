@@ -125,26 +125,32 @@
     var my_query = {};
     var bad_schemas=["SiteNavigationElement","WebSite","WebPage","WPHeader","WPFooter","ImageGallery","Rating","Review",
                      "AggregateRating","VideoObject","ImageObject"];
-    var bad_urls=['abcnews.go.com','.addresses.com','/allpeople.com','.allstate.com','.amazon.com','.ancestry.com',
-                  '.ancestry.co','.ancientfaces.com','.angmedicare.com','angi.com','/arrestfacts.com','.arounddeal.com',
+    var bad_urls=['abcnews.go.com','.addresses.com','/allfamous.org','/allpeople.com','.allstate.com','.amazon.com','.ancestry.com',
+                  '.ancestry.co','.ancientfaces.com','.angmedicare.com','angi.com',
+                  '.apple.com',
+                  '/arrestfacts.com','.arounddeal.com',
                   '.avvo.com','.bbb.org','/story/',
                   '.beenverified.com', 'ballotpedia.','.bettergov.org',
                   'birthindex.org',
-                  '.bizapedia.com', '.blogspot.com','.bookseriesinorder.com', '/boxclue.co','.brandyourself.com','.caredash.com',
-                  '.castleconnolly.com','.cbn.com','.celebsagewiki.com','/checkpeople.com','.citygridmedia.com','.cbsnews.com',
-                  'clustrmaps.com','companyregistry.com','.corporationwiki.com','.crunchbase.com','/dataveria.com','.dc.com',
-                  '.dentalplans.com','www.dfes.com', '.diabetesiq.com','.dignitymemorial.com',
+                  '.bizapedia.com', '.blogspot.com','.bookseriesinorder.com', '/boxclue.co','.brandyourself.com',
+                  '.britannica.org','.caredash.com',
+                  '.castleconnolly.com','.cbn.com','.cbre.com','.celebsagewiki.com',
+                  '.chamberofcommerce.com','/checkpeople.com','.citygridmedia.com','.cbsnews.com',
+                  'clustrmaps.com','.co.uk','companyregistry.com','.corporationwiki.com','.crunchbase.com','/dataveria.com','.dailycrime.com',
+                  '.dc.com',
+                  '.dentalplans.com','www.dfes.com', '.diabetesiq.com','.dignitymemorial.com',".distractify.com",
                   '.dnb.com','.docbios.com','/docspot.com','.docspot.com',
-                  '//doctor.com', '.doctor.com', '.doctorhelps.com', '.doximity.com',
+                  '//doctor.com', '.doctor.com', '.doctorhelps.com', '.doximity.com','/drgalen.org',
+
                   '.echovita.com','.ecyberclinics.com','.ehealthscores.com','.eliteprospects.com',
-                  '.endo-world.com', '.enpnetwork.com','/everloved.com','/eyedoctor.io',
+                  '.endo-world.com', '.enpnetwork.com','.essence.com','/everloved.com','/eyedoctor.io',
                   '/factsbuddy.com',
-                  '.facebook.com', '.familysearch.org','.famousbirthdays.com','.famousdetails.com','.fandom.com','.fastpeoplesearch.com',
+                  '.facebook.com', 'familyfreenow.com','.familysearch.org','familytree','.famousbirthdays.com','.famousdetails.com','.fandom.com','.fastpeoplesearch.com',
                   '.federalpay.org','.fertilityiq.com', '.findagrave.com',
                   'www.findmugshots.com',
                   'findatopdoc.com','.forbes.com',
                   '.gastro.org', '.geni.com','/genius.com','.getluna.com','.gettyimages.com','.gofundme.com',
-                  'goodreads.com','/govsalaries.com','.har.com',
+                  'goodreads.com','.google.com','/govsalaries.com','.har.com','.harvardreview.org',
                   '/healow.com','.healthcare4ppl.com', 'healthcare6.com',
                   '.healthgrades.com', '.healthline.com','.healthpage.org', '/healthprovidersdata.com', '.healthsoul.com',
                   '.healthlynked.com','.hipaaspace.com','.hometownlocator.com',
@@ -153,32 +159,34 @@
                   '/licensefiles.com',
                   '.linkedin.com', '.localdoc.com','.locatepeople.org','/marriedwiki.com',
                   '.mapquest.com', '.md.com', '.mdnpi.com', '.medfusion.com','.medicalcare.com','.medicalnewstoday.com', '.medicareforall.com','.medicaredforall.com',
-                 'mentaltherapy.io', '.medicarelist.com', '.medicinenet.com', '.morganstanley.com',
+                  '.medifind.com',"/medium.com",
+                 'mentaltherapy.io', '.medicarelist.com', '.medicinenet.com', '.michaels.com','.mlive.com','.morganstanley.com',
                   '.myheritage.com','.mylife.com',
                   '.mturkcontent.com','/muckrack.com','.murderpedia.org','/nicelocal.com',
-                  '/npi-lookup.org',
-                  '.npidb.com', '/npidb.com', '/npidb.org', '/npino.com', '.npinumberlookup', '/npiprofile.com','/npir.org','/nurseok.com',
-                  '/nuwber.com', '.nytimes.com',
+                  '/npi-lookup.org',".npidash",
+                  '.npidb.com', '/npidb.com', '/npidb.org', '/npifinder.com', '/npino.com', '.npichecker','.npinumberlookup', '/npiprofile.com',
+                  '/npir.org','.npr.org','/nurseok.com',
+                  '/nuwber.com', '.nytimes.com','/obituaries/','.obituare.com',
                   '//obits./', '.officialusa.com','/olympics.com','/opencorporates.com', '/opengovus.com',
                   '/opennpi.com',"/openthedata.com",
-                  '/opennpi.org','orthopedic.io','.peekyou.com','patientfusion.com',
+                  '/opennpi.org','orthopedic.io','.peekyou.com','patientfusion.com','/people.com',
                   '.peoplefinders.com',
                   '//pharmacygps.com','www.primarycare-doctor.com', '.placedigger.com','/popularbio.com','/politics/',
                   'providers.hrt.org','.psychologytoday.com', '/pubprofile.com', '/publicdatadigger.com',
                   '.ratemyprofessors.com', '.realself.com','.realtor.com','.redfin.com',
                   'residentdatabase.com', '.researchgate.net','.reunion.com','rocketreach.co','.rollingstone.com',
-                  '.sharecare.com','.signalhire.com','.slideshare.net',
-                  'spokeo.com', 'statefarm.com', 'taxbuzz.com', '.ted.com','.theguardian.com',
-                  'thecinemaholic.com','.topionetworks.com','.topnpi.com','trademarking.in',
+                  '.sharecare.com','.si.com','.signalhire.com','.slideshare.net',
+                  'spokeo.com', 'statefarm.com', 'taxbuzz.com', '.ted.com','thefamouspeople.com','.theguardian.com',
+                  'thecinemaholic.com','.theknot.com','.topionetworks.com','.topnpi.com','trademarking.in',
                   ".tributearchive.com",
                   "truepeoplesearch.com", '/trulista.com','/trustifo.com','/twitter.com','/unicourt.com',
-                  '.usnews.com', '.vitadox.com', '/vitals.com','.vitals.com',
+                  '.usnews.com', '/vinnews.com','.vitadox.com', '/vitals.com','.vitals.com',
                   '/voterrecords.com',
                   '.webmd.com', '/weence.com', '.wellness.com',
                   '.whitepages.com','/wikibious.com','.wiki',
                   '.wikipedia.org', '.yahoo.com','.yellowpages.com', 'www.yellowpages', '.yelp.com','.yelp.ca','.youtube.com',
-                  '.zillow.com', '.zocdoc.com','.zoominfo.com']
-    var MTurk=new MTurkScript(30000,1000,[],begin_script,"A1BOHRKGTWLMTJ",true);
+                  '.zillow.com', '.zocdoc.com','.zola.com','.zoominfo.com']
+    var MTurk=new MTurkScript(30000,500,[],begin_script,"A1BOHRKGTWLMTJ",true);
     var MTP=MTurkScript.prototype;
     var add_map={"address1":"address1","address2":"address2","city":"city","state":"state","postcode":"zip"};
 
@@ -968,7 +976,7 @@
             .replace(/^.*Geriatric.*$/,"Geriatric Medicine").replace(/^.*Obstetrics.*$/,"Obstetrics & Gynecology")
             .replace(/^.*Nephrology.*$/,"Nephrology").replace(/^.*Plastic Surgery.*$/,"Plastic and Reconstructive Surgery")
             .replace(/^.*Pediatrics.*$/,"Pediatrics").replace(/^.*General Surgery.*$/,"Surgery").replace(/^.*Occupational Health.*$/,"Occupational Medicine")
-            .replace(/^.*Family.*$/,"Family Medicine");
+            .replace(/^.*Family.*$/,"Family Medicine").replace(/Orthopaedic Surgery/,"Orthopedics");
         console.log("specialty=",specialty," actual_specialty=",my_query.actual_specialty);
         let opt;
         for(opt of document.querySelector("#specialty1").options) {
@@ -1643,7 +1651,7 @@
         var title=name_match.length>1?my_query.name.trim().match(title_re):"";
         my_query.title=title?title[0].trim():"";
 
-        my_query.name=my_query.name.replace(title_re,"").trim();
+        my_query.name=my_query.name.replace(title_re,"").replace("Family ","Family Medicine").trim();
         console.log("my_query.parsed_name=",my_query.parsed_name);
         console.log("my_query="+JSON.stringify(my_query));
         var search_str=my_query.name+" "+my_query.specialty+" "+my_query.state+" "+my_query.title;
