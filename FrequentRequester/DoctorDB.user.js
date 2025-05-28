@@ -130,10 +130,10 @@
                   '.apple.com',
                   '/arrestfacts.com','.arounddeal.com',
                   '.avvo.com','.bbb.org','/story/',
-                  '.beenverified.com', 'ballotpedia.','.bettergov.org',
+                  '.beenverified.com', 'ballotpedia.','.bettergov.org',".biography.",
                   'birthindex.org',
-                  '.bizapedia.com', '.blogspot.com','.bookseriesinorder.com', '/boxclue.co','.brandyourself.com',
-                  '.britannica.org','.caredash.com',
+                  '.bizapedia.com', '.blogspot.com','.bookseriesinorder.com', '/boxclue.co','.brandyourself.com',".britannica.",
+               '.caredash.com',
                   '.castleconnolly.com','.cbn.com','.cbre.com','.celebsagewiki.com',
                   '.chamberofcommerce.com','/checkpeople.com','.citygridmedia.com','.cbsnews.com',
                   'clustrmaps.com','.co.uk','companyregistry.com','.corporationwiki.com','.crunchbase.com','/dataveria.com','.dailycrime.com',
@@ -257,8 +257,13 @@
                     return;
                 }
                 if((type==='webmdquery'||(type==='query' && my_query.try_count[type]>0)) && i>=3) break;
+
                 b_name=b_algo[i].querySelector("h2 a").textContent;
-                b_url=b_algo[i].getElementsByTagName("a")[0].href;
+
+                let temp1 = b_algo[i].querySelector(".b_attribution cite").innerText.trim().replace(/ › /g,"/");
+                b_url = temp1;
+//                b_url=b_algo[i].querySelector(".b_tpcn a").href;
+                console.log("b_url=",b_url);
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
                     p_caption=b_caption[0].getElementsByTagName("p")[0].innerText : '';
