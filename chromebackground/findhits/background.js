@@ -3,7 +3,8 @@ let color = '#3aa757';
 var hits_to_get=10;
 var notified=false;
 
-var good_non_auto=["Brian Hession","mlamba","ChrisRichmond","Researcher2022","Igor"];
+var good_non_auto=["Brian Hession","mlamba","ChrisRichmond",
+	"Melissa Halliburton","Researcher2022","Igor","ActiVote","BDRSDEV"];
 
 var good_requesters=["A1BOHRKGTWLMTJ"]; // For now just DoctorDB
 
@@ -58,26 +59,26 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
 	});
 	
 	
-	setTimeout(function() { 
-		for(req of good_requesters) {
-			let curr_url=`https://worker.mturk.com/requesters/${req}/projects`;
-			console.log(`curr_url=${curr_url}`);
-			response=fetch(curr_url).then(
-			function(response) {
-				response.text().then(function(data) {
-				let result=parse_text2(data);
-			  });
+	// setTimeout(function() { 
+	// 	for(req of good_requesters) {
+	// 		let curr_url=`https://worker.mturk.com/requesters/${req}/projects`;
+	// 		console.log(`curr_url=${curr_url}`);
+	// 		response=fetch(curr_url).then(
+	// 		function(response) {
+	// 			response.text().then(function(data) {
+	// 			let result=parse_text2(data);
+	// 		  });
 			
-		});
-		}
-		response=fetch('https://worker.mturk.com/').then(
-	function(response) {
-		response.text().then(function(data) {
-        let result=parse_text(data);
-      });
+	// 	});
+	// 	}
+	// 	response=fetch('https://worker.mturk.com/').then(
+	// function(response) {
+	// 	response.text().then(function(data) {
+    //     let result=parse_text(data);
+    //   });
 		
-	});
-	}, 15000);
+	// });
+	// }, 15000);
 	
 	setTimeout(function() { 
 		for(req of good_requesters) {
@@ -99,26 +100,26 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
 		
 	});
 	}, 30000);
-	setTimeout(function() { 
-		for(req of good_requesters) {
-			let curr_url=`https://worker.mturk.com/requesters/${req}/projects`;
-			console.log(`curr_url=${curr_url}`);
-			response=fetch(curr_url).then(
-			function(response) {
-				response.text().then(function(data) {
-				let result=parse_text2(data);
-			  });
+	// setTimeout(function() { 
+	// 	for(req of good_requesters) {
+	// 		let curr_url=`https://worker.mturk.com/requesters/${req}/projects`;
+	// 		console.log(`curr_url=${curr_url}`);
+	// 		response=fetch(curr_url).then(
+	// 		function(response) {
+	// 			response.text().then(function(data) {
+	// 			let result=parse_text2(data);
+	// 		  });
 			
-		});
-		}
-		response=fetch('https://worker.mturk.com/').then(
-	function(response) {
-		response.text().then(function(data) {
-        let result=parse_text(data);
-      });
+	// 	});
+	// 	}
+	// 	response=fetch('https://worker.mturk.com/').then(
+	// function(response) {
+	// 	response.text().then(function(data) {
+    //     let result=parse_text(data);
+    //   });
 		
-	});
-	}, 45000);
+	// });
+	// }, 45000);
 	//fetch('https://worker.mturk.com/tasks').then(function(data) {});
 });
 

@@ -144,7 +144,7 @@
 
                   '.echovita.com','.ecyberclinics.com','.ehealthscores.com','.eliteprospects.com',
                   '.endo-world.com', '.enpnetwork.com','.essence.com','/everloved.com','/eyedoctor.io',
-                  '/factsbuddy.com',
+                  '/fact-wiki.com',                  '/factsbuddy.com',
                   '.facebook.com', 'familyfreenow.com','.familysearch.org','familytree','.famousbirthdays.com','.famousdetails.com','.fandom.com','.fastpeoplesearch.com',
                   '.federalpay.org','.fertilityiq.com', '.findagrave.com',
                   'www.findmugshots.com',
@@ -157,7 +157,7 @@
                   '.imdb.com','/inforver.com','.instagram.com','.instantcheckmate.com', '.kellysearch.com','/lawandcrime.com',
                   'lawgroup.com','lawtally.com','.legacy.com',
                   '/licensefiles.com',
-                  '.linkedin.com', '.localdoc.com','.locatepeople.org','/marriedwiki.com',
+                  '.linkedin.com', '.localdoc.com','.locatepeople.org','.loopnet.com','/marriedwiki.com',
                   '.mapquest.com', '.md.com', '.mdnpi.com', '.medfusion.com','.medicalcare.com','.medicalnewstoday.com', '.medicareforall.com','.medicaredforall.com',
                   '.medifind.com',"/medium.com",
                  'mentaltherapy.io', '.medicarelist.com', '.medicinenet.com', '.michaels.com','.mlive.com','.morganstanley.com',
@@ -172,7 +172,7 @@
                   '/opennpi.org','orthopedic.io','.peekyou.com','patientfusion.com','/people.com',
                   '.peoplefinders.com',
                   '//pharmacygps.com','www.primarycare-doctor.com', '.placedigger.com','/popularbio.com','/politics/',
-                  'providers.hrt.org','.psychologytoday.com', '/pubprofile.com', '/publicdatadigger.com',
+                  'providers.hrt.org','.psychologytoday.com', '/pubprofile.com', '/publicdatadigger.com','/radaris.com',
                   '.ratemyprofessors.com', '.realself.com','.realtor.com','.redfin.com',
                   'residentdatabase.com', '.researchgate.net','.reunion.com','rocketreach.co','.rollingstone.com',
                   '.sharecare.com','.si.com','.signalhire.com','.slideshare.net',
@@ -191,6 +191,23 @@
     var add_map={"address1":"address1","address2":"address2","city":"city","state":"state","postcode":"zip"};
 
 
+
+
+    function get_bing_url_from_ck(n)
+    {
+        var t = extract_bing_url(n, "u");
+        if (!t) return n;
+        try {
+
+            return t.startsWith("a1") && (t = t.substring(2)), t = t.replace(/_/g, "/").replace(/-/g, "+"), t = decodeURIComponent(atob(t))
+        }
+        catch (i) {
+            return n
+        }
+    }
+    function extract_bing_url(n, t) {
+        var r = new RegExp("[?&]{1}" + t + "=([^&]+)([\\/\\\\][^?#]*)?([?#].*)?", "i"), i = n.match(r); return i ? i[1] : ""
+    }
    
 
     function is_bad_name(b_name, p_caption) {
@@ -261,8 +278,11 @@
                 b_name=b_algo[i].querySelector("h2 a").textContent;
 
                 let temp1 = b_algo[i].querySelector(".b_attribution cite").innerText.trim().replace(/ › /g,"/");
+
+                console.log("temp1=",temp1);
                 b_url = temp1;
-//                b_url=b_algo[i].querySelector(".b_tpcn a").href;
+                b_url=get_bing_url_from_ck(b_algo[i].querySelector("a").href);
+
                 console.log("b_url=",b_url);
                 b_caption=b_algo[i].getElementsByClassName("b_caption");
                 p_caption=(b_caption.length>0 && b_caption[0].getElementsByTagName("p").length>0) ?
